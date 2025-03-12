@@ -84,15 +84,15 @@
   }
   
   .hero-section.bg-venice {
-    background: url("docs/media/VeniceBackground.jpg") center/cover no-repeat;
+    background: url("media/VeniceBackground.jpg") center/cover no-repeat;
   }
   
   .hero-section.bg-travel {
-    background: url("docs/media/AItravelling.png") center/cover no-repeat;
+    background: url("media/AItravelling.png") center/cover no-repeat;
   }
   
   .hero-section.bg-elderly {
-    background: url("docs/media/AIforElderly.png") center/cover no-repeat;
+    background: url("media/AIforElderly.png") center/cover no-repeat;
   }
   
   .hero-overlay {
