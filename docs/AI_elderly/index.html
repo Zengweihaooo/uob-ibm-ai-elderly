@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>AI for the Elderly - Project Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <!-- Puppertino & Flexboxgrid (与主站相同) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/codedgar/Puppertino@latest/dist/css/newfull.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"
+    />
+    <!-- 字体：Inter -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Inter:wght@100;400;500;900:500,800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="main.css" />
+  </head>
+  <body>
+    <!-- 顶部导航，与主站一致 -->
+    <nav class="top-nav">
+      <div class="nav-left">
+        <img
+          src="../media/IBMlogo.svg"
+          alt="IBM Logo"
+          class="nav-logo ibm-logo"
+        />
+        <img
+          src="../media/university-of-bristol.svg"
+          alt="University of Bristol Logo"
+          class="nav-logo ub-logo"
+        />
+      </div>
+      <ul class="nav-menu">
+        <!-- 链接到主 index.html 的不同位置 (请根据实际路径修改) -->
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#project3">AI for the Elderly</a></li>
+        <li><a href="../index.html#project1">VR AI Learning Tool</a></li>
+        <li><a href="../index.html#project2">AI Travel</a></li>
+      </ul>
+    </nav>
+
+    <!-- 内容区域：团队介绍 -->
+    <section class="home-section">
+      <div class="container">
+        <h1>About Our Team</h1>
+        <p>
+          Our team includes a student of Industrial Design who, during their
+          undergraduate studies, conducted extensive research and developed
+          products focusing on hearing impairment issues among the elderly.
+          They are well-versed in the geriatric-focused user research processes
+          and have experience dealing with the non-trivial ethical clearance
+          required for elderly-related studies. Additionally, this team member
+          has a strong passion for design, which greatly benefits our project’s
+          innovation and adaptability.
+        </p>
+      </div>
+    </section>
+
+    <!-- PDF.js 区域：左右翻页，默认 fit to page，按钮双向切换 -->
+    <section class="pdf-section">
+      <div class="container">
+        <!-- 小按钮；p-btn / p-prim-col / p-btn-round 均来自 Puppertino -->
+        <button id="toggle-btn" class="p-btn p-prim-col p-btn-round pdf-toggle-btn">
+          View Translated PDF
+        </button>
+
+        <!-- 16:9 封装 + iframe -->
+        <div class="pdf-wrapper">
+          <!-- 默认加载中文 PDF -->
+          <iframe
+            id="pdf-iframe"
+            src="../pdfjs-4.10.38-dist/web/viewer.html?file=../../AI_elderly/hearo.pdf#scrollMode=horizontal&zoom=page-fit"
+            frameborder="0"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- JS脚本：实现双向切换 -->
+    <script>
+      let isEnglish = false;
+      const button = document.getElementById("toggle-btn");
+      const iframe = document.getElementById("pdf-iframe");
+
+      button.addEventListener("click", function () {
+        if (!isEnglish) {
+          // 切到英文 PDF
+          iframe.src =
+            "../pdfjs-4.10.38-dist/web/viewer.html?file=../../AI_elderly/hearoEN.pdf#scrollMode=horizontal&zoom=page-fit";
+          button.textContent = "View Original PDF";
+        } else {
+          // 切回中文 PDF
+          iframe.src =
+            "../pdfjs-4.10.38-dist/web/viewer.html?file=../../AI_elderly/hearo.pdf#scrollMode=horizontal&zoom=page-fit";
+          button.textContent = "View Translated PDF";
+        }
+        isEnglish = !isEnglish;
+      });
+    </script>
+  </body>
+</html>

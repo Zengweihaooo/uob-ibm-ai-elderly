@@ -22,22 +22,23 @@
   <body>
     <nav class="top-nav">
       <div class="nav-left">
-        <img
-          src="media/university-of-bristol.svg"
-          alt="University of Bristol Logo"
-          class="nav-logo ub-logo"
-        />
+        <!-- 1. IBM 和布大 Logo 位置互换 & 间距缩小 -->
         <img
           src="media/IBMlogo.svg"
           alt="IBM Logo"
           class="nav-logo ibm-logo"
         />
+        <img
+          src="media/university-of-bristol.svg"
+          alt="University of Bristol Logo"
+          class="nav-logo ub-logo"
+        />
       </div>
       <ul class="nav-menu">
         <li><a href="#home">Home</a></li>
+        <li><a href="#project3">AI for the Elderly</a></li>
         <li><a href="#project1">VR AI Learning Tool</a></li>
         <li><a href="#project2">AI Travel</a></li>
-        <li><a href="#project3">AI for the Elderly</a></li>
       </ul>
     </nav>
 
@@ -53,6 +54,32 @@
       </div>
     </section>
 
+    <!-- 3. 调整顺序: 先 AI for the Elderly, 再 VR AI Learning Tool, 再 AI Travel -->
+
+    <!-- AI for the Elderly (原 project3) 放到最前面 -->
+    <section id="project3" class="hero-section bg-elderly">
+      <div class="hero-content">
+        <div class="container row">
+          <div class="col-xs-12">
+            <h2>AI for the Elderly</h2>
+            <p>
+              Design a mobile-based “Social Pet” that combats isolation
+              among the elderly, encourages daily routines, and offers
+              companionship. Harness IBM Watson Assistant, Speech to
+              Text, and Text to Speech to foster an emotionally rich
+              interactive experience while providing practical support.
+            </p>
+            <a
+              href="../AI_elderly/index.html"
+              class="p-btn p-prim-col p-btn-round hero-button"
+              >Learn More</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VR AI Learning Tool (原 project1) 放到第二个 -->
     <section id="project1" class="hero-section bg-venice">
       <div class="hero-content">
         <div class="container row">
@@ -75,6 +102,7 @@
       </div>
     </section>
 
+    <!-- AI Travel (原 project2) 放到第三个 -->
     <section id="project2" class="hero-section bg-travel">
       <div class="hero-content">
         <div class="container row">
@@ -89,28 +117,6 @@
             </p>
             <a
               href="../AI_travel/index.html"
-              class="p-btn p-prim-col p-btn-round hero-button"
-              >Learn More</a
-            >
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="project3" class="hero-section bg-elderly">
-      <div class="hero-content">
-        <div class="container row">
-          <div class="col-xs-12">
-            <h2>AI for the Elderly</h2>
-            <p>
-              Design a mobile-based “Social Pet” that combats isolation
-              among the elderly, encourages daily routines, and offers
-              companionship. Harness IBM Watson Assistant, Speech to
-              Text, and Text to Speech to foster an emotionally rich
-              interactive experience while providing practical support.
-            </p>
-            <a
-              href="../AI_elderly/index.html"
               class="p-btn p-prim-col p-btn-round hero-button"
               >Learn More</a
             >
