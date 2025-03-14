@@ -1,87 +1,150 @@
+/*
+  :root 区域（根作用域）用来定义在整个文档中可用的 CSS 自定义变量（variables）。
+  你可以在其他选择器中通过 var(--变量名) 的方式引用这里设置的变量。
+*/
 :root {
-  --text_color: #2e2e2e;
-  --bg_page_color: #f9f9f9;
-  --hero_text_color: #242424;
-  --nav_bg: #ffffff;
-  --nav_text_color: #333;
-  --transition_speed: 0.3s;
+  --text_color: #2e2e2e;        /* 主体文字默认颜色 */
+  --bg_page_color: #f9f9f9;     /* 页面背景颜色 */
+  --hero_text_color: #ffffff;   /* 在 Hero 区域等需要白色文字时使用 */
+  --nav_bg: #ffffff;            /* 顶部导航栏背景色 */
+  --nav_text_color: #333;       /* 顶部导航文字颜色 */
+  --transition_speed: 0.3s;     /* 动效过渡时间，可在 Hover 或其他动画中复用 */
 }
 
+/*
+  body 用于设置全局性、通用性的样式，包括外边距、内边距、整体字体、背景色等等。
+*/
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, "Inter", sans-serif;
-  background-color: var(--bg_page_color);
-  color: var(--text_color);
+  font-family: -apple-system, "Inter", sans-serif; /* 使用 -apple-system 优先适配苹果系统上的默认字体 */
+  background-color: var(--bg_page_color);          /* 设置全局页面的背景色 */
+  color: var(--text_color);                        /* 设置默认文字颜色（与 :root 中对应） */
 }
 
+/*
+  .top-nav 是页面顶部导航区域的容器，包含导航栏、Logo 等元素。
+  使用 Flex 布局使其在水平方向上排布，并设置背景色、阴影、内边距等。
+*/
 .top-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--nav_bg);
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-  padding: 0 20px;
+  display: flex;                                  /* 让子元素在同一行内排列 */
+  align-items: center;                            /* 在垂直方向上居中 */
+  justify-content: space-between;                 /* 两端对齐, 左右部分撑满空间 */
+  background-color: var(--nav_bg);                /* 导航栏背景色 */
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);        /* 导航栏下方投影, 营造层次感 */
+  padding: 0 20px;                                /* 左右内边距 */
 }
 
+/*
+  .nav-left 用来包含左侧的 Logo 列表。由于需要在同一行内依次排布两个 Logo，
+  并与导航菜单分离，这里也用了 Flex 布局。
+*/
 .nav-left {
-  display: flex;
-  align-items: center;
-  margin-left: 10px;
+  display: flex;       /* 让子元素水平排列 */
+  align-items: center; /* 垂直方向居中对齐 */
+  margin-left: 10px;   /* 整体向右留出一点距离 */
 }
 
-.nav-logo {
-  height: 40px;
-  margin: 8px 5px 8px 0;
-}
-
-.ub-logo {
-  margin-right: 30px;
-}
-
+/*
+  .ibm-logo 设置 IBM Logo 的样式。
+  1) 高度固定为40px，适配顶部导航统一外观；
+  2) margin 设置用于控制与其他元素的间距；
+  3) transform: scale(0.75) 用来缩小图标一点，以与另一 Logo 大小相匹配。
+*/
 .ibm-logo {
-  transform: scale(0.75);
-  transform-origin: left center;
-  margin-left: 30px;
+  height: 40px;
+  margin: 8px 0px 8px 0;           /* 上8px 右8px 下8px 左0，实现紧挨着后面元素的间距 */
+  transform: scale(0.75);          /* 缩放至75%大小 */
+  transform-origin: left center;   /* 缩放原点设为左中部，使图标向左对齐 */
 }
 
+/*
+  .ub-logo 设置 Bristol 大学 Logo 的样式。
+  1) 同样固定高度40px；
+  2) transform: scale(0.825) 对比 IBM Logo 的缩放略大一点；
+  3) margin 调整与 IBM Logo 及导航栏其他元素的相对位置。
+*/
+.ub-logo {
+  height: 40px;
+  transform: scale(0.825);
+  margin: 8px 0 8px 0px; /* 上8px 右0 下8px 左10px，稍微拉开和 IBM Logo 的间距 */
+}
+
+/*
+  .nav-menu 是导航菜单的 <ul> 容器。 
+  1) 去除默认列表样式 list-style；
+  2) 让列表项水平方向排列。
+*/
 .nav-menu {
-  list-style: none;
-  display: flex;
+  list-style: none; /* 去掉默认的列表小圆点 */
+  display: flex;    /* 让 <li> 元素在一条线上排列 */
   margin: 0;
   padding: 0;
 }
 
+/*
+  .nav-menu li 每个菜单项与前一个之间留出固定的间隔。
+*/
 .nav-menu li {
-  margin-left: 20px;
+  margin-left: 20px; /* 导致每个 <li> 与前一个之间有20px的空隙 */
 }
 
+/*
+  .nav-menu a 负责导航链接的样式：
+  - 默认文字颜色（var(--nav_text_color)）
+  - 去除下划线
+  - 添加过渡效果
+*/
 .nav-menu a {
-  color: var(--nav_text_color);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color var(--transition_speed);
+  color: var(--nav_text_color);            /* 链接文字颜色与导航文字颜色统一 */
+  text-decoration: none;                   /* 去除下划线 */
+  font-weight: 500;                        /* 半粗体，使菜单更醒目 */
+  transition: color var(--transition_speed); /* 悬停时平滑切换文字颜色 */
 }
 
+/*
+  .nav-menu a:hover 定义鼠标悬停时链接的变色效果。
+*/
 .nav-menu a:hover {
-  color: #007aff;
+  color: #7caadb; /* 悬停时变为淡蓝色，可根据品牌色灵活调整 */
 }
 
+/*
+  .home-section 定义“首页”区域的通用布局:
+  - padding: 30px 0vw; 表示上下 30px，左右 0 (即由默认的 0vw 计算)。
+*/
 .home-section {
-  padding: 40px 5vw;
+  padding: 30px 0vw;
 }
 
+/*
+  .home-section h1 用来控制首页区域中 <h1> 的标题风格。
+  - font-size: 2rem; 标题大小
+  - margin-bottom: 20px; 与段落之间的间距
+*/
 .home-section h1 {
   font-size: 2rem;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
+/*
+  .home-section p 用来控制首页区域中的文本段落风格：
+  - font-size: 1rem; 标准正文字体大小
+  - max-width: 900px; 文本行宽上限，防止在超宽屏幕时出现过长行
+  - margin: 0; 去除默认段落上下外边距
+*/
 .home-section p {
   font-size: 1rem;
   max-width: 900px;
   margin: 0;
 }
 
+/*
+  .hero-section 是项目介绍的“横幅”块，采用封面式的大背景图。
+  - position: relative 允许在其内部添加绝对定位元素(如遮罩层).
+  - aspect-ratio: 16 / 9 保持16:9的宽高比，以便在屏幕宽度自适应时维持视觉比例 (PC端).
+  - overflow: hidden; 防止内部元素溢出.
+*/
 .hero-section {
   position: relative;
   width: 100%;
@@ -92,6 +155,27 @@ body {
   margin-bottom: 0;
 }
 
+/*
+  通过使用伪元素 .hero-section::before 来实现遮罩层:
+  - 绝对定位占满整个 hero-section
+  - 背景色使用黑色并带有0.4透明度 (rgba(0,0,0,0.4))
+  - z-index: 1 使其在背景图之上，但文字等内容之下
+*/
+.hero-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4); /* 这里可调节透明度以控制暗度 */
+  z-index: 1;
+}
+
+/*
+  .hero-section.bg-venice / .bg-travel / .bg-elderly 
+  分别给不同项目 Hero 使用不同的背景图。
+*/
 .hero-section.bg-venice {
   background: url("media/VeniceBackground.jpg") center/cover no-repeat;
 }
@@ -104,49 +188,83 @@ body {
   background: url("media/AIforElderly.png") center/cover no-repeat;
 }
 
+/*
+  .hero-content 用来放置“可见文字内容”，之所以再多一层容器
+  是为了确保遮罩层在文字层之下，方便控制文字的颜色与布局。
+*/
 .hero-content {
-  position: relative;
-  z-index: 2;
+  position: relative; /* 相对定位，以保证其层级在 ::before 遮罩层之上 */
+  z-index: 2;         /* 遮罩层 z-index: 1，此处设置为2能让文字悬浮在遮罩上 */
   display: flex;
   align-items: flex-start;
   width: 100%;
   padding-top: 20px;
 }
 
+/*
+  .container.row 可用于控制内部排版宽度以及左侧边距。
+  max-width: 900px 防止行宽过长，可保持排版美观。
+  margin-left: 5vw 给左侧留出相对宽度的空白。
+*/
 .container.row {
   max-width: 900px;
   margin-left: 5vw;
 }
 
+/*
+  在 Hero 区域内的 h2 与 p，设置成白色文字（或通过 var(--hero_text_color) 调用）
+  并在底部有 15px 的外边距做分隔。
+*/
 .hero-section h2,
 .hero-section p {
-  color: var(--hero_text_color);
+  color: var(--hero_text_color); /* 白色文字 */
   margin: 0 0 15px;
 }
 
+/*
+  .hero-button 是在 Hero 区域中“Learn More”等按钮的基础样式，
+  - 文字大写
+  - 字重较大
+  - 字符间距加大
+  - hover 时背景色平滑过渡
+*/
 .hero-button {
-  margin-top: 10px;
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 1px;
-  transition: background var(--transition_speed);
+  margin-top: 10px;                         /* 与段落之间的间隙 */
+  text-transform: uppercase;                /* 字母转为全大写 */
+  font-weight: 600;                         /* 半粗体，让按钮文字突出 */
+  letter-spacing: 1px;                      /* 增加字母间距 */
+  transition: background var(--transition_speed); /* 鼠标悬停时平滑变色 */
 }
 
+/*
+  .hero-button:hover 定义鼠标悬停时按钮的背景色变为较深的蓝色。
+*/
 .hero-button:hover {
   background: #005bb5;
 }
 
+/*
+  @media (max-width: 767px) 
+  使用媒体查询为移动端或小屏设备做适配:
+  
+  1) .nav-menu { display: none; } 隐藏导航菜单(通常会配合汉堡菜单或折叠式菜单实现).
+  2) .hero-section { aspect-ratio: auto; min-height: 50vh; } 防止过高/过宽导致布局混乱.
+  3) 调整 .home-section h1 与 p 的字体大小以适配小屏。
+*/
 @media (max-width: 767px) {
   .nav-menu {
     display: none;
   }
+
   .hero-section {
-    aspect-ratio: auto;
-    min-height: 50vh;
+    aspect-ratio: auto;  /* 取消固有16:9比例，自动适应宽度 */
+    min-height: 50vh;    /* 保证在移动设备上至少有一定高度，用于展示背景图 */
   }
+
   .home-section h1 {
     font-size: 1.5rem;
   }
+
   .home-section p {
     font-size: 0.9rem;
   }

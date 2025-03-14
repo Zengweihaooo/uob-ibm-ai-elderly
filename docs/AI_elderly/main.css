@@ -1,0 +1,131 @@
+:root {
+  --text_color: #2e2e2e;
+  --bg_page_color: #f9f9f9;
+  --hero_text_color: #ffffff;
+  --nav_bg: #ffffff;
+  --nav_text_color: #333;
+  --transition_speed: 0.3s;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, "Inter", sans-serif;
+  background-color: var(--bg_page_color);
+  color: var(--text_color);
+}
+
+/* 顶部导航样式，与主站一致 */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--nav_bg);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+  padding: 0 20px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+}
+
+/* IBM & Bristol Logos */
+.ibm-logo {
+  height: 40px;
+  margin: 8px 8px 8px 0;
+  transform: scale(0.75);
+  transform-origin: left center;
+}
+
+.ub-logo {
+  height: 40px;
+  transform: scale(0.825);
+  margin: 8px 0 8px 10px;
+}
+
+/* 导航链接 */
+.nav-menu {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+.nav-menu li {
+  margin-left: 20px;
+}
+.nav-menu a {
+  color: var(--nav_text_color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition_speed);
+}
+.nav-menu a:hover {
+  color: #7caadb;
+}
+
+/* 主内容区 (类似主页的 home-section) */
+.home-section {
+  padding: 40px 5vw;
+}
+.home-section h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+.home-section p {
+  font-size: 1rem;
+  max-width: 900px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* PDF 区域 */
+.pdf-section {
+  padding: 20px 5vw;
+}
+.pdf-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid #ccc; /* 可加可不加 */
+  overflow: hidden;
+  margin-top: 20px;
+}
+.pdf-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* 
+  Puppertino 按钮相关样式:
+   - p-btn, p-prim-col, p-btn-round 
+   - 再额外写一个更小的覆盖 
+*/
+.pdf-toggle-btn {
+  padding: 6px 12px;      /* 缩小按钮大小 */
+  font-size: 0.875rem;    /* 字号略小 */
+  font-weight: 500;       /* 保持半粗 */
+  text-transform: none;   /* 可去除全大写, 若喜欢全大写则去掉此行 */
+}
+
+/* 移动端适配 */
+@media (max-width: 767px) {
+  .nav-menu {
+    display: none;
+  }
+  .home-section,
+  .pdf-section {
+    padding: 20px;
+  }
+  .home-section h1 {
+    font-size: 1.5rem;
+  }
+  .home-section p {
+    font-size: 0.9rem;
+  }
+}
