@@ -62,17 +62,32 @@
       </div>
     </section>
 
-    <!-- PDF.js 区域：左右翻页，默认 fit to page，按钮双向切换 -->
+    <!-- PDF.js 区域：左右翻页，默认 fit to page，按钮双向切换，以及全屏功能 -->
     <section class="pdf-section">
       <div class="container">
-        <!-- 小按钮；p-btn / p-prim-col / p-btn-round 均来自 Puppertino -->
-        <button id="toggle-btn" class="p-btn p-prim-col p-btn-round pdf-toggle-btn">
-          View Translated PDF
-        </button>
+        <!-- 一组按钮：双向切换PDF、上一页/下一页、全屏 -->
+        <div class="pdf-controls">
+          <!-- 双向切换按钮 -->
+          <button id="toggle-btn" class="p-btn p-prim-col p-btn-round pdf-toggle-btn">
+            View Translated PDF
+          </button>
+          <!-- 上一页 -->
+          <button id="prev-page-btn" class="p-btn p-prim-col p-btn-round pdf-nav-btn">
+            ← Prev
+          </button>
+          <!-- 下一页 -->
+          <button id="next-page-btn" class="p-btn p-prim-col p-btn-round pdf-nav-btn">
+            Next →
+          </button>
+          <!-- 全屏按钮 -->
+          <button id="fullscreen-btn" class="p-btn p-prim-col p-btn-round pdf-nav-btn">
+            Fullscreen
+          </button>
+        </div>
 
         <!-- 16:9 封装 + iframe -->
-        <div class="pdf-wrapper">
-          <!-- 默认加载中文 PDF -->
+        <div id="pdf-wrapper" class="pdf-wrapper">
+          <!-- 默认加载中文 PDF，scrollMode=horizontal(左右翻页)，zoom=page-fit(整页适配) -->
           <iframe
             id="pdf-iframe"
             src="../pdfjs-4.10.38-dist/web/viewer.html?file=../../AI_elderly/hearo.pdf#scrollMode=horizontal&zoom=page-fit"
@@ -83,25 +98,65 @@
       </div>
     </section>
 
-    <!-- JS脚本：实现双向切换 -->
+    <!-- JS脚本：实现双向切换、翻页、全屏 -->
     <script>
+      // 1) 双向切换 PDF
       let isEnglish = false;
-      const button = document.getElementById("toggle-btn");
+      const toggleBtn = document.getElementById("toggle-btn");
       const iframe = document.getElementById("pdf-iframe");
 
-      button.addEventListener("click", function () {
+      toggleBtn.addEventListener("click", function () {
         if (!isEnglish) {
           // 切到英文 PDF
           iframe.src =
             "../pdfjs-4.10.38-dist/web/viewer.html?file=../../AI_elderly/hearoEN.pdf#scrollMode=horizontal&zoom=page-fit";
-          button.textContent = "View Original PDF";
+          toggleBtn.textContent = "View Original PDF";
         } else {
           // 切回中文 PDF
           iframe.src =
             "../pdfjs-4.10.38-dist/web/viewer.html?file=../../AI_elderly/hearo.pdf#scrollMode=horizontal&zoom=page-fit";
-          button.textContent = "View Translated PDF";
+          toggleBtn.textContent = "View Translated PDF";
         }
         isEnglish = !isEnglish;
+      });
+
+      // 2) 上/下翻页按钮
+      const prevBtn = document.getElementById("prev-page-btn");
+      const nextBtn = document.getElementById("next-page-btn");
+
+      prevBtn.addEventListener("click", () => {
+        // 调用 PDF.js 内部API： currentPageNumber--
+        try {
+          const pdfApp = iframe.contentWindow.PDFViewerApplication;
+          pdfApp.pdfViewer.currentPageNumber -= 1;
+        } catch (e) {
+          console.error("Cannot go to previous page:", e);
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        // 调用 PDF.js 内部API： currentPageNumber++
+        try {
+          const pdfApp = iframe.contentWindow.PDFViewerApplication;
+          pdfApp.pdfViewer.currentPageNumber += 1;
+        } catch (e) {
+          console.error("Cannot go to next page:", e);
+        }
+      });
+
+      // 3) 全屏按钮
+      const fullscreenBtn = document.getElementById("fullscreen-btn");
+      const pdfWrapper = document.getElementById("pdf-wrapper");
+
+      fullscreenBtn.addEventListener("click", () => {
+        // 让 pdfWrapper 进入浏览器的全屏模式
+        if (pdfWrapper.requestFullscreen) {
+          pdfWrapper.requestFullscreen();
+        } else if (pdfWrapper.webkitRequestFullscreen) {
+          pdfWrapper.webkitRequestFullscreen();
+        } else if (pdfWrapper.msRequestFullscreen) {
+          pdfWrapper.msRequestFullscreen();
+        }
       });
     </script>
   </body>
