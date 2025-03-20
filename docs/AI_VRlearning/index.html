@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>VR AI Learning Tool - Project Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <!-- Puppertino & Flexboxgrid (与主站相同) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/codedgar/Puppertino@latest/dist/css/newfull.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"
+    />
+    <!-- 字体：Inter，与主站相同 -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Inter:wght@100;400;500;900:500,800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- 自定义样式，放在本目录下的 styles.css -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- 顶部导航，与主站一致 -->
+    <nav class="top-nav">
+      <div class="nav-left">
+        <!-- 这里引用上一级目录中的 media 文件夹内的 Logo -->
+        <img
+          src="../media/IBMlogo.svg"
+          alt="IBM Logo"
+          class="nav-logo ibm-logo"
+        />
+        <img
+          src="../media/university-of-bristol.svg"
+          alt="University of Bristol Logo"
+          class="nav-logo ub-logo"
+        />
+      </div>
+      <ul class="nav-menu">
+        <!-- 根据实际路径修改链接，这里返回主站 ../index.html 并跳转到相应锚点 -->
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#project3">AI for the Elderly</a></li>
+        <li><a href="../index.html#project1">VR AI Learning Tool</a></li>
+        <li><a href="../index.html#project2">AI Travel</a></li>
+      </ul>
+    </nav>
+
+    <!-- 内容区域：VR AI Learning 简介 -->
+    <section class="intro-section">
+      <div class="container">
+        <h1>VR AI Learning Tool - Unity Venice Demo</h1>
+        <p>
+          Our VR AI Learning Tool showcases a fully interactive Venice
+          environment built in Unity, highlighting our capabilities in 3D
+          modeling, physics simulations, realistic lighting, and immersive
+          animation. This detailed virtual world demonstrates how we craft
+          high-fidelity VR experiences that let learners explore iconic
+          environments while practicing language skills.
+        </p>
+        <p>
+          Additionally, we have developed a robust NPC (Non-Player Character)
+          dialogue framework that leverages NLP (Natural Language Processing)
+          for voice interactions, enabling dynamic conversations within the
+          game. Combined with our game development and gamification expertise,
+          we incorporate tasks, achievements, and potential multiplayer modes
+          to make language learning engaging, interactive, and highly
+          realistic.
+        </p>
+        <p>
+          Through this Unity model of Venice, we demonstrate not just
+          technology proficiency, but also our commitment to creating
+          meaningful, user-centered learning experiences. By merging VR,
+          natural voice interaction, and gamified design, we aim to enhance
+          motivation, immersion, and practical skill-building for language
+          learners worldwide.
+        </p>
+
+        <!-- 模型渲染视频(低采样度版)，循环播放 -->
+        <h2>Model Rendering Video (Low-Sample Version)</h2>
+        <video controls loop preload="metadata" width="100%">
+          <!-- 你已将实际文件转换成 MP4，但文件名仍是 VRtest.mkv，这里用 type="video/mp4" 声明 -->
+          <source src="../media/VRtest.mkv" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </section>
+  </body>
+</html>
