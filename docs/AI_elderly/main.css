@@ -15,7 +15,6 @@ body {
   color: var(--text_color);
 }
 
-/* 顶部导航样式，与主站一致 */
 .top-nav {
   display: flex;
   align-items: center;
@@ -31,7 +30,6 @@ body {
   margin-left: 10px;
 }
 
-/* IBM & Bristol Logos */
 .ibm-logo {
   height: 40px;
   margin: 8px 8px 8px 0;
@@ -45,7 +43,6 @@ body {
   margin: 8px 0 8px 10px;
 }
 
-/* 导航链接 */
 .nav-menu {
   list-style: none;
   display: flex;
@@ -65,7 +62,6 @@ body {
   color: #7caadb;
 }
 
-/* 主内容区 (类似主页的 home-section) */
 .home-section {
   padding: 40px 5vw;
 }
@@ -80,15 +76,23 @@ body {
   margin: 0;
 }
 
-/* PDF 区域 */
 .pdf-section {
   padding: 20px 5vw;
 }
+
+.pdf-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
 .pdf-wrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border: 1px solid #ccc; /* 可加可不加 */
+  border: 1px solid #ccc;
   overflow: hidden;
   margin-top: 20px;
 }
@@ -101,19 +105,14 @@ body {
   border: none;
 }
 
-/* 
-  Puppertino 按钮相关样式:
-   - p-btn, p-prim-col, p-btn-round 
-   - 再额外写一个更小的覆盖 
-*/
-.pdf-toggle-btn {
-  padding: 6px 12px;      /* 缩小按钮大小 */
-  font-size: 0.875rem;    /* 字号略小 */
-  font-weight: 500;       /* 保持半粗 */
-  text-transform: none;   /* 可去除全大写, 若喜欢全大写则去掉此行 */
+.pdf-toggle-btn,
+.pdf-nav-btn {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: none;
 }
 
-/* 移动端适配 */
 @media (max-width: 767px) {
   .nav-menu {
     display: none;
