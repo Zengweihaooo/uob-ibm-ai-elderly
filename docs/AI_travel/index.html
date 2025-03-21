@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>AI Travel - Project Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <!-- Puppertino & Flexboxgrid (与主站相同) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/codedgar/Puppertino@latest/dist/css/newfull.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Inter:wght@100;400;500;900:500,800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- 自定义样式，AI_travel 下专用 -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- 顶部导航，与主页一致 -->
+    <nav class="top-nav">
+      <div class="nav-left">
+        <img
+          src="../media/IBMlogo.svg"
+          alt="IBM Logo"
+          class="nav-logo ibm-logo"
+        />
+        <img
+          src="../media/university-of-bristol.svg"
+          alt="University of Bristol Logo"
+          class="nav-logo ub-logo"
+        />
+      </div>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#project3">AI for the Elderly</a></li>
+        <li><a href="../index.html#project1">VR AI Learning Tool</a></li>
+        <li><a href="../index.html#project2">AI Travel</a></li>
+      </ul>
+    </nav>
+
+    <!-- 简短介绍区 -->
+    <section class="home-section">
+      <div class="container">
+        <h1>AI Travel Project</h1>
+        <p>
+          Our AI Travel project explores an AI-enhanced platform where users can share
+          travel experiences, connect over common interests, and receive personalized
+          trip recommendations. Leveraging IBM Watson Assistant, we aim to create an
+          interactive travel chatbot that enriches each user's journey with relevant 
+          suggestions and community insights.
+        </p>
+        <p>
+          This project highlights our enthusiasm for data-driven personalization and 
+          user-centered design, ensuring a seamless experience for travelers 
+          worldwide. We look forward to expanding its functionality through 
+          collaborative research and real-world deployment.
+        </p>
+      </div>
+    </section>
+
+    <!-- PDF 区域 -->
+    <section class="pdf-section">
+      <div class="container">
+        <div class="pdf-controls">
+          <!-- 仅上一页、下一页、全屏按钮 -->
+          <button id="prev-page-btn" class="p-btn p-prim-col p-btn-round pdf-nav-btn">
+            ← Prev
+          </button>
+          <button id="next-page-btn" class="p-btn p-prim-col p-btn-round pdf-nav-btn">
+            Next →
+          </button>
+          <button id="fullscreen-btn" class="p-btn p-prim-col p-btn-round pdf-nav-btn">
+            Fullscreen
+          </button>
+        </div>
+
+        <!-- PDF.js 16:9显示  -->
+        <div id="pdf-wrapper" class="pdf-wrapper">
+          <!-- 
+            注意这里： 
+            - 引用上一层的 pdfjs-4.10.38-dist
+            - 指定 file=Travel.pdf (同目录)
+          -->
+          <iframe
+            id="pdf-iframe"
+            src="../pdfjs-4.10.38-dist/web/viewer.html?file=Travel.pdf#scrollMode=horizontal&zoom=page-fit"
+            frameborder="0"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- JS: 上一页、下一页、全屏功能 -->
+    <script>
+      const prevBtn = document.getElementById("prev-page-btn");
+      const nextBtn = document.getElementById("next-page-btn");
+      const fullscreenBtn = document.getElementById("fullscreen-btn");
+      const pdfWrapper = document.getElementById("pdf-wrapper");
+      const iframe = document.getElementById("pdf-iframe");
+
+      prevBtn.addEventListener("click", () => {
+        try {
+          const pdfApp = iframe.contentWindow.PDFViewerApplication;
+          pdfApp.pdfViewer.currentPageNumber -= 1;
+        } catch (e) {
+          console.error("Cannot go to previous page:", e);
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        try {
+          const pdfApp = iframe.contentWindow.PDFViewerApplication;
+          pdfApp.pdfViewer.currentPageNumber += 1;
+        } catch (e) {
+          console.error("Cannot go to next page:", e);
+        }
+      });
+
+      fullscreenBtn.addEventListener("click", () => {
+        if (pdfWrapper.requestFullscreen) {
+          pdfWrapper.requestFullscreen();
+        } else if (pdfWrapper.webkitRequestFullscreen) {
+          pdfWrapper.webkitRequestFullscreen();
+        } else if (pdfWrapper.msRequestFullscreen) {
+          pdfWrapper.msRequestFullscreen();
+        }
+      });
+    </script>
+
+    <!-- 如需同页嵌入 Watson Assistant，可在此处插入相同脚本 -->
+    <!--
+    <script>
+      window.watsonAssistantChatOptions = {
+        integrationID: "acd4110f-5155-4905-be9e-3cda1e5b9343",
+        region: "eu-gb",
+        serviceInstanceID: "dc0d8c8a-3cfe-4f4d-9301-72cf290570e0",
+        onLoad: async (instance) => { await instance.render(); }
+      };
+      setTimeout(function() {
+        const t = document.createElement('script');
+        t.src="https://web-chat.global.assistant.watson.appdomain.cloud/versions/" + 
+          (window.watsonAssistantChatOptions.clientVersion || 'latest') + "/WatsonAssistantChatEntry.js";
+        document.head.appendChild(t);
+      });
+    </script>
+    -->
+  </body>
+</html>
