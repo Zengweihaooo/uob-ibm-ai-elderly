@@ -1,112 +1,105 @@
-/*
-  1) 与主页统一的CSS变量
-*/
 :root {
-    --text_color: #2e2e2e;
-    --bg_page_color: #f9f9f9;
-    --nav_bg: #ffffff;
-    --nav_text_color: #333;
-    --transition_speed: 0.3s;
-    /* 可以额外添加 VR/Unity 相关的自定义变量，如果后期需要 */
-  }
-  
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, "Inter", sans-serif;
-    background-color: var(--bg_page_color);
-    color: var(--text_color);
-  }
-  
-  /* 顶部导航，与主页类似 */
-  .top-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: var(--nav_bg);
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-    padding: 0 20px;
-  }
-  
-  .nav-left {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-  }
-  
-  /* IBM & Bristol Logos：可与主页保持相同或做微调 */
-  .ibm-logo {
-    height: 40px;
-    margin: 8px 8px 8px 0;
-    transform: scale(0.75);
-    transform-origin: left center;
-  }
-  
-  .ub-logo {
-    height: 40px;
-    transform: scale(0.825);
-    margin: 8px 0 8px 10px;
-  }
-  
-  /* 导航菜单 */
+  --text_color: #2e2e2e;
+  --bg_page_color: #f9f9f9;
+  --nav_bg: #ffffff;
+  --nav_text_color: #333;
+  --transition_speed: 0.3s;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, "Inter", sans-serif;
+  background-color: var(--bg_page_color);
+  color: var(--text_color);
+}
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--nav_bg);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+  padding: 0 20px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.ibm-logo {
+  height: 40px;
+  margin: 8px 8px 8px 0;
+  transform: scale(0.75);
+  transform-origin: left center;
+}
+
+.ub-logo {
+  height: 40px;
+  transform: scale(0.825);
+  margin: 8px 0 8px 10px;
+}
+
+.nav-menu {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-menu li {
+  margin-left: 20px;
+}
+
+.nav-menu a {
+  color: var(--nav_text_color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition_speed);
+}
+
+.nav-menu a:hover {
+  color: #7caadb;
+}
+
+.intro-section {
+  padding: 40px 5vw;
+}
+
+.intro-section h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.intro-section p {
+  font-size: 1rem;
+  max-width: 900px;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+/* 调整 h2 的外边距，如有需要可自定义 */
+.intro-section h2 {
+  margin-top: 30px;
+  font-size: 1.25rem;
+  margin-bottom: 15px;
+}
+
+@media (max-width: 767px) {
   .nav-menu {
-    list-style: none;
-    display: flex;
-    margin: 0;
-    padding: 0;
+    display: none;
   }
-  
-  .nav-menu li {
-    margin-left: 20px;
-  }
-  
-  .nav-menu a {
-    color: var(--nav_text_color);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color var(--transition_speed);
-  }
-  
-  .nav-menu a:hover {
-    color: #7caadb;
-  }
-  
-  /* 
-    2) 主要内容区 intro-section
-    与主页 “home-section” 类似，但命名不同以示区分
-  */
+
   .intro-section {
-    padding: 40px 5vw;
+    padding: 20px;
   }
-  
+
   .intro-section h1 {
-    font-size: 2rem;
-    margin-bottom: 20px;
+    font-size: 1.5rem;
   }
-  
   .intro-section p {
-    font-size: 1rem;
-    max-width: 900px;
-    line-height: 1.6;
-    margin-bottom: 15px;
+    font-size: 0.9rem;
   }
-  
-  /* 
-    3) 响应式适配：小屏幕隐藏 nav-menu 或缩小文字 
-  */
-  @media (max-width: 767px) {
-    .nav-menu {
-      display: none;
-    }
-  
-    .intro-section {
-      padding: 20px;
-    }
-  
-    .intro-section h1 {
-      font-size: 1.5rem;
-    }
-    .intro-section p {
-      font-size: 0.9rem;
-    }
-  }
+}
