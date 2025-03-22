@@ -13,7 +13,6 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"
     />
-    <!-- 字体：Inter，与主站相同 -->
     <link
       href="https://fonts.googleapis.com/css?family=Inter:wght@100;400;500;900:500,800&display=swap"
       rel="stylesheet"
@@ -25,7 +24,6 @@
     <!-- 顶部导航，与主站一致 -->
     <nav class="top-nav">
       <div class="nav-left">
-        <!-- 这里引用上一级目录中的 media 文件夹内的 Logo -->
         <img
           src="../media/IBMlogo.svg"
           alt="IBM Logo"
@@ -38,7 +36,6 @@
         />
       </div>
       <ul class="nav-menu">
-        <!-- 根据实际路径修改链接，这里返回主站 ../index.html 并跳转到相应锚点 -->
         <li><a href="../index.html#home">Home</a></li>
         <li><a href="../index.html#project3">AI for the Elderly</a></li>
         <li><a href="../index.html#project1">VR AI Learning Tool</a></li>
@@ -58,7 +55,6 @@
           high-fidelity VR experiences that let learners explore iconic
           environments while practicing language skills.
         </p>
-      
         <p>
           Through this Unity model of Venice, we demonstrate not just
           technology proficiency, but also our commitment to creating
@@ -68,20 +64,26 @@
           learners worldwide.
         </p>
         <p>
-            Additionally, we have explored the deployment of IBM Watson Assistant.
-            You can try it in the bottom right corner, but this is not yet a fully completed version.
-            We hope that once selected, we can continue development and bring it to full implementation.
-          </p>
-        <p>
-            You can Find the IBM Assistant Chatbot at the right bottom of the page to ask any questions.
+          Additionally, we have explored the deployment of IBM Watson Assistant.
+          You can try it in the bottom right corner, but this is not yet a fully completed version.
+          We hope that once selected, we can continue development and bring it to full implementation.
         </p>
-        
+        <p>
+          You can find the IBM Assistant Chatbot at the right bottom of the page
+          to ask any questions.
+        </p>
 
-        <!-- 模型渲染视频(低采样度版)，循环播放 -->
+        <!-- 第一个模型渲染视频 -->
         <h2>Model Rendering Video (Low-Sample Version)</h2>
         <video controls loop preload="metadata" width="100%">
-          <!-- 你已将实际文件转换成 MP4，但文件名仍是 VRtest.mkv，这里用 type="video/mp4" 声明 -->
-          <source src="../media/VRtest.mp4"/>
+          <source src="../media/VRtest.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+
+        <!-- 新增：第二个模型渲染视频 -->
+        <h2>Another Venice Demo</h2>
+        <video controls loop preload="metadata" width="100%">
+          <source src="../media/vinice2.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       </div>
@@ -89,18 +91,18 @@
 
     <!-- Watson Assistant Embed (unchanged snippet) -->
     <script>
-        window.watsonAssistantChatOptions = {
-          integrationID: "acd4110f-5155-4905-be9e-3cda1e5b9343", // The ID of this integration.
-          region: "eu-gb", // The region your integration is hosted in.
-          serviceInstanceID: "dc0d8c8a-3cfe-4f4d-9301-72cf290570e0", // The ID of your service instance.
-          onLoad: async (instance) => { await instance.render(); }
-        };
-        setTimeout(function(){
-          const t=document.createElement('script');
-          t.src="https://web-chat.global.assistant.watson.appdomain.cloud/versions/" + (window.watsonAssistantChatOptions.clientVersion || 'latest') + "/WatsonAssistantChatEntry.js";
-          document.head.appendChild(t);
-        });
-      </script>
-
+      window.watsonAssistantChatOptions = {
+        integrationID: "acd4110f-5155-4905-be9e-3cda1e5b9343", // The ID of this integration.
+        region: "eu-gb", // The region your integration is hosted in.
+        serviceInstanceID: "dc0d8c8a-3cfe-4f4d-9301-72cf290570e0", // The ID of your service instance.
+        onLoad: async (instance) => { await instance.render(); }
+      };
+      setTimeout(function(){
+        const t=document.createElement('script');
+        t.src="https://web-chat.global.assistant.watson.appdomain.cloud/versions/" + 
+          (window.watsonAssistantChatOptions.clientVersion || 'latest') + "/WatsonAssistantChatEntry.js";
+        document.head.appendChild(t);
+      });
+    </script>
   </body>
 </html>
