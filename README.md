@@ -18,7 +18,7 @@ This section provides quick access to all the collaborative tools and internal d
 
 ### ✅ Project Boards
 
-- 🔹 **Main Project Board (Trello replacement)**  
+- 🔹 **Main Project Board (Trello alternative)**  
   Used for team task tracking (To Do / In Progress / Done / Archived).  
   [GitHub Project Board](https://github.com/users/Zengweihaooo/projects/1)
 
