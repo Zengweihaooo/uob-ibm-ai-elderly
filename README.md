@@ -3,6 +3,67 @@
 Welcome to the GitHub repository for our 2025 University of Bristol × IBM collaboration project: **AI for the Elderly**.  
 This project explores how intelligent agents and virtual companions can help reduce social isolation among older adults through emotionally engaging digital experiences.
 
+## 🧭 Project Resources & Collaboration Platforms
+
+This section provides quick access to all the collaborative tools and internal documentation used throughout the project.
+
+---
+
+### 📁 GitHub Repository
+
+- 🔗 **Source code, documentation, and version control**  
+  [uob-ibm-ai-elderly GitHub Repository](https://github.com/Zengweihaooo/uob-ibm-ai-elderly)
+
+---
+
+### ✅ Project Boards
+
+- 🔹 **Main Project Board (Trello replacement)**  
+  Used for team task tracking (To Do / In Progress / Done / Archived).  
+  [GitHub Project Board](https://github.com/users/Zengweihaooo/projects/1)
+
+- 🔹 **MoSCoW Prioritisation Board**  
+  Used to track and prioritise project features and requirements.  
+  [View MoSCoW Board](https://github.com/users/Zengweihaooo/projects/3)
+
+---
+
+### 🎨 Design Workspace
+
+- 🔗 **Figma for UI/UX prototyping and visual design**  
+  [Figma – IBM Prototype](https://www.figma.com/design/ACpMwWcBol9t5wt5u9FkEH/IBM-prototype?node-id=0-1&t=3kvjgXeg7PRMyNxk-1)
+
+---
+
+### 💬 Team Communication
+
+- 🔗 **Microsoft Teams channel for mentor communication and internal coordination**  
+  [IBM × UoB Teams Channel](https://teams.microsoft.com/l/channel/19%3ATbJ7cTNrm0h8XNuEz0v9KnBaIb_BxAQXu6ELaI9IqCQ1%40thread.tacv2/General?groupId=4992b869-67ca-4b1d-8786-8e16352bf31d&tenantId=b2e47f30-cd7d-4a4e-a5da-b18cf1a4151b)
+
+---
+
+### 🎬 Project Videos
+
+- 📁 Located in: `docs/videos/`  
+  Contains demo recordings and milestone video updates.  
+  _Example:_ `docs/videos/week1_demo.mp4`
+
+---
+
+### 📝 Presentations
+
+- 📁 Located in: `docs/presentations/`  
+  Contains IBM presentation decks:  
+  - `academic-ambassador-slide.pdf`  
+  - `oic-midproject-presentation.pdf`
+
+---
+
+### 🎓 Learning Journal
+
+- 📄 [`docs/internal/learning-journal.md`](docs/internal/learning-journal.md)  
+  Tracks each team member’s completed IBM SkillsBuild courses and earned badges.
+
 ---
 
 ## 🔍 Project Preview Pages
