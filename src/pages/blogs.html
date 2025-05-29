@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blogs - UOB-IBM AI Elderly Project</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
+    <style>
+        .blogs-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .blog-section {
+            background: white;
+            padding: 2rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+        }
+
+        .blog-section h2 {
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .markdown-body {
+            background: transparent;
+        }
+
+        .meeting-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .meeting-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .meeting-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .meeting-date {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .meeting-title {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .meeting-content {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .meeting-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .blogs-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="/index.html" class="home-btn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 16V10H12V16H15V8H18L10 1L2 8H5V16H8Z" fill="currentColor"/>
+                    </svg>
+                </a>
+                <div class="logo-container">
+                    <a href="https://www.bristol.ac.uk" target="_blank" class="logo-link">
+                        <img src="https://www.bristol.ac.uk/assets/responsive-web-project/2.6.0/images/logos/uob-logo.svg" 
+                             alt="University of Bristol Logo" 
+                             class="logo uob-logo">
+                    </a>
+                    <a href="https://www.ibm.com" target="_blank" class="logo-link">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" 
+                             alt="IBM Logo" 
+                             class="logo ibm-logo">
+                    </a>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="https://github.com/Zengweihaooo/uob-ibm-ai-elderly" target="_blank" class="nav-link">GitHub Repo</a>
+                <a href="https://github.com/users/Zengweihaooo/projects/1" target="_blank" class="nav-link">Project Management</a>
+                <div class="dropdown">
+                    <button class="dropdown-btn">Other Platform</button>
+                    <div class="dropdown-content">
+                        <a href="https://www.figma.com/design/ACpMwWcBol9t5wt5u9FkEH/IBM-prototype?node-id=0-1&t=3kvjgXeg7PRMyNxk-1" target="_blank">Figma</a>
+                        <a href="https://teams.microsoft.com/l/channel/19%3ATbJ7cTNrm0h8XNuEz0v9KnBaIb_BxAQXu6ELaI9IqCQ1%40thread.tacv2/General?groupId=4992b869-67ca-4b1d-8786-8e16352bf31d&tenantId=b2e47f30-cd7d-4a4e-a5da-b18cf1a4151b" target="_blank">Teams</a>
+                    </div>
+                </div>
+                <a href="team-members.html" class="nav-link">Team Members</a>
+                <a href="logs.html" class="nav-link">Logs</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <h1 class="page-title">Project Blogs</h1>
+        <div class="blogs-container">
+            <div class="blog-section">
+                <h2>Meetings</h2>
+                <div id="meetings-list" class="meeting-list">
+                    <!-- Meeting items will be loaded here -->
+                </div>
+            </div>
+            <div class="blog-section">
+                <h2>Learning Journal</h2>
+                <div id="learning-journal-content" class="markdown-body">
+                    <!-- Learning journal content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <!-- Footer content will go here -->
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // Function to load and render markdown files
+        async function loadMarkdownContent(elementId, filePath) {
+            try {
+                const response = await fetch(filePath);
+                const text = await response.text();
+                const html = marked.parse(text);
+                document.getElementById(elementId).innerHTML = html;
+            } catch (error) {
+                console.error(`Error loading ${filePath}:`, error);
+                document.getElementById(elementId).innerHTML = `<p>Error loading content. Please try again later.</p>`;
+            }
+        }
+
+        // Function to create meeting item
+        function createMeetingItem(date, title, filePath) {
+            const item = document.createElement('div');
+            item.className = 'meeting-item';
+            item.innerHTML = `
+                <div class="meeting-date">${date}</div>
+                <div class="meeting-title">${title}</div>
+                <div class="meeting-content"></div>
+            `;
+
+            item.addEventListener('click', async () => {
+                const content = item.querySelector('.meeting-content');
+                if (!content.innerHTML) {
+                    try {
+                        const response = await fetch(filePath);
+                        const text = await response.text();
+                        content.innerHTML = marked.parse(text);
+                    } catch (error) {
+                        console.error(`Error loading ${filePath}:`, error);
+                        content.innerHTML = '<p>Error loading content. Please try again later.</p>';
+                    }
+                }
+                content.classList.toggle('active');
+            });
+
+            return item;
+        }
+
+        // Load meetings list and learning journal when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load learning journal
+            loadMarkdownContent('learning-journal-content', '../../docs/LearningJournal/WeihaoZeng.md');
+
+            // Create and add meeting items
+            const meetingsList = document.getElementById('meetings-list');
+            const meetings = [
+                {
+                    date: 'May 16, 2025',
+                    title: 'Office Hour with John McNamara',
+                    file: '../../docs/meetings/2025-05-16-officehour-john-mcnamara.md'
+                }
+                // Add more meetings here as needed
+            ];
+
+            meetings.forEach(meeting => {
+                const item = createMeetingItem(meeting.date, meeting.title, meeting.file);
+                meetingsList.appendChild(item);
+            });
+        });
+    </script>
+</body>
+</html> 
