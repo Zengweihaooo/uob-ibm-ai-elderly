@@ -44,6 +44,27 @@ body {
     height: 48px;
 }
 
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 21px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 1rem;
+}
+
+.menu-toggle span {
+    width: 100%;
+    height: 3px;
+    background-color: var(--text-primary);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
 .nav-left {
     display: flex;
     align-items: center;
@@ -466,6 +487,8 @@ body {
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    text-align: center;
     gap: 1rem;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -480,6 +503,7 @@ body {
     height: 150px;
     object-fit: cover;
     border-radius: 4px;
+    margin: 0 auto;
 }
 
 .card-title {
@@ -567,31 +591,35 @@ body {
 }
 
 @media (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+    }
+
     .nav-container {
-        flex-direction: column;
-        height: auto;
+        padding: 0 1rem;
     }
-    
-    .nav-left {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    .logo-container {
-        width: auto;
-        justify-content: center;
-        padding: 8px;
-        border-right: none;
-    }
-    
+
     .nav-links {
+        display: none;
+        position: absolute;
+        top: 48px;
+        left: 0;
+        right: 0;
+        background-color: var(--background);
         flex-direction: column;
-        width: 100%;
+        padding: 0;
+        border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .nav-links.active {
+        display: flex;
     }
 
     .nav-link {
         width: 100%;
-        justify-content: center;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-subtle);
+        text-align: left;
     }
 
     .dropdown {
@@ -600,15 +628,33 @@ body {
 
     .dropdown-btn {
         width: 100%;
-        justify-content: center;
+        text-align: left;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-subtle);
     }
 
     .dropdown-content {
-        width: 100%;
         position: static;
+        width: 100%;
         box-shadow: none;
         border: none;
-        border-top: 1px solid var(--border-subtle);
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .dropdown-content a {
+        padding: 1rem 2rem;
+    }
+
+    .menu-toggle.active span:nth-child(1) {
+        transform: translateY(9px) rotate(45deg);
+    }
+
+    .menu-toggle.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .menu-toggle.active span:nth-child(3) {
+        transform: translateY(-9px) rotate(-45deg);
     }
 
     .main-content {
@@ -666,5 +712,10 @@ body {
 
     .update-header .date {
         margin-top: 0.25rem;
+    }
+
+    .card-image {
+        width: 120px;
+        height: 120px;
     }
 } 
