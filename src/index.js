@@ -1,3 +1,22 @@
+// Mobile menu toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+
+    menuToggle.addEventListener('click', function() {
+        menuToggle.classList.toggle('active');
+        navLinks.classList.toggle('active');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.nav-container')) {
+            menuToggle.classList.remove('active');
+            navLinks.classList.remove('active');
+        }
+    });
+});
+
 // Function to update time
 function updateTime() {
     const now = new Date();
