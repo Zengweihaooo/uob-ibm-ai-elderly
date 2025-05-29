@@ -186,8 +186,8 @@ body {
 .main-content {
     flex: 1;
     margin-top: 48px;
-    padding: 2rem;
-    max-width: 1440px;
+    padding: 1rem;
+    max-width: 100%;
     margin-left: auto;
     margin-right: auto;
     width: 100%;
@@ -195,7 +195,35 @@ body {
 
 /* Hero section */
 .hero-section {
-    margin-bottom: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 2rem 0;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.hero-content {
+    flex: 1;
+    max-width: 600px;
+    text-align: left;
+    padding: 0 1rem;
+}
+
+.hero-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 1rem;
+}
+
+.hero-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .hero-title {
@@ -204,6 +232,7 @@ body {
     color: var(--primary-blue);
     margin-bottom: 2rem;
     max-width: 800px;
+    text-align: left;
 }
 
 .hero-description {
@@ -211,6 +240,7 @@ body {
     font-weight: 400;
     margin-bottom: 2rem;
     max-width: 600px;
+    text-align: left;
 }
 
 .cta-buttons {
@@ -242,57 +272,174 @@ body {
     opacity: 0.9;
 }
 
-/* Updates section */
-.updates-section {
+/* Updates container */
+.updates-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
     margin-bottom: 4rem;
+    max-width: 100%;
+}
+
+/* Common section styles */
+.updates-section,
+.meeting-section,
+.time-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Updates section styles */
+.update-item {
+    background: var(--background);
+    padding: 1.5rem;
+    border-radius: 8px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.update-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.update-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.update-header h3 {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.update-header .date {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.update-item .description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Meeting section styles */
+.meeting-info {
+    background: var(--background);
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.meeting-info h3 {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 1rem 0;
+    color: var(--text-primary);
+}
+
+.location, .meeting-time {
+    font-size: 14px;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Time section styles */
+.time-zones {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.time-zone {
+    background: var(--background);
+    border-radius: 6px;
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.time-zone:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.time-zone-content {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.time-zone-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.time-zone-time {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+}
+
+.flag {
+    font-size: 1.5rem;
+}
+
+.country {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.time {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--primary-blue);
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.zone {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+/* Recommendations section */
+.recommendations-section {
+    margin-bottom: 4rem;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 1rem;
 }
 
 .section-title {
     font-size: 16px;
     font-weight: 700;
     margin-bottom: 1rem;
-}
-
-.updates-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.update-item {
-    padding: 1rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: 4px;
-}
-
-.update-item h3 {
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-}
-
-.update-item .date {
-    font-size: 12px;
-    font-weight: 400;
-    margin-bottom: 0.5rem;
-}
-
-.update-item .description {
-    font-size: 10px;
-    font-weight: 300;
-}
-
-/* Recommendations section */
-.recommendations-section {
-    margin-bottom: 4rem;
+    text-align: left;
 }
 
 .cards-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(2, auto);
-    gap: 2rem;
+    gap: 1rem;
     margin-top: 2rem;
+    max-width: 100%;
 }
 
 .card {
@@ -349,6 +496,7 @@ body {
     .cards-grid {
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(3, auto);
+        gap: 1rem;
     }
 }
 
@@ -356,13 +504,23 @@ body {
     .cards-grid {
         grid-template-columns: repeat(2, 1fr);
         grid-template-rows: repeat(4, auto);
+        gap: 1rem;
     }
 }
 
 @media (max-width: 600px) {
+    .main-content {
+        padding: 0.5rem;
+    }
+
+    .hero-content, .hero-image, .updates-section, .recommendations-section {
+        padding: 0 0.5rem;
+    }
+
     .cards-grid {
         grid-template-columns: 1fr;
         grid-template-rows: repeat(8, auto);
+        gap: 0.5rem;
     }
 }
 
@@ -382,6 +540,10 @@ body {
 
     .hero-description {
         font-size: 20px;
+    }
+
+    .updates-container {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -434,12 +596,29 @@ body {
         padding: 1rem;
     }
 
+    .hero-section {
+        flex-direction: column;
+        text-align: left;
+        padding: 2rem 0;
+    }
+
+    .hero-content {
+        max-width: 100%;
+    }
+
+    .hero-image {
+        order: -1;
+        margin-bottom: 2rem;
+    }
+
     .hero-title {
         font-size: 32px;
+        text-align: left;
     }
 
     .hero-description {
         font-size: 18px;
+        text-align: left;
     }
 
     .cta-buttons {
@@ -448,5 +627,19 @@ body {
 
     .cards-grid {
         grid-template-columns: 1fr;
+    }
+
+    .updates-container {
+        grid-template-columns: 1fr;
+    }
+
+    .update-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .update-header .date {
+        margin-top: 0.25rem;
     }
 } 

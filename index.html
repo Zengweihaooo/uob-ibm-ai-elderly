@@ -47,27 +47,90 @@
 
     <main class="main-content">
         <div class="hero-section">
-            <h1 class="hero-title">Empower Elderly Wellbeing with AI Companionship</h1>
-            <p class="hero-description">Create emotionally engaging digital agents that reduce social isolation and support elderly users in their daily lives.</p>
-            
-            <div class="cta-buttons">
-                <a href="#" class="cta-button primary">Meet the virtual pet prototype</a>
-                <a href="#" class="cta-button secondary">Explore our research journey</a>
+            <div class="hero-content">
+                <h1 class="hero-title">Empower Elderly Wellbeing with AI Companionship</h1>
+                <p class="hero-description">Create emotionally engaging digital agents that reduce social isolation and support elderly users in their daily lives.</p>
+                
+                <div class="cta-buttons">
+                    <a href="#" class="cta-button primary">Meet the virtual pet prototype</a>
+                    <a href="#" class="cta-button secondary">Explore our research journey</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="assets/images/IOS/TestIOS.png" alt="AI Companion App" class="hero-img">
             </div>
         </div>
 
-        <div class="updates-section">
-            <h2 class="section-title">Latest Updates</h2>
-            <div class="updates-list">
-                <div class="update-item">
-                    <h3>Office Hour</h3>
-                    <p class="date">16 May 2025</p>
-                    <p class="description">Discussed SOPv2 email format, introductory video requirements, and mentor timezone coordination.</p>
+        <div class="updates-container">
+            <div class="updates-section">
+                <h2 class="section-title">Latest Updates</h2>
+                <div class="updates-list">
+                    <div class="update-item">
+                        <div class="update-header">
+                            <h3>Office Hour</h3>
+                            <span class="date">16 May 2025</span>
+                        </div>
+                        <p class="description">Discussed SOPv2 email format, introductory video requirements, and mentor timezone coordination.</p>
+                    </div>
+                    <div class="update-item">
+                        <div class="update-header">
+                            <h3>Kickoff Meeting</h3>
+                            <span class="date">14 May 2025</span>
+                        </div>
+                        <p class="description">Reviewed IBM Watson tools, AI model exploration, use case references, and launched Figma collaboration.</p>
+                    </div>
                 </div>
-                <div class="update-item">
-                    <h3>Kickoff Meeting</h3>
-                    <p class="date">14 May 2025</p>
-                    <p class="description">Reviewed IBM Watson tools, AI model exploration, use case references, and launched Figma collaboration.</p>
+            </div>
+
+            <div class="meeting-section">
+                <h2 class="section-title">Next Meeting</h2>
+                <div class="meeting-info">
+                    <h3>MSc Project Workshop</h3>
+                    <p class="location">📍 IVY GATE BUILDING G.01</p>
+                    <p class="meeting-time">📅 Monday, June 2, 2025</p>
+                    <p class="meeting-time">🕑 14:00–16:00 BST</p>
+                </div>
+            </div>
+
+            <div class="time-section">
+                <h2 class="section-title">Current Time</h2>
+                <div class="time-zones">
+                    <div class="time-zone">
+                        <div class="time-zone-content">
+                            <div class="time-zone-header">
+                                <span class="flag">🇬🇧</span>
+                                <span class="country">United Kingdom</span>
+                            </div>
+                            <div class="time-zone-time">
+                                <span class="time" id="uk-time">Loading...</span>
+                                <span class="zone">BST</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-zone">
+                        <div class="time-zone-content">
+                            <div class="time-zone-header">
+                                <span class="flag">🇮🇳</span>
+                                <span class="country">India</span>
+                            </div>
+                            <div class="time-zone-time">
+                                <span class="time" id="india-time">Loading...</span>
+                                <span class="zone">IST</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-zone">
+                        <div class="time-zone-content">
+                            <div class="time-zone-header">
+                                <span class="flag">🇺🇸</span>
+                                <span class="country">US Eastern</span>
+                            </div>
+                            <div class="time-zone-time">
+                                <span class="time" id="us-time">Loading...</span>
+                                <span class="zone">EDT</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,5 +235,42 @@
     </footer>
 
     <script src="src/index.js"></script>
+    <script>
+        // Function to update time
+        function updateTime() {
+            const now = new Date();
+            
+            // UK time (BST)
+            const ukTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
+            document.getElementById('uk-time').textContent = ukTime.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false 
+            });
+
+            // India time (IST)
+            const indiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+            document.getElementById('india-time').textContent = indiaTime.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false 
+            });
+
+            // US Eastern time (EDT)
+            const usTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+            document.getElementById('us-time').textContent = usTime.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false 
+            });
+        }
+
+        // Update time immediately and then every second
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
 </body>
 </html> 
