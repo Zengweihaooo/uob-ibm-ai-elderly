@@ -3,27 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blogs - UOB-IBM AI Elderly Project</title>
+    <title>Project Blogs - UOB-IBM AI Elderly Project</title>
     <link rel="stylesheet" href="../styles/main.css">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.min.css">
     <style>
         .blogs-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
-            margin-top: 2rem;
+            padding: 2rem;
+            max-width: 100%;
         }
 
         .blog-section {
-            background: white;
-            padding: 2rem;
-            border: 1px solid var(--border-subtle);
-            border-radius: 4px;
+            background: var(--background);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .blog-section h2 {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             color: var(--text-primary);
         }
 
@@ -82,7 +83,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-left">
-                <a href="/index.html" class="home-btn">
+                <a href="../../index.html" class="home-btn">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8 16V10H12V16H15V8H18L10 1L2 8H5V16H8Z" fill="currentColor"/>
                     </svg>
@@ -110,19 +111,19 @@
                         <a href="https://teams.microsoft.com/l/channel/19%3ATbJ7cTNrm0h8XNuEz0v9KnBaIb_BxAQXu6ELaI9IqCQ1%40thread.tacv2/General?groupId=4992b869-67ca-4b1d-8786-8e16352bf31d&tenantId=b2e47f30-cd7d-4a4e-a5da-b18cf1a4151b" target="_blank">Teams</a>
                     </div>
                 </div>
-                <a href="team-members.html" class="nav-link">Team Members</a>
-                <a href="logs.html" class="nav-link">Logs</a>
+                <a href="./team-members.html" class="nav-link">Team Members</a>
+                <a href="./blogs.html" class="nav-link">Blogs</a>
             </div>
         </div>
     </nav>
 
     <main class="main-content">
-        <h1 class="page-title">Project Blogs</h1>
+        <h1 class="section-title">Project Blogs</h1>
         <div class="blogs-container">
             <div class="blog-section">
                 <h2>Meetings</h2>
-                <div id="meetings-list" class="meeting-list">
-                    <!-- Meeting items will be loaded here -->
+                <div id="meetings-content" class="markdown-body">
+                    <!-- Meetings content will be loaded here -->
                 </div>
             </div>
             <div class="blog-section">
@@ -138,70 +139,29 @@
         <!-- Footer content will go here -->
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         // Function to load and render markdown files
-        async function loadMarkdownContent(elementId, filePath) {
+        async function loadMarkdownContent() {
             try {
-                const response = await fetch(filePath);
-                const text = await response.text();
-                const html = marked.parse(text);
-                document.getElementById(elementId).innerHTML = html;
+                // Load meetings content
+                const meetingsResponse = await fetch('../../docs/meetings/README.md');
+                const meetingsContent = await meetingsResponse.text();
+                document.getElementById('meetings-content').innerHTML = marked(meetingsContent);
+
+                // Load learning journal content
+                const journalResponse = await fetch('../../docs/LearningJournal/README.md');
+                const journalContent = await journalResponse.text();
+                document.getElementById('learning-journal-content').innerHTML = marked(journalContent);
             } catch (error) {
-                console.error(`Error loading ${filePath}:`, error);
-                document.getElementById(elementId).innerHTML = `<p>Error loading content. Please try again later.</p>`;
+                console.error('Error loading markdown content:', error);
+                document.getElementById('meetings-content').innerHTML = '<p>Error loading meetings content.</p>';
+                document.getElementById('learning-journal-content').innerHTML = '<p>Error loading learning journal content.</p>';
             }
         }
 
-        // Function to create meeting item
-        function createMeetingItem(date, title, filePath) {
-            const item = document.createElement('div');
-            item.className = 'meeting-item';
-            item.innerHTML = `
-                <div class="meeting-date">${date}</div>
-                <div class="meeting-title">${title}</div>
-                <div class="meeting-content"></div>
-            `;
-
-            item.addEventListener('click', async () => {
-                const content = item.querySelector('.meeting-content');
-                if (!content.innerHTML) {
-                    try {
-                        const response = await fetch(filePath);
-                        const text = await response.text();
-                        content.innerHTML = marked.parse(text);
-                    } catch (error) {
-                        console.error(`Error loading ${filePath}:`, error);
-                        content.innerHTML = '<p>Error loading content. Please try again later.</p>';
-                    }
-                }
-                content.classList.toggle('active');
-            });
-
-            return item;
-        }
-
-        // Load meetings list and learning journal when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load learning journal
-            loadMarkdownContent('learning-journal-content', '../../docs/LearningJournal/WeihaoZeng.md');
-
-            // Create and add meeting items
-            const meetingsList = document.getElementById('meetings-list');
-            const meetings = [
-                {
-                    date: 'May 16, 2025',
-                    title: 'Office Hour with John McNamara',
-                    file: '../../docs/meetings/2025-05-16-officehour-john-mcnamara.md'
-                }
-                // Add more meetings here as needed
-            ];
-
-            meetings.forEach(meeting => {
-                const item = createMeetingItem(meeting.date, meeting.title, meeting.file);
-                meetingsList.appendChild(item);
-            });
-        });
+        // Load content when the page loads
+        document.addEventListener('DOMContentLoaded', loadMarkdownContent);
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </body>
 </html> 
