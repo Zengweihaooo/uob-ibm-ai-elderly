@@ -217,11 +217,14 @@ body {
     justify-content: center;
     align-items: center;
     padding: 0 1rem;
+    max-width: 50%;
 }
 
 .hero-img {
     max-width: 100%;
     height: auto;
+    width: 100%;
+    object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -607,8 +610,14 @@ body {
     }
 
     .hero-image {
+        max-width: 100%;
         order: -1;
         margin-bottom: 2rem;
+    }
+    
+    .hero-img {
+        max-width: 100%;
+        height: auto;
     }
 
     .hero-title {
