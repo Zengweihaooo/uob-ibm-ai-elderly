@@ -6,12 +6,88 @@
     <title>Team Members - UOB-IBM AI Elderly Project</title>
     <link rel="stylesheet" href="../styles/main.css">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .team-section {
+            margin-bottom: 3rem;
+        }
+
+        .team-section h2 {
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-subtle);
+        }
+
+        .member-card {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: var(--background);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .member-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .member-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 1.5rem;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .member-role {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .member-contact {
+            color: var(--text-secondary);
+        }
+
+        .member-contact a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        .member-contact a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .member-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .member-image {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-left">
-                <a href="/index.html" class="home-btn">
+                <a href="../../index.html" class="home-btn">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8 16V10H12V16H15V8H18L10 1L2 8H5V16H8Z" fill="currentColor"/>
                     </svg>
@@ -39,23 +115,157 @@
                         <a href="https://teams.microsoft.com/l/channel/19%3ATbJ7cTNrm0h8XNuEz0v9KnBaIb_BxAQXu6ELaI9IqCQ1%40thread.tacv2/General?groupId=4992b869-67ca-4b1d-8786-8e16352bf31d&tenantId=b2e47f30-cd7d-4a4e-a5da-b18cf1a4151b" target="_blank">Teams</a>
                     </div>
                 </div>
-                <a href="team-members.html" class="nav-link">Team Members</a>
-                <a href="blogs.html" class="nav-link">Blogs</a>
+                <a href="./team-members.html" class="nav-link">Team Members</a>
+                <a href="./blogs.html" class="nav-link">Blogs</a>
             </div>
         </div>
     </nav>
 
     <main class="main-content">
-        <h1 class="page-title">Team Members</h1>
-        <div class="team-grid">
-            <!-- Team members will be added here -->
+        <h1 class="section-title">Team Members</h1>
+        
+        <div class="team-section">
+            <h2>Academic Supervisor</h2>
+            <div class="member-card">
+                <img src="https://www.bristol.ac.uk/media-library/sites/people/images/Simon%20Lock.jpg" alt="Dr Simon Lock" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">Dr Simon Lock</div>
+                    <div class="member-role">Senior Lecturer, School of Computer Science</div>
+                    <div class="member-contact">
+                        <a href="mailto:simon.lock@bristol.ac.uk">simon.lock@bristol.ac.uk</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-section">
+            <h2>IBM Supervisors</h2>
+            <div class="member-card">
+                <img src="https://media.licdn.com/dms/image/C4E03AQF8QZQZQZQZQZQ/profile-displayphoto-shrink_200_200/0/1516250600000?e=1680134400&v=beta&t=QZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQ" alt="John McNamara" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">John McNamara</div>
+                    <div class="member-role">
+                        IBM - Thought Leader Certified Technical Specialist<br>
+                        The Open Group - Distinguished Technical Specialist<br>
+                        IBM – Master Inventor<br>
+                        Professor (Hon)<br>
+                        Advanced Visiting Research Fellow<br>
+                        CSR for Academia UK
+                    </div>
+                    <div class="member-contact">
+                        Phone: 07799413848<br>
+                        <a href="https://www.linkedin.com/in/john-mcnamara-ibm/" target="_blank">LinkedIn: John McNamara</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="member-card">
+                <img src="https://media.licdn.com/dms/image/C4E03AQF8QZQZQZQZQZQ/profile-displayphoto-shrink_200_200/0/1516250600000?e=1680134400&v=beta&t=QZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQ" alt="Arindam Basu" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">Arindam Basu</div>
+                    <div class="member-contact">
+                        <a href="mailto:arindbas@in.ibm.com">arindbas@in.ibm.com</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="member-card">
+                <img src="https://media.licdn.com/dms/image/C4E03AQF8QZQZQZQZQZQ/profile-displayphoto-shrink_200_200/0/1516250600000?e=1680134400&v=beta&t=QZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQ" alt="Vijaya Bashyam" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">Vijaya Bashyam</div>
+                    <div class="member-contact">
+                        <a href="mailto:vbashyam@us.ibm.com">vbashyam@us.ibm.com</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-section">
+            <h2>Students</h2>
+            <div class="member-card">
+                <img src="https://github.com/Zengweihaooo.png" alt="Weihao Zeng" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">Weihao Zeng</div>
+                    <div class="member-contact">
+                        <a href="mailto:lh24059@bristol.ac.uk">lh24059@bristol.ac.uk</a><br>
+                        <a href="https://github.com/Zengweihaooo" target="_blank">GitHub: Zengweihaooo</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="member-card">
+                <img src="https://github.com/Lepengz233.png" alt="Lepeng Zhou" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">Lepeng Zhou</div>
+                    <div class="member-contact">
+                        <a href="mailto:wn24588@bristol.ac.uk">wn24588@bristol.ac.uk</a><br>
+                        <a href="https://github.com/Lepengz233" target="_blank">GitHub: Lepengz233</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="member-card">
+                <img src="https://github.com/Enderman928.png" alt="Yichen Zhang" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">Yichen Zhang</div>
+                    <div class="member-contact">
+                        <a href="mailto:gd24475@bristol.ac.uk">gd24475@bristol.ac.uk</a><br>
+                        <a href="https://github.com/Enderman928" target="_blank">GitHub: Enderman928</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="member-card">
+                <img src="https://github.com/henlandl.png" alt="Guojie Liu" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">Guojie Liu</div>
+                    <div class="member-contact">
+                        <a href="mailto:jy24369@bristol.ac.uk">jy24369@bristol.ac.uk</a><br>
+                        <a href="https://github.com/henlandl" target="_blank">GitHub: henlandl</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="member-card">
+                <img src="https://github.com/zj24391.png" alt="Mengqiu Yan" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">Mengqiu Yan</div>
+                    <div class="member-contact">
+                        <a href="mailto:zj24391@bristol.ac.uk">zj24391@bristol.ac.uk</a><br>
+                        <a href="https://github.com/zj24391" target="_blank">GitHub: zj24391</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="member-card">
+                <img src="https://github.com/ov24336.png" alt="Chen Zhang" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">Chen Zhang</div>
+                    <div class="member-contact">
+                        <a href="mailto:ov24336@bristol.ac.uk">ov24336@bristol.ac.uk</a><br>
+                        <a href="https://github.com/ov24336" target="_blank">GitHub: ov24336</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="member-card">
+                <img src="https://github.com/identicons/placeholder.png" alt="Muer A" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">Muer A</div>
+                </div>
+            </div>
+
+            <div class="member-card">
+                <img src="https://github.com/identicons/placeholder.png" alt="Yuetong Dong" class="member-image">
+                <div class="member-info">
+                    <div class="member-name">Yuetong Dong</div>
+                </div>
+            </div>
         </div>
     </main>
 
     <footer class="footer">
         <!-- Footer content will go here -->
     </footer>
-
-    <script src="../index.js"></script>
 </body>
 </html> 
