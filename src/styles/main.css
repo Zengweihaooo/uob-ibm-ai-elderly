@@ -282,6 +282,7 @@ body {
     gap: 2rem;
     margin-bottom: 4rem;
     max-width: 100%;
+    padding: 0 1rem;
 }
 
 /* Common section styles */
@@ -291,6 +292,18 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    background: var(--background);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.updates-section:hover,
+.meeting-section:hover,
+.time-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Updates section styles */
@@ -298,6 +311,7 @@ body {
     background: var(--background);
     padding: 1.5rem;
     border-radius: 8px;
+    border: 1px solid var(--border-subtle);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -338,12 +352,13 @@ body {
     background: var(--background);
     padding: 1.5rem;
     border-radius: 8px;
+    border: 1px solid var(--border-subtle);
 }
 
 .meeting-info h3 {
     font-size: 18px;
     font-weight: 500;
-    margin: 1rem 0;
+    margin: 0 0 1rem 0;
     color: var(--text-primary);
 }
 
@@ -365,8 +380,9 @@ body {
 
 .time-zone {
     background: var(--background);
+    border: 1px solid var(--border-subtle);
     border-radius: 6px;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
 }
 
