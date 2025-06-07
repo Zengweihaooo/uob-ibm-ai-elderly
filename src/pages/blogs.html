@@ -253,80 +253,71 @@
 
             async function loadMarkdownContent() {
                 try {
-                    // Fetch and display meeting markdown files
-                    const meetingFiles = [
-                        '2025-06-06-SecondMeeting.md',
-                        '2025-05-14-kickoff.md',
-                        '2025-05-16-officehour-john-mcnamara.md'
+                    const res = await fetch('../../docs/manifest.json');
+                    if(!res.ok) { console.error('Cannot load manifest'); return; }
+                    const manifest = await res.json();
+                    const sections = [
+                        { items: manifest.meetings || [], containerId: 'meetings-content', titlePrefix: 'Meeting Minutes' },
+                        { items: manifest.learningJournal || [], containerId: 'learning-journal-content', titlePrefix: 'Learning Journal' }
                     ];
 
-                    const meetingList = document.createElement('div');
-                    meetingList.className = 'meeting-list';
+                    for(const section of sections) {
+                        const container = document.getElementById(section.containerId);
+                        container.innerHTML = '';
+                        const listEl = document.createElement('div');
+                        listEl.className = 'meeting-list';
 
-                    for (const file of meetingFiles) {
-                        try {
-                            const response = await fetch(`../../docs/meetings/${file}`);
-                            if (!response.ok) {
-                                console.warn(`Failed to load ${file}`);
-                                continue;
-                            }
-                            const content = await response.text();
-                            const meetingItem = document.createElement('div');
-                            meetingItem.className = 'meeting-item';
-                            meetingItem.innerHTML = `
+                        const sorted = [...section.items].sort((a,b)=> extractDate(b.name)-extractDate(a.name));
+
+                        for(const file of sorted) {
+                            const item = document.createElement('div');
+                            item.className = 'meeting-item';
+                            const ts = extractDate(file.name);
+                            const displayDate = ts ? formatDateDisplay(ts) : '';
+                            item.innerHTML = `
                                 <div class="meeting-header">
-                                    <h3>${file}</h3>
+                                    <h3>${section.titlePrefix}${displayDate? ' - '+displayDate: ''}</h3>
+                                    <span class="toggle-icon">▼</span>
                                 </div>
+                                <div class="meeting-content"></div>
                             `;
-                            meetingList.appendChild(meetingItem);
+                            const headerEl = item.querySelector('.meeting-header');
+                            const contentEl = item.querySelector('.meeting-content');
 
-                            // Add click event listener
-                            const header = meetingItem.querySelector('.meeting-header');
-                            header.addEventListener('click', () => {
-                                modalTitle.textContent = file;
-                                modalBody.innerHTML = marked.parse(content);
-                                modal.style.display = 'block';
+                            headerEl.addEventListener('click', async ()=>{
+                                if(contentEl.innerHTML){
+                                    contentEl.classList.toggle('active');
+                                    headerEl.classList.toggle('active');
+                                    return;
+                                }
+                                try {
+                                    const mdRes = await fetch('../../'+file.path);
+                                    const mdText = await mdRes.text();
+                                    contentEl.innerHTML = marked.parse(mdText);
+                                    contentEl.classList.add('active');
+                                    headerEl.classList.add('active');
+                                }catch(err){
+                                    contentEl.innerHTML = '<p>Error loading content.</p>';
+                                    contentEl.classList.add('active');
+                                }
                             });
-                        } catch (error) {
-                            console.warn(`Error loading ${file}:`, error);
+                            listEl.appendChild(item);
                         }
+                        container.appendChild(listEl);
                     }
-
-                    document.getElementById('meetings-content').appendChild(meetingList);
-
-                    // Load learning journal content
-                    try {
-                        const journalResponse = await fetch('../../docs/LearningJournal/WeihaoZeng.md');
-                        if (journalResponse.ok) {
-                            const journalContent = await journalResponse.text();
-                            const journalItem = document.createElement('div');
-                            journalItem.className = 'meeting-item';
-                            journalItem.innerHTML = `
-                                <div class="meeting-header">
-                                    <h3>Weihao Zeng's Learning Journal</h3>
-                                </div>
-                            `;
-                            document.getElementById('learning-journal-content').appendChild(journalItem);
-
-                            // Add click event listener for learning journal
-                            const header = journalItem.querySelector('.meeting-header');
-                            header.addEventListener('click', () => {
-                                modalTitle.textContent = "Weihao Zeng's Learning Journal";
-                                modalBody.innerHTML = marked.parse(journalContent);
-                                modal.style.display = 'block';
-                            });
-                        } else {
-                            document.getElementById('learning-journal-content').innerHTML = '<p>No learning journal content available.</p>';
-                        }
-                    } catch (error) {
-                        console.error('Error loading learning journal:', error);
-                        document.getElementById('learning-journal-content').innerHTML = '<p>Error loading learning journal content.</p>';
-                    }
-                } catch (error) {
-                    console.error('Error loading markdown content:', error);
-                    document.getElementById('meetings-content').innerHTML = '<p>Error loading meetings content.</p>';
-                    document.getElementById('learning-journal-content').innerHTML = '<p>Error loading learning journal content.</p>';
+                } catch(err) {
+                    console.error('Error:', err);
                 }
+            }
+
+            function extractDate(filename){
+                const m = filename.match(/(\d{4})[-]?(\d{2})[-]?(\d{2})/);
+                if(!m) return 0;
+                return new Date(`${m[1]}-${m[2]}-${m[3]}`).getTime();
+            }
+            function formatDateDisplay(ts){
+                const d = new Date(ts);
+                return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             }
 
             // Load content when the page loads

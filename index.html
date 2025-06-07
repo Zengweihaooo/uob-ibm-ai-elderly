@@ -303,69 +303,72 @@
         // Function to fetch and display updates
         async function fetchUpdates() {
             try {
-                // Fetch the list of markdown files from the meetings directory
-                const response = await fetch('https://api.github.com/repos/Zengweihaooo/uob-ibm-ai-elderly/contents/IBM/docs/meetings');
-                const files = await response.json();
-                
-                // Filter for markdown files and sort by date (newest first)
-                const markdownFiles = files
-                    .filter(file => file.name.endsWith('.md'))
-                    .sort((a, b) => new Date(b.name) - new Date(a.name));
+                const res = await fetch('./docs/manifest.json');
+                const manifest = await res.ok ? await res.json() : null;
+                if (!manifest) return;
 
-                const updatesContainer = document.querySelector('.updates-container');
+                let allFiles = [];
+                allFiles = allFiles
+                    .concat((manifest.meetings || []).map(f => ({...f, _type: 'Meeting Minutes'})))
+                    .concat((manifest.learningJournal || []).map(f => ({...f, _type: 'Learning Journal'})));
+
+                allFiles.sort((a, b) => extractDate(b.name) - extractDate(a.name));
+
+                const updatesContainer = document.querySelector('.updates-list');
                 if (!updatesContainer) return;
-
-                // Clear existing updates
                 updatesContainer.innerHTML = '';
 
-                // Create and append update items
-                for (const file of markdownFiles) {
+                for (const file of allFiles) {
                     const updateItem = document.createElement('div');
                     updateItem.className = 'update-item';
-                    
-                    // Extract date from filename (assuming format: YYYYMMDD.md)
-                    const date = file.name.replace('.md', '');
-                    const formattedDate = `${date.slice(4, 6)}/${date.slice(6, 8)}/${date.slice(0, 4)}`;
-                    
-                    // Create update header
+
+                    const ts = extractDate(file.name);
+                    const formattedDate = ts ? formatDateDisplay(ts) : '';
+
                     const header = document.createElement('div');
                     header.className = 'update-header';
                     header.innerHTML = `
-                        <h3>Meeting Minutes</h3>
+                        <h3>${file._type}</h3>
                         <span class="date">${formattedDate}</span>
                     `;
-                    
-                    // Create description
+
                     const description = document.createElement('p');
                     description.className = 'description';
-                    description.textContent = 'Click to view meeting details';
-                    
-                    // Add click event to fetch and display content
-                    updateItem.addEventListener('click', async () => {
-                        try {
-                            const contentResponse = await fetch(file.download_url);
-                            const content = await contentResponse.text();
-                            
-                            // Show content in modal
-                            const modal = document.getElementById('contentModal');
-                            const modalTitle = modal.querySelector('.modal-title');
-                            const modalBody = modal.querySelector('.modal-body');
-                            
-                            modalTitle.textContent = `Meeting Minutes - ${formattedDate}`;
-                            modalBody.innerHTML = marked.parse(content);
-                            modal.style.display = 'block';
-                        } catch (error) {
-                            console.error('Error fetching meeting content:', error);
-                        }
-                    });
-                    
+                    description.textContent = 'Click to view details';
+
                     updateItem.appendChild(header);
                     updateItem.appendChild(description);
+
+                    updateItem.addEventListener('click', async () => {
+                        const modal = document.getElementById('contentModal');
+                        const modalTitle = modal.querySelector('.modal-title');
+                        const modalBody = modal.querySelector('.modal-body');
+                        modalTitle.textContent = `${file._type}${formattedDate? ' - '+formattedDate:''}`;
+                        try {
+                            const mdRes = await fetch('./' + file.path); // path relative to IBM/
+                            const mdText = await mdRes.text();
+                            modalBody.innerHTML = marked.parse(mdText);
+                        } catch (err) {
+                            modalBody.textContent = 'Error loading content';
+                        }
+                        modal.style.display = 'block';
+                    });
+
                     updatesContainer.appendChild(updateItem);
                 }
             } catch (error) {
-                console.error('Error fetching updates:', error);
+                console.error('Error fetching manifest:', error);
             }
+        }
+
+        function extractDate(filename) {
+            const m = filename.match(/(\d{4})[-]?(\d{2})[-]?(\d{2})/);
+            if (!m) return 0;
+            return new Date(`${m[1]}-${m[2]}-${m[3]}`).getTime();
+        }
+        function formatDateDisplay(ts) {
+            const d = new Date(ts);
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
         // Initial fetch
