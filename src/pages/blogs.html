@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../styles/main.css">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
     <style>
         .blogs-container {
             display: grid;
@@ -42,7 +43,6 @@
             padding: 1rem;
             border: 1px solid var(--border-subtle);
             border-radius: 4px;
-            cursor: pointer;
             transition: background-color 0.3s ease;
         }
 
@@ -50,15 +50,26 @@
             background-color: rgba(0, 0, 0, 0.05);
         }
 
-        .meeting-date {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
+        .meeting-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
         }
 
-        .meeting-title {
+        .meeting-header h3 {
+            margin: 0;
             color: var(--text-primary);
             font-weight: 500;
+        }
+
+        .meeting-header .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .meeting-header.active .toggle-icon {
+            transform: rotate(180deg);
         }
 
         .meeting-content {
@@ -75,6 +86,68 @@
         @media (max-width: 768px) {
             .blogs-container {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 2rem;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-button svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+        }
+
+        .close-button:hover {
+            color: #666;
+        }
+
+        .modal-title {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            padding-right: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
             }
         }
     </style>
@@ -139,29 +212,126 @@
         <!-- Footer content will go here -->
     </footer>
 
+    <!-- Add Modal -->
+    <div id="meetingModal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <h2 class="modal-title"></h2>
+            <div class="modal-body markdown-body"></div>
+        </div>
+    </div>
+
     <script>
-        // Function to load and render markdown files
-        async function loadMarkdownContent() {
-            try {
-                // Load meetings content
-                const meetingsResponse = await fetch('../../docs/meetings/README.md');
-                const meetingsContent = await meetingsResponse.text();
-                document.getElementById('meetings-content').innerHTML = marked(meetingsContent);
-
-                // Load learning journal content
-                const journalResponse = await fetch('../../docs/LearningJournal/README.md');
-                const journalContent = await journalResponse.text();
-                document.getElementById('learning-journal-content').innerHTML = marked(journalContent);
-            } catch (error) {
-                console.error('Error loading markdown content:', error);
-                document.getElementById('meetings-content').innerHTML = '<p>Error loading meetings content.</p>';
-                document.getElementById('learning-journal-content').innerHTML = '<p>Error loading learning journal content.</p>';
+        // Wait for marked to be loaded
+        window.addEventListener('load', function() {
+            if (typeof marked === 'undefined') {
+                console.error('Marked library not loaded');
+                return;
             }
-        }
 
-        // Load content when the page loads
-        document.addEventListener('DOMContentLoaded', loadMarkdownContent);
+            // Modal functionality
+            const modal = document.getElementById('meetingModal');
+            const closeButton = modal.querySelector('.close-button');
+            const modalTitle = modal.querySelector('.modal-title');
+            const modalBody = modal.querySelector('.modal-body');
+
+            // Close modal when clicking the close button
+            closeButton.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside the content
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            async function loadMarkdownContent() {
+                try {
+                    // Fetch and display meeting markdown files
+                    const meetingFiles = [
+                        '2025-06-06-SecondMeeting.md',
+                        '2025-05-14-kickoff.md',
+                        '2025-05-16-officehour-john-mcnamara.md'
+                    ];
+
+                    const meetingList = document.createElement('div');
+                    meetingList.className = 'meeting-list';
+
+                    for (const file of meetingFiles) {
+                        try {
+                            const response = await fetch(`../../docs/meetings/${file}`);
+                            if (!response.ok) {
+                                console.warn(`Failed to load ${file}`);
+                                continue;
+                            }
+                            const content = await response.text();
+                            const meetingItem = document.createElement('div');
+                            meetingItem.className = 'meeting-item';
+                            meetingItem.innerHTML = `
+                                <div class="meeting-header">
+                                    <h3>${file}</h3>
+                                </div>
+                            `;
+                            meetingList.appendChild(meetingItem);
+
+                            // Add click event listener
+                            const header = meetingItem.querySelector('.meeting-header');
+                            header.addEventListener('click', () => {
+                                modalTitle.textContent = file;
+                                modalBody.innerHTML = marked.parse(content);
+                                modal.style.display = 'block';
+                            });
+                        } catch (error) {
+                            console.warn(`Error loading ${file}:`, error);
+                        }
+                    }
+
+                    document.getElementById('meetings-content').appendChild(meetingList);
+
+                    // Load learning journal content
+                    try {
+                        const journalResponse = await fetch('../../docs/LearningJournal/WeihaoZeng.md');
+                        if (journalResponse.ok) {
+                            const journalContent = await journalResponse.text();
+                            const journalItem = document.createElement('div');
+                            journalItem.className = 'meeting-item';
+                            journalItem.innerHTML = `
+                                <div class="meeting-header">
+                                    <h3>Weihao Zeng's Learning Journal</h3>
+                                </div>
+                            `;
+                            document.getElementById('learning-journal-content').appendChild(journalItem);
+
+                            // Add click event listener for learning journal
+                            const header = journalItem.querySelector('.meeting-header');
+                            header.addEventListener('click', () => {
+                                modalTitle.textContent = "Weihao Zeng's Learning Journal";
+                                modalBody.innerHTML = marked.parse(journalContent);
+                                modal.style.display = 'block';
+                            });
+                        } else {
+                            document.getElementById('learning-journal-content').innerHTML = '<p>No learning journal content available.</p>';
+                        }
+                    } catch (error) {
+                        console.error('Error loading learning journal:', error);
+                        document.getElementById('learning-journal-content').innerHTML = '<p>Error loading learning journal content.</p>';
+                    }
+                } catch (error) {
+                    console.error('Error loading markdown content:', error);
+                    document.getElementById('meetings-content').innerHTML = '<p>Error loading meetings content.</p>';
+                    document.getElementById('learning-journal-content').innerHTML = '<p>Error loading learning journal content.</p>';
+                }
+            }
+
+            // Load content when the page loads
+            loadMarkdownContent();
+        });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </body>
 </html> 

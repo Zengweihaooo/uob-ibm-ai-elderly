@@ -306,29 +306,10 @@ body {
     padding: 0 1rem;
 }
 
-/* Common section styles */
-.updates-section,
-.meeting-section,
-.time-section {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    background: var(--background);
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.updates-section:hover,
-.meeting-section:hover,
-.time-section:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Updates section styles */
-.update-item {
+/* === Card component (Update/Meeting/Timezone) === */
+.update-item,
+.meeting-info,
+.time-zone {
     background: var(--background);
     padding: 1.5rem;
     border-radius: 8px;
@@ -336,7 +317,9 @@ body {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.update-item:hover {
+.update-item:hover,
+.meeting-info:hover,
+.time-zone:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -369,13 +352,6 @@ body {
 }
 
 /* Meeting section styles */
-.meeting-info {
-    background: var(--background);
-    padding: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid var(--border-subtle);
-}
-
 .meeting-info h3 {
     font-size: 18px;
     font-weight: 500;
@@ -405,11 +381,6 @@ body {
     border-radius: 6px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
-}
-
-.time-zone:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .time-zone-content {

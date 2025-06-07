@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UOB-IBM AI Elderly Project</title>
     <link rel="stylesheet" href="./src/styles/main.css">
+    <link rel="stylesheet" href="./src/styles/info-grid.css">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -66,10 +67,50 @@
             </div>
         </div>
 
-        <div class="updates-container">
-            <div class="updates-section">
-                <h2 class="section-title">Latest Updates</h2>
-                <div class="updates-list">
+        <div class="info-grid">
+            <!-- Timezone Container -->
+            <div class="info-container">
+                <h2>Time Zones</h2>
+                <div class="timezone-section">
+                    <div class="timezone-content">
+                        <div class="timezone-item">
+                            <div class="location">
+                                <span class="flag">🇬🇧</span>
+                                <span>BST</span>
+                            </div>
+                            <div class="time-info">
+                                <span class="date" id="uk-date">Loading...</span>
+                                <span class="time" id="uk-time">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="timezone-item">
+                            <div class="location">
+                                <span class="flag">🇮🇳</span>
+                                <span>IST</span>
+                            </div>
+                            <div class="time-info">
+                                <span class="date" id="india-date">Loading...</span>
+                                <span class="time" id="india-time">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="timezone-item">
+                            <div class="location">
+                                <span class="flag">🇺🇸</span>
+                                <span>EDT</span>
+                            </div>
+                            <div class="time-info">
+                                <span class="date" id="us-date">Loading...</span>
+                                <span class="time" id="us-time">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Updates Container -->
+            <div class="info-container">
+                <h2>Latest Updates</h2>
+                <div class="info-content updates-list">
                     <div class="update-item">
                         <div class="update-header">
                             <h3>Office Hour</h3>
@@ -87,54 +128,15 @@
                 </div>
             </div>
 
-            <div class="meeting-section">
-                <h2 class="section-title">Next Meeting</h2>
-                <div class="meeting-info">
-                    <h3>MSc Project Workshop</h3>
-                    <p class="location">📍 IVY GATE BUILDING G.01</p>
-                    <p class="meeting-time">📅 Monday, June 2, 2025</p>
-                    <p class="meeting-time">🕑 14:00–16:00 BST</p>
-                </div>
-            </div>
-
-            <div class="time-section">
-                <h2 class="section-title">Current Time</h2>
-                <div class="time-zones">
-                    <div class="time-zone">
-                        <div class="time-zone-content">
-                            <div class="time-zone-header">
-                                <span class="flag">🇬🇧</span>
-                                <span class="country">United Kingdom</span>
-                            </div>
-                            <div class="time-zone-time">
-                                <span class="time" id="uk-time">Loading...</span>
-                                <span class="zone">BST</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="time-zone">
-                        <div class="time-zone-content">
-                            <div class="time-zone-header">
-                                <span class="flag">🇮🇳</span>
-                                <span class="country">India</span>
-                            </div>
-                            <div class="time-zone-time">
-                                <span class="time" id="india-time">Loading...</span>
-                                <span class="zone">IST</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="time-zone">
-                        <div class="time-zone-content">
-                            <div class="time-zone-header">
-                                <span class="flag">🇺🇸</span>
-                                <span class="country">US Eastern</span>
-                            </div>
-                            <div class="time-zone-time">
-                                <span class="time" id="us-time">Loading...</span>
-                                <span class="zone">EDT</span>
-                            </div>
-                        </div>
+            <!-- Meeting Container -->
+            <div class="info-container">
+                <h2>Next Meeting</h2>
+                <div class="info-content">
+                    <div class="meeting-info">
+                        <h3>MSc Project Workshop</h3>
+                        <p class="location">📍 IVY GATE BUILDING G.01</p>
+                        <p class="meeting-time">📅 Monday, June 2, 2025</p>
+                        <p class="meeting-time">🕑 14:00–16:00 BST</p>
                     </div>
                 </div>
             </div>
@@ -239,43 +241,139 @@
         <!-- Footer content will go here -->
     </footer>
 
-    <script src="src/index.js"></script>
+    <!-- Add Modal -->
+    <div id="contentModal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <h2 class="modal-title"></h2>
+            <div class="modal-body markdown-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
     <script>
-        // Function to update time
+        // Timezone display
+        function setDates() {
+            const now = new Date();
+            // UK date
+            const ukTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
+            document.getElementById('uk-date').textContent = ukTime.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' });
+            // India date
+            const indiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+            document.getElementById('india-date').textContent = indiaTime.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' });
+            // US date
+            const usTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+            document.getElementById('us-date').textContent = usTime.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' });
+        }
         function updateTime() {
             const now = new Date();
-            
             // UK time (BST)
             const ukTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
-            document.getElementById('uk-time').textContent = ukTime.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
+            document.getElementById('uk-time').textContent = ukTime.toLocaleTimeString('en-US', {
+                hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
-                hour12: false 
+                hour12: false
             });
-
             // India time (IST)
             const indiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-            document.getElementById('india-time').textContent = indiaTime.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
+            document.getElementById('india-time').textContent = indiaTime.toLocaleTimeString('en-US', {
+                hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
-                hour12: false 
+                hour12: false
             });
-
             // US Eastern time (EDT)
             const usTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-            document.getElementById('us-time').textContent = usTime.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
+            document.getElementById('us-time').textContent = usTime.toLocaleTimeString('en-US', {
+                hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
-                hour12: false 
+                hour12: false
             });
         }
-
-        // Update time immediately and then every second
+        setDates();
         updateTime();
         setInterval(updateTime, 1000);
+
+        // Function to fetch and display updates
+        async function fetchUpdates() {
+            try {
+                // Fetch the list of markdown files from the meetings directory
+                const response = await fetch('https://api.github.com/repos/Zengweihaooo/uob-ibm-ai-elderly/contents/IBM/docs/meetings');
+                const files = await response.json();
+                
+                // Filter for markdown files and sort by date (newest first)
+                const markdownFiles = files
+                    .filter(file => file.name.endsWith('.md'))
+                    .sort((a, b) => new Date(b.name) - new Date(a.name));
+
+                const updatesContainer = document.querySelector('.updates-container');
+                if (!updatesContainer) return;
+
+                // Clear existing updates
+                updatesContainer.innerHTML = '';
+
+                // Create and append update items
+                for (const file of markdownFiles) {
+                    const updateItem = document.createElement('div');
+                    updateItem.className = 'update-item';
+                    
+                    // Extract date from filename (assuming format: YYYYMMDD.md)
+                    const date = file.name.replace('.md', '');
+                    const formattedDate = `${date.slice(4, 6)}/${date.slice(6, 8)}/${date.slice(0, 4)}`;
+                    
+                    // Create update header
+                    const header = document.createElement('div');
+                    header.className = 'update-header';
+                    header.innerHTML = `
+                        <h3>Meeting Minutes</h3>
+                        <span class="date">${formattedDate}</span>
+                    `;
+                    
+                    // Create description
+                    const description = document.createElement('p');
+                    description.className = 'description';
+                    description.textContent = 'Click to view meeting details';
+                    
+                    // Add click event to fetch and display content
+                    updateItem.addEventListener('click', async () => {
+                        try {
+                            const contentResponse = await fetch(file.download_url);
+                            const content = await contentResponse.text();
+                            
+                            // Show content in modal
+                            const modal = document.getElementById('contentModal');
+                            const modalTitle = modal.querySelector('.modal-title');
+                            const modalBody = modal.querySelector('.modal-body');
+                            
+                            modalTitle.textContent = `Meeting Minutes - ${formattedDate}`;
+                            modalBody.innerHTML = marked.parse(content);
+                            modal.style.display = 'block';
+                        } catch (error) {
+                            console.error('Error fetching meeting content:', error);
+                        }
+                    });
+                    
+                    updateItem.appendChild(header);
+                    updateItem.appendChild(description);
+                    updatesContainer.appendChild(updateItem);
+                }
+            } catch (error) {
+                console.error('Error fetching updates:', error);
+            }
+        }
+
+        // Initial fetch
+        fetchUpdates();
+
+        // Refresh updates every 5 minutes
+        setInterval(fetchUpdates, 5 * 60 * 1000);
     </script>
+    <script src="src/index.js"></script>
 </body>
 </html> 
