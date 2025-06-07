@@ -1,0 +1,60 @@
+name: Generate docs manifest
+
+on:
+  push:
+    paths:
+      - 'docs/meetings/**/*.md'
+      - 'docs/LearningJournal/**/*.md'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate manifest.json
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          function collect(dir) {
+            if (!fs.existsSync(dir)) return [];
+            return fs.readdirSync(dir)
+              .filter(f => f.endsWith('.md'))
+              .map(name => ({
+                name,
+                path: `${dir}/${name}`.replace(/\\/g, '/')
+              }));
+          }
+
+          const manifest = {
+            meetings: collect('docs/meetings'),
+            learningJournal: collect('docs/LearningJournal'),
+          };
+
+          fs.writeFileSync('docs/manifest.json', JSON.stringify(manifest, null, 2));
+          console.log('Generated docs/manifest.json');
+          NODE
+
+      - name: Commit & push changes
+        run: |
+          if [[ $(git status --porcelain) ]]; then
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+            git add docs/manifest.json
+            git commit -m 'chore: update docs/manifest.json'
+            git push
+          else
+            echo "No changes to commit."
+          fi

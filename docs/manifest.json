@@ -1,0 +1,26 @@
+{
+  "meetings": [
+    {
+      "name": "2025-05-14-kickoff.md",
+      "path": "docs/meetings/2025-05-14-kickoff.md"
+    },
+    {
+      "name": "2025-05-16-officehour-john-mcnamara.md",
+      "path": "docs/meetings/2025-05-16-officehour-john-mcnamara.md"
+    },
+    {
+      "name": "2025-06-02-MSc-project-workshop.md",
+      "path": "docs/meetings/2025-06-02-MSc-project-workshop.md"
+    },
+    {
+      "name": "2025-06-06-SecondMeeting.md",
+      "path": "docs/meetings/2025-06-06-SecondMeeting.md"
+    }
+  ],
+  "learningJournal": [
+    {
+      "name": "WeihaoZeng.md",
+      "path": "docs/LearningJournal/WeihaoZeng.md"
+    }
+  ]
+}
