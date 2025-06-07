@@ -303,7 +303,7 @@
         // Function to fetch and display updates
         async function fetchUpdates() {
             try {
-                const res = await fetch('./docs/manifest.json');
+                const res = await fetch('./docs/manifest.json?_=' + Date.now());
                 const manifest = await res.ok ? await res.json() : null;
                 if (!manifest) return;
 
@@ -345,7 +345,7 @@
                         const modalBody = modal.querySelector('.modal-body');
                         modalTitle.textContent = `${file._type}${formattedDate? ' - '+formattedDate:''}`;
                         try {
-                            const mdRes = await fetch('./' + file.path); // path relative to IBM/
+                            const mdRes = await fetch('./' + file.path + '?_=' + Date.now()); // path relative to repo root
                             const mdText = await mdRes.text();
                             modalBody.innerHTML = marked.parse(mdText);
                         } catch (err) {
