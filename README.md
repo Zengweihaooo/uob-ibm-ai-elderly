@@ -11,6 +11,9 @@ This section provides quick access to all the collaborative tools and internal d
 
 ### 📁 GitHub Repository
 
+- 🔗 **For all the information and links, view our website**  
+  [uob-ibm-ai-elderly GitHub pages](https://zengweihaooo.github.io/uob-ibm-ai-elderly/)
+
 - 🔗 **Source code, documentation, and version control**  
   [uob-ibm-ai-elderly GitHub Repository](https://github.com/Zengweihaooo/uob-ibm-ai-elderly)
 
