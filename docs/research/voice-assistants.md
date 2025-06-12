@@ -16,6 +16,7 @@ This report compares three popular voice assistants: Amazon Alexa, Google Assist
 - **User stories and feedback**  
 ---
 ## 2. Amazon Alexa
+![Amazon Alexa diagram](images/Amazon Alexa.png)
 ### 2.1 Key Features
 
 #### Alexa Together:
