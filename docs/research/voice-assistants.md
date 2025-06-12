@@ -16,7 +16,7 @@ This report compares three popular voice assistants: Amazon Alexa, Google Assist
 - **User stories and feedback**  
 ---
 ## 2. Amazon Alexa
-![Amazon Alexa diagram](images/Amazon Alexa.png)
+![Amazon Alexa diagram](images/Amazon_Alexa.png)
 ### 2.1 Key Features
 
 #### Alexa Together:
@@ -55,6 +55,7 @@ This report compares three popular voice assistants: Amazon Alexa, Google Assist
 - Setup can be hard for some seniors without help.
 ---
 ## 3. Google Assistant
+![Google Assistant diagram](images/Google_Assistant.png)
 
 ### 3.1 Key Features (Detailed)
 
@@ -97,6 +98,7 @@ This report compares three popular voice assistants: Amazon Alexa, Google Assist
 - Can struggle with fast speech or complex commands.
 ---
 ## 4. Xiaomi Xiao Ai
+![GXiaomi Xiao Ai diagram](images/Xiaomi_Xiao_Ai.png)
 
 ### 4.1 Key Features 
 
