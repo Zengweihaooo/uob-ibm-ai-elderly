@@ -52,7 +52,7 @@ This report compares three popular voice assistants: Amazon Alexa, Google Assist
 - One user: “My mom lives alone. Alexa gives me peace of mind.”
 
 - Setup can be hard for some seniors without help.
-
+---
 ## 3. Google Assistant
 
 ### 3.1 Key Features (Detailed)
@@ -94,8 +94,7 @@ This report compares three popular voice assistants: Amazon Alexa, Google Assist
 - Works well for smart homes.
 
 - Can struggle with fast speech or complex commands.
-
-
+---
 ## 4. Xiaomi Xiao Ai
 
 ### 4.1 Key Features 
@@ -135,5 +134,14 @@ This report compares three popular voice assistants: Amazon Alexa, Google Assist
 - “My mom uses Xiao Ai daily—it’s easier than a phone.”
 
 - Problem: doesn’t work well with local dialects (like Sichuanese)
+---
+## 5. Summary Table
+
+| **Assistant**        | **Voice Style**                  | **Voice Tech**              | **Eldercare Features**                             |
+|----------------------|----------------------------------|-----------------------------|----------------------------------------------------|
+| **Alexa**            | Calm and caring                  | High (NTTS + Transcribe)    | Fall alerts, remote check-in, voice calling        |
+| **Google Assistant** | Fun, smart, and adaptive         | High (WaveNet + STT)        | Health info, smart screen, family connection       |
+| **Xiao Ai**          | Friendly, nickname-based voices  | Good (Mandarin-focused)     | Smart home, voice messages, emergency alerts       |
+
 
 
