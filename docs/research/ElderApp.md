@@ -2,12 +2,12 @@
 
 ## Summary
 
-(1) MyChart & (2) Papa
+(1) MyChart & (2) Papa  
 These two apps are designed for direct use by elderly individuals themselves.  
 	MyChart empowers seniors to manage their own medical records, communicate with doctors, and schedule appointments.  
 	Papa provides in-person companionship and daily support through vetted young helpers, relieving loneliness and improving daily life quality.
 
-(3) Life360
+(3) Life360  
 	This app targets family members (especially adult children) who want to monitor and protect elderly parents from a distance.  
 	It enables real-time location sharing, safety alerts, and history tracking — creating a “digital family safety net.”
 
