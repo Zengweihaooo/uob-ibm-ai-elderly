@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Pet - UOB-IBM AI Elderly Project</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .pet-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem 1rem 4rem; /* bottom padding for nav */
+        }
+        .pet-avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: url('https://cdn-icons-png.flaticon.com/512/616/616408.png') center/cover no-repeat; /* placeholder avatar */
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .greeting {
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+        .sub-greeting {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--background);
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 56px;
+            z-index: 1000;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 2px;
+            fill: currentColor;
+        }
+        .nav-item.active {
+            color: var(--primary-blue);
+        }
+    </style>
+</head>
+<body>
+    <!-- top nav minimal: just home icon -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="../../index.html" class="home-btn" aria-label="Home">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 16V10H12V16H15V8H18L10 1L2 8H5V16H8Z" fill="currentColor"/>
+                    </svg>
+                </a>
+                <div class="logo-container">
+                    <a href="https://www.bristol.ac.uk" target="_blank" class="logo-link">
+                        <img src="https://www.bristol.ac.uk/assets/responsive-web-project/2.6.0/images/logos/uob-logo.svg" alt="University of Bristol Logo" class="logo uob-logo">
+                    </a>
+                    <a href="https://www.ibm.com" target="_blank" class="logo-link">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM Logo" class="logo ibm-logo">
+                    </a>
+                </div>
+            </div>
+            <button class="menu-toggle" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="nav-links">
+                <a href="./blogs.html" class="nav-link">Blogs</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pet-container">
+        <div class="pet-avatar"></div>
+        <div class="greeting" id="greetingText">Hello!</div>
+        <div class="sub-greeting" id="subGreetingText">How can I assist you today?</div>
+    </main>
+
+    <!-- Bottom navigation bar -->
+    <div class="bottom-nav" id="bottomNav">
+        <a href="#calendar" class="nav-item" data-item="calendar">
+            <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+            Calendar
+        </a>
+        <a href="#tasks" class="nav-item" data-item="tasks">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5c0-1.1-.9-2-2-2zm-9 14H7v-2h3v2zm5-4H7v-2h8v2zm0-4H7V7h8v2z"/></svg>
+            Tasks
+        </a>
+        <a href="#medication" class="nav-item" data-item="medication">
+            <svg viewBox="0 0 24 24"><path d="M21 5h-6l-1-2h-4l-1 2H3c-1.1 0-2 .9-2 2v2h22V7c0-1.1-.9-2-2-2zM1 19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V11H1v8z"/></svg>
+            Medication
+        </a>
+        <a href="#interaction" class="nav-item" data-item="interaction">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v14l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            Interaction
+        </a>
+    </div>
+
+    <script src="../index.js"></script>
+    <script>
+        // Simple greeting based on time
+        function getGreeting() {
+            const now = new Date();
+            const hour = now.getHours();
+            if (hour < 12) return 'Good Morning';
+            else if (hour < 18) return 'Good Afternoon';
+            return 'Good Evening';
+        }
+        document.getElementById('greetingText').textContent = getGreeting() + '!';
+        document.getElementById('subGreetingText').textContent = 'I\'m your virtual companion.';
+
+        // Highlight active nav item (placeholder functionality)
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach((item) => {
+            item.addEventListener('click', function () {
+                navItems.forEach((i) => i.classList.remove('active'));
+                this.classList.add('active');
+                // Future: load respective section
+            });
+        });
+    </script>
+</body>
+</html> 
