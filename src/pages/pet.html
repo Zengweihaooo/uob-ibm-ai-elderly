@@ -73,6 +73,25 @@
         .nav-item.active {
             color: var(--primary-blue);
         }
+
+        /* Sections */
+        .section { display: none; width: 100%; }
+        .section.active { display: block; }
+
+        /* Tasks & Medication lists */
+        .list-container { width: 100%; max-width: 380px; margin: 0 auto; }
+        .list-container ul { list-style: none; padding: 0; }
+        .list-container li { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-subtle); }
+        .list-container input[type="text"] { width: 70%; padding: 0.5rem; border: 1px solid var(--border-subtle); border-radius: 4px; }
+        .list-container button { padding: 0.5rem 0.75rem; background: var(--primary-blue); color:#fff; border:none; border-radius:4px; font-size:14px; }
+
+        /* Chat */
+        .chat-window { width: 100%; max-width: 380px; height: 260px; border:1px solid var(--border-subtle); border-radius:6px; margin:0 auto 1rem; padding:0.5rem; overflow-y:auto; }
+        .chat-message { margin: 0.25rem 0; }
+        .chat-message.user { text-align:right; color:var(--primary-blue); }
+        .chat-input { display:flex; gap:0.5rem; max-width: 380px; margin:0 auto; }
+        .chat-input input { flex:1; padding:0.5rem; border:1px solid var(--border-subtle); border-radius:4px; }
+        .chat-input button { padding:0 1rem; background:var(--primary-blue); color:#fff; border:none; border-radius:4px; }
     </style>
 </head>
 <body>
@@ -104,9 +123,48 @@
     </nav>
 
     <main class="pet-container">
-        <div class="pet-avatar"></div>
-        <div class="greeting" id="greetingText">Hello!</div>
-        <div class="sub-greeting" id="subGreetingText">How can I assist you today?</div>
+        <!-- Calendar Section -->
+        <div id="calendarSection" class="section">
+            <h2 class="greeting">Calendar</h2>
+            <input type="date" id="calendarDate">
+            <p id="selectedDateDisplay" class="sub-greeting">Choose a date above</p>
+        </div>
+
+        <!-- Tasks Section -->
+        <div id="tasksSection" class="section">
+            <h2 class="greeting">Tasks</h2>
+            <div class="list-container">
+                <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+                    <input type="text" id="newTaskInput" placeholder="New task">
+                    <button id="addTaskBtn">Add</button>
+                </div>
+                <ul id="taskList"></ul>
+            </div>
+        </div>
+
+        <!-- Medication Section -->
+        <div id="medicationSection" class="section">
+            <h2 class="greeting">Medication</h2>
+            <div class="list-container">
+                <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+                    <input type="text" id="newMedInput" placeholder="Add medication">
+                    <button id="addMedBtn">Add</button>
+                </div>
+                <ul id="medList"></ul>
+            </div>
+        </div>
+
+        <!-- Interaction Section -->
+        <div id="interactionSection" class="section">
+            <div class="pet-avatar"></div>
+            <div class="greeting" id="greetingText">Hello!</div>
+            <div class="sub-greeting" id="subGreetingText">How can I assist you today?</div>
+            <div class="chat-window" id="chatWindow"></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Type a message">
+                <button id="sendChatBtn">Send</button>
+            </div>
+        </div>
     </main>
 
     <!-- Bottom navigation bar -->
@@ -142,14 +200,80 @@
         document.getElementById('greetingText').textContent = getGreeting() + '!';
         document.getElementById('subGreetingText').textContent = 'I\'m your virtual companion.';
 
-        // Highlight active nav item (placeholder functionality)
+        // Sections logic
+        const sectionMap = {
+            calendar: document.getElementById('calendarSection'),
+            tasks: document.getElementById('tasksSection'),
+            medication: document.getElementById('medicationSection'),
+            interaction: document.getElementById('interactionSection')
+        };
+
+        function showSection(key) {
+            Object.values(sectionMap).forEach(sec => sec.classList.remove('active'));
+            sectionMap[key].classList.add('active');
+        }
+
+        // default
+        showSection('interaction');
+
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach((item) => {
-            item.addEventListener('click', function () {
-                navItems.forEach((i) => i.classList.remove('active'));
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                navItems.forEach(i=>i.classList.remove('active'));
                 this.classList.add('active');
-                // Future: load respective section
+                const key = this.dataset.item;
+                showSection(key);
             });
+        });
+
+        // Calendar interaction
+        const calendarDate = document.getElementById('calendarDate');
+        const dateDisplay = document.getElementById('selectedDateDisplay');
+        if (calendarDate) {
+            calendarDate.addEventListener('change', () => {
+                dateDisplay.textContent = `Selected: ${calendarDate.value}`;
+            });
+        }
+
+        // Tasks interaction
+        const taskList = document.getElementById('taskList');
+        document.getElementById('addTaskBtn').addEventListener('click', () => {
+            const txt = document.getElementById('newTaskInput').value.trim();
+            if(!txt) return;
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${txt}</span><input type="checkbox">`;
+            taskList.appendChild(li);
+            document.getElementById('newTaskInput').value='';
+        });
+
+        // Medication interaction
+        const medList = document.getElementById('medList');
+        document.getElementById('addMedBtn').addEventListener('click', () => {
+            const txt = document.getElementById('newMedInput').value.trim();
+            if(!txt) return;
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${txt}</span><input type="checkbox">`;
+            medList.appendChild(li);
+            document.getElementById('newMedInput').value='';
+        });
+
+        // Chat interaction (simple echo)
+        const chatWindow = document.getElementById('chatWindow');
+        function addChatMessage(msg, cls) {
+            const div = document.createElement('div');
+            div.className = `chat-message ${cls}`;
+            div.textContent = msg;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+        document.getElementById('sendChatBtn').addEventListener('click', ()=>{
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text) return;
+            addChatMessage(text,'user');
+            input.value='';
+            setTimeout(()=> addChatMessage('Meow! (sample reply)','bot'),500);
         });
     </script>
 </body>
