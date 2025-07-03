@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - UOB-IBM AI Elderly Project</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .register-container {
+            max-width: 400px;
+            width: 90%;
+            margin: 4rem auto 2rem;
+            padding: 2rem 1rem;
+            background: var(--background);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .register-container h1 {
+            font-size: 24px;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary-blue);
+        }
+        .register-form label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            display: block;
+            color: var(--text-primary);
+        }
+        .register-form input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .register-form button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary-blue);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        .register-form button:hover {
+            opacity: 0.9;
+        }
+        @media (max-width: 600px) {
+            .register-container {
+                margin-top: 3rem;
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation (reuse existing styles) -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="../../index.html" class="home-btn" aria-label="Home">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 16V10H12V16H15V8H18L10 1L2 8H5V16H8Z" fill="currentColor"/>
+                    </svg>
+                </a>
+                <div class="logo-container">
+                    <a href="https://www.bristol.ac.uk" target="_blank" class="logo-link">
+                        <img src="https://www.bristol.ac.uk/assets/responsive-web-project/2.6.0/images/logos/uob-logo.svg" alt="University of Bristol Logo" class="logo uob-logo">
+                    </a>
+                    <a href="https://www.ibm.com" target="_blank" class="logo-link">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM Logo" class="logo ibm-logo">
+                    </a>
+                </div>
+            </div>
+            <button class="menu-toggle" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="nav-links">
+                <a href="https://github.com/Zengweihaooo/uob-ibm-ai-elderly" target="_blank" class="nav-link">GitHub Repo</a>
+                <a href="https://github.com/users/Zengweihaooo/projects/1" target="_blank" class="nav-link">Project Management</a>
+                <div class="dropdown">
+                    <button class="dropdown-btn">Other Platform</button>
+                    <div class="dropdown-content">
+                        <a href="https://www.figma.com/design/ACpMwWcBol9t5wt5u9FkEH/IBM-prototype?node-id=0-1&t=3kvjgXeg7PRMyNxk-1" target="_blank">Figma</a>
+                        <a href="https://teams.microsoft.com/l/channel/19%3ATbJ7cTNrm0h8XNuEz0v9KnBaIb_BxAQXu6ELaI9IqCQ1%40thread.tacv2/General?groupId=4992b869-67ca-4b1d-8786-8e16352bf31d&tenantId=b2e47f30-cd7d-4a4e-a5da-b18cf1a4151b" target="_blank">Teams</a>
+                    </div>
+                </div>
+                <a href="./team-members.html" class="nav-link">Team Members</a>
+                <a href="./blogs.html" class="nav-link">Blogs</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="register-container">
+            <h1>Create Account</h1>
+            <form class="register-form" id="registerForm">
+                <label for="fullname">Full Name</label>
+                <input type="text" id="fullname" name="fullname" placeholder="John Doe" required>
+
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="example@mail.com" required>
+
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="******" required minlength="6">
+
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="******" required minlength="6">
+
+                <button type="submit">Register</button>
+            </form>
+        </div>
+    </main>
+
+    <footer class="footer"></footer>
+
+    <!-- Include existing JS for menu toggle -->
+    <script src="../index.js"></script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const pw = document.getElementById('password').value;
+            const cpw = document.getElementById('confirmPassword').value;
+            if (pw !== cpw) {
+                alert('Passwords do not match');
+                return;
+            }
+            alert('Registration successful! (Placeholder)');
+            // Redirect to virtual pet main page
+            window.location.href = './pet.html';
+        });
+    </script>
+</body>
+</html> 
