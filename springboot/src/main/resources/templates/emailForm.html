@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>邮件测试页面</title>
+</head>
+<body>
+<h2>添加邮箱</h2>
+<form th:action="@{/add-email}" method="post">
+  <input type="email" name="email" placeholder="请输入邮箱地址" required/>
+  <button type="submit">添加</button>
+</form>
+
+<h3>当前邮箱列表：</h3>
+<ul>
+  <li th:each="e : ${emailList}" th:text="${e}"></li>
+</ul>
+
+<form th:action="@{/send-all}" method="post" style="margin-top:20px;">
+  <button type="submit">发送测试邮件</button>
+</form>
+
+<p th:text="${message}" style="color: green; margin-top:20px;"></p>
+</body>
+</html>
