@@ -1,25 +1,156 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>邮件测试页面</title>
+    <meta charset="UTF-8">
+    <title>Pet Reminder App - Email Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4CAF50;
+        }
+        .form-section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input[type="email"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .secondary {
+            background-color: #2196F3;
+        }
+        .secondary:hover {
+            background-color: #1976D2;
+        }
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .email-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .email-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .email-item:last-child {
+            border-bottom: none;
+        }
+        .info-box {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #99d3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
-<h2>添加邮箱</h2>
-<form th:action="@{/add-email}" method="post">
-  <input type="email" name="email" placeholder="请输入邮箱地址" required/>
-  <button type="submit">添加</button>
-</form>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 Pet Reminder App</h1>
+            <h2>Email Subscription Management</h2>
+            <p>Manage newsletter subscriptions and send welcome messages</p>
+        </div>
 
-<h3>当前邮箱列表：</h3>
-<ul>
-  <li th:each="e : ${emailList}" th:text="${e}"></li>
-</ul>
+        <!-- Add Email Form -->
+        <div class="form-section">
+            <h3>📧 Add Email to Newsletter</h3>
+            <form th:action="@{/add-email}" method="post">
+                <div class="form-group">
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" name="email" placeholder="Enter email address" required/>
+                </div>
+                <button type="submit">Add to Newsletter</button>
+            </form>
+        </div>
 
-<form th:action="@{/send-all}" method="post" style="margin-top:20px;">
-  <button type="submit">发送测试邮件</button>
-</form>
+        <!-- Current Email List -->
+        <div class="form-section">
+            <h3>📋 Current Email List</h3>
+            <div class="email-list">
+                <div th:if="${#lists.isEmpty(emailList)}" style="text-align: center; color: #666; padding: 20px;">
+                    No email addresses added yet.
+                </div>
+                <div th:each="email : ${emailList}" class="email-item" th:text="${email}"></div>
+            </div>
+        </div>
 
-<p th:text="${message}" style="color: green; margin-top:20px;"></p>
+        <!-- Send Emails -->
+        <div class="form-section">
+            <h3>📤 Send Welcome Messages</h3>
+            <p>Send welcome messages to all subscribed email addresses.</p>
+            <form th:action="@{/send-all}" method="post">
+                <button type="submit" class="secondary">Send Welcome Messages to All</button>
+            </form>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${message}" class="message" th:text="${message}"></div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <strong>💡 Note:</strong> This is the legacy email management system. 
+            For new user registrations with verification, please use the 
+            <a href="/user/register" style="color: #0066cc;">User Registration System</a>.
+        </div>
+    </div>
 </body>
 </html>
