@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Controller for handling user registration and verification
@@ -41,7 +43,7 @@ public class UserController {
     }
 
     /**
-     * Register a new user and send verification email
+     * Register a new user and send verification email (HTML form submission)
      * 
      * @param email The email address to register
      * @param model Spring MVC model to add attributes
@@ -69,7 +71,35 @@ public class UserController {
     }
 
     /**
-     * Verify user email with verification code
+     * Register a new user and send verification email (API endpoint for AJAX)
+     * 
+     * @param email The email address to register
+     * @return JSON response with result
+     */
+    @PostMapping("/api/register")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> registerUserAPI(@RequestParam("email") String email) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = userService.registerUser(email);
+            response.put("success", true);
+            response.put("message", "Verification email sent to: " + email + ". Please check your inbox!");
+            response.put("email", email);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("message", "Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to send verification email. Please try again.");
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * Verify user email with verification code (HTML form submission)
      * 
      * @param email The email address
      * @param code The verification code
@@ -98,7 +128,33 @@ public class UserController {
     }
 
     /**
-     * Resend verification code
+     * Verify user email with verification code (API endpoint for AJAX)
+     * 
+     * @param email The email address
+     * @param code The verification code
+     * @return JSON response with result
+     */
+    @PostMapping("/api/verify")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> verifyUserAPI(@RequestParam("email") String email, 
+                                                           @RequestParam("code") String code) {
+        Map<String, Object> response = new HashMap<>();
+        boolean verified = userService.verifyUser(email, code);
+        
+        if (verified) {
+            response.put("success", true);
+            response.put("message", "Email verification successful! Welcome to Pet Reminder App.");
+        } else {
+            response.put("success", false);
+            response.put("message", "Invalid or expired verification code. Please try again or request a new code.");
+        }
+        
+        response.put("email", email);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Resend verification code (HTML form submission)
      * 
      * @param email The email address
      * @param model Spring MVC model to add attributes
@@ -129,6 +185,41 @@ public class UserController {
         model.addAttribute("users", userService.getAllUsers());
         model.addAttribute("stats", userService.getRegistrationStats());
         return "registration";
+    }
+
+    /**
+     * Resend verification code (API endpoint for AJAX)
+     * 
+     * @param email The email address
+     * @return JSON response with result
+     */
+    @PostMapping("/api/resend")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> resendVerificationCodeAPI(@RequestParam("email") String email) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                response.put("success", false);
+                response.put("message", "Email not found. Please register first.");
+                return ResponseEntity.badRequest().body(response);
+            } else if (user.getStatus() == User.UserStatus.VERIFIED) {
+                response.put("success", false);
+                response.put("message", "Email is already verified.");
+                return ResponseEntity.badRequest().body(response);
+            } else {
+                userService.registerUser(email); // This will generate and send a new code
+                response.put("success", true);
+                response.put("message", "New verification code sent to: " + email);
+                response.put("email", email);
+                return ResponseEntity.ok(response);
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to resend verification code. Please try again.");
+            return ResponseEntity.internalServerError().body(response);
+        }
     }
 
     /**

@@ -56,11 +56,18 @@ Verification email sent successfully to: 2546435361@qq.com with code: 293398
 Verification email sent successfully to: 2546435361@qq.com with code: 438653
 Verification email sent successfully to: 2546435361@qq.com with code: 872460
 Verification email sent successfully to: 2546435361@qq.com with code: 498104
------
-[INFO] Total time:  2.006 s
-[INFO] Finished at: 2025-07-21T10:21:06+02:00
+Verification email sent successfully to: 2546435361@qq.com with code: 989974
+Verification email sent successfully to: 2546435361@qq.com with code: 627625
+Verification email sent successfully to: test@example.com with code: 215084
+2025-07-21T10:59:42.684+02:00  INFO 29512 --- [demo] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2025-07-21T10:59:42.689+02:00  INFO 29512 --- [demo] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.4.7:run (default-cli) on project demo: Process terminated with exit code: 1 -> [Help 1]
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  43:46 min
+[INFO] Finished at: 2025-07-21T10:59:42+02:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.4.7:run (default-cli) on project demo: Process terminated with exit code: 143 -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
 [ERROR] Re-run Maven using the -X switch to enable full debug logging.
