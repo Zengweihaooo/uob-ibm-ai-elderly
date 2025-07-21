@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - UOB-IBM AI Elderly Project</title>
+    <title>Register - Pet Reminder App</title>
     <link rel="stylesheet" href="../styles/main.css">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         .register-container {
-            max-width: 400px;
+            max-width: 450px;
             width: 90%;
             margin: 4rem auto 2rem;
             padding: 2rem 1rem;
@@ -24,6 +24,34 @@
             margin-bottom: 1.5rem;
             color: var(--primary-blue);
         }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .step.active {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+        .step.inactive {
+            background-color: #e0e0e0;
+            color: #666;
+        }
+        .step.completed {
+            background-color: #4CAF50;
+            color: white;
+        }
         .register-form label {
             font-size: 14px;
             font-weight: 500;
@@ -31,13 +59,18 @@
             display: block;
             color: var(--text-primary);
         }
-        .register-form input {
+        .register-form input, .register-form select {
             width: 100%;
             padding: 0.75rem;
             margin-bottom: 1rem;
             border: 1px solid var(--border-subtle);
             border-radius: 4px;
             font-size: 14px;
+            box-sizing: border-box;
+        }
+        .register-form input:focus, .register-form select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
         }
         .register-form button {
             width: 100%;
@@ -49,9 +82,76 @@
             font-size: 16px;
             cursor: pointer;
             transition: opacity 0.3s ease;
+            margin-top: 0.5rem;
         }
         .register-form button:hover {
             opacity: 0.9;
+        }
+        .register-form button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .register-form button.secondary {
+            background-color: #6c757d;
+            margin-top: 0.5rem;
+        }
+        .register-form button.secondary:hover {
+            background-color: #5a6268;
+        }
+        .verification-code-input {
+            text-align: center;
+            font-size: 24px;
+            letter-spacing: 8px;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+        }
+        .message {
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 14px;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message.info {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #99d3ff;
+        }
+        .step-content {
+            display: none;
+        }
+        .step-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .password-requirements {
+            font-size: 12px;
+            color: #666;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         @media (max-width: 600px) {
             .register-container {
@@ -101,41 +201,380 @@
 
     <main class="main-content">
         <div class="register-container">
-            <h1>Create Account</h1>
-            <form class="register-form" id="registerForm">
-                <label for="fullname">Full Name</label>
-                <input type="text" id="fullname" name="fullname" placeholder="John Doe" required>
+            <h1>🐾 Create Your Pet Reminder Account</h1>
+            
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step1">1</div>
+                <div class="step inactive" id="step2">2</div>
+                <div class="step inactive" id="step3">3</div>
+            </div>
 
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="example@mail.com" required>
+            <!-- Message Display -->
+            <div id="messageContainer"></div>
 
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="******" required minlength="6">
+            <!-- Step 1: Email Registration -->
+            <div class="step-content active" id="step1Content">
+                <form class="register-form" id="emailForm">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+                        <div class="password-requirements">
+                            We'll send you a 6-digit verification code to confirm your email address.
+                        </div>
+                    </div>
+                    <button type="submit" id="emailSubmitBtn">
+                        <span id="emailBtnText">Send Verification Code</span>
+                        <span id="emailBtnLoading" class="loading" style="display: none;"></span>
+                    </button>
+                </form>
+            </div>
 
-                <label for="confirmPassword">Confirm Password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="******" required minlength="6">
+            <!-- Step 2: Email Verification -->
+            <div class="step-content" id="step2Content">
+                <form class="register-form" id="verificationForm">
+                    <div class="form-group">
+                        <label for="verificationCode">Verification Code</label>
+                        <input type="text" id="verificationCode" name="verificationCode" 
+                               class="verification-code-input" placeholder="123456" 
+                               maxlength="6" pattern="[0-9]{6}" required>
+                        <div class="password-requirements">
+                            Enter the 6-digit code sent to your email address.
+                        </div>
+                    </div>
+                    <button type="submit" id="verifySubmitBtn">
+                        <span id="verifyBtnText">Verify Email</span>
+                        <span id="verifyBtnLoading" class="loading" style="display: none;"></span>
+                    </button>
+                    <button type="button" class="secondary" id="resendBtn">Resend Code</button>
+                </form>
+            </div>
 
-                <button type="submit">Register</button>
-            </form>
+            <!-- Step 3: Complete Registration -->
+            <div class="step-content" id="step3Content">
+                <form class="register-form" id="completeForm">
+                    <div class="form-group">
+                        <label for="fullname">Full Name</label>
+                        <input type="text" id="fullname" name="fullname" placeholder="John Doe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Create a secure password" required minlength="6">
+                        <div class="password-requirements">
+                            Password must be at least 6 characters long.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required minlength="6">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="petType">Choose Your Virtual Pet</label>
+                        <select id="petType" name="petType" required>
+                            <option value="">Select a pet type</option>
+                            <option value="cat">🐱 Cat</option>
+                            <option value="dog">🐶 Dog</option>
+                            <option value="rabbit">🐰 Rabbit</option>
+                            <option value="bird">🐦 Bird</option>
+                            <option value="fish">🐠 Fish</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="completeSubmitBtn">
+                        <span id="completeBtnText">Complete Registration</span>
+                        <span id="completeBtnLoading" class="loading" style="display: none;"></span>
+                    </button>
+                </form>
+            </div>
         </div>
     </main>
 
     <footer class="footer"></footer>
 
-    <!-- Include existing JS for menu toggle -->
-    <script src="../index.js"></script>
     <script>
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const pw = document.getElementById('password').value;
-            const cpw = document.getElementById('confirmPassword').value;
-            if (pw !== cpw) {
-                alert('Passwords do not match');
+        // Configuration - Use original endpoints
+        const API_BASE = 'http://localhost:8080/user';
+        let currentStep = 1;
+        let userEmail = '';
+
+        // Utility functions
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+        }
+
+        function clearMessage() {
+            document.getElementById('messageContainer').innerHTML = '';
+        }
+
+        function updateStepIndicator(step) {
+            // Update step indicators
+            for (let i = 1; i <= 3; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                if (stepEl) {
+                    if (i < step) {
+                        stepEl.className = 'step completed';
+                    } else if (i === step) {
+                        stepEl.className = 'step active';
+                    } else {
+                        stepEl.className = 'step inactive';
+                    }
+                }
+            }
+
+            // Show/hide content
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            const currentContent = document.getElementById(`step${step}Content`);
+            if (currentContent) {
+                currentContent.classList.add('active');
+            }
+        }
+
+        function setButtonLoading(buttonId, loading) {
+            const btn = document.getElementById(buttonId);
+            if (!btn) {
+                console.error(`Button with id ${buttonId} not found`);
                 return;
             }
-            alert('Registration successful! (Placeholder)');
-            // Redirect to virtual pet main page
-            window.location.href = './pet.html';
+            
+            const textId = buttonId.replace('Btn', 'BtnText');
+            const loadingId = buttonId.replace('Btn', 'BtnLoading');
+            
+            const text = document.getElementById(textId);
+            const loadingSpinner = document.getElementById(loadingId);
+            
+            btn.disabled = loading;
+            
+            if (text) {
+                text.style.display = loading ? 'none' : 'inline';
+            }
+            if (loadingSpinner) {
+                loadingSpinner.style.display = loading ? 'inline-block' : 'none';
+            }
+        }
+
+        // Helper function to check if HTML response indicates success
+        function checkHtmlSuccess(htmlText, successKeyword) {
+            return htmlText.includes(successKeyword) && !htmlText.includes('Error:') && !htmlText.includes('Failed');
+        }
+
+        // Step 1: Email Registration
+        document.getElementById('emailForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearMessage();
+            
+            const email = document.getElementById('email').value;
+            if (!email) {
+                showMessage('Please enter a valid email address.', 'error');
+                return;
+            }
+            
+            userEmail = email;
+            setButtonLoading('emailSubmitBtn', true);
+
+            try {
+                const response = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(email)}`
+                });
+
+                if (response.ok) {
+                    const htmlText = await response.text();
+                    console.log('Registration response received');
+                    
+                    // Check if the response indicates success
+                    if (checkHtmlSuccess(htmlText, 'Verification email sent')) {
+                        showMessage(`Verification code sent to ${email}. Please check your inbox!`, 'success');
+                        currentStep = 2;
+                        updateStepIndicator(currentStep);
+                    } else if (htmlText.includes('Error:')) {
+                        // Extract error message from HTML
+                        const errorMatch = htmlText.match(/Error: ([^<]+)/);
+                        const errorMsg = errorMatch ? errorMatch[1] : 'Registration failed. Please try again.';
+                        showMessage(errorMsg, 'error');
+                    } else {
+                        showMessage('Registration processed. Please check your email for verification code.', 'info');
+                        currentStep = 2;
+                        updateStepIndicator(currentStep);
+                    }
+                } else {
+                    showMessage('Failed to send verification code. Please try again.', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please check your connection and try again.', 'error');
+                console.error('Network error:', error);
+            } finally {
+                setButtonLoading('emailSubmitBtn', false);
+            }
+        });
+
+        // Step 2: Email Verification
+        document.getElementById('verificationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearMessage();
+            
+            const code = document.getElementById('verificationCode').value;
+            
+            if (!/^\d{6}$/.test(code)) {
+                showMessage('Please enter a valid 6-digit verification code.', 'error');
+                return;
+            }
+            
+            setButtonLoading('verifySubmitBtn', true);
+
+            try {
+                const response = await fetch(`${API_BASE}/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(userEmail)}&code=${encodeURIComponent(code)}`
+                });
+
+                if (response.ok) {
+                    const htmlText = await response.text();
+                    console.log('Verification response received');
+                    
+                    // Check if the response indicates success
+                    if (checkHtmlSuccess(htmlText, 'verification successful') || checkHtmlSuccess(htmlText, 'Welcome')) {
+                        showMessage('Email verified successfully! Complete your registration below.', 'success');
+                        currentStep = 3;
+                        updateStepIndicator(currentStep);
+                    } else if (htmlText.includes('Invalid') || htmlText.includes('expired')) {
+                        showMessage('Invalid or expired verification code. Please try again.', 'error');
+                    } else {
+                        showMessage('Verification failed. Please check your code and try again.', 'error');
+                    }
+                } else {
+                    showMessage('Verification failed. Please try again.', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+                console.error('Network error:', error);
+            } finally {
+                setButtonLoading('verifySubmitBtn', false);
+            }
+        });
+
+        // Resend verification code
+        document.getElementById('resendBtn').addEventListener('click', async function() {
+            clearMessage();
+            this.disabled = true;
+            this.textContent = 'Sending...';
+
+            try {
+                const response = await fetch(`${API_BASE}/resend`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(userEmail)}`
+                });
+
+                if (response.ok) {
+                    const htmlText = await response.text();
+                    console.log('Resend response received');
+                    
+                    if (checkHtmlSuccess(htmlText, 'verification code sent')) {
+                        showMessage('New verification code sent! Please check your email.', 'success');
+                    } else {
+                        showMessage('Code resent. Please check your email.', 'info');
+                    }
+                } else {
+                    showMessage('Failed to resend code. Please try again.', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+                console.error('Network error:', error);
+            } finally {
+                this.disabled = false;
+                this.textContent = 'Resend Code';
+            }
+        });
+
+        // Step 3: Complete Registration
+        document.getElementById('completeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            clearMessage();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const fullname = document.getElementById('fullname').value;
+            const petType = document.getElementById('petType').value;
+            
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match. Please try again.', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters long.', 'error');
+                return;
+            }
+
+            setButtonLoading('completeSubmitBtn', true);
+            
+            // Simulate registration completion
+            setTimeout(() => {
+                showMessage(`Welcome ${fullname}! Your account has been created successfully with your ${petType} companion! 🎉`, 'success');
+                
+                // Store user data (in a real app, this would be sent to backend)
+                localStorage.setItem('userData', JSON.stringify({
+                    email: userEmail,
+                    fullname: fullname,
+                    petType: petType,
+                    registrationDate: new Date().toISOString()
+                }));
+
+                // Redirect to pet page after a short delay
+                setTimeout(() => {
+                    window.location.href = './pet.html';
+                }, 2000);
+                
+                setButtonLoading('completeSubmitBtn', false);
+            }, 1000);
+        });
+
+        // Auto-format verification code input
+        const verificationInput = document.getElementById('verificationCode');
+        if (verificationInput) {
+            verificationInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                if (value.length > 6) value = value.slice(0, 6); // Limit to 6 digits
+                e.target.value = value;
+            });
+        }
+
+        // Mobile menu toggle functionality (simplified version without marked dependency)
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navLinks = document.querySelector('.nav-links');
+
+            if (menuToggle && navLinks) {
+                menuToggle.addEventListener('click', function() {
+                    menuToggle.classList.toggle('active');
+                    navLinks.classList.toggle('active');
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!event.target.closest('.nav-container')) {
+                        menuToggle.classList.remove('active');
+                        navLinks.classList.remove('active');
+                    }
+                });
+            }
+
+            // Initialize step indicator
+            updateStepIndicator(currentStep);
         });
     </script>
 </body>
