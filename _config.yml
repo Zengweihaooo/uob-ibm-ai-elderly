@@ -1,0 +1,40 @@
+title: IBM AI Elderly Project
+description: University of Bristol IBM AI Elderly Care Project
+baseurl: "/uob-ibm-ai-elderly"
+url: "https://zengweihaooo.github.io"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+permalink: pretty
+
+# Collections
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:name/
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - .git/
+  - .github/
+  - springboot/
+  - IBM/
+
+# Include in processing
+include:
+  - _pages
+  - assets
+  - docs 
