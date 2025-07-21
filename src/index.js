@@ -1,14 +1,28 @@
-// Mobile menu toggle
+/**
+ * Main JavaScript file for the IBM AI Elderly Project website
+ * 
+ * This file handles:
+ * - Mobile menu functionality
+ * - Dynamic content loading from markdown files
+ * - Modal display for content
+ * - Real-time clock updates for different timezones
+ * 
+ * @author Weihao Zeng
+ * @version 1.0
+ */
+
+// Mobile menu toggle functionality
 document.addEventListener('DOMContentLoaded', async function() {
     const menuToggle = document.querySelector('.menu-toggle');
     const navLinks = document.querySelector('.nav-links');
 
+    // Toggle mobile menu when hamburger button is clicked
     menuToggle.addEventListener('click', function() {
         menuToggle.classList.toggle('active');
         navLinks.classList.toggle('active');
     });
 
-    // Close menu when clicking outside
+    // Close mobile menu when clicking outside the navigation area
     document.addEventListener('click', function(event) {
         if (!event.target.closest('.nav-container')) {
             menuToggle.classList.remove('active');
@@ -19,8 +33,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     // ---------------------------------------------
     // Modal functionality & dynamic updates loading
     // ---------------------------------------------
+    
+    // Check if marked library is loaded for markdown parsing
     if (typeof marked === 'undefined') {
-        console.error('Marked library not loaded');
+        console.error('Marked library not loaded - markdown parsing unavailable');
         return;
     }
 
@@ -29,15 +45,21 @@ document.addEventListener('DOMContentLoaded', async function() {
     const modalTitle = modal.querySelector('.modal-title');
     const modalBody = modal.querySelector('.modal-body');
 
-    // Close modal handlers
+    // Close modal event handlers
     closeButton.addEventListener('click', () => (modal.style.display = 'none'));
     modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.style.display = 'none';
     });
 
+    /**
+     * Load and display latest project updates from markdown files
+     * 
+     * This function fetches meeting notes and learning journal content
+     * from markdown files and displays them in a dynamic list.
+     */
     async function loadLatestUpdates() {
         try {
-            // Meeting markdown files (add or remove as needed)
+            // List of meeting markdown files to load (add or remove as needed)
             const meetingFiles = [
                 '2025-06-06-SecondMeeting.md',
                 '2025-05-14-kickoff.md',
@@ -46,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             const updates = [];
 
-            // Fetch meetings
+            // Fetch and process meeting files
             for (const file of meetingFiles) {
                 try {
                     const res = await fetch(`./docs/meetings/${file}`);
@@ -60,11 +82,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                         content
                     });
                 } catch (err) {
-                    console.warn(`Error loading ${file}:`, err);
+                    console.warn(`Error loading meeting file ${file}:`, err);
                 }
             }
 
-            // Fetch learning journal
+            // Fetch learning journal content
             try {
                 const journalRes = await fetch('./docs/LearningJournal/WeihaoZeng.md');
                 if (journalRes.ok) {
@@ -80,25 +102,25 @@ document.addEventListener('DOMContentLoaded', async function() {
                 console.error('Error loading learning journal:', err);
             }
 
-            // Sort by date DESC
+            // Sort updates by date in descending order (newest first)
             updates.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            // Render
+            // Render updates to the DOM
             const updatesList = document.querySelector('.updates-list');
             updatesList.innerHTML = '';
-            updates.forEach((u) => {
+            updates.forEach((update) => {
                 const el = document.createElement('div');
                 el.className = 'update-item';
                 el.innerHTML = `
                     <div class="update-header">
-                        <h3>${u.title}</h3>
-                        <span class="date">${u.date}</span>
+                        <h3>${update.title}</h3>
+                        <span class="date">${update.date}</span>
                     </div>
                     <p class="description">Click to view details</p>
                 `;
                 el.addEventListener('click', () => {
-                    modalTitle.textContent = u.title;
-                    modalBody.innerHTML = marked.parse(u.content);
+                    modalTitle.textContent = update.title;
+                    modalBody.innerHTML = marked.parse(update.content);
                     modal.style.display = 'block';
                 });
                 updatesList.appendChild(el);
@@ -108,12 +130,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    // Initialize dynamic content loading
     loadLatestUpdates();
 });
 
 // ----------------------------
-// Timezone clock (runs globally)
+// Real-time clock functionality (runs globally)
 // ----------------------------
+
+/**
+ * Update time displays for different timezones
+ * 
+ * This function updates the clock displays for UK, India, and US timezones
+ * to help team members coordinate across different time zones.
+ */
 function updateTime() {
     const now = new Date();
     const zones = [
@@ -135,5 +165,6 @@ function updateTime() {
     });
 }
 
+// Initialize clock and update every second
 updateTime();
 setInterval(updateTime, 1000); 

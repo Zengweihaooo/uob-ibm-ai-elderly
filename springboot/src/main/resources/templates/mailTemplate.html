@@ -2,12 +2,66 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>宠物提醒 App 测试邮件</title>
+    <title>Pet Reminder App - Welcome Message</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 30px;
+            border-radius: 0 0 5px 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
-<h2>亲爱的用户，您好！</h2>
-<p>这是来自宠物提醒 App 的测试邮件。</p>
-<p>我们已收到您的邮箱地址：<strong th:text="${toEmail}">[toEmail]</strong></p>
-<p>祝您和您的宠物生活愉快！</p>
+    <div class="header">
+        <h1>🐾 Pet Reminder App</h1>
+        <h2>Welcome to Our Community!</h2>
+    </div>
+    
+    <div class="content">
+        <h2>Hello Dear User! 👋</h2>
+        <p>This is a welcome message from Pet Reminder App.</p>
+        <p>We have received your email address: <strong th:text="${toEmail}">[toEmail]</strong></p>
+        <p>Thank you for joining our community! We hope you and your virtual pet companion will have a wonderful time together.</p>
+        
+        <p>🎉 What you can do now:</p>
+        <ul>
+            <li>🐱 Create and customize your virtual pet</li>
+            <li>📅 Set up care reminders and schedules</li>
+            <li>👥 Stay connected with family and caregivers</li>
+            <li>💬 Enjoy interactive conversations with your AI companion</li>
+        </ul>
+        
+        <p>Best wishes for you and your pet!</p>
+        
+        <p>Warm regards,<br>
+        The Pet Reminder App Team<br>
+        IBM AI Elderly Project</p>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated message from Pet Reminder App.<br>
+        University of Bristol × IBM Summer Project 2025</p>
+    </div>
 </body>
 </html>

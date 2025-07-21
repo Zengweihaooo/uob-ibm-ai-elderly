@@ -1,0 +1,263 @@
+package com.example.demo.controller;
+
+import com.example.demo.pojo.User;
+import com.example.demo.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Controller for handling user registration and verification
+ * 
+ * This controller manages user registration, email verification, and user status
+ * for the IBM AI Elderly Project.
+ * 
+ * @author Weihao Zeng
+ * @version 1.0
+ */
+@Controller
+@RequestMapping("/user")
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    /**
+     * Display the user registration page
+     * 
+     * @param model Spring MVC model to add attributes
+     * @return The registration template name
+     */
+    @GetMapping("/register")
+    public String showRegistrationPage(Model model) {
+        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("stats", userService.getRegistrationStats());
+        return "registration";
+    }
+
+    /**
+     * Register a new user and send verification email
+     * 
+     * @param email The email address to register
+     * @param model Spring MVC model to add attributes
+     * @return The registration template name with success/error message
+     */
+    @PostMapping("/register")
+    public String registerUser(@RequestParam("email") String email, Model model) {
+        try {
+            User user = userService.registerUser(email);
+            model.addAttribute("message", "Verification email sent to: " + email + ". Please check your inbox and enter the 6-digit code.");
+            model.addAttribute("messageType", "success");
+            model.addAttribute("showVerification", true);
+            model.addAttribute("userEmail", email);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("message", "Error: " + e.getMessage());
+            model.addAttribute("messageType", "error");
+        } catch (Exception e) {
+            model.addAttribute("message", "Failed to send verification email. Please try again.");
+            model.addAttribute("messageType", "error");
+        }
+        
+        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("stats", userService.getRegistrationStats());
+        return "registration";
+    }
+
+    /**
+     * Verify user email with verification code
+     * 
+     * @param email The email address
+     * @param code The verification code
+     * @param model Spring MVC model to add attributes
+     * @return The registration template name with verification result
+     */
+    @PostMapping("/verify")
+    public String verifyUser(@RequestParam("email") String email, 
+                           @RequestParam("code") String code, 
+                           Model model) {
+        boolean verified = userService.verifyUser(email, code);
+        
+        if (verified) {
+            model.addAttribute("message", "Email verification successful! Welcome to Pet Reminder App.");
+            model.addAttribute("messageType", "success");
+        } else {
+            model.addAttribute("message", "Invalid or expired verification code. Please try again or request a new code.");
+            model.addAttribute("messageType", "error");
+            model.addAttribute("showVerification", true);
+            model.addAttribute("userEmail", email);
+        }
+        
+        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("stats", userService.getRegistrationStats());
+        return "registration";
+    }
+
+    /**
+     * Resend verification code
+     * 
+     * @param email The email address
+     * @param model Spring MVC model to add attributes
+     * @return The registration template name with result message
+     */
+    @PostMapping("/resend")
+    public String resendVerificationCode(@RequestParam("email") String email, Model model) {
+        try {
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                model.addAttribute("message", "Email not found. Please register first.");
+                model.addAttribute("messageType", "error");
+            } else if (user.getStatus() == User.UserStatus.VERIFIED) {
+                model.addAttribute("message", "Email is already verified.");
+                model.addAttribute("messageType", "info");
+            } else {
+                userService.registerUser(email); // This will generate and send a new code
+                model.addAttribute("message", "New verification code sent to: " + email);
+                model.addAttribute("messageType", "success");
+                model.addAttribute("showVerification", true);
+                model.addAttribute("userEmail", email);
+            }
+        } catch (Exception e) {
+            model.addAttribute("message", "Failed to resend verification code. Please try again.");
+            model.addAttribute("messageType", "error");
+        }
+        
+        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("stats", userService.getRegistrationStats());
+        return "registration";
+    }
+
+    /**
+     * Delete a single user by email
+     * 
+     * @param email The email address of the user to delete
+     * @param model Spring MVC model to add attributes
+     * @return The registration template name with result message
+     */
+    @PostMapping("/delete")
+    public String deleteUser(@RequestParam("email") String email, Model model) {
+        boolean deleted = userService.deleteUser(email);
+        
+        if (deleted) {
+            model.addAttribute("message", "User " + email + " has been successfully deleted.");
+            model.addAttribute("messageType", "success");
+        } else {
+            model.addAttribute("message", "User " + email + " not found or could not be deleted.");
+            model.addAttribute("messageType", "error");
+        }
+        
+        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("stats", userService.getRegistrationStats());
+        return "registration";
+    }
+
+    /**
+     * Delete multiple users by email addresses
+     * 
+     * @param emails Comma-separated list of email addresses
+     * @param model Spring MVC model to add attributes
+     * @return The registration template name with result message
+     */
+    @PostMapping("/delete-multiple")
+    public String deleteMultipleUsers(@RequestParam("emails") String emails, Model model) {
+        if (emails == null || emails.trim().isEmpty()) {
+            model.addAttribute("message", "No email addresses provided for deletion.");
+            model.addAttribute("messageType", "error");
+        } else {
+            List<String> emailList = Arrays.asList(emails.split(","));
+            int deletedCount = userService.deleteUsers(emailList);
+            
+            if (deletedCount > 0) {
+                model.addAttribute("message", "Successfully deleted " + deletedCount + " user(s).");
+                model.addAttribute("messageType", "success");
+            } else {
+                model.addAttribute("message", "No users were deleted. Please check the email addresses.");
+                model.addAttribute("messageType", "error");
+            }
+        }
+        
+        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("stats", userService.getRegistrationStats());
+        return "registration";
+    }
+
+    /**
+     * Delete all users with a specific status
+     * 
+     * @param status The user status (PENDING, VERIFIED, UNREGISTERED)
+     * @param model Spring MVC model to add attributes
+     * @return The registration template name with result message
+     */
+    @PostMapping("/delete-by-status")
+    public String deleteUsersByStatus(@RequestParam("status") String status, Model model) {
+        try {
+            User.UserStatus userStatus = User.UserStatus.valueOf(status.toUpperCase());
+            int deletedCount = userService.deleteUsersByStatus(userStatus);
+            
+            if (deletedCount > 0) {
+                model.addAttribute("message", "Successfully deleted " + deletedCount + " user(s) with status: " + status);
+                model.addAttribute("messageType", "success");
+            } else {
+                model.addAttribute("message", "No users found with status: " + status);
+                model.addAttribute("messageType", "info");
+            }
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("message", "Invalid status: " + status + ". Valid statuses are: PENDING, VERIFIED, UNREGISTERED");
+            model.addAttribute("messageType", "error");
+        }
+        
+        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("stats", userService.getRegistrationStats());
+        return "registration";
+    }
+
+    /**
+     * Get user information as JSON (for API calls)
+     * 
+     * @param email The email address
+     * @return User information
+     */
+    @GetMapping("/info")
+    @ResponseBody
+    public Map<String, Object> getUserInfo(@RequestParam("email") String email) {
+        User user = userService.getUserByEmail(email);
+        Map<String, Object> response = Map.of(
+            "exists", user != null,
+            "status", user != null ? user.getStatus().toString() : "NOT_FOUND",
+            "email", email
+        );
+        return response;
+    }
+
+    /**
+     * Get registration statistics as JSON
+     * 
+     * @return Registration statistics
+     */
+    @GetMapping("/stats")
+    @ResponseBody
+    public Map<String, Integer> getStats() {
+        return userService.getRegistrationStats();
+    }
+
+    /**
+     * Delete user via API (for AJAX calls)
+     * 
+     * @param email The email address to delete
+     * @return JSON response with result
+     */
+    @DeleteMapping("/api/delete")
+    @ResponseBody
+    public Map<String, Object> deleteUserAPI(@RequestParam("email") String email) {
+        boolean deleted = userService.deleteUser(email);
+        return Map.of(
+            "success", deleted,
+            "message", deleted ? "User deleted successfully" : "User not found",
+            "email", email
+        );
+    }
+} 
