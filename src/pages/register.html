@@ -153,10 +153,86 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        /* Mode Selection Styles */
+        .mode-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .mode-option {
+            border: 2px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            text-align: center;
+        }
+        
+        .mode-option:hover {
+            border-color: var(--primary-blue);
+            box-shadow: 0 4px 12px rgba(44, 90, 160, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .mode-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .mode-option h3 {
+            font-size: 1.5rem;
+            margin: 0 0 1rem 0;
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+        
+        .mode-option p {
+            font-size: 1rem;
+            color: #666;
+            margin: 0 0 1.5rem 0;
+            line-height: 1.5;
+        }
+        
+        .mode-option ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        
+        .mode-option li {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+            position: relative;
+        }
+        
+        @media (min-width: 768px) {
+            .mode-selection {
+                flex-direction: row;
+                gap: 2rem;
+            }
+            
+            .mode-option {
+                flex: 1;
+            }
+        }
+        
         @media (max-width: 600px) {
             .register-container {
                 margin-top: 3rem;
                 padding: 1.5rem 1rem;
+            }
+            
+            .mode-option {
+                padding: 1.5rem 1rem;
+            }
+            
+            .mode-icon {
+                font-size: 2.5rem;
             }
         }
     </style>
@@ -201,10 +277,41 @@
 
     <main class="main-content">
         <div class="register-container">
-            <h1>🐾 Create Your Pet Reminder Account</h1>
+            <h1>📅 AI Elderly Companion</h1>
+            
+            <!-- Mode Selection (New Step 0) -->
+            <div class="step-content active" id="step0Content">
+                <div class="mode-selection">
+                    <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-blue);">Choose Your Experience</h2>
+                    
+                    <div class="mode-option" onclick="selectMode('register')">
+                        <div class="mode-icon">👤</div>
+                        <h3>Create Account</h3>
+                        <p>Register with your email to save your personal schedule and preferences.</p>
+                        <ul>
+                            <li>✅ Personalized daily schedule</li>
+                            <li>✅ Save your activities</li>
+                            <li>✅ Medication reminders</li>
+                            <li>✅ Progress tracking</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mode-option" onclick="selectMode('guest')">
+                        <div class="mode-icon">🌟</div>
+                        <h3>Guest Mode</h3>
+                        <p>Try our app with sample elderly daily activities without registration.</p>
+                        <ul>
+                            <li>📋 Sample daily activities</li>
+                            <li>📋 Typical elderly routines</li>
+                            <li>📋 Medication reminders</li>
+                            <li>📋 No account needed</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
             
             <!-- Step Indicator -->
-            <div class="step-indicator">
+            <div class="step-indicator" id="stepIndicator" style="display: none;">
                 <div class="step active" id="step1">1</div>
                 <div class="step inactive" id="step2">2</div>
                 <div class="step inactive" id="step3">3</div>
@@ -297,8 +404,29 @@
     <script>
         // Configuration - Use original endpoints
         const API_BASE = 'http://localhost:8080/user';
-        let currentStep = 1;
+        let currentStep = 0; // Start with mode selection
         let userEmail = '';
+        let selectedMode = null;
+
+        // Mode selection function
+        function selectMode(mode) {
+            selectedMode = mode;
+            
+            if (mode === 'guest') {
+                // Set guest mode and redirect to schedule
+                localStorage.setItem('guestMode', 'true');
+                showMessage('Welcome to Guest Mode! Redirecting to sample schedule...', 'success');
+                setTimeout(() => {
+                    window.location.href = './schedule.html';
+                }, 1500);
+            } else if (mode === 'register') {
+                // Show registration steps
+                document.getElementById('step0Content').classList.remove('active');
+                document.getElementById('stepIndicator').style.display = 'flex';
+                currentStep = 1;
+                updateStepIndicator(currentStep);
+            }
+        }
 
         // Utility functions
         function showMessage(message, type = 'info') {
@@ -311,6 +439,19 @@
         }
 
         function updateStepIndicator(step) {
+            // Handle step 0 (mode selection)
+            if (step === 0) {
+                document.getElementById('stepIndicator').style.display = 'none';
+                document.querySelectorAll('.step-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById('step0Content').classList.add('active');
+                return;
+            }
+
+            // Show step indicator for registration steps
+            document.getElementById('stepIndicator').style.display = 'flex';
+            
             // Update step indicators
             for (let i = 1; i <= 3; i++) {
                 const stepEl = document.getElementById(`step${i}`);
@@ -534,9 +675,13 @@
                     registrationDate: new Date().toISOString()
                 }));
 
-                // Redirect to pet page after a short delay
+                // Store authentication token (simulate)
+                localStorage.setItem('authToken', 'demo-token-' + Date.now());
+                localStorage.removeItem('guestMode'); // Clear any guest mode setting
+                
+                // Redirect to schedule page after a short delay
                 setTimeout(() => {
-                    window.location.href = './pet.html';
+                    window.location.href = './schedule.html';
                 }, 2000);
                 
                 setButtonLoading('completeSubmitBtn', false);
