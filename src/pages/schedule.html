@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Schedule - AI Elderly Companion</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Elderly-friendly design principles */
+        :root {
+            --elderly-primary: #2c5aa0;
+            --elderly-secondary: #4a90e2;
+            --elderly-success: #28a745;
+            --elderly-warning: #ffc107;
+            --elderly-danger: #dc3545;
+            --elderly-light: #f8f9fa;
+            --elderly-dark: #212529;
+            --elderly-border: #dee2e6;
+            --elderly-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 18px; /* Larger base font size */
+            line-height: 1.6;
+            color: var(--elderly-dark);
+            background-color: var(--elderly-light);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--elderly-primary), var(--elderly-secondary));
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: var(--elderly-shadow);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        /* User info bar */
+        .user-info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--elderly-shadow);
+            border: 2px solid var(--elderly-border);
+        }
+
+        .user-welcome {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: var(--elderly-primary);
+        }
+
+        .user-actions button {
+            background: var(--elderly-danger);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .user-actions button:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        /* Date navigation */
+        .date-nav {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: var(--elderly-shadow);
+            border: 2px solid var(--elderly-border);
+        }
+
+        .date-nav h2 {
+            font-size: 2rem;
+            color: var(--elderly-primary);
+            margin: 0 0 20px 0;
+        }
+
+        .date-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .date-btn {
+            background: var(--elderly-secondary);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: 500;
+            min-width: 120px;
+            transition: all 0.3s ease;
+        }
+
+        .date-btn:hover {
+            background: var(--elderly-primary);
+            transform: translateY(-2px);
+        }
+
+        .current-date {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--elderly-primary);
+            padding: 10px 20px;
+            background: var(--elderly-light);
+            border-radius: 8px;
+            border: 2px solid var(--elderly-border);
+            min-width: 200px;
+        }
+
+        /* Schedule content */
+        .schedule-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .schedule-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .schedule-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--elderly-shadow);
+            border: 2px solid var(--elderly-border);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--elderly-primary);
+            margin: 0 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--elderly-border);
+        }
+
+        /* Activity list */
+        .activity-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .activity-item {
+            background: var(--elderly-light);
+            border: 2px solid var(--elderly-border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .activity-item:hover {
+            border-color: var(--elderly-secondary);
+            box-shadow: var(--elderly-shadow);
+        }
+
+        .activity-item.completed {
+            background: #d4edda;
+            border-color: var(--elderly-success);
+        }
+
+        .activity-time {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--elderly-primary);
+            margin-bottom: 8px;
+        }
+
+        .activity-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .activity-description {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .activity-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .btn-complete {
+            background: var(--elderly-success);
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #218838;
+        }
+
+        .btn-edit {
+            background: var(--elderly-warning);
+            color: var(--elderly-dark);
+        }
+
+        .btn-edit:hover {
+            background: #e0a800;
+        }
+
+        .btn-delete {
+            background: var(--elderly-danger);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        /* Add activity form */
+        .add-activity {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: var(--elderly-shadow);
+            border: 2px solid var(--elderly-border);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--elderly-primary);
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--elderly-border);
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--elderly-secondary);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--elderly-primary);
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--elderly-secondary);
+            transform: translateY(-2px);
+        }
+
+        /* Loading and messages */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: var(--elderly-secondary);
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        /* Guest mode indicator */
+        .guest-mode {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .date-controls {
+                flex-direction: column;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="../../index.html" class="home-btn" aria-label="Home">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 16V10H12V16H15V8H18L10 1L2 8H5V16H8Z" fill="currentColor"/>
+                    </svg>
+                </a>
+                <div class="logo-container">
+                    <a href="https://www.bristol.ac.uk" target="_blank" class="logo-link">
+                        <img src="https://www.bristol.ac.uk/assets/responsive-web-project/2.6.0/images/logos/uob-logo.svg" alt="University of Bristol Logo" class="logo uob-logo">
+                    </a>
+                    <a href="https://www.ibm.com" target="_blank" class="logo-link">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM Logo" class="logo ibm-logo">
+                    </a>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="./register.html" class="nav-link">Register/Login</a>
+                <a href="./blogs.html" class="nav-link">Blogs</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📅 Daily Schedule</h1>
+            <p>Plan your day with ease and stay organized</p>
+        </div>
+
+        <!-- Guest mode indicator -->
+        <div id="guestModeIndicator" class="guest-mode" style="display: none;">
+            🌟 You are in Guest Mode - Viewing sample elderly daily activities
+        </div>
+
+        <!-- User info -->
+        <div class="user-info">
+            <div class="user-welcome" id="userWelcome">
+                Welcome! Please login to save your schedule.
+            </div>
+            <div class="user-actions">
+                <button id="logoutBtn" style="display: none;" onclick="logout()">Logout</button>
+                <button id="loginBtn" onclick="window.location.href='./register.html'">Login / Register</button>
+            </div>
+        </div>
+
+        <!-- Date navigation -->
+        <div class="date-nav">
+            <h2>Select Date</h2>
+            <div class="date-controls">
+                <button class="date-btn" onclick="changeDate(-1)">← Previous Day</button>
+                <div class="current-date" id="currentDate"></div>
+                <button class="date-btn" onclick="changeDate(1)">Next Day →</button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="messageContainer"></div>
+
+        <!-- Schedule content -->
+        <div class="schedule-content">
+            <!-- Morning activities -->
+            <div class="schedule-section">
+                <h3 class="section-title">🌅 Morning Activities</h3>
+                <ul class="activity-list" id="morningActivities">
+                    <div class="loading">Loading morning activities...</div>
+                </ul>
+            </div>
+
+            <!-- Afternoon activities -->
+            <div class="schedule-section">
+                <h3 class="section-title">☀️ Afternoon Activities</h3>
+                <ul class="activity-list" id="afternoonActivities">
+                    <div class="loading">Loading afternoon activities...</div>
+                </ul>
+            </div>
+
+            <!-- Evening activities -->
+            <div class="schedule-section">
+                <h3 class="section-title">🌙 Evening Activities</h3>
+                <ul class="activity-list" id="eveningActivities">
+                    <div class="loading">Loading evening activities...</div>
+                </ul>
+            </div>
+
+            <!-- Medication reminders -->
+            <div class="schedule-section">
+                <h3 class="section-title">💊 Medication Reminders</h3>
+                <ul class="activity-list" id="medicationReminders">
+                    <div class="loading">Loading medication reminders...</div>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Add new activity form -->
+        <div class="add-activity" id="addActivityForm" style="display: none;">
+            <h3 class="section-title">➕ Add New Activity</h3>
+            <form onsubmit="addActivity(event)">
+                <div class="form-group">
+                    <label for="activityTime">Time:</label>
+                    <input type="time" id="activityTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="activityTitle">Activity Title:</label>
+                    <input type="text" id="activityTitle" placeholder="e.g., Morning Walk" required>
+                </div>
+                <div class="form-group">
+                    <label for="activityDescription">Description:</label>
+                    <textarea id="activityDescription" rows="3" placeholder="Brief description of the activity"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="activityCategory">Category:</label>
+                    <select id="activityCategory" required>
+                        <option value="">Select category</option>
+                        <option value="morning">Morning Activity</option>
+                        <option value="afternoon">Afternoon Activity</option>
+                        <option value="evening">Evening Activity</option>
+                        <option value="medication">Medication</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Add Activity</button>
+            </form>
+        </div>
+
+        <!-- Add activity button -->
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn-primary" id="showAddFormBtn" onclick="toggleAddForm()" style="width: auto; padding: 15px 40px;">
+                ➕ Add New Activity
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentDate = new Date();
+        let currentUser = null;
+        let isGuestMode = false;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateDisplay();
+            checkUserStatus();
+            loadSchedule();
+        });
+
+        // Check user login status
+        function checkUserStatus() {
+            const token = localStorage.getItem('authToken');
+            const guestMode = localStorage.getItem('guestMode');
+            
+            if (guestMode === 'true') {
+                isGuestMode = true;
+                document.getElementById('guestModeIndicator').style.display = 'block';
+                document.getElementById('userWelcome').textContent = 'Guest Mode - Viewing Sample Schedule';
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('showAddFormBtn').style.display = 'none';
+            } else if (token) {
+                // Verify token with backend
+                fetch('/api/user/verify', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentUser = data.user;
+                        document.getElementById('userWelcome').textContent = `Welcome back, ${data.user.name}!`;
+                        document.getElementById('loginBtn').style.display = 'none';
+                        document.getElementById('logoutBtn').style.display = 'block';
+                        document.getElementById('addActivityForm').style.display = 'block';
+                    } else {
+                        localStorage.removeItem('authToken');
+                    }
+                })
+                .catch(error => {
+                    console.error('Token verification failed:', error);
+                    localStorage.removeItem('authToken');
+                });
+            }
+        }
+
+        // Update date display
+        function updateDateDisplay() {
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('currentDate').textContent = currentDate.toLocaleDateString('en-US', options);
+        }
+
+        // Change date
+        function changeDate(days) {
+            currentDate.setDate(currentDate.getDate() + days);
+            updateDateDisplay();
+            loadSchedule();
+        }
+
+        // Load schedule for current date
+        function loadSchedule() {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            
+            if (isGuestMode) {
+                loadGuestSchedule();
+                return;
+            }
+
+            const token = localStorage.getItem('authToken');
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+            fetch(`/api/schedule/${dateStr}`, { headers })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displaySchedule(data.schedule);
+                } else {
+                    showMessage('Failed to load schedule', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading schedule:', error);
+                showMessage('Error loading schedule', 'error');
+            });
+        }
+
+        // Load guest mode schedule (sample data)
+        function loadGuestSchedule() {
+            const guestSchedule = {
+                morning: [
+                    { time: '07:00', title: 'Wake Up & Stretch', description: 'Gentle morning stretches to start the day', completed: false },
+                    { time: '07:30', title: 'Breakfast', description: 'Healthy breakfast with fruits and oatmeal', completed: false },
+                    { time: '08:30', title: 'Morning Walk', description: '20-minute walk in the park', completed: false },
+                    { time: '09:30', title: 'Read Newspaper', description: 'Catch up on daily news', completed: false }
+                ],
+                afternoon: [
+                    { time: '12:00', title: 'Lunch', description: 'Nutritious lunch with vegetables', completed: false },
+                    { time: '13:30', title: 'Afternoon Rest', description: 'Short nap or quiet time', completed: false },
+                    { time: '15:00', title: 'Social Activity', description: 'Call family or friends', completed: false },
+                    { time: '16:00', title: 'Hobby Time', description: 'Gardening or reading', completed: false }
+                ],
+                evening: [
+                    { time: '18:00', title: 'Dinner', description: 'Light dinner with family', completed: false },
+                    { time: '19:30', title: 'TV Time', description: 'Watch favorite programs', completed: false },
+                    { time: '21:00', title: 'Evening Routine', description: 'Prepare for bed', completed: false },
+                    { time: '22:00', title: 'Bedtime', description: 'Good night sleep', completed: false }
+                ],
+                medication: [
+                    { time: '08:00', title: 'Morning Medication', description: 'Blood pressure medication', completed: false },
+                    { time: '14:00', title: 'Afternoon Vitamins', description: 'Daily vitamins and supplements', completed: false },
+                    { time: '20:00', title: 'Evening Medication', description: 'Evening prescribed medications', completed: false }
+                ]
+            };
+            
+            displaySchedule(guestSchedule);
+        }
+
+        // Display schedule
+        function displaySchedule(schedule) {
+            const categories = ['morning', 'afternoon', 'evening', 'medication'];
+            const containers = ['morningActivities', 'afternoonActivities', 'eveningActivities', 'medicationReminders'];
+            
+            categories.forEach((category, index) => {
+                const container = document.getElementById(containers[index]);
+                const activities = schedule[category] || [];
+                
+                if (activities.length === 0) {
+                    container.innerHTML = '<div class="loading">No activities scheduled</div>';
+                } else {
+                    container.innerHTML = activities.map(activity => createActivityHTML(activity, category)).join('');
+                }
+            });
+        }
+
+        // Create activity HTML
+        function createActivityHTML(activity, category) {
+            const completedClass = activity.completed ? 'completed' : '';
+            const actionButtons = isGuestMode ? '' : `
+                <div class="activity-actions">
+                    <button class="btn btn-complete" onclick="toggleComplete(${activity.id}, '${category}')">
+                        ${activity.completed ? 'Undo' : 'Complete'}
+                    </button>
+                    <button class="btn btn-edit" onclick="editActivity(${activity.id})">Edit</button>
+                    <button class="btn btn-delete" onclick="deleteActivity(${activity.id}, '${category}')">Delete</button>
+                </div>
+            `;
+
+            return `
+                <li class="activity-item ${completedClass}">
+                    <div class="activity-time">${activity.time}</div>
+                    <div class="activity-title">${activity.title}</div>
+                    <div class="activity-description">${activity.description}</div>
+                    ${actionButtons}
+                </li>
+            `;
+        }
+
+        // Toggle add form
+        function toggleAddForm() {
+            const form = document.getElementById('addActivityForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Add new activity
+        function addActivity(event) {
+            event.preventDefault();
+            
+            const formData = {
+                time: document.getElementById('activityTime').value,
+                title: document.getElementById('activityTitle').value,
+                description: document.getElementById('activityDescription').value,
+                category: document.getElementById('activityCategory').value,
+                date: currentDate.toISOString().split('T')[0]
+            };
+
+            const token = localStorage.getItem('authToken');
+            
+            fetch('/api/schedule/activity', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('Activity added successfully!', 'success');
+                    document.querySelector('#addActivityForm form').reset();
+                    toggleAddForm();
+                    loadSchedule();
+                } else {
+                    showMessage('Failed to add activity', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding activity:', error);
+                showMessage('Error adding activity', 'error');
+            });
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            const container = document.getElementById('messageContainer');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            container.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('guestMode');
+            window.location.reload();
+        }
+    </script>
+</body>
+</html> 
