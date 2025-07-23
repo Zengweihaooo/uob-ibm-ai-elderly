@@ -81,7 +81,7 @@ public class ScheduleController {
      */
     @PostMapping("/activity")
     public ResponseEntity<Map<String, Object>> addActivity(
-            @RequestBody Map<String, String> activityData,
+            @RequestBody Map<String, Object> activityData,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Map<String, Object> response = new HashMap<>();
@@ -99,11 +99,22 @@ public class ScheduleController {
             Long userId = 1L;
             
             // Parse and validate input data
-            LocalDate scheduleDate = LocalDate.parse(activityData.get("date"));
-            LocalTime activityTime = LocalTime.parse(activityData.get("time"));
-            String title = activityData.get("title");
-            String description = activityData.get("description");
-            String category = activityData.get("category");
+            LocalDate scheduleDate = LocalDate.parse((String) activityData.get("date"));
+            LocalTime activityTime = LocalTime.parse((String) activityData.get("time"));
+            String title = (String) activityData.get("title");
+            String description = (String) activityData.get("description");
+            String category = (String) activityData.get("category");
+            
+            // Parse enhanced fields
+            String priority = (String) activityData.getOrDefault("priority", "medium");
+            String emergencyContact = (String) activityData.get("emergencyContact");
+            String emergencyContactName = (String) activityData.get("emergencyContactName");
+            String repeatCycle = (String) activityData.getOrDefault("repeatCycle", "none");
+            String notificationTime = (String) activityData.getOrDefault("notificationTime", "15min");
+            Boolean locationReminder = (Boolean) activityData.getOrDefault("locationReminder", false);
+            String locationName = (String) activityData.get("locationName");
+            String notes = (String) activityData.get("notes");
+            Boolean isAllDay = (Boolean) activityData.getOrDefault("isAllDay", false);
             
             // Validate required fields
             if (title == null || title.trim().isEmpty()) {
@@ -120,6 +131,18 @@ public class ScheduleController {
             
             // Create and save the schedule
             Schedule newSchedule = new Schedule(userId, scheduleDate, activityTime, title, description, category);
+            
+            // Set enhanced fields
+            newSchedule.setPriority(priority);
+            newSchedule.setEmergencyContact(emergencyContact);
+            newSchedule.setEmergencyContactName(emergencyContactName);
+            newSchedule.setRepeatCycle(repeatCycle);
+            newSchedule.setNotificationTime(notificationTime);
+            newSchedule.setLocationReminder(locationReminder);
+            newSchedule.setLocationName(locationName);
+            newSchedule.setNotes(notes);
+            newSchedule.setAllDay(isAllDay);
+            
             Schedule savedSchedule = scheduleService.addSchedule(newSchedule);
             
             response.put("success", true);

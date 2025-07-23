@@ -136,12 +136,12 @@ public class ScheduleService {
     public Map<String, List<Map<String, Object>>> getGuestSchedule(LocalDate date) {
         Map<String, List<Map<String, Object>>> guestSchedule = new HashMap<>();
         
-        // Morning activities
+        // Morning activities with enhanced features
         List<Map<String, Object>> morning = Arrays.asList(
-            createGuestActivity("07:00", "Wake Up & Stretch", "Gentle morning stretches to start the day"),
-            createGuestActivity("07:30", "Breakfast", "Healthy breakfast with fruits and oatmeal"),
-            createGuestActivity("08:30", "Morning Walk", "20-minute walk in the park"),
-            createGuestActivity("09:30", "Read Newspaper", "Catch up on daily news")
+            createGuestActivity("07:00", "Wake Up & Stretch", "Gentle morning stretches to start the day", "low", null, null, "daily", "5min", false, null),
+            createGuestActivity("07:30", "Breakfast", "Healthy breakfast with fruits and oatmeal", "medium", null, null, "daily", "15min", false, null),
+            createGuestActivity("08:30", "Morning Walk", "20-minute walk in the park", "high", null, null, "daily", "15min", true, "City Park"),
+            createGuestActivity("09:30", "Read Newspaper", "Catch up on daily news", "low", null, null, "daily", "30min", false, null)
         );
 
         // Afternoon activities
@@ -160,11 +160,11 @@ public class ScheduleService {
             createGuestActivity("22:00", "Bedtime", "Good night sleep")
         );
 
-        // Medication reminders
+        // Medication reminders with emergency contacts
         List<Map<String, Object>> medication = Arrays.asList(
-            createGuestActivity("08:00", "Morning Medication", "Blood pressure medication"),
-            createGuestActivity("14:00", "Afternoon Vitamins", "Daily vitamins and supplements"),
-            createGuestActivity("20:00", "Evening Medication", "Evening prescribed medications")
+            createGuestActivity("08:00", "Morning Medication", "Blood pressure medication", "high", "+1234567890", "Dr. Smith", "daily", "15min", false, null),
+            createGuestActivity("14:00", "Afternoon Vitamins", "Daily vitamins and supplements", "medium", null, null, "daily", "30min", false, null),
+            createGuestActivity("20:00", "Evening Medication", "Evening prescribed medications", "high", "+1234567890", "Dr. Smith", "daily", "15min", false, null)
         );
 
         guestSchedule.put("morning", morning);
@@ -176,14 +176,33 @@ public class ScheduleService {
     }
 
     /**
-     * Helper method to create guest activity
+     * Helper method to create guest activity with enhanced features
      */
     private Map<String, Object> createGuestActivity(String time, String title, String description) {
+        return createGuestActivity(time, title, description, "medium", null, null, "none", "15min", false, null);
+    }
+
+    /**
+     * Helper method to create guest activity with full parameters
+     */
+    private Map<String, Object> createGuestActivity(String time, String title, String description, 
+                                                   String priority, String emergencyContact, String emergencyContactName,
+                                                   String repeatCycle, String notificationTime, 
+                                                   boolean locationReminder, String locationName) {
         Map<String, Object> activity = new HashMap<>();
         activity.put("time", time);
         activity.put("title", title);
         activity.put("description", description);
         activity.put("completed", false);
+        activity.put("priority", priority);
+        activity.put("emergencyContact", emergencyContact);
+        activity.put("emergencyContactName", emergencyContactName);
+        activity.put("repeatCycle", repeatCycle);
+        activity.put("notificationTime", notificationTime);
+        activity.put("locationReminder", locationReminder);
+        activity.put("locationName", locationName);
+        activity.put("notes", "");
+        activity.put("isAllDay", false);
         return activity;
     }
 
