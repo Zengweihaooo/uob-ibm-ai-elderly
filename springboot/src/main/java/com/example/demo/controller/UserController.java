@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
 import java.util.List;
@@ -350,5 +351,45 @@ public class UserController {
             "message", deleted ? "User deleted successfully" : "User not found",
             "email", email
         );
+    }
+
+    /**
+     * Verify authentication token (for schedule page)
+     * 
+     * @param authHeader Authorization header with Bearer token
+     * @return JSON response with user info or error
+     */
+    @PostMapping("/api/verify-token")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> verifyToken(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        // Check if authorization header is present and valid
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Invalid or missing authorization token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        
+        // Extract token (remove "Bearer " prefix)
+        String token = authHeader.substring(7);
+        
+        // For demo purposes, accept any token that starts with "demo-token-"
+        // In a real application, you would validate the JWT token properly
+        if (token.startsWith("demo-token-")) {
+            response.put("success", true);
+            response.put("user", Map.of(
+                "name", "Demo User",
+                "email", "demo@example.com",
+                "id", 1
+            ));
+            return ResponseEntity.ok(response);
+        }
+        
+        response.put("success", false);
+        response.put("message", "Invalid token");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 } 
