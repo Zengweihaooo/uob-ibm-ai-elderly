@@ -33,8 +33,8 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
+            padding: 20px 20px 80px 20px; /* Add bottom padding for navigation */
+            min-height: calc(100vh - 80px);
         }
 
         /* Header */
@@ -897,6 +897,432 @@
         .ai-chat-panel.minimized .ai-chat-input {
             display: none;
         }
+
+        /* Bottom Navigation Styles */
+        .bottom-navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: white;
+            border-top: 3px solid var(--elderly-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-tab {
+            flex: 1;
+            max-width: 200px;
+            height: 100%;
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+            font-family: inherit;
+        }
+
+        .nav-tab:hover {
+            background: var(--elderly-light);
+            color: var(--elderly-primary);
+        }
+
+        .nav-tab.active {
+            background: var(--elderly-primary);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Tab Content Styles */
+        .tab-content {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 80px;
+            background: white;
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        /* Update AI Chat Panel for tab system */
+        .ai-chat-panel {
+            position: static;
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            box-shadow: none;
+            border: none;
+            max-width: none;
+            max-height: none;
+        }
+
+        .ai-chat-panel .ai-chat-header {
+            border-radius: 0;
+        }
+
+        .ai-chat-panel .ai-chat-input {
+            border-radius: 0;
+        }
+
+        /* Virtual Pet Panel Styles */
+        .pet-panel {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .pet-header {
+            background: var(--elderly-success);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pet-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .pet-icon {
+            font-size: 24px;
+        }
+
+        .pet-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            font-size: 12px;
+        }
+
+        .status-indicator.online {
+            color: #90EE90;
+        }
+
+        .pet-display {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--elderly-shadow);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .pet-avatar {
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .pet-character {
+            font-size: 80px;
+            margin-bottom: 10px;
+            animation: petBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes petBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .pet-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--elderly-primary);
+            margin-bottom: 5px;
+        }
+
+        .pet-mood {
+            font-size: 24px;
+        }
+
+        .pet-stats {
+            flex: 1;
+        }
+
+        .stat-item {
+            margin-bottom: 15px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--elderly-dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-bar {
+            width: 100%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 3px;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--elderly-success), var(--elderly-warning));
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .stat-value {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+        }
+
+        .pet-interaction {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--elderly-shadow);
+        }
+
+        .pet-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .pet-action-btn {
+            background: var(--elderly-light);
+            border: 2px solid var(--elderly-border);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .pet-action-btn:hover {
+            background: var(--elderly-success);
+            color: white;
+            border-color: var(--elderly-success);
+            transform: translateY(-2px);
+        }
+
+        .action-icon {
+            font-size: 24px;
+        }
+
+        .pet-voice-control {
+            text-align: center;
+        }
+
+        .voice-btn {
+            background: var(--elderly-primary);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 auto;
+        }
+
+        .voice-btn:hover {
+            background: var(--elderly-secondary);
+            transform: translateY(-2px);
+        }
+
+        .voice-btn.recording {
+            background: var(--elderly-danger);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .voice-icon {
+            font-size: 20px;
+        }
+
+        .pet-chat {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--elderly-shadow);
+            display: flex;
+            flex-direction: column;
+            height: 300px;
+        }
+
+        .pet-message-area {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .pet-welcome {
+            margin-bottom: 15px;
+        }
+
+        .pet-bubble {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .pet-bubble.user {
+            flex-direction: row-reverse;
+        }
+
+        .pet-avatar-small {
+            width: 40px;
+            height: 40px;
+            background: var(--elderly-success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .pet-bubble.user .pet-avatar-small {
+            background: var(--elderly-primary);
+            color: white;
+        }
+
+        .pet-message-content {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 80%;
+        }
+
+        .pet-bubble.user .pet-message-content {
+            background: var(--elderly-primary);
+            color: white;
+        }
+
+        .pet-message-content p {
+            margin: 0 0 8px 0;
+        }
+
+        .pet-message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .pet-input-area {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            border-top: 1px solid var(--elderly-border);
+            border-radius: 0 0 15px 15px;
+            background: white;
+        }
+
+        #petTextInput {
+            flex: 1;
+            border: 2px solid var(--elderly-border);
+            border-radius: 20px;
+            padding: 10px 15px;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        #petTextInput:focus {
+            border-color: var(--elderly-success);
+        }
+
+        #petSendBtn {
+            background: var(--elderly-success);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #petSendBtn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px 10px 80px 10px;
+            }
+
+            .pet-display {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .pet-actions {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .pet-action-btn {
+                padding: 12px;
+            }
+
+            .pet-character {
+                font-size: 60px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -943,9 +1369,6 @@
                 Welcome! Please login to save your schedule.
             </div>
             <div class="user-actions">
-                <button id="aiAssistantBtn" onclick="toggleAIAssistant()" class="ai-assistant-btn">
-                    🤖 AI Assistant
-                </button>
                 <button id="logoutBtn" style="display: none;" onclick="logout()">Logout</button>
                 <button id="loginBtn" onclick="window.location.href='./register.html'">Login / Register</button>
             </div>
@@ -1266,8 +1689,24 @@
         </div>
     </div>
 
+    <!-- Bottom Navigation -->
+    <div class="bottom-navigation">
+        <button class="nav-tab active" id="scheduleTab" onclick="switchTab('schedule')">
+            <div class="nav-icon">📅</div>
+            <div class="nav-label">Schedule</div>
+        </button>
+        <button class="nav-tab" id="aiChatTab" onclick="switchTab('aiChat')">
+            <div class="nav-icon">🤖</div>
+            <div class="nav-label">AI Assistant</div>
+        </button>
+        <button class="nav-tab" id="petTab" onclick="switchTab('pet')">
+            <div class="nav-icon">🐱</div>
+            <div class="nav-label">Virtual Pet</div>
+        </button>
+    </div>
+
     <!-- AI Assistant Chat Panel -->
-    <div class="ai-chat-panel" id="aiChatPanel" style="display: none;">
+    <div class="ai-chat-panel tab-content" id="aiChatPanel" style="display: none;">
         <div class="ai-chat-header">
             <div class="ai-chat-title">
                 <span class="ai-icon">🤖</span>
@@ -1312,6 +1751,102 @@
         <!-- Hidden file inputs -->
         <input type="file" id="aiFileInput" style="display: none;" multiple>
         <input type="file" id="aiImageInput" style="display: none;" accept="image/*" multiple>
+    </div>
+
+    <!-- Virtual Pet Panel -->
+    <div class="pet-panel tab-content" id="petPanel" style="display: none;">
+        <div class="pet-header">
+            <div class="pet-title">
+                <span class="pet-icon">🐱</span>
+                <span>Virtual Pet Companion</span>
+            </div>
+            <div class="pet-status">
+                <span class="status-indicator online">●</span>
+                <span id="petStatusText">Happy & Healthy</span>
+            </div>
+        </div>
+        
+        <div class="pet-display">
+            <div class="pet-avatar" id="petAvatar">
+                <div class="pet-character">🐱</div>
+                <div class="pet-name" id="petName">Whiskers</div>
+                <div class="pet-mood" id="petMood">😊</div>
+            </div>
+            
+            <div class="pet-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Happiness</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill" id="happinessBar" style="width: 85%"></div>
+                    </div>
+                    <div class="stat-value" id="happinessValue">85%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Health</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill" id="healthBar" style="width: 92%"></div>
+                    </div>
+                    <div class="stat-value" id="healthValue">92%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Energy</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill" id="energyBar" style="width: 78%"></div>
+                    </div>
+                    <div class="stat-value" id="energyValue">78%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pet-interaction">
+            <div class="pet-actions">
+                <button class="pet-action-btn" onclick="feedPet()">
+                    <span class="action-icon">🍖</span>
+                    <span>Feed</span>
+                </button>
+                <button class="pet-action-btn" onclick="playWithPet()">
+                    <span class="action-icon">🎾</span>
+                    <span>Play</span>
+                </button>
+                <button class="pet-action-btn" onclick="petCare()">
+                    <span class="action-icon">💊</span>
+                    <span>Care</span>
+                </button>
+                <button class="pet-action-btn" onclick="talkToPet()">
+                    <span class="action-icon">💬</span>
+                    <span>Talk</span>
+                </button>
+            </div>
+            
+            <div class="pet-voice-control">
+                <button class="voice-btn" id="petVoiceBtn" onclick="togglePetVoice()">
+                    <span class="voice-icon">🎤</span>
+                    <span class="voice-text">Hold to Talk</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="pet-chat" id="petChat">
+            <div class="pet-message-area" id="petMessageArea">
+                <div class="pet-welcome">
+                    <div class="pet-bubble">
+                        <div class="pet-avatar-small">🐱</div>
+                        <div class="pet-message-content">
+                            <p>Meow! Hi there! I'm Whiskers, your virtual companion! 🐾</p>
+                            <p>I can help you with reminders, play games, or just chat. Try talking to me or use the action buttons above!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pet-input-area">
+                <input type="text" id="petTextInput" placeholder="Type a message to your pet..." />
+                <button id="petSendBtn" onclick="sendPetMessage()">
+                    <span>Send</span>
+                    <span>📤</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -2079,7 +2614,303 @@
                     sendAIMessage();
                 }
             });
+
+            // Set up pet text input
+            document.getElementById('petTextInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendPetMessage();
+                }
+            });
         });
+
+        // Tab System Functions
+        let currentTab = 'schedule';
+
+        function switchTab(tabName) {
+            // Update navigation buttons
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabName + 'Tab').classList.add('active');
+
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+
+            // Show selected content
+            if (tabName === 'schedule') {
+                // Schedule is the main content, hide tab contents
+                currentTab = 'schedule';
+            } else if (tabName === 'aiChat') {
+                document.getElementById('aiChatPanel').style.display = 'flex';
+                currentTab = 'aiChat';
+            } else if (tabName === 'pet') {
+                document.getElementById('petPanel').style.display = 'flex';
+                currentTab = 'pet';
+                initializePet();
+            }
+        }
+
+        // Virtual Pet Functions
+        let petStats = {
+            happiness: 85,
+            health: 92,
+            energy: 78
+        };
+
+        let petMessages = [];
+        let petVoiceRecording = false;
+
+        function initializePet() {
+            updatePetStats();
+            updatePetMood();
+        }
+
+        function updatePetStats() {
+            document.getElementById('happinessBar').style.width = petStats.happiness + '%';
+            document.getElementById('happinessValue').textContent = petStats.happiness + '%';
+            document.getElementById('healthBar').style.width = petStats.health + '%';
+            document.getElementById('healthValue').textContent = petStats.health + '%';
+            document.getElementById('energyBar').style.width = petStats.energy + '%';
+            document.getElementById('energyValue').textContent = petStats.energy + '%';
+        }
+
+        function updatePetMood() {
+            const avgStats = (petStats.happiness + petStats.health + petStats.energy) / 3;
+            let mood = '😊';
+            let status = 'Happy & Healthy';
+
+            if (avgStats > 80) {
+                mood = '😊';
+                status = 'Very Happy!';
+            } else if (avgStats > 60) {
+                mood = '🙂';
+                status = 'Content';
+            } else if (avgStats > 40) {
+                mood = '😐';
+                status = 'Okay';
+            } else {
+                mood = '😢';
+                status = 'Needs Care';
+            }
+
+            document.getElementById('petMood').textContent = mood;
+            document.getElementById('petStatusText').textContent = status;
+        }
+
+        function feedPet() {
+            petStats.happiness = Math.min(100, petStats.happiness + 10);
+            petStats.health = Math.min(100, petStats.health + 5);
+            updatePetStats();
+            updatePetMood();
+            
+            addPetMessage('pet', 'Meow! 🍖 Thank you for the delicious food! I feel much better now! *purrs happily*');
+            
+            // Animate pet
+            animatePet();
+        }
+
+        function playWithPet() {
+            petStats.happiness = Math.min(100, petStats.happiness + 15);
+            petStats.energy = Math.max(0, petStats.energy - 10);
+            updatePetStats();
+            updatePetMood();
+            
+            addPetMessage('pet', 'Yay! 🎾 That was so much fun! I love playing with you! *bounces excitedly*');
+            
+            // Animate pet
+            animatePet();
+        }
+
+        function petCare() {
+            petStats.health = Math.min(100, petStats.health + 15);
+            petStats.happiness = Math.min(100, petStats.happiness + 5);
+            updatePetStats();
+            updatePetMood();
+            
+            addPetMessage('pet', 'Purr... 💊 Thank you for taking care of me! I feel so much healthier now!');
+            
+            // Animate pet
+            animatePet();
+        }
+
+        function talkToPet() {
+            const responses = [
+                'Meow! I\'m so happy to see you! How are you feeling today? 😸',
+                'Purr... I love spending time with you! You\'re the best! 🐾',
+                'Meow meow! Did you remember to take your medicine today? 💊',
+                'I noticed you have some activities scheduled. Would you like me to remind you? 📅',
+                'Purr... You seem a bit tired. Maybe we should take a little break? 😴',
+                'Meow! I\'m here if you need any help with your daily routine! 🤗'
+            ];
+            
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            addPetMessage('pet', randomResponse);
+        }
+
+        function togglePetVoice() {
+            if (!petVoiceRecording) {
+                startPetVoiceRecording();
+            } else {
+                stopPetVoiceRecording();
+            }
+        }
+
+        function startPetVoiceRecording() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                addPetMessage('pet', 'Meow... I can\'t hear you right now. Voice recording is not supported in this browser.');
+                return;
+            }
+
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    petVoiceRecording = true;
+                    const voiceBtn = document.getElementById('petVoiceBtn');
+                    voiceBtn.classList.add('recording');
+                    voiceBtn.innerHTML = '<span class="voice-icon">🔴</span><span class="voice-text">Recording...</span>';
+                    
+                    addPetMessage('user', '🎤 Recording voice message...');
+                    
+                    // Auto-stop after 5 seconds
+                    setTimeout(() => {
+                        if (petVoiceRecording) {
+                            stopPetVoiceRecording();
+                        }
+                    }, 5000);
+                })
+                .catch(err => {
+                    addPetMessage('pet', 'Meow... I can\'t access your microphone. Please check your permissions.');
+                });
+        }
+
+        function stopPetVoiceRecording() {
+            petVoiceRecording = false;
+            const voiceBtn = document.getElementById('petVoiceBtn');
+            voiceBtn.classList.remove('recording');
+            voiceBtn.innerHTML = '<span class="voice-icon">🎤</span><span class="voice-text">Hold to Talk</span>';
+            
+            addPetMessage('user', '🎤 Voice message sent');
+            
+            // Pet responds to voice message
+            setTimeout(() => {
+                const voiceResponses = [
+                    'Meow! I heard you loud and clear! Your voice always makes me happy! 🐱',
+                    'Purr... I love hearing your voice! You sound wonderful today! 😻',
+                    'Meow meow! I wish I could understand every word, but I can feel your love! 💕',
+                    'Your voice is so soothing! It reminds me to tell you - don\'t forget your daily activities! 📋',
+                    'Purr... I heard concern in your voice. Is everything okay? I\'m here for you! 🤗'
+                ];
+                
+                const response = voiceResponses[Math.floor(Math.random() * voiceResponses.length)];
+                addPetMessage('pet', response);
+            }, 1000);
+        }
+
+        function sendPetMessage() {
+            const input = document.getElementById('petTextInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Add user message
+            addPetMessage('user', message);
+            
+            // Clear input
+            input.value = '';
+
+            // Generate pet response
+            setTimeout(() => {
+                const response = generatePetResponse(message);
+                addPetMessage('pet', response);
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function generatePetResponse(userMessage) {
+            const lowerMessage = userMessage.toLowerCase();
+            
+            // Health-related responses
+            if (lowerMessage.includes('health') || lowerMessage.includes('medicine') || lowerMessage.includes('doctor')) {
+                return 'Meow! 🏥 Health is very important! I can help remind you about your medications and appointments. Have you taken your medicine today?';
+            }
+            
+            // Schedule-related responses
+            if (lowerMessage.includes('schedule') || lowerMessage.includes('appointment') || lowerMessage.includes('reminder')) {
+                return 'Purr! 📅 I love helping with schedules! I can see you have some activities planned. Would you like me to remind you about them?';
+            }
+            
+            // Emotional responses
+            if (lowerMessage.includes('sad') || lowerMessage.includes('lonely') || lowerMessage.includes('tired')) {
+                return 'Meow... 🤗 I\'m here for you! You\'re never alone when I\'m around. Let\'s do something fun together to cheer you up!';
+            }
+            
+            // Happy responses
+            if (lowerMessage.includes('happy') || lowerMessage.includes('good') || lowerMessage.includes('great')) {
+                return 'Purr! 😸 I\'m so happy to hear that! Your happiness makes me happy too! Let\'s keep this positive energy going!';
+            }
+            
+            // Greeting responses
+            if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+                return 'Meow! 👋 Hello there! I\'m so excited to chat with you! How are you feeling today?';
+            }
+            
+            // Default responses
+            const defaultResponses = [
+                'Meow! That\'s interesting! Tell me more! 😸',
+                'Purr... I love chatting with you! You always have such nice things to say! 🐾',
+                'Meow meow! I may be a virtual pet, but my care for you is very real! 💕',
+                'That sounds important! I\'m always here to listen and help however I can! 🤗',
+                'Purr... You know, talking with you always brightens my day! 🌟'
+            ];
+            
+            return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+        }
+
+        function addPetMessage(type, content) {
+            const messageArea = document.getElementById('petMessageArea');
+            
+            // Remove welcome message if it's the first user message
+            if (type === 'user' && petMessages.length === 0) {
+                const welcome = messageArea.querySelector('.pet-welcome');
+                if (welcome) welcome.style.display = 'none';
+            }
+
+            const bubble = document.createElement('div');
+            bubble.className = `pet-bubble ${type}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'pet-avatar-small';
+            avatar.textContent = type === 'user' ? 'U' : '🐱';
+
+            const messageContent = document.createElement('div');
+            messageContent.className = 'pet-message-content';
+            messageContent.innerHTML = `<p>${content}</p>`;
+
+            bubble.appendChild(avatar);
+            bubble.appendChild(messageContent);
+            
+            messageArea.appendChild(bubble);
+            
+            // Scroll to bottom
+            messageArea.scrollTop = messageArea.scrollHeight;
+            
+            // Store message
+            petMessages.push({ type, content, timestamp: new Date() });
+        }
+
+        function animatePet() {
+            const petCharacter = document.getElementById('petAvatar').querySelector('.pet-character');
+            petCharacter.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                petCharacter.style.transform = 'scale(1)';
+            }, 300);
+        }
+
+        // Remove old AI assistant functions that are no longer needed
+        function toggleAIAssistant() {
+            switchTab('aiChat');
+        }
     </script>
 </body>
 </html> 
