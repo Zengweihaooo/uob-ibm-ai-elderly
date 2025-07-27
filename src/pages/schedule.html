@@ -2654,100 +2654,155 @@
         }
 
         // Virtual Pet Functions
-        let petStats = {
-            happiness: 85,
-            health: 92,
-            energy: 78
-        };
-
+        let petData = null;
         let petMessages = [];
         let petVoiceRecording = false;
 
-        function initializePet() {
+        async function initializePet() {
+            await loadPetStatus();
+            await loadConversationHistory();
+            startScheduleChecker();
+        }
+
+        async function loadPetStatus() {
+            try {
+                const authToken = localStorage.getItem('authToken') || 'demo-token-' + Date.now();
+                const response = await fetch('http://localhost:8080/api/pet/status', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    petData = data.pet;
+                    updatePetDisplay();
+                }
+            } catch (error) {
+                console.error('Error loading pet status:', error);
+                // Fallback to default pet data
+                petData = {
+                    name: "Whiskers",
+                    happiness: 85,
+                    health: 92,
+                    energy: 78,
+                    mood: "😊",
+                    status: "Happy & Healthy"
+                };
+                updatePetDisplay();
+            }
+        }
+
+        async function loadConversationHistory() {
+            try {
+                const authToken = localStorage.getItem('authToken') || 'demo-token-' + Date.now();
+                const response = await fetch('http://localhost:8080/api/pet/conversation?limit=20', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success && data.conversation.length > 0) {
+                    // Clear welcome message and load history
+                    const messageArea = document.getElementById('petMessageArea');
+                    const welcome = messageArea.querySelector('.pet-welcome');
+                    if (welcome) welcome.style.display = 'none';
+
+                    // Display recent messages
+                    data.conversation.reverse().forEach(msg => {
+                        displayPetMessage(msg.sender === 'user' ? 'user' : 'pet', msg.content);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading conversation history:', error);
+            }
+        }
+
+        function updatePetDisplay() {
+            if (!petData) return;
+
             updatePetStats();
             updatePetMood();
+            
+            // Update pet name
+            const petNameElement = document.getElementById('petName');
+            if (petNameElement) {
+                petNameElement.textContent = petData.name || 'Whiskers';
+            }
         }
 
         function updatePetStats() {
-            document.getElementById('happinessBar').style.width = petStats.happiness + '%';
-            document.getElementById('happinessValue').textContent = petStats.happiness + '%';
-            document.getElementById('healthBar').style.width = petStats.health + '%';
-            document.getElementById('healthValue').textContent = petStats.health + '%';
-            document.getElementById('energyBar').style.width = petStats.energy + '%';
-            document.getElementById('energyValue').textContent = petStats.energy + '%';
+            if (!petData) return;
+            
+            document.getElementById('happinessBar').style.width = petData.happiness + '%';
+            document.getElementById('happinessValue').textContent = petData.happiness + '%';
+            document.getElementById('healthBar').style.width = petData.health + '%';
+            document.getElementById('healthValue').textContent = petData.health + '%';
+            document.getElementById('energyBar').style.width = petData.energy + '%';
+            document.getElementById('energyValue').textContent = petData.energy + '%';
         }
 
         function updatePetMood() {
-            const avgStats = (petStats.happiness + petStats.health + petStats.energy) / 3;
-            let mood = '😊';
-            let status = 'Happy & Healthy';
+            if (!petData) return;
+            
+            document.getElementById('petMood').textContent = petData.mood || '😊';
+            document.getElementById('petStatusText').textContent = petData.status || 'Happy & Healthy';
+        }
 
-            if (avgStats > 80) {
-                mood = '😊';
-                status = 'Very Happy!';
-            } else if (avgStats > 60) {
-                mood = '🙂';
-                status = 'Content';
-            } else if (avgStats > 40) {
-                mood = '😐';
-                status = 'Okay';
-            } else {
-                mood = '😢';
-                status = 'Needs Care';
+        async function performPetInteraction(interactionType, message = '') {
+            try {
+                const authToken = localStorage.getItem('authToken') || 'demo-token-' + Date.now();
+                const response = await fetch('http://localhost:8080/api/pet/interact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        type: interactionType,
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    petData = data.pet;
+                    updatePetDisplay();
+                    
+                    // Display pet response
+                    if (data.interaction && data.interaction.response) {
+                        displayPetMessage('pet', data.interaction.response);
+                    }
+                    
+                    // Animate pet if animation specified
+                    if (data.interaction && data.interaction.animation) {
+                        animatePet(data.interaction.animation);
+                    }
+                }
+            } catch (error) {
+                console.error('Error performing interaction:', error);
+                // Fallback to local response
+                displayPetMessage('pet', 'Meow! Something went wrong, but I\'m still here for you! 😸');
             }
-
-            document.getElementById('petMood').textContent = mood;
-            document.getElementById('petStatusText').textContent = status;
         }
 
         function feedPet() {
-            petStats.happiness = Math.min(100, petStats.happiness + 10);
-            petStats.health = Math.min(100, petStats.health + 5);
-            updatePetStats();
-            updatePetMood();
-            
-            addPetMessage('pet', 'Meow! 🍖 Thank you for the delicious food! I feel much better now! *purrs happily*');
-            
-            // Animate pet
-            animatePet();
+            performPetInteraction('feed');
         }
 
         function playWithPet() {
-            petStats.happiness = Math.min(100, petStats.happiness + 15);
-            petStats.energy = Math.max(0, petStats.energy - 10);
-            updatePetStats();
-            updatePetMood();
-            
-            addPetMessage('pet', 'Yay! 🎾 That was so much fun! I love playing with you! *bounces excitedly*');
-            
-            // Animate pet
-            animatePet();
+            performPetInteraction('play');
         }
 
         function petCare() {
-            petStats.health = Math.min(100, petStats.health + 15);
-            petStats.happiness = Math.min(100, petStats.happiness + 5);
-            updatePetStats();
-            updatePetMood();
-            
-            addPetMessage('pet', 'Purr... 💊 Thank you for taking care of me! I feel so much healthier now!');
-            
-            // Animate pet
-            animatePet();
+            performPetInteraction('care');
         }
 
         function talkToPet() {
-            const responses = [
-                'Meow! I\'m so happy to see you! How are you feeling today? 😸',
-                'Purr... I love spending time with you! You\'re the best! 🐾',
-                'Meow meow! Did you remember to take your medicine today? 💊',
-                'I noticed you have some activities scheduled. Would you like me to remind you? 📅',
-                'Purr... You seem a bit tired. Maybe we should take a little break? 😴',
-                'Meow! I\'m here if you need any help with your daily routine! 🤗'
-            ];
-            
-            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-            addPetMessage('pet', randomResponse);
+            performPetInteraction('talk');
         }
 
         function togglePetVoice() {
@@ -2785,46 +2840,79 @@
                 });
         }
 
-        function stopPetVoiceRecording() {
+        async function stopPetVoiceRecording() {
             petVoiceRecording = false;
             const voiceBtn = document.getElementById('petVoiceBtn');
             voiceBtn.classList.remove('recording');
             voiceBtn.innerHTML = '<span class="voice-icon">🎤</span><span class="voice-text">Hold to Talk</span>';
             
-            addPetMessage('user', '🎤 Voice message sent');
+            displayPetMessage('user', '🎤 Voice message sent (5 seconds)');
             
-            // Pet responds to voice message
-            setTimeout(() => {
-                const voiceResponses = [
-                    'Meow! I heard you loud and clear! Your voice always makes me happy! 🐱',
-                    'Purr... I love hearing your voice! You sound wonderful today! 😻',
-                    'Meow meow! I wish I could understand every word, but I can feel your love! 💕',
-                    'Your voice is so soothing! It reminds me to tell you - don\'t forget your daily activities! 📋',
-                    'Purr... I heard concern in your voice. Is everything okay? I\'m here for you! 🤗'
-                ];
-                
-                const response = voiceResponses[Math.floor(Math.random() * voiceResponses.length)];
-                addPetMessage('pet', response);
-            }, 1000);
+            try {
+                const authToken = localStorage.getItem('authToken') || 'demo-token-' + Date.now();
+                const response = await fetch('http://localhost:8080/api/pet/voice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        content: 'voice_data_placeholder',
+                        duration: 5,
+                        transcription: 'Voice message from user' // Future: real transcription
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success && data.petResponse) {
+                    displayPetMessage('pet', data.petResponse.content);
+                }
+            } catch (error) {
+                console.error('Error processing voice message:', error);
+                // Fallback response
+                setTimeout(() => {
+                    displayPetMessage('pet', 'Meow! I heard your lovely voice! Your voice always makes me happy! 🐱');
+                }, 1000);
+            }
         }
 
-        function sendPetMessage() {
+        async function sendPetMessage() {
             const input = document.getElementById('petTextInput');
             const message = input.value.trim();
             
             if (!message) return;
 
-            // Add user message
-            addPetMessage('user', message);
+            // Add user message immediately
+            displayPetMessage('user', message);
             
             // Clear input
             input.value = '';
 
-            // Generate pet response
-            setTimeout(() => {
-                const response = generatePetResponse(message);
-                addPetMessage('pet', response);
-            }, 1000 + Math.random() * 1000);
+            try {
+                const authToken = localStorage.getItem('authToken') || 'demo-token-' + Date.now();
+                const response = await fetch('http://localhost:8080/api/pet/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        type: 'text'
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success && data.petResponse) {
+                    displayPetMessage('pet', data.petResponse.content);
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                // Fallback response
+                setTimeout(() => {
+                    displayPetMessage('pet', 'Meow! I heard you, but I\'m having trouble responding right now. I\'m still here with you! 😸');
+                }, 1000);
+            }
         }
 
         function generatePetResponse(userMessage) {
@@ -2867,7 +2955,7 @@
             return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
         }
 
-        function addPetMessage(type, content) {
+        function displayPetMessage(type, content) {
             const messageArea = document.getElementById('petMessageArea');
             
             // Remove welcome message if it's the first user message
@@ -2899,12 +2987,90 @@
             petMessages.push({ type, content, timestamp: new Date() });
         }
 
-        function animatePet() {
+        function animatePet(animationType = 'default') {
             const petCharacter = document.getElementById('petAvatar').querySelector('.pet-character');
-            petCharacter.style.transform = 'scale(1.2)';
+            
+            switch (animationType) {
+                case 'eating':
+                    petCharacter.style.transform = 'scale(1.3) rotate(5deg)';
+                    break;
+                case 'playing':
+                    petCharacter.style.transform = 'scale(1.2) rotate(-5deg)';
+                    break;
+                case 'caring':
+                    petCharacter.style.transform = 'scale(1.1)';
+                    break;
+                default:
+                    petCharacter.style.transform = 'scale(1.2)';
+            }
+            
             setTimeout(() => {
                 petCharacter.style.transform = 'scale(1)';
             }, 300);
+        }
+
+        // Schedule checking functionality
+        function startScheduleChecker() {
+            // Check schedule every 30 minutes
+            setInterval(checkScheduleReminders, 30 * 60 * 1000);
+            
+            // Initial check after 5 seconds
+            setTimeout(checkScheduleReminders, 5000);
+        }
+
+        async function checkScheduleReminders() {
+            try {
+                const authToken = localStorage.getItem('authToken') || 'demo-token-' + Date.now();
+                const response = await fetch('http://localhost:8080/api/pet/schedule-check', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success && data.petSuggestion) {
+                    // Only show reminders if pet tab is active or if it's urgent
+                    if (currentTab === 'pet' || data.petSuggestion.urgency === 'high') {
+                        displayPetMessage('pet', data.petSuggestion.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking schedule reminders:', error);
+            }
+        }
+
+        // Emergency detection (placeholder for future implementation)
+        async function reportEmergency(type, description, severity = 'medium') {
+            try {
+                const authToken = localStorage.getItem('authToken') || 'demo-token-' + Date.now();
+                const response = await fetch('http://localhost:8080/api/pet/emergency', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        type: type,
+                        description: description,
+                        severity: severity
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success && data.emergency) {
+                    displayPetMessage('pet', data.emergency.petResponse);
+                    
+                    // Show emergency actions if available
+                    if (data.emergency.recommendedActions && data.emergency.recommendedActions.length > 0) {
+                        const actionsText = 'Recommended actions:\n' + data.emergency.recommendedActions.join('\n');
+                        displayPetMessage('system', actionsText);
+                    }
+                }
+            } catch (error) {
+                console.error('Error reporting emergency:', error);
+                displayPetMessage('pet', 'Meow! 🚨 I\'m here to help! Please call emergency services if you need immediate assistance!');
+            }
         }
 
         // Remove old AI assistant functions that are no longer needed
