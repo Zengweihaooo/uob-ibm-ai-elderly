@@ -32,9 +32,14 @@ http://localhost:5500/index.html
 
 ### 🎯 功能页面直达
 
-#### 📅 日程管理 + AI助手 + 虚拟宠物
+#### 📅 日程管理 + 虚拟宠物
 ```
 http://localhost:5500/src/pages/schedule.html
+```
+
+#### 🤖 AI健康助手 (独立页面)
+```
+http://localhost:5500/src/pages/ai-assistant.html
 ```
 
 #### 👤 用户注册/登录
@@ -46,9 +51,9 @@ http://localhost:5500/src/pages/register.html
 
 ## 🎮 功能使用指南
 
-### 🔄 底部导航三合一系统
+### 🔄 双功能导航系统 (schedule.html)
 
-打开 `schedule.html` 后，你会看到底部有三个按钮：
+打开 `schedule.html` 后，你会看到底部有两个按钮：
 
 #### 1. 📅 **Schedule (日程安排)**
 - ✅ 添加、编辑、删除日程活动
@@ -56,18 +61,24 @@ http://localhost:5500/src/pages/register.html
 - ✅ 重复周期和提醒功能
 - ✅ 地理栅栏位置提醒
 
-#### 2. 🤖 **AI Assistant (AI对话助手)**  
-- ✅ 健康咨询和建议
-- ✅ 文件和图片上传
-- ✅ 位置分享功能
-- ✅ 语音消息支持
-
-#### 3. 🐱 **Virtual Pet (虚拟宠物)**
+#### 2. 🐱 **Virtual Pet (虚拟宠物)**
 - ✅ 与Whiskers互动 (喂食🍖、玩耍🎾、护理💊、对话💬)
 - ✅ 宠物状态管理 (快乐度、健康度、精力值)
 - ✅ 语音交互 (按住🎤说话)
 - ✅ 智能文字聊天
 - ✅ 日程提醒和健康关怀
+
+### 🤖 独立AI助手系统 (ai-assistant.html)
+
+打开 `ai-assistant.html` 后，你将进入专门的AI健康助手页面：
+
+#### 🩺 **AI Healthcare Assistant (AI健康助手)**  
+- ✅ 24/7 健康咨询和专业建议
+- ✅ 文件和医疗图片上传分析
+- ✅ 位置分享和附近医疗设施查询
+- ✅ 语音消息和实时对话
+- ✅ 聊天历史记录和数据管理
+- ✅ 紧急情况处理和联系人通知
 
 ---
 

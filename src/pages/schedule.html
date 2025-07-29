@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Schedule - AI Elderly Companion</title>
+    <title>Daily Schedule & Virtual Pet - AI Elderly Companion</title>
     <link rel="stylesheet" href="../styles/main.css">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -655,248 +655,9 @@
             }
         }
 
-        /* AI Chat Panel Styles */
-        .ai-chat-panel {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 400px;
-            height: 500px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            border: 2px solid var(--elderly-primary);
-            display: flex;
-            flex-direction: column;
-            z-index: 1000;
-            font-family: 'IBM Plex Sans', sans-serif;
-        }
 
-        .ai-chat-header {
-            background: var(--elderly-primary);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 13px 13px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 600;
-        }
 
-        .ai-chat-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 16px;
-        }
 
-        .ai-icon {
-            font-size: 20px;
-        }
-
-        .ai-chat-controls {
-            display: flex;
-            gap: 5px;
-        }
-
-        .minimize-btn, .close-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s ease;
-        }
-
-        .minimize-btn:hover, .close-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .ai-chat-body {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            background: #f8f9fa;
-        }
-
-        .ai-welcome-message {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .ai-avatar {
-            width: 40px;
-            height: 40px;
-            background: var(--elderly-success);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-
-        .ai-message {
-            background: white;
-            padding: 12px 15px;
-            border-radius: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .ai-message p {
-            margin: 0 0 10px 0;
-        }
-
-        .ai-message p:last-child {
-            margin-bottom: 0;
-        }
-
-        .ai-message ul {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-
-        .ai-message li {
-            margin-bottom: 5px;
-        }
-
-        .ai-chat-input {
-            border-top: 1px solid var(--elderly-border);
-            padding: 15px;
-            background: white;
-            border-radius: 0 0 13px 13px;
-        }
-
-        .ai-input-tools {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
-            justify-content: center;
-        }
-
-        .tool-btn {
-            background: var(--elderly-light);
-            border: 1px solid var(--elderly-border);
-            border-radius: 20px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .tool-btn:hover {
-            background: var(--elderly-primary);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .ai-input-container {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-        }
-
-        #aiChatInput {
-            flex: 1;
-            border: 2px solid var(--elderly-border);
-            border-radius: 20px;
-            padding: 10px 15px;
-            font-family: inherit;
-            font-size: 14px;
-            resize: none;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        #aiChatInput:focus {
-            border-color: var(--elderly-primary);
-        }
-
-        #aiSendBtn {
-            background: var(--elderly-primary);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        #aiSendBtn:hover {
-            background: var(--elderly-secondary);
-            transform: translateY(-2px);
-        }
-
-        #aiSendBtn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Chat messages */
-        .chat-message {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .chat-message.user {
-            flex-direction: row-reverse;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: var(--elderly-primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .chat-message.user .ai-message {
-            background: var(--elderly-primary);
-            color: white;
-        }
-
-        /* Responsive design for AI chat */
-        @media (max-width: 768px) {
-            .ai-chat-panel {
-                width: calc(100vw - 40px);
-                height: 400px;
-                bottom: 10px;
-                right: 20px;
-                left: 20px;
-            }
-        }
-
-        /* Minimized state */
-        .ai-chat-panel.minimized {
-            height: 60px;
-        }
-
-        .ai-chat-panel.minimized .ai-chat-body,
-        .ai-chat-panel.minimized .ai-chat-input {
-            display: none;
-        }
 
         /* Bottom Navigation Styles */
         .bottom-navigation {
@@ -928,6 +689,7 @@
             transition: all 0.3s ease;
             color: #666;
             font-family: inherit;
+            text-decoration: none;
         }
 
         .nav-tab:hover {
@@ -962,25 +724,7 @@
             overflow-y: auto;
         }
 
-        /* Update AI Chat Panel for tab system */
-        .ai-chat-panel {
-            position: static;
-            width: 100%;
-            height: 100%;
-            border-radius: 0;
-            box-shadow: none;
-            border: none;
-            max-width: none;
-            max-height: none;
-        }
 
-        .ai-chat-panel .ai-chat-header {
-            border-radius: 0;
-        }
-
-        .ai-chat-panel .ai-chat-input {
-            border-radius: 0;
-        }
 
         /* Virtual Pet Panel Styles */
         .pet-panel {
@@ -1354,8 +1098,8 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>📅 Daily Schedule</h1>
-            <p>Plan your day with ease and stay organized</p>
+            <h1>📅 Daily Schedule & Virtual Pet</h1>
+            <p>Plan your day with ease and enjoy your virtual pet companion</p>
         </div>
 
         <!-- Guest mode indicator -->
@@ -1695,63 +1439,17 @@
             <div class="nav-icon">📅</div>
             <div class="nav-label">Schedule</div>
         </button>
-        <button class="nav-tab" id="aiChatTab" onclick="switchTab('aiChat')">
+        <a href="ai-assistant.html" class="nav-tab nav-link-tab">
             <div class="nav-icon">🤖</div>
             <div class="nav-label">AI Assistant</div>
-        </button>
+        </a>
         <button class="nav-tab" id="petTab" onclick="switchTab('pet')">
             <div class="nav-icon">🐱</div>
             <div class="nav-label">Virtual Pet</div>
         </button>
     </div>
 
-    <!-- AI Assistant Chat Panel -->
-    <div class="ai-chat-panel tab-content" id="aiChatPanel" style="display: none;">
-        <div class="ai-chat-header">
-            <div class="ai-chat-title">
-                <span class="ai-icon">🤖</span>
-                <span>AI Healthcare Assistant</span>
-            </div>
-            <div class="ai-chat-controls">
-                <button class="minimize-btn" onclick="minimizeAIChat()">−</button>
-                <button class="close-btn" onclick="closeAIChat()">×</button>
-            </div>
-        </div>
-        <div class="ai-chat-body" id="aiChatBody">
-            <div class="ai-welcome-message">
-                <div class="ai-avatar">🤖</div>
-                <div class="ai-message">
-                    <p>Hello! I'm your AI Healthcare Assistant. I'm here to help you with:</p>
-                    <ul>
-                        <li>Health questions and advice</li>
-                        <li>Medication reminders</li>
-                        <li>Schedule management</li>
-                        <li>Emergency assistance</li>
-                    </ul>
-                    <p>How can I help you today?</p>
-                </div>
-            </div>
-        </div>
-        <div class="ai-chat-input">
-            <div class="ai-input-tools">
-                <button class="tool-btn" onclick="selectFile()" title="Upload File">📎</button>
-                <button class="tool-btn" onclick="selectImage()" title="Upload Image">🖼️</button>
-                <button class="tool-btn" onclick="shareLocation()" title="Share Location">📍</button>
-                <button class="tool-btn" onclick="toggleVoice()" title="Voice Message">🎤</button>
-            </div>
-            <div class="ai-input-container">
-                <textarea id="aiChatInput" placeholder="Type your message here..." rows="2"></textarea>
-                <button id="aiSendBtn" onclick="sendAIMessage()">
-                    <span>Send</span>
-                    <span>📤</span>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Hidden file inputs -->
-        <input type="file" id="aiFileInput" style="display: none;" multiple>
-        <input type="file" id="aiImageInput" style="display: none;" accept="image/*" multiple>
-    </div>
+
 
     <!-- Virtual Pet Panel -->
     <div class="pet-panel tab-content" id="petPanel" style="display: none;">
@@ -2388,232 +2086,10 @@
             window.location.reload();
         }
 
-        // AI Chat Functions
-        let aiChatVisible = false;
-        let aiChatMinimized = false;
-        let aiChatMessages = [];
 
-        function toggleAIAssistant() {
-            const panel = document.getElementById('aiChatPanel');
-            if (aiChatVisible) {
-                closeAIChat();
-            } else {
-                panel.style.display = 'flex';
-                panel.classList.remove('minimized');
-                aiChatVisible = true;
-                aiChatMinimized = false;
-                
-                // Update button text
-                document.getElementById('aiAssistantBtn').innerHTML = '🤖 Close AI Assistant';
-            }
-        }
 
-        function minimizeAIChat() {
-            const panel = document.getElementById('aiChatPanel');
-            if (aiChatMinimized) {
-                panel.classList.remove('minimized');
-                aiChatMinimized = false;
-            } else {
-                panel.classList.add('minimized');
-                aiChatMinimized = true;
-            }
-        }
-
-        function closeAIChat() {
-            const panel = document.getElementById('aiChatPanel');
-            panel.style.display = 'none';
-            aiChatVisible = false;
-            aiChatMinimized = false;
-            
-            // Update button text
-            document.getElementById('aiAssistantBtn').innerHTML = '🤖 AI Assistant';
-        }
-
-        async function sendAIMessage() {
-            const input = document.getElementById('aiChatInput');
-            const message = input.value.trim();
-            
-            if (!message) return;
-
-            // Disable send button
-            const sendBtn = document.getElementById('aiSendBtn');
-            sendBtn.disabled = true;
-            sendBtn.innerHTML = '<span>Sending...</span><span>⏳</span>';
-
-            // Add user message to chat
-            addAIChatMessage('user', message);
-            
-            // Clear input
-            input.value = '';
-
-            try {
-                // Get auth token
-                const authToken = localStorage.getItem('authToken') || 'demo-token-' + Date.now();
-                
-                // Send to backend
-                const response = await fetch('http://localhost:8080/api/chat/message', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({
-                        content: message,
-                        attachments: []
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success && data.aiResponse) {
-                    // Add AI response to chat
-                    addAIChatMessage('ai', data.aiResponse.content);
-                } else {
-                    addAIChatMessage('ai', 'Sorry, I encountered an error. Please try again.');
-                }
-            } catch (error) {
-                console.error('Error sending AI message:', error);
-                addAIChatMessage('ai', 'I\'m having trouble connecting right now. Please try again later.');
-            } finally {
-                // Re-enable send button
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = '<span>Send</span><span>📤</span>';
-            }
-        }
-
-        function addAIChatMessage(type, content) {
-            const chatBody = document.getElementById('aiChatBody');
-            
-            // Remove welcome message if it exists
-            const welcomeMsg = chatBody.querySelector('.ai-welcome-message');
-            if (welcomeMsg && aiChatMessages.length === 0) {
-                welcomeMsg.style.display = 'none';
-            }
-
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message ${type}`;
-
-            const avatar = document.createElement('div');
-            if (type === 'user') {
-                avatar.className = 'user-avatar';
-                avatar.textContent = 'U';
-            } else {
-                avatar.className = 'ai-avatar';
-                avatar.textContent = '🤖';
-            }
-
-            const messageContent = document.createElement('div');
-            messageContent.className = 'ai-message';
-            messageContent.textContent = content;
-
-            messageDiv.appendChild(avatar);
-            messageDiv.appendChild(messageContent);
-            
-            chatBody.appendChild(messageDiv);
-            
-            // Scroll to bottom
-            chatBody.scrollTop = chatBody.scrollHeight;
-            
-            // Store message
-            aiChatMessages.push({ type, content, timestamp: new Date() });
-        }
-
-        function selectFile() {
-            document.getElementById('aiFileInput').click();
-        }
-
-        function selectImage() {
-            document.getElementById('aiImageInput').click();
-        }
-
-        function shareLocation() {
-            if (!navigator.geolocation) {
-                addAIChatMessage('ai', 'Geolocation is not supported by this browser.');
-                return;
-            }
-
-            addAIChatMessage('user', '📍 Sharing location...');
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    addAIChatMessage('user', `📍 Location shared: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
-                    addAIChatMessage('ai', `I received your location coordinates. In the full version, I could help you find nearby healthcare facilities, pharmacies, or provide location-based health reminders. Thank you for sharing your location!`);
-                },
-                (error) => {
-                    addAIChatMessage('ai', 'Unable to retrieve your location. Please check your browser settings.');
-                }
-            );
-        }
-
-        let isRecording = false;
-
-        function toggleVoice() {
-            if (!isRecording) {
-                startVoiceRecording();
-            } else {
-                stopVoiceRecording();
-            }
-        }
-
-        function startVoiceRecording() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                addAIChatMessage('ai', 'Voice recording is not supported in this browser.');
-                return;
-            }
-
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(stream => {
-                    isRecording = true;
-                    addAIChatMessage('user', '🎤 Recording voice message...');
-                    
-                    // Simulate recording (in real implementation, you'd use MediaRecorder)
-                    setTimeout(() => {
-                        if (isRecording) {
-                            stopVoiceRecording();
-                        }
-                    }, 5000); // Auto-stop after 5 seconds
-                })
-                .catch(err => {
-                    addAIChatMessage('ai', 'Could not access microphone. Please check permissions.');
-                });
-        }
-
-        function stopVoiceRecording() {
-            isRecording = false;
-            addAIChatMessage('user', '🎤 Voice message recorded (5 seconds)');
-            addAIChatMessage('ai', 'I received your voice message. In the full version, I would transcribe and analyze your voice message to provide appropriate healthcare assistance. Thank you for your message!');
-        }
-
-        // Initialize file input handlers
+        // Initialize event handlers
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('aiFileInput').addEventListener('change', function(e) {
-                const files = Array.from(e.target.files);
-                if (files.length > 0) {
-                    const fileNames = files.map(f => f.name).join(', ');
-                    addAIChatMessage('user', `📎 Uploaded files: ${fileNames}`);
-                    addAIChatMessage('ai', `I received your files: ${fileNames}. In the full version, I would analyze these files and provide relevant healthcare insights. Thank you for sharing!`);
-                }
-                e.target.value = '';
-            });
-
-            document.getElementById('aiImageInput').addEventListener('change', function(e) {
-                const files = Array.from(e.target.files);
-                if (files.length > 0) {
-                    const fileNames = files.map(f => f.name).join(', ');
-                    addAIChatMessage('user', `🖼️ Uploaded images: ${fileNames}`);
-                    addAIChatMessage('ai', `I received your images: ${fileNames}. In the full version, I would analyze these medical images or documents and provide relevant healthcare insights. Thank you for sharing!`);
-                }
-                e.target.value = '';
-            });
-            
-            // Set up Enter key for sending messages
-            document.getElementById('aiChatInput').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendAIMessage();
-                }
-            });
 
             // Set up pet text input
             document.getElementById('petTextInput').addEventListener('keydown', function(e) {
@@ -2643,9 +2119,6 @@
             if (tabName === 'schedule') {
                 // Schedule is the main content, hide tab contents
                 currentTab = 'schedule';
-            } else if (tabName === 'aiChat') {
-                document.getElementById('aiChatPanel').style.display = 'flex';
-                currentTab = 'aiChat';
             } else if (tabName === 'pet') {
                 document.getElementById('petPanel').style.display = 'flex';
                 currentTab = 'pet';
@@ -3073,10 +2546,7 @@
             }
         }
 
-        // Remove old AI assistant functions that are no longer needed
-        function toggleAIAssistant() {
-            switchTab('aiChat');
-        }
+
     </script>
 </body>
 </html> 
