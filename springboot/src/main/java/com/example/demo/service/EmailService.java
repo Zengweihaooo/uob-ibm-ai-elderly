@@ -131,4 +131,40 @@ public class EmailService {
 
         mailSender.send(message);
     }
+
+    /**
+     * Send health alert email to emergency contact
+     * 
+     * @param toEmail The recipient's email address
+     * @param subject The email subject
+     * @param message The email message content
+     * @throws RuntimeException if email sending fails
+     */
+    public void sendHealthAlertEmail(String toEmail, String subject, String message) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            // Set sender, recipient, and subject
+            helper.setFrom(fromAddress);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+
+            // Create HTML content for health alert
+            Context ctx = new Context();
+            ctx.setVariable("toEmail", toEmail);
+            ctx.setVariable("subject", subject);
+            ctx.setVariable("message", message);
+            ctx.setVariable("timestamp", java.time.LocalDateTime.now());
+            
+            String htmlContent = templateEngine.process("healthAlertTemplate", ctx);
+            helper.setText(htmlContent, true);  // true = HTML mode
+
+            mailSender.send(mimeMessage);
+            System.out.println("Health alert email sent successfully to: " + toEmail);
+        } catch (MessagingException e) {
+            System.err.println("Failed to send health alert email to: " + toEmail + " => " + e.getMessage());
+            throw new RuntimeException("Failed to send health alert email", e);
+        }
+    }
 }
