@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Alert</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .alert-icon {
+            font-size: 48px;
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        .title {
+            color: #e74c3c;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin: 5px 0 0 0;
+        }
+        .content {
+            background-color: #fff5f5;
+            border-left: 4px solid #e74c3c;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .info-value {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .message {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            white-space: pre-line;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .timestamp {
+            color: #95a5a6;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .action-button {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .action-button:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="alert-icon">⚠️</div>
+            <h1 class="title" th:text="${subject}">Health Alert</h1>
+            <p class="subtitle">IBM AI Elderly Health Monitoring System</p>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #e74c3c; margin-top: 0;">Emergency Notification</h2>
+            <p>Dear Family Member:</p>
+            <p>The system has detected abnormal health data for the user. Please pay immediate attention and take appropriate action.</p>
+        </div>
+
+        <div class="message" th:text="${message}">
+            Health alert information will be displayed here...
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="tel:+1234567890" class="action-button">Contact User Immediately</a>
+        </div>
+
+        <div class="footer">
+            <p><strong>Important Reminders:</strong></p>
+            <ul style="text-align: left; display: inline-block;">
+                <li>Please contact the user immediately to confirm their health status</li>
+                <li>Seek medical attention if necessary</li>
+                <li>Stay calm and handle the situation rationally</li>
+            </ul>
+        </div>
+
+        <div class="timestamp">
+            <p>Email sent at: <span th:text="${#temporals.format(timestamp, 'yyyy-MM-dd HH:mm:ss')}">2025-07-30 13:30:00</span></p>
+            <p>Recipient: <span th:text="${toEmail}">family@example.com</span></p>
+        </div>
+    </div>
+</body>
+</html> 
