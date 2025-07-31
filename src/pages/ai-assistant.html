@@ -22,7 +22,7 @@
 
         body {
             font-family: 'IBM Plex Sans', sans-serif;
-            font-size: 18px; /* Larger base font size */
+            font-size: 18px; /* Larger base font size for elderly users */
             line-height: 1.6;
             color: var(--elderly-dark);
             background-color: var(--elderly-light);
@@ -33,11 +33,11 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px 20px 80px 20px; /* Add bottom padding for navigation */
+            padding: 20px 20px 80px 20px; /* Add bottom padding for bottom navigation bar */
             min-height: calc(100vh - 80px);
         }
 
-        /* Header */
+        /* Main header section */
         .header {
             background: linear-gradient(135deg, var(--elderly-primary), var(--elderly-secondary));
             color: white;
@@ -60,7 +60,7 @@
             opacity: 0.9;
         }
 
-        /* User info bar */
+        /* User information display bar */
         .user-info {
             background: white;
             padding: 20px;
@@ -97,7 +97,7 @@
             transform: translateY(-2px);
         }
 
-        /* Main Chat Container */
+        /* Main chat interface container */
         .chat-container {
             background: white;
             border-radius: 15px;
@@ -110,7 +110,7 @@
             border: 2px solid var(--elderly-border);
         }
 
-        /* Chat Header */
+        /* Chat interface header */
         .chat-header {
             background: linear-gradient(135deg, var(--elderly-primary), var(--elderly-secondary));
             color: white;
@@ -155,7 +155,7 @@
             100% { opacity: 1; }
         }
 
-        /* Chat Body */
+        /* Chat messages area */
         .chat-body {
             flex: 1;
             padding: 25px;
@@ -166,7 +166,7 @@
             gap: 20px;
         }
 
-        /* Welcome Message */
+        /* Welcome message styling */
         .welcome-message {
             background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
             border-radius: 15px;
@@ -194,7 +194,7 @@
             font-size: 1rem;
         }
 
-        /* Chat Messages */
+        /* Individual chat message styling */
         .message {
             display: flex;
             gap: 15px;
@@ -269,7 +269,7 @@
             text-align: left;
         }
 
-        /* Chat Input */
+        /* Chat input area styling */
         .chat-input {
             background: white;
             padding: 20px 25px;
@@ -361,14 +361,14 @@
             transform: none;
         }
 
-        /* Voice Recording */
+        /* Voice recording indicator */
         .voice-recording {
             background: var(--elderly-danger);
             color: white;
             animation: pulse 1s infinite;
         }
 
-        /* Responsive Design */
+        /* Responsive design for mobile devices */
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -400,7 +400,7 @@
             }
         }
 
-        /* Loading Animation */
+        /* Typing indicator animation */
         .typing-indicator {
             display: flex;
             align-items: center;
@@ -430,7 +430,7 @@
             30% { transform: translateY(-10px); opacity: 1; }
         }
 
-        /* File Upload Styles */
+        /* File attachment display styles */
         .file-attachment {
             background: #f0f8ff;
             border: 1px solid #b3d9ff;
@@ -460,7 +460,7 @@
             color: #666;
         }
 
-        /* Bottom Navigation */
+        /* Fixed bottom navigation bar */
         .bottom-navigation {
             position: fixed;
             bottom: 0;
@@ -520,7 +520,7 @@
             font-weight: 600;
         }
 
-        /* Responsive adjustments for bottom navigation */
+        /* Mobile responsive adjustments for bottom navigation */
         @media (max-width: 768px) {
             .nav-tab {
                 min-width: 60px;
@@ -539,13 +539,13 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
+        <!-- Main page header -->
         <div class="header">
             <h1>🤖 AI Healthcare Assistant</h1>
             <p>Your personal health companion, available 24/7</p>
         </div>
 
-        <!-- User Info Bar -->
+        <!-- User information and actions bar -->
         <div class="user-info">
             <div class="user-welcome" id="userWelcome">
                 Welcome! Loading...
@@ -556,9 +556,9 @@
             </div>
         </div>
 
-        <!-- Main Chat Container -->
+        <!-- Main chat interface container -->
         <div class="chat-container">
-            <!-- Chat Header -->
+            <!-- Chat interface header -->
             <div class="chat-header">
                 <div class="chat-title">
                     <span class="ai-icon">🤖</span>
@@ -570,9 +570,9 @@
                 </div>
             </div>
 
-            <!-- Chat Body -->
+            <!-- Chat messages display area -->
             <div class="chat-body" id="chatBody">
-                <!-- Welcome Message -->
+                <!-- Welcome message for new users -->
                 <div class="welcome-message">
                     <h3>🌟 Welcome to Your AI Healthcare Assistant!</h3>
                     <p>I'm here to help you with your health and wellness needs. I can assist you with:</p>
@@ -587,9 +587,9 @@
                 </div>
             </div>
 
-            <!-- Chat Input -->
+            <!-- Chat input and tools section -->
             <div class="chat-input">
-                <!-- Input Tools -->
+                <!-- Interactive input tools -->
                 <div class="input-tools">
                     <button class="tool-btn" onclick="selectFile()" title="Upload Document">
                         📎 <span>File</span>
@@ -608,7 +608,7 @@
                     </button>
                 </div>
 
-                <!-- Input Container -->
+                <!-- Text input and send button -->
                 <div class="input-container">
                     <textarea id="chatInput" placeholder="Type your message here... (Press Enter to send, Shift+Enter for new line)" rows="2"></textarea>
                     <button id="sendBtn" onclick="sendMessage()">
@@ -619,12 +619,12 @@
             </div>
         </div>
 
-        <!-- Hidden file inputs -->
+        <!-- Hidden file input elements -->
         <input type="file" id="fileInput" style="display: none;" multiple>
         <input type="file" id="imageInput" style="display: none;" accept="image/*" multiple>
     </div>
 
-    <!-- Bottom Navigation -->
+    <!-- Fixed bottom navigation bar -->
     <div class="bottom-navigation">
         <button class="nav-tab" onclick="window.location.href='schedule.html'">
             <span class="nav-icon">📅</span>
@@ -641,21 +641,21 @@
     </div>
 
     <script>
-        // Global variables
+        // Global application variables
         let currentUser = null;
         let isGuestMode = false;
         let voiceRecording = false;
         let mediaRecorder = null;
         let recordedChunks = [];
 
-        // Initialize the application
+        // Initialize the application on page load
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
             setupEventListeners();
         });
 
         function initializeApp() {
-            // Check authentication
+            // Check user authentication status
             const authToken = localStorage.getItem('authToken');
             if (authToken === 'demo-token') {
                 currentUser = { name: 'Demo User', email: 'demo@example.com' };
@@ -664,15 +664,15 @@
                 currentUser = { name: 'Guest User', email: '' };
                 isGuestMode = true;
             } else {
-                // Redirect to registration if not authenticated
+                // Redirect to registration page if not authenticated
                 window.location.href = 'register.html';
                 return;
             }
 
-            // Update user welcome message
+            // Update user welcome message display
             updateUserWelcome();
 
-            // Load chat history
+            // Load previous chat history from backend
             loadChatHistory();
         }
 
@@ -694,7 +694,7 @@
         }
 
         function setupEventListeners() {
-            // Enter key to send message
+            // Set up Enter key to send message
             document.getElementById('chatInput').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -702,29 +702,29 @@
                 }
             });
 
-            // File input handlers
+            // Set up file input event handlers
             document.getElementById('fileInput').addEventListener('change', handleFileSelect);
             document.getElementById('imageInput').addEventListener('change', handleImageSelect);
         }
 
-        // Send message function
+        // Send chat message to backend
         async function sendMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             
             if (!message) return;
 
-            // Clear input
+            // Clear input field
             input.value = '';
             
             // Add user message to chat
             addMessage('user', message);
             
-            // Show typing indicator
+            // Show AI typing indicator
             showTypingIndicator();
             
             try {
-                // Send to backend
+                // Send message to backend API
                 const response = await fetch('http://localhost:8080/api/chat/message', {
                     method: 'POST',
                     headers: {
@@ -740,11 +740,11 @@
 
                 const result = await response.json();
                 
-                // Remove typing indicator
+                // Remove AI typing indicator
                 hideTypingIndicator();
                 
                 if (result.success) {
-                    // Add AI response
+                    // Display AI response message
                     addMessage('assistant', result.response);
                 } else {
                     addMessage('assistant', 'I apologize, but I encountered an error. Please try again.');
@@ -756,7 +756,7 @@
             }
         }
 
-        // Add message to chat
+        // Add message to chat display
         function addMessage(sender, content, timestamp = null) {
             const chatBody = document.getElementById('chatBody');
             const messageDiv = document.createElement('div');
@@ -779,7 +779,7 @@
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
-        // Typing indicator
+        // AI typing indicator functions
         function showTypingIndicator() {
             const chatBody = document.getElementById('chatBody');
             const typingDiv = document.createElement('div');
@@ -808,7 +808,7 @@
             }
         }
 
-        // File selection functions
+        // File selection and upload functions
         function selectFile() {
             document.getElementById('fileInput').click();
         }
@@ -831,13 +831,13 @@
             });
         }
 
-        // Upload file function
+        // Handle file upload to backend
         async function uploadFile(file, type) {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('type', type);
 
-            // Show file attachment in chat
+            // Display file attachment info in chat
             const fileInfo = `📎 Uploading ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
             addMessage('user', fileInfo);
 
@@ -863,7 +863,7 @@
             }
         }
 
-        // Location sharing
+        // Handle location sharing functionality
         function shareLocation() {
             if (navigator.geolocation) {
                 addMessage('user', '📍 Sharing my location...');
@@ -907,7 +907,7 @@
             }
         }
 
-        // Voice recording
+        // Voice recording functionality
         function toggleVoice() {
             if (voiceRecording) {
                 stopVoiceRecording();
@@ -987,18 +987,18 @@
             }
         }
 
-        // Clear chat
+        // Clear chat history function
         function clearChat() {
             if (confirm('Are you sure you want to clear the chat history?')) {
                 const chatBody = document.getElementById('chatBody');
-                // Keep only the welcome message
+                // Preserve the welcome message
                 const welcomeMessage = chatBody.querySelector('.welcome-message');
                 chatBody.innerHTML = '';
                 if (welcomeMessage) {
                     chatBody.appendChild(welcomeMessage);
                 }
                 
-                // Clear backend history
+                // Clear chat history on backend
                 fetch('http://localhost:8080/api/chat/history', {
                     method: 'DELETE',
                     headers: {
@@ -1008,7 +1008,7 @@
             }
         }
 
-        // Load chat history
+        // Load chat history from backend
         async function loadChatHistory() {
             try {
                 const response = await fetch('http://localhost:8080/api/chat/history', {
