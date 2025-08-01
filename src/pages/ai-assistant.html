@@ -22,103 +22,95 @@
 
         body {
             font-family: 'IBM Plex Sans', sans-serif;
-            font-size: 18px;
+            font-size: 18px; /* Larger base font size for elderly users */
             line-height: 1.6;
             color: var(--elderly-dark);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: var(--elderly-light);
             margin: 0;
             padding: 0;
-            min-height: 100vh;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            padding: 20px 20px 80px 20px; /* Add bottom padding for bottom navigation bar */
+            min-height: calc(100vh - 80px);
         }
 
-        /* Header */
+        /* Main header section */
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            color: var(--elderly-dark);
-            padding: 25px 30px;
-            border-radius: 20px;
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--elderly-primary), var(--elderly-secondary));
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
             text-align: center;
             box-shadow: var(--elderly-shadow);
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .header h1 {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             margin: 0 0 10px 0;
             font-weight: 600;
-            color: var(--elderly-primary);
         }
 
         .header p {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             margin: 0;
-            opacity: 0.8;
+            opacity: 0.9;
         }
 
-        /* Navigation */
-        .nav-bar {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
+        /* User information display bar */
+        .user-info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: var(--elderly-shadow);
+            border: 2px solid var(--elderly-border);
         }
 
-        .nav-links {
-            display: flex;
-            gap: 15px;
-        }
-
-        .nav-link {
-            text-decoration: none;
-            color: var(--elderly-primary);
+        .user-welcome {
+            font-size: 1.3rem;
             font-weight: 500;
-            padding: 10px 20px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-size: 1rem;
+            color: var(--elderly-primary);
         }
 
-        .nav-link:hover {
-            background: var(--elderly-primary);
+        .user-actions button {
+            background: var(--elderly-danger);
             color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .user-actions button:hover {
+            background: #c82333;
             transform: translateY(-2px);
         }
 
-        .nav-link.active {
-            background: var(--elderly-primary);
-            color: white;
-        }
-
-        /* Main Chat Container */
+        /* Main chat interface container */
         .chat-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            background: white;
+            border-radius: 15px;
             box-shadow: var(--elderly-shadow);
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             min-height: 600px;
+            border: 2px solid var(--elderly-border);
         }
 
-        /* Chat Header */
+        /* Chat interface header */
         .chat-header {
             background: linear-gradient(135deg, var(--elderly-primary), var(--elderly-secondary));
             color: white;
@@ -126,7 +118,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-radius: 20px 20px 0 0;
+            border-radius: 15px 15px 0 0;
         }
 
         .chat-title {
@@ -163,7 +155,7 @@
             100% { opacity: 1; }
         }
 
-        /* Chat Body */
+        /* Chat messages area */
         .chat-body {
             flex: 1;
             padding: 25px;
@@ -174,7 +166,7 @@
             gap: 20px;
         }
 
-        /* Welcome Message */
+        /* Welcome message styling */
         .welcome-message {
             background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
             border-radius: 15px;
@@ -202,7 +194,7 @@
             font-size: 1rem;
         }
 
-        /* Chat Messages */
+        /* Individual chat message styling */
         .message {
             display: flex;
             gap: 15px;
@@ -277,7 +269,7 @@
             text-align: left;
         }
 
-        /* Chat Input */
+        /* Chat input area styling */
         .chat-input {
             background: white;
             padding: 20px 25px;
@@ -369,14 +361,14 @@
             transform: none;
         }
 
-        /* Voice Recording */
+        /* Voice recording indicator */
         .voice-recording {
             background: var(--elderly-danger);
             color: white;
             animation: pulse 1s infinite;
         }
 
-        /* Responsive Design */
+        /* Responsive design for mobile devices */
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -408,7 +400,7 @@
             }
         }
 
-        /* Loading Animation */
+        /* Typing indicator animation */
         .typing-indicator {
             display: flex;
             align-items: center;
@@ -438,7 +430,7 @@
             30% { transform: translateY(-10px); opacity: 1; }
         }
 
-        /* File Upload Styles */
+        /* File attachment display styles */
         .file-attachment {
             background: #f0f8ff;
             border: 1px solid #b3d9ff;
@@ -467,29 +459,106 @@
             font-size: 0.9rem;
             color: #666;
         }
+
+        /* Fixed bottom navigation bar */
+        .bottom-navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 3px solid var(--elderly-border);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 20px;
+            box-shadow: 0 -4px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-tab {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+            font-family: inherit;
+        }
+
+        .nav-tab:hover {
+            background: var(--elderly-light);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: var(--elderly-primary);
+            color: white;
+        }
+
+        .nav-tab.active .nav-icon {
+            transform: scale(1.2);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--elderly-dark);
+        }
+
+        .nav-tab.active .nav-label {
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Mobile responsive adjustments for bottom navigation */
+        @media (max-width: 768px) {
+            .nav-tab {
+                min-width: 60px;
+                padding: 8px 10px;
+            }
+            
+            .nav-icon {
+                font-size: 1.3rem;
+            }
+            
+            .nav-label {
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
+        <!-- Main page header -->
         <div class="header">
             <h1>🤖 AI Healthcare Assistant</h1>
             <p>Your personal health companion, available 24/7</p>
         </div>
 
-        <!-- Navigation -->
-        <div class="nav-bar">
-            <div class="nav-links">
-                <a href="schedule.html" class="nav-link">📅 Daily Schedule</a>
-                <a href="ai-assistant.html" class="nav-link active">🤖 AI Assistant</a>
-                <a href="schedule.html#pet" class="nav-link">🐱 Virtual Pet</a>
-                <a href="../index.html" class="nav-link">🏠 Home</a>
+        <!-- User information and actions bar -->
+        <div class="user-info">
+            <div class="user-welcome" id="userWelcome">
+                Welcome! Loading...
+            </div>
+            <div class="user-actions">
+                <button onclick="window.location.href='../index.html'" class="home-btn">🏠 Home</button>
+                <button onclick="logout()" class="logout-btn">🚪 Logout</button>
             </div>
         </div>
 
-        <!-- Main Chat Container -->
+        <!-- Main chat interface container -->
         <div class="chat-container">
-            <!-- Chat Header -->
+            <!-- Chat interface header -->
             <div class="chat-header">
                 <div class="chat-title">
                     <span class="ai-icon">🤖</span>
@@ -501,9 +570,9 @@
                 </div>
             </div>
 
-            <!-- Chat Body -->
+            <!-- Chat messages display area -->
             <div class="chat-body" id="chatBody">
-                <!-- Welcome Message -->
+                <!-- Welcome message for new users -->
                 <div class="welcome-message">
                     <h3>🌟 Welcome to Your AI Healthcare Assistant!</h3>
                     <p>I'm here to help you with your health and wellness needs. I can assist you with:</p>
@@ -518,9 +587,9 @@
                 </div>
             </div>
 
-            <!-- Chat Input -->
+            <!-- Chat input and tools section -->
             <div class="chat-input">
-                <!-- Input Tools -->
+                <!-- Interactive input tools -->
                 <div class="input-tools">
                     <button class="tool-btn" onclick="selectFile()" title="Upload Document">
                         📎 <span>File</span>
@@ -539,7 +608,7 @@
                     </button>
                 </div>
 
-                <!-- Input Container -->
+                <!-- Text input and send button -->
                 <div class="input-container">
                     <textarea id="chatInput" placeholder="Type your message here... (Press Enter to send, Shift+Enter for new line)" rows="2"></textarea>
                     <button id="sendBtn" onclick="sendMessage()">
@@ -550,27 +619,43 @@
             </div>
         </div>
 
-        <!-- Hidden file inputs -->
+        <!-- Hidden file input elements -->
         <input type="file" id="fileInput" style="display: none;" multiple>
         <input type="file" id="imageInput" style="display: none;" accept="image/*" multiple>
     </div>
 
+    <!-- Fixed bottom navigation bar -->
+    <div class="bottom-navigation">
+        <button class="nav-tab" onclick="window.location.href='schedule.html'">
+            <span class="nav-icon">📅</span>
+            <span class="nav-label">Schedule</span>
+        </button>
+        <button class="nav-tab active">
+            <span class="nav-icon">🤖</span>
+            <span class="nav-label">AI Assistant</span>
+        </button>
+        <button class="nav-tab" onclick="window.location.href='schedule.html#pet'">
+            <span class="nav-icon">🐱</span>
+            <span class="nav-label">Virtual Pet</span>
+        </button>
+    </div>
+
     <script>
-        // Global variables
+        // Global application variables
         let currentUser = null;
         let isGuestMode = false;
         let voiceRecording = false;
         let mediaRecorder = null;
         let recordedChunks = [];
 
-        // Initialize the application
+        // Initialize the application on page load
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
             setupEventListeners();
         });
 
         function initializeApp() {
-            // Check authentication
+            // Check user authentication status
             const authToken = localStorage.getItem('authToken');
             if (authToken === 'demo-token') {
                 currentUser = { name: 'Demo User', email: 'demo@example.com' };
@@ -579,17 +664,37 @@
                 currentUser = { name: 'Guest User', email: '' };
                 isGuestMode = true;
             } else {
-                // Redirect to registration if not authenticated
+                // Redirect to registration page if not authenticated
                 window.location.href = 'register.html';
                 return;
             }
 
-            // Load chat history
+            // Update user welcome message display
+            updateUserWelcome();
+
+            // Load previous chat history from backend
             loadChatHistory();
         }
 
+        function updateUserWelcome() {
+            const welcomeElement = document.getElementById('userWelcome');
+            if (currentUser) {
+                const modeText = isGuestMode ? ' (Guest Mode)' : '';
+                welcomeElement.textContent = `Welcome, ${currentUser.name}!${modeText}`;
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('guestMode');
+                localStorage.removeItem('currentUser');
+                window.location.href = 'register.html';
+            }
+        }
+
         function setupEventListeners() {
-            // Enter key to send message
+            // Set up Enter key to send message
             document.getElementById('chatInput').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -597,29 +702,29 @@
                 }
             });
 
-            // File input handlers
+            // Set up file input event handlers
             document.getElementById('fileInput').addEventListener('change', handleFileSelect);
             document.getElementById('imageInput').addEventListener('change', handleImageSelect);
         }
 
-        // Send message function
+        // Send chat message to backend
         async function sendMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             
             if (!message) return;
 
-            // Clear input
+            // Clear input field
             input.value = '';
             
             // Add user message to chat
             addMessage('user', message);
             
-            // Show typing indicator
+            // Show AI typing indicator
             showTypingIndicator();
             
             try {
-                // Send to backend
+                // Send message to backend API
                 const response = await fetch('http://localhost:8080/api/chat/message', {
                     method: 'POST',
                     headers: {
@@ -635,11 +740,11 @@
 
                 const result = await response.json();
                 
-                // Remove typing indicator
+                // Remove AI typing indicator
                 hideTypingIndicator();
                 
                 if (result.success) {
-                    // Add AI response
+                    // Display AI response message
                     addMessage('assistant', result.response);
                 } else {
                     addMessage('assistant', 'I apologize, but I encountered an error. Please try again.');
@@ -651,7 +756,7 @@
             }
         }
 
-        // Add message to chat
+        // Add message to chat display
         function addMessage(sender, content, timestamp = null) {
             const chatBody = document.getElementById('chatBody');
             const messageDiv = document.createElement('div');
@@ -674,7 +779,7 @@
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
-        // Typing indicator
+        // AI typing indicator functions
         function showTypingIndicator() {
             const chatBody = document.getElementById('chatBody');
             const typingDiv = document.createElement('div');
@@ -703,7 +808,7 @@
             }
         }
 
-        // File selection functions
+        // File selection and upload functions
         function selectFile() {
             document.getElementById('fileInput').click();
         }
@@ -726,13 +831,13 @@
             });
         }
 
-        // Upload file function
+        // Handle file upload to backend
         async function uploadFile(file, type) {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('type', type);
 
-            // Show file attachment in chat
+            // Display file attachment info in chat
             const fileInfo = `📎 Uploading ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
             addMessage('user', fileInfo);
 
@@ -758,7 +863,7 @@
             }
         }
 
-        // Location sharing
+        // Handle location sharing functionality
         function shareLocation() {
             if (navigator.geolocation) {
                 addMessage('user', '📍 Sharing my location...');
@@ -802,7 +907,7 @@
             }
         }
 
-        // Voice recording
+        // Voice recording functionality
         function toggleVoice() {
             if (voiceRecording) {
                 stopVoiceRecording();
@@ -882,18 +987,18 @@
             }
         }
 
-        // Clear chat
+        // Clear chat history function
         function clearChat() {
             if (confirm('Are you sure you want to clear the chat history?')) {
                 const chatBody = document.getElementById('chatBody');
-                // Keep only the welcome message
+                // Preserve the welcome message
                 const welcomeMessage = chatBody.querySelector('.welcome-message');
                 chatBody.innerHTML = '';
                 if (welcomeMessage) {
                     chatBody.appendChild(welcomeMessage);
                 }
                 
-                // Clear backend history
+                // Clear chat history on backend
                 fetch('http://localhost:8080/api/chat/history', {
                     method: 'DELETE',
                     headers: {
@@ -903,7 +1008,7 @@
             }
         }
 
-        // Load chat history
+        // Load chat history from backend
         async function loadChatHistory() {
             try {
                 const response = await fetch('http://localhost:8080/api/chat/history', {
