@@ -1566,6 +1566,9 @@
             
             // Set current date as default
             document.getElementById('activityDate').value = currentDate.toISOString().split('T')[0];
+            
+            // Handle URL hash navigation (e.g., #pet)
+            handleUrlHash();
         });
 
         // Initialize form handlers
@@ -2099,6 +2102,22 @@
                 }
             });
         });
+
+        // Handle URL hash navigation
+        function handleUrlHash() {
+            const hash = window.location.hash;
+            if (hash === '#pet') {
+                // Switch to Virtual Pet tab
+                switchTab('pet');
+            } else if (hash === '#schedule') {
+                // Switch to Schedule tab (default)
+                switchTab('schedule');
+            }
+            // Clear the hash to avoid issues with browser back button
+            if (hash) {
+                history.replaceState(null, null, window.location.pathname);
+            }
+        }
 
         // Tab System Functions
         let currentTab = 'schedule';
