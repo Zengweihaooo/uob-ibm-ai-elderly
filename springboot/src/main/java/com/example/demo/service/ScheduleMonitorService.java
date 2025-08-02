@@ -6,6 +6,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import com.example.demo.pojo.User;
 
+
+/**
+ * This service is used to monitor the health and schedule of the users
+ * It will send reminder emails to the users who haven't submitted the health and schedule data today
+*/
+
 @Service
 public class ScheduleMonitorService {
     @Autowired
@@ -17,7 +23,7 @@ public class ScheduleMonitorService {
     @Autowired
     private EmailService emailService;
 
-    @Scheduled(cron = "0 0 9 * * ?") // 每天早上9点检查健康数据
+    @Scheduled(cron = "0 0 9 * * ?") // Check the health data every morning at 9 am
     public void checkHealthSubmission() {
         List<User> users = healthService.getUsersWithoutTodayHealthLog();
         for (User user : users) {
@@ -29,7 +35,7 @@ public class ScheduleMonitorService {
         }
     }
 
-    @Scheduled(cron = "0 0 10 * * ?") // 每天早上10点检查日程
+    @Scheduled(cron = "0 0 10 * * ?") // Check the schedule every morning at 10am
     public void checkScheduleSubmission() {
         List<User> users = scheduleService.getUsersWithoutTodaySchedule();
         for (User user : users) {
