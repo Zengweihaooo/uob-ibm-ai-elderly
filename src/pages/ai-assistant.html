@@ -307,6 +307,66 @@
             box-shadow: 0 4px 12px rgba(44, 90, 160, 0.3);
         }
 
+        /* Speech input container integration */
+        .tool-btn-container {
+            display: inline-block;
+        }
+
+        .tool-btn-container .speech-input-btn {
+            background: white;
+            color: var(--elderly-dark);
+            border: 2px solid var(--elderly-border);
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 14px;
+            min-width: auto;
+            height: auto;
+            box-shadow: var(--elderly-shadow);
+        }
+
+        .tool-btn-container .speech-input-btn:hover {
+            background: var(--elderly-primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 90, 160, 0.3);
+        }
+
+        .tool-btn-container .speech-input-btn.recording {
+            background: linear-gradient(135deg, var(--elderly-danger), #d32f2f);
+            color: white;
+            border-color: var(--elderly-danger);
+        }
+
+        /* Message speech button styles */
+        .message-speech-btn {
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .message-speech-btn .speech-output-btn {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--elderly-primary);
+            border: 1px solid var(--elderly-primary);
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            min-width: auto;
+            height: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .message-speech-btn .speech-output-btn:hover {
+            background: var(--elderly-primary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .message-speech-btn .speech-output-btn.speaking {
+            background: var(--elderly-warning);
+            color: white;
+            border-color: var(--elderly-warning);
+        }
+
         .input-container {
             display: flex;
             gap: 15px;
@@ -600,9 +660,7 @@
                     <button class="tool-btn" onclick="shareLocation()" title="Share Location">
                         📍 <span>Location</span>
                     </button>
-                    <button class="tool-btn" onclick="toggleVoice()" title="Voice Message" id="voiceBtn">
-                        🎤 <span>Voice</span>
-                    </button>
+                    <div id="speechInputContainer" class="tool-btn-container" title="Voice Input"></div>
                     <button class="tool-btn" onclick="clearChat()" title="Clear Chat History">
                         🗑️ <span>Clear</span>
                     </button>
@@ -640,6 +698,10 @@
         </button>
     </div>
 
+    <!-- Speech Service Scripts -->
+    <script src="../js/speech-service.js"></script>
+    <script src="../js/speech-controls.js"></script>
+
     <script>
         // Global application variables
         let currentUser = null;
@@ -652,6 +714,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
             setupEventListeners();
+            initializeSpeechFeatures();
         });
 
         function initializeApp() {
@@ -705,6 +768,47 @@
             // Set up file input event handlers
             document.getElementById('fileInput').addEventListener('change', handleFileSelect);
             document.getElementById('imageInput').addEventListener('change', handleImageSelect);
+        }
+
+        // Initialize speech features
+        function initializeSpeechFeatures() {
+            // Initialize speech input button
+            const speechInputContainer = document.getElementById('speechInputContainer');
+            if (speechInputContainer && window.SpeechInputButton) {
+                const speechInput = new SpeechInputButton(speechInputContainer, {
+                    buttonClass: 'speech-input-btn tool-btn-style',
+                    onResult: handleSpeechInput,
+                    onError: handleSpeechError,
+                    showTranscript: false,
+                    continuous: false
+                });
+            }
+        }
+
+        // Handle speech input results
+        function handleSpeechInput(result) {
+            if (result.finalTranscript) {
+                const chatInput = document.getElementById('chatInput');
+                const currentText = chatInput.value.trim();
+                const newText = result.finalTranscript.trim();
+                
+                // Append speech result to existing text
+                chatInput.value = currentText ? `${currentText} ${newText}` : newText;
+                chatInput.focus();
+                
+                // Auto-send if the speech result seems complete (ends with punctuation)
+                if (newText.match(/[.!?]$/)) {
+                    setTimeout(() => {
+                        sendMessage();
+                    }, 500);
+                }
+            }
+        }
+
+        // Handle speech input errors
+        function handleSpeechError(error) {
+            console.error('Speech input error:', error);
+            // You could show a user-friendly error message here
         }
 
         // Send chat message to backend
@@ -767,15 +871,32 @@
             
             const avatar = sender === 'user' ? '👤' : '🤖';
             
+            // Create speech output button for assistant messages
+            const speechButton = sender === 'assistant' ? 
+                `<div class="message-speech-btn" data-text="${content.replace(/"/g, '&quot;')}"></div>` : '';
+            
             messageDiv.innerHTML = `
                 <div class="message-avatar">${avatar}</div>
                 <div class="message-content">
                     <div class="message-bubble">${content}</div>
                     <div class="message-time">${timeString}</div>
+                    ${speechButton}
                 </div>
             `;
             
             chatBody.appendChild(messageDiv);
+            
+            // Initialize speech output button for assistant messages
+            if (sender === 'assistant' && window.SpeechOutputButton) {
+                const speechContainer = messageDiv.querySelector('.message-speech-btn');
+                if (speechContainer) {
+                    new SpeechOutputButton(speechContainer, {
+                        text: content,
+                        buttonClass: 'speech-output-btn message-speech-style'
+                    });
+                }
+            }
+            
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
@@ -907,7 +1028,9 @@
             }
         }
 
-        // Voice recording functionality
+        // Legacy voice recording functionality (replaced by Web Speech API)
+        // Note: These functions are now replaced by the new speech service
+        /*
         function toggleVoice() {
             if (voiceRecording) {
                 stopVoiceRecording();
@@ -986,6 +1109,7 @@
                 addMessage('assistant', 'There was an error processing your voice message. Please try again.');
             }
         }
+        */
 
         // Clear chat history function
         function clearChat() {
