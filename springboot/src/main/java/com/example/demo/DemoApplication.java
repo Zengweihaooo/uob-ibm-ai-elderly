@@ -3,6 +3,7 @@ package com.example.demo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Main Spring Boot application class for the IBM AI Elderly Project
@@ -16,6 +17,8 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 @SpringBootApplication(
     exclude = { DataSourceAutoConfiguration.class }
 ) // Temporarily exclude database configuration - not using database yet
+@EnableScheduling
+// 自动调用定时任务，如定时检查用户是否提交健康数据，并发送提醒邮件
 public class DemoApplication {
 
     /**

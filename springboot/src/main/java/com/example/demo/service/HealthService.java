@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.pojo.HealthRecord;
+import com.example.demo.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,9 @@ public class HealthService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private UserService userService;
 
     // In-memory storage for health records (consider using database in production)
     private List<HealthRecord> healthRecords = new ArrayList<>();
@@ -177,5 +181,23 @@ public class HealthService {
     public void clearAllRecords() {
         healthRecords.clear();
         recordIdCounter = 1L;
+    }
+
+
+    public List<User> getUsersWithoutTodayHealthLog() {
+        // TODO: Implement this method
+        return new ArrayList<>();
+        // 获取所有用户
+        List<User> users = userService.getAllUsers();
+        // 获取所有健康记录
+        List<HealthRecord> healthRecords = getAllRecords();
+        // 获取所有用户中没有今天健康记录的用户
+        List<User> usersWithoutTodayHealthLog = new ArrayList<>();
+        for (User user : users) {
+            if (!healthRecords.stream().anyMatch(record -> record.getUserId().equals(user.getId()) && record.getRecordTime().toLocalDate().equals(LocalDate.now()))) {
+                usersWithoutTodayHealthLog.add(user);
+            }
+        }
+        return usersWithoutTodayHealthLog;
     }
 } 
