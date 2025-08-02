@@ -185,13 +185,11 @@ public class HealthService {
 
 
     public List<User> getUsersWithoutTodayHealthLog() {
-        // TODO: Implement this method
-        return new ArrayList<>();
-        // 获取所有用户
+        // Obtain all users and health records
         List<User> users = userService.getAllUsers();
-        // 获取所有健康记录
         List<HealthRecord> healthRecords = getAllRecords();
-        // 获取所有用户中没有今天健康记录的用户
+
+        // Get the users without today's health records
         List<User> usersWithoutTodayHealthLog = new ArrayList<>();
         for (User user : users) {
             if (!healthRecords.stream().anyMatch(record -> record.getUserId().equals(user.getId()) && record.getRecordTime().toLocalDate().equals(LocalDate.now()))) {

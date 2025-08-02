@@ -24,6 +24,7 @@ public class User {
     
     private String email;
     private String name;
+    private Long id;
     private String verificationCode;
     private UserStatus status;
     private LocalDateTime createdAt;
@@ -48,8 +49,27 @@ public class User {
         this.email = email;
         this.name = email.split("@")[0]; // Use email prefix as name
     }
+
+    /**
+     * Constructor with email and name
+     * 
+     * @param email The user's email address
+     * @param name The user's name
+     */
+    public User(String email, String name) {
+        this(email);
+        this.name = name;
+    }
     
     // Getters and Setters
+    
+    public Long getId() {
+        return id;
+    }
+    
+    public void setId(Long id) {
+        this.id = id;
+    }
     
     public String getEmail() {
         return email;
