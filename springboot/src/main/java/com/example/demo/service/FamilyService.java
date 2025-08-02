@@ -26,6 +26,9 @@ public class FamilyService {
 
     @Autowired
     private EmailService emailService;
+    
+    @Autowired
+    private SmsService smsService;
 
     // In-memory storage for family contacts (consider using database in production)
     private List<FamilyContact> familyContacts = new ArrayList<>();
@@ -222,10 +225,22 @@ public class FamilyService {
                 System.out.println("Message sent via email to " + contact.getEmail());
             }
 
-            // TODO: Send SMS if phone number is available
+            // Send SMS if phone number is available
             if (contact.getPhoneNumber() != null && !contact.getPhoneNumber().trim().isEmpty()) {
-                // Implement SMS sending logic here
-                System.out.println("SMS message would be sent to " + contact.getPhoneNumber());
+                try {
+                    // 发送SMS，使用传入的消息内容
+                    Map<String, Object> smsResult = smsService.sendSMS(contact.getPhoneNumber(), message, messageType);
+                    
+                    if ((Boolean) smsResult.get("success")) {
+                        System.out.println("SMS发送成功到 " + contact.getPhoneNumber() + 
+                                         ", MessageID: " + smsResult.get("messageId"));
+                    } else {
+                        System.err.println("SMS发送失败到 " + contact.getPhoneNumber() + 
+                                         ": " + smsResult.get("message"));
+                    }
+                } catch (Exception e) {
+                    System.err.println("SMS发送异常: " + e.getMessage());
+                }
             }
 
             // Update last contacted time
@@ -369,6 +384,7 @@ public class FamilyService {
         
         return content.toString();
     }
+
 
     private String buildEmergencyMessage(String emergencyType, String description, String contactName) {
         return "Emergency situation detected: " + emergencyType + "\n\n" +
