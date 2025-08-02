@@ -23,6 +23,7 @@ public class User {
     }
     
     private String email;
+    private String name;
     private String verificationCode;
     private UserStatus status;
     private LocalDateTime createdAt;
@@ -45,6 +46,7 @@ public class User {
     public User(String email) {
         this();
         this.email = email;
+        this.name = email.split("@")[0]; // Use email prefix as name
     }
     
     // Getters and Setters
@@ -55,6 +57,14 @@ public class User {
     
     public void setEmail(String email) {
         this.email = email;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
     
     public String getVerificationCode() {
