@@ -1,12 +1,25 @@
 package com.example.demo.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList; //新增
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/pet")
@@ -33,6 +46,9 @@ public class PetController {
         try {
             Map<String, Object> pet = getPetForUser(userId);
             
+            // 检查是否被忽视（在这里调用）
+            checkNeglect(userId);
+
             response.put("success", true);
             response.put("pet", pet);
             response.put("lastUpdate", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
@@ -71,7 +87,8 @@ public class PetController {
             }
             
             Map<String, Object> pet = getPetForUser(userId);
-            Map<String, Object> interactionResult = processInteraction(interactionType, message, pet);
+            //Map<String, Object> interactionResult = processInteraction(interactionType, message, pet);
+            Map<String, Object> interactionResult = processInteraction(interactionType, message, pet, userId);
             
             // Update pet data
             petData.put(userId, pet);
@@ -364,7 +381,8 @@ public class PetController {
         return pet;
     }
 
-    private Map<String, Object> processInteraction(String type, String message, Map<String, Object> pet) {
+    //private Map<String, Object> processInteraction(String type, String message, Map<String, Object> pet) {
+    private Map<String, Object> processInteraction(String type, String message, Map<String, Object> pet, Long userId){
         Map<String, Object> result = new HashMap<>();
         
         switch (type.toLowerCase()) {
@@ -408,7 +426,7 @@ public class PetController {
         }
         
         // Update mood based on stats
-        updatePetMood(pet);
+        updatePetMood(pet, userId);
         pet.put("lastInteraction", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         
         result.put("type", type);
@@ -416,7 +434,7 @@ public class PetController {
         
         return result;
     }
-
+/* 
     private void updatePetMood(Map<String, Object> pet) {
         int happiness = (Integer) pet.get("happiness");
         int health = (Integer) pet.get("health");
@@ -442,6 +460,56 @@ public class PetController {
         pet.put("mood", mood);
         pet.put("status", status);
     }
+*/
+
+private void updatePetMood(Map<String, Object> pet, Long userId) {
+    int happiness = (Integer) pet.get("happiness");
+    int health = (Integer) pet.get("health");
+    int energy = (Integer) pet.get("energy");
+    int avgStats = (happiness + health + energy) / 3;
+
+    String previousMood = (String) pet.getOrDefault("mood", "😊");
+    String newMood;
+    String status;
+
+    if (avgStats > 80) {
+        newMood = "😊";
+        status = "Very Happy!";
+    } else if (avgStats > 60) {
+        newMood = "🙂";
+        status = "Content";
+    } else if (avgStats > 40) {
+        newMood = "😐";
+        status = "Okay";
+    } else {
+        newMood = "😢";
+        status = "Needs Care";
+    }
+
+    pet.put("mood", newMood);
+    pet.put("status", status);
+
+    // 如果情绪从非悲伤状态变成“难过”，发送主动信息
+    if (!previousMood.equals("😢") && newMood.equals("😢")) {
+        Map<String, Object> sadMessage = createMessage(
+            "pet",
+            "Meow... I feel lonely, can you be with me? " + newMood,
+            "text",
+            userId
+        );
+        conversationHistory.add(sadMessage);
+    }
+}
+private void checkNeglect(Long userId) {
+    Map<String, Object> pet = getPetForUser(userId);
+    LocalDateTime lastInteraction = LocalDateTime.parse((String) pet.get("lastInteraction"));
+    long hoursSinceLastInteraction = Duration.between(lastInteraction, LocalDateTime.now()).toHours();
+
+    if (hoursSinceLastInteraction >= 3) { 
+        pet.put("happiness", Math.max(0, (Integer) pet.get("happiness") - 10));
+        updatePetMood(pet, userId); // 触发悲伤表情与消息
+    }
+}
 
     private Map<String, Object> createMessage(String sender, String content, String type, Long userId) {
         Map<String, Object> message = new HashMap<>();

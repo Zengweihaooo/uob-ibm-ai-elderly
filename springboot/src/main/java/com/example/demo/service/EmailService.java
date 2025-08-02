@@ -167,4 +167,60 @@ public class EmailService {
             throw new RuntimeException("Failed to send health alert email", e);
         }
     }
+
+    public void sendDailyHealthCheckReminderEmail(String toEmail, String subject, String message) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            // Set sender, recipient, and subject
+            helper.setFrom(fromAddress);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+
+            // Create HTML content for health check reminder
+            Context ctx = new Context();
+            ctx.setVariable("toEmail", toEmail);
+            ctx.setVariable("subject", subject);
+            ctx.setVariable("message", message);
+            ctx.setVariable("timestamp", java.time.LocalDateTime.now());
+
+            String htmlContent = templateEngine.process("dailyHealthCheckReminderTemplate", ctx);
+            helper.setText(htmlContent, true);  // true = HTML mode
+
+            mailSender.send(mimeMessage);
+            System.out.println("Daily health check reminder email sent successfully to: " + toEmail);
+        } catch (MessagingException e) {
+            System.err.println("Failed to send daily health check reminder email to: " + toEmail + " => " + e.getMessage());
+            throw new RuntimeException("Failed to send daily health check reminder email", e);
+        }
+    }
+
+    public void sendDailyPlanReminderEmail(String toEmail, String subject, String message) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            // Set sender, recipient, and subject
+            helper.setFrom(fromAddress);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+
+            // Create HTML content for plan reminder
+            Context ctx = new Context();
+            ctx.setVariable("toEmail", toEmail);
+            ctx.setVariable("subject", subject);
+            ctx.setVariable("message", message);
+            ctx.setVariable("timestamp", java.time.LocalDateTime.now());
+
+            String htmlContent = templateEngine.process("dailyPlanReminderTemplate", ctx);
+            helper.setText(htmlContent, true);  // true = HTML mode
+
+            mailSender.send(mimeMessage);
+            System.out.println("Daily plan reminder email sent successfully to: " + toEmail);
+        } catch (MessagingException e) {
+            System.err.println("Failed to send daily plan reminder email to: " + toEmail + " => " + e.getMessage());
+            throw new RuntimeException("Failed to send daily plan reminder email", e);
+        }
+    }
 }
