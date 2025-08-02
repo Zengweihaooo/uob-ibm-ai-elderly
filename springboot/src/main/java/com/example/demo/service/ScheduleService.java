@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
 import com.example.demo.pojo.Schedule;
+import com.example.demo.pojo.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,6 +24,9 @@ public class ScheduleService {
     // In-memory storage for schedules (replace with database in production)
     private final Map<Long, Schedule> schedules = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(1);
+
+    @Autowired
+    private UserService userService;
 
     /**
      * Get all schedules for a specific user and date
@@ -222,5 +227,40 @@ public class ScheduleService {
             "Lunch", "Healthy midday meal", "afternoon"));
         addSchedule(new Schedule(userId, date, LocalTime.of(20, 0), 
             "Evening Medication", "Take prescribed evening medications", "medication"));
+    }
+
+    /**
+     * Get users who do not have a schedule for today
+     * 
+     * @return List of users without today's schedule
+     */
+    public List<User> getUsersWithoutTodaySchedule() {
+        return getUsersWithoutTodaySchedule(LocalDate.now());
+    }
+
+    /**
+     * Get users who do not have a schedule for a specific date
+     * 
+     * @param date Target date
+     * @return List of users without schedule for the specified date
+     */
+    public List<User> getUsersWithoutTodaySchedule(LocalDate date) {
+        List<User> allUsers = userService.getAllUsers();
+        List<User> usersWithoutTodaySchedule = new ArrayList<>();
+
+        for (User user : allUsers) {
+            if (!hasScheduleForDate(user.getEmail(), date)) {
+                usersWithoutTodaySchedule.add(user);
+            }
+        }
+        return usersWithoutTodaySchedule;
+    }
+
+    /**
+     * Helper method to check if a user has a schedule for a specific date
+     */
+    private boolean hasScheduleForDate(String userEmail, LocalDate date) {
+        return schedules.values().stream()
+                .anyMatch(schedule -> schedule.getUserId().equals(userEmail) && schedule.getScheduleDate().equals(date));
     }
 } 
