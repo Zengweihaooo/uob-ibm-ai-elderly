@@ -10,6 +10,8 @@ import com.example.demo.pojo.User;
 /**
  * This service is used to monitor the health and schedule of the users
  * It will send reminder emails to the users who haven't submitted the health and schedule data today
+ * @author Lepeng Zhou
+ * @version 1.0
 */
 
 @Service
@@ -29,7 +31,7 @@ public class ScheduleMonitorService {
         for (User user : users) {
             emailService.sendHealthAlertEmail(
                 user.getEmail(),
-                " Daily Health Check Reminder",
+                "Daily Health Check Reminder",
                 "Hello " + user.getName() + ", you haven’t submitted today’s health data. Please do it soon."
             );
         }
