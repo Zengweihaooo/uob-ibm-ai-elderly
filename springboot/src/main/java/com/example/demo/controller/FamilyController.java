@@ -413,4 +413,188 @@ public class FamilyController {
             return ResponseEntity.internalServerError().body(response);
         }
     }
+    
+    // ========== 新增异常时通知家庭成员功能 ==========
+    
+    /**
+     * 发送紧急通知给所有家庭成员
+     * 
+     * @param emergencyData 紧急情况数据
+     * @param authHeader Authorization header
+     * @return 通知结果
+     */
+    @PostMapping("/emergency-notification")
+    public ResponseEntity<Map<String, Object>> sendEmergencyNotification(
+            @RequestBody Map<String, Object> emergencyData,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        // Check authentication
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            // TODO: Extract userId from JWT token
+            Long userId = 1L;
+
+            String emergencyType = (String) emergencyData.get("emergencyType");
+            String description = (String) emergencyData.get("description");
+
+            if (emergencyType == null || emergencyType.trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Emergency type is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            int notifiedCount = familyService.sendEmergencyNotification(userId, emergencyType, description);
+            
+            response.put("success", true);
+            response.put("message", "Emergency notification sent to " + notifiedCount + " family members");
+            response.put("notifiedCount", notifiedCount);
+            response.put("timestamp", java.time.LocalDateTime.now().toString());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to send emergency notification: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 发送健康异常通知给家庭成员
+     * 
+     * @param healthAlertData 健康异常数据
+     * @param authHeader Authorization header
+     * @return 通知结果
+     */
+    @PostMapping("/health-alert")
+    public ResponseEntity<Map<String, Object>> sendHealthAlert(
+            @RequestBody Map<String, Object> healthAlertData,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        // Check authentication
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            // TODO: Extract userId from JWT token
+            Long userId = 1L;
+
+            String healthDataType = (String) healthAlertData.get("healthDataType");
+            String abnormalValue = (String) healthAlertData.get("abnormalValue");
+            String alertLevel = (String) healthAlertData.getOrDefault("alertLevel", "medium");
+
+            if (healthDataType == null || abnormalValue == null) {
+                response.put("success", false);
+                response.put("message", "Health data type and abnormal value are required");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // 构建健康异常消息
+            String message = buildHealthAlertMessage(healthDataType, abnormalValue, alertLevel);
+            
+            // 获取紧急联系人并发送通知
+            List<FamilyContact> emergencyContacts = familyService.getEmergencyContacts(userId);
+            int notifiedCount = 0;
+            
+            for (FamilyContact contact : emergencyContacts) {
+                if (familyService.sendMessageToFamily(userId, contact.getId(), message, "health_alert")) {
+                    notifiedCount++;
+                }
+            }
+            
+            response.put("success", true);
+            response.put("message", "Health alert sent to " + notifiedCount + " family members");
+            response.put("notifiedCount", notifiedCount);
+            response.put("alertLevel", alertLevel);
+            response.put("timestamp", java.time.LocalDateTime.now().toString());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to send health alert: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 构建健康异常消息
+     * 
+     * @param healthDataType 健康数据类型
+     * @param abnormalValue 异常值
+     * @param alertLevel 警报级别
+     * @return 消息内容
+     */
+    private String buildHealthAlertMessage(String healthDataType, String abnormalValue, String alertLevel) {
+        StringBuilder message = new StringBuilder();
+        
+        // 根据警报级别添加不同的前缀
+        switch (alertLevel.toLowerCase()) {
+            case "high":
+                message.append("🚨 紧急健康警报 🚨\n\n");
+                break;
+            case "medium":
+                message.append("⚠️ 健康异常警报 ⚠️\n\n");
+                break;
+            case "low":
+                message.append("📊 健康数据异常 📊\n\n");
+                break;
+            default:
+                message.append("🏥 健康异常通知 🏥\n\n");
+        }
+        
+        message.append("检测到异常健康数据：\n\n");
+        message.append("数据类型：").append(getHealthDataTypeDisplayName(healthDataType)).append("\n");
+        message.append("异常值：").append(abnormalValue).append("\n");
+        message.append("检测时间：").append(java.time.LocalDateTime.now()).append("\n\n");
+        
+        if ("high".equals(alertLevel)) {
+            message.append("⚠️ 请立即关注并联系用户确认健康状况！\n");
+            message.append("如有必要，请立即联系紧急医疗服务。\n\n");
+        } else if ("medium".equals(alertLevel)) {
+            message.append("请及时关注用户的健康状况。\n");
+            message.append("建议尽快联系用户了解情况。\n\n");
+        } else {
+            message.append("请关注用户的健康状况变化。\n\n");
+        }
+        
+        message.append("此通知由IBM AI Elderly系统自动发送。");
+        
+        return message.toString();
+    }
+    
+    /**
+     * 获取健康数据类型的显示名称
+     * 
+     * @param healthDataType 健康数据类型
+     * @return 显示名称
+     */
+    private String getHealthDataTypeDisplayName(String healthDataType) {
+        switch (healthDataType.toLowerCase()) {
+            case "bloodpressure":
+                return "血压";
+            case "bloodsugar":
+                return "血糖";
+            case "steps":
+                return "步数";
+            case "heartrate":
+                return "心率";
+            case "temperature":
+                return "体温";
+            default:
+                return healthDataType;
+        }
+    }
+    
+    // ========== 新增异常通知功能结束 ==========
 }
