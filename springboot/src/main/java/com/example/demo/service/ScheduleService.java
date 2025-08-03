@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 /**
  * Service class for managing user schedules
@@ -257,10 +258,54 @@ public class ScheduleService {
     }
 
     /**
-     * Helper method to check if a user has a schedule for a specific date
+     * Check if a user has a schedule for a specific date
+     * 
+     * @param userEmail User email
+     * @param date Target date
+     * @return true if schedule exists, false otherwise
      */
     private boolean hasScheduleForDate(String userEmail, LocalDate date) {
-        return schedules.values().stream()
-                .anyMatch(schedule -> schedule.getUserId().equals(userEmail) && schedule.getScheduleDate().equals(date));
+        // TODO: Implement actual database check
+        // For demo purposes, return false to simulate no schedule
+        return false;
+    }
+    
+    /**
+     * Confirm completion of a reminder/activity
+     * 
+     * @param reminderId Reminder ID
+     * @param userId User ID
+     * @return true if confirmed successfully, false otherwise
+     */
+    public boolean confirmReminder(Long reminderId, Long userId) {
+        Schedule schedule = schedules.get(reminderId);
+        if (schedule == null || !schedule.getUserId().equals(userId)) {
+            return false;
+        }
+        
+        // Mark as completed and set confirmation timestamp
+        schedule.setCompleted(true);
+        schedule.setReminderSent(LocalDateTime.now());
+        
+        return true;
+    }
+    
+    /**
+     * Repeat reminder until confirmed
+     * 
+     * @param reminderId Reminder ID
+     * @param userId User ID
+     */
+    public void repeatReminder(Long reminderId, Long userId) {
+        Schedule schedule = schedules.get(reminderId);
+        if (schedule == null || !schedule.getUserId().equals(userId)) {
+            return;
+        }
+        
+        // Reset reminder sent timestamp to trigger new reminder
+        schedule.setReminderSent(null);
+        
+        // For demo purposes, we could also send an immediate notification here
+        System.out.println("Repeating reminder for activity: " + schedule.getTitle());
     }
 } 
