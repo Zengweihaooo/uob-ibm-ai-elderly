@@ -30,6 +30,7 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime verifiedAt;
     private LocalDateTime codeExpiresAt;
+    private String phoneNumber;
     
     /**
      * Default constructor
@@ -125,6 +126,14 @@ public class User {
     
     public void setCodeExpiresAt(LocalDateTime codeExpiresAt) {
         this.codeExpiresAt = codeExpiresAt;
+    }
+    
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
     
     /**
