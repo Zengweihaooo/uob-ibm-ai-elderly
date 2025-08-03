@@ -714,7 +714,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
             setupEventListeners();
-            initializeSpeechFeatures();
+            
+            // Delay speech initialization to ensure scripts are loaded
+            setTimeout(() => {
+                initializeSpeechFeatures();
+            }, 100);
         });
 
         function initializeApp() {
@@ -725,7 +729,7 @@
                 isGuestMode = false;
             } else if (localStorage.getItem('guestMode') === 'true') {
                 currentUser = { name: 'Guest User', email: '' };
-                isGuestMode = true;
+file:///Users/zengweihao/Documents/IBM/uob-ibm-ai-elderly/src/pages/ai-assistant.html                isGuestMode = true;
             } else {
                 // Redirect to registration page if not authenticated
                 window.location.href = 'register.html';
@@ -772,16 +776,30 @@
 
         // Initialize speech features
         function initializeSpeechFeatures() {
+            console.log('Initializing speech features...');
+            console.log('speechService available:', !!window.speechService);
+            console.log('SpeechInputButton available:', !!window.SpeechInputButton);
+            console.log('SpeechOutputButton available:', !!window.SpeechOutputButton);
+            
             // Initialize speech input button
             const speechInputContainer = document.getElementById('speechInputContainer');
+            console.log('speechInputContainer found:', !!speechInputContainer);
+            
             if (speechInputContainer && window.SpeechInputButton) {
-                const speechInput = new SpeechInputButton(speechInputContainer, {
-                    buttonClass: 'speech-input-btn tool-btn-style',
-                    onResult: handleSpeechInput,
-                    onError: handleSpeechError,
-                    showTranscript: false,
-                    continuous: false
-                });
+                try {
+                    const speechInput = new SpeechInputButton(speechInputContainer, {
+                        buttonClass: 'speech-input-btn tool-btn-style',
+                        onResult: handleSpeechInput,
+                        onError: handleSpeechError,
+                        showTranscript: false,
+                        continuous: false
+                    });
+                    console.log('Speech input button initialized successfully');
+                } catch (error) {
+                    console.error('Error initializing speech input button:', error);
+                }
+            } else {
+                console.warn('Cannot initialize speech input - missing container or SpeechInputButton class');
             }
         }
 
@@ -889,12 +907,24 @@
             // Initialize speech output button for assistant messages
             if (sender === 'assistant' && window.SpeechOutputButton) {
                 const speechContainer = messageDiv.querySelector('.message-speech-btn');
+                console.log('Creating speech output button for message:', content.substring(0, 50) + '...');
+                console.log('Speech container found:', !!speechContainer);
+                
                 if (speechContainer) {
-                    new SpeechOutputButton(speechContainer, {
-                        text: content,
-                        buttonClass: 'speech-output-btn message-speech-style'
-                    });
+                    try {
+                        new SpeechOutputButton(speechContainer, {
+                            text: content,
+                            buttonClass: 'speech-output-btn message-speech-style'
+                        });
+                        console.log('Speech output button created successfully');
+                    } catch (error) {
+                        console.error('Error creating speech output button:', error);
+                    }
+                } else {
+                    console.warn('Speech container not found for assistant message');
                 }
+            } else {
+                console.log('Skipping speech output button - sender:', sender, 'SpeechOutputButton available:', !!window.SpeechOutputButton);
             }
             
             chatBody.scrollTop = chatBody.scrollHeight;
