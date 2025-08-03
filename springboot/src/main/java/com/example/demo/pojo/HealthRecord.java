@@ -9,6 +9,17 @@ public class HealthRecord {
     private String value;
     private LocalDateTime recordTime;
     private String notes;
+    
+    // ========== 新增共享功能相关字段 ==========
+    // 是否已共享
+    private boolean shared;
+    // 共享目标用户ID
+    private Long sharedWithUserId;
+    // 共享对象角色（family 或 doctor）
+    private String sharedWithRole;
+    // 共享时间
+    private LocalDateTime sharedAt;
+    // ========== 新增字段结束 ==========
 
     // Constructors
     public HealthRecord() {}
@@ -18,6 +29,12 @@ public class HealthRecord {
         this.type = type;
         this.value = value;
         this.recordTime = LocalDateTime.now();
+        // ========== 初始化共享相关字段 ==========
+        this.shared = false;
+        this.sharedWithUserId = null;
+        this.sharedWithRole = null;
+        this.sharedAt = null;
+        // ========== 初始化结束 ==========
     }
 
     // Getters and Setters
@@ -69,6 +86,40 @@ public class HealthRecord {
         this.notes = notes;
     }
 
+    // ========== 新增共享功能相关getter和setter方法 ==========
+    public boolean isShared() {
+        return shared;
+    }
+
+    public void setShared(boolean shared) {
+        this.shared = shared;
+    }
+
+    public Long getSharedWithUserId() {
+        return sharedWithUserId;
+    }
+
+    public void setSharedWithUserId(Long sharedWithUserId) {
+        this.sharedWithUserId = sharedWithUserId;
+    }
+
+    public String getSharedWithRole() {
+        return sharedWithRole;
+    }
+
+    public void setSharedWithRole(String sharedWithRole) {
+        this.sharedWithRole = sharedWithRole;
+    }
+
+    public LocalDateTime getSharedAt() {
+        return sharedAt;
+    }
+
+    public void setSharedAt(LocalDateTime sharedAt) {
+        this.sharedAt = sharedAt;
+    }
+    // ========== 新增getter和setter方法结束 ==========
+
     @Override
     public String toString() {
         return "HealthRecord{" +
@@ -78,6 +129,12 @@ public class HealthRecord {
                 ", value='" + value + '\'' +
                 ", recordTime=" + recordTime +
                 ", notes='" + notes + '\'' +
+                // ========== 新增共享字段到toString方法 ==========
+                ", shared=" + shared +
+                ", sharedWithUserId=" + sharedWithUserId +
+                ", sharedWithRole='" + sharedWithRole + '\'' +
+                ", sharedAt=" + sharedAt +
+                // ========== 新增字段结束 ==========
                 '}';
     }
 } 
