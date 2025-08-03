@@ -536,7 +536,7 @@ private void updatePetMood(Map<String, Object> pet, Long userId) {
     }
 }
 
-    private Map<String, Object> createMessage(String sender, String content, String type, Long userId) {
+    public Map<String, Object> createMessage(String sender, String content, String type, Long userId) {
         Map<String, Object> message = new HashMap<>();
         message.put("id", messageIdCounter++);
         message.put("sender", sender);
