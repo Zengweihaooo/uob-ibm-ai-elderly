@@ -315,8 +315,95 @@ public class ScheduleController {
      * @return true if valid, false otherwise
      */
     private boolean isValidCategory(String category) {
-        return category != null && 
-               (category.equals("morning") || category.equals("afternoon") || 
-                category.equals("evening") || category.equals("medication"));
+        return category != null && (
+            category.equals("morning") || 
+            category.equals("afternoon") || 
+            category.equals("evening") || 
+            category.equals("medication"));
+    }
+
+    /**
+     * Confirm completion of a reminder/activity
+     * 
+     * @param id Activity ID
+     * @param authHeader Authorization header
+     * @return Confirmation result
+     */
+    @PostMapping("/reminder/{id}/confirm")
+    public ResponseEntity<Map<String, Object>> confirmReminder(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        // Check authentication
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+        
+        try {
+            // TODO: Extract user ID from JWT token
+            Long userId = 1L;
+            
+            boolean confirmed = scheduleService.confirmReminder(id, userId);
+            
+            if (confirmed) {
+                response.put("success", true);
+                response.put("message", "Reminder confirmed successfully");
+                response.put("reminderId", id);
+            } else {
+                response.put("success", false);
+                response.put("message", "Reminder not found or already confirmed");
+                return ResponseEntity.notFound().build();
+            }
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to confirm reminder: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * Repeat reminder until confirmed
+     * 
+     * @param id Activity ID
+     * @param authHeader Authorization header
+     * @return Repeat reminder result
+     */
+    @PostMapping("/reminder/{id}/repeat")
+    public ResponseEntity<Map<String, Object>> repeatReminder(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        // Check authentication
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+        
+        try {
+            // TODO: Extract user ID from JWT token
+            Long userId = 1L;
+            
+            scheduleService.repeatReminder(id, userId);
+            
+            response.put("success", true);
+            response.put("message", "Reminder repeated successfully");
+            response.put("reminderId", id);
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to repeat reminder: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
     }
 } 
