@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.util.List;
+
+import com.example.demo.controller.PetController;
 import com.example.demo.pojo.User;
 
 
@@ -25,6 +27,9 @@ public class ScheduleMonitorService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private PetController petController;
+
     @Scheduled(cron = "0 0 9 * * ?") // Check the health data every morning at 9 am
     public void checkHealthSubmission() {
         List<User> users = healthService.getUsersWithoutTodayHealthLog();
@@ -33,6 +38,13 @@ public class ScheduleMonitorService {
                 user.getEmail(),
                 "Daily Health Check Reminder",
                 "Hello " + user.getName() + ", you haven’t submitted today’s health data. Please do it soon."
+            );
+
+            petController.createMessage(
+                "pet",
+                "Meow... I noticed that you haven't checked in on your health information today. Is everything okay?",
+                "text",
+                user.getId()  
             );
         }
     }
@@ -45,6 +57,14 @@ public class ScheduleMonitorService {
                 user.getEmail(),
                 "Daily Plan Reminder",
                 "Hello " + user.getName() + ", you haven’t told your pet your plan for today. Please do it now."
+            );
+
+             // 添加宠物消息
+            petController.createMessage(
+                "pet",
+                "Purr...📅你还没告诉我今天的计划呢，要一起安排一下吗？",
+                "text",
+                user.getId()
             );
         }
     }
