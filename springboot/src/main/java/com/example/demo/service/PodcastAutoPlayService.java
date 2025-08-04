@@ -63,6 +63,53 @@ public class PodcastAutoPlayService {
     }
 
     /**
+     * 获取用户的所有播客播放计划（返回Map格式）
+     * @param userId 用户ID
+     * @return 播放计划Map
+     */
+    public Map<String, Object> getUserSchedulesMap(Long userId) {
+        List<Map<String, Object>> schedules = userSchedules.getOrDefault(userId, new ArrayList<>());
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("schedules", schedules);
+        result.put("totalSchedules", schedules.size());
+        return result;
+    }
+
+    /**
+     * 为用户安排播客播放
+     * @param userId 用户ID
+     * @param podcastTitle 播客标题
+     * @param playTime 播放时间
+     * @param playDate 播放日期
+     * @return 播放计划结果
+     */
+    public Map<String, Object> schedulePodcast(Long userId, String podcastTitle, String playTime, String playDate) {
+        try {
+            Map<String, Object> scheduleData = new HashMap<>();
+            scheduleData.put("podcastTitle", podcastTitle);
+            scheduleData.put("playTime", playTime);
+            scheduleData.put("playDate", playDate);
+            
+            String scheduleId = addSchedule(userId, scheduleData);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("schedule", scheduleData);
+            result.put("scheduleId", scheduleId);
+            result.put("message", "Podcast scheduled successfully");
+            
+            return result;
+            
+        } catch (Exception e) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", false);
+            result.put("message", "Error scheduling podcast: " + e.getMessage());
+            return result;
+        }
+    }
+
+    /**
      * 删除指定的播放计划
      * @param userId 用户ID
      * @param scheduleId 播放计划ID

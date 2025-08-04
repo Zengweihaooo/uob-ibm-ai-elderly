@@ -532,4 +532,27 @@ public class PodcastService {
         
         return episode;
     }
+
+    /**
+     * 获取老年人专用播客推荐
+     * @return 老年人专用播客推荐列表
+     */
+    public Map<String, Object> getElderlyPodcastRecommendations() {
+        try {
+            // 为老年人定制的播客推荐
+            List<String> elderlyInterests = List.of(
+                "health", "wellness", "meditation", "memory", "exercise", 
+                "nutrition", "aging", "family", "hobbies", "travel", 
+                "history", "classical music", "gardening", "cooking"
+            );
+            
+            return getPodcastRecommendations(elderlyInterests);
+            
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Error getting elderly podcast recommendations: " + e.getMessage());
+            return errorResponse;
+        }
+    }
 } 
