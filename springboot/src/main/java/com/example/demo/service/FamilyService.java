@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.pojo.FamilyContact;
+import com.example.demo.pojo.HealthRecord;
 
 /**
  * Service class for family contact management
@@ -402,4 +403,120 @@ public class FamilyService {
         familyContacts.clear();
         contactIdCounter = 1L;
     }
+    
+    // ========== 新增家庭成员验证和共享相关功能 ==========
+    
+    /**
+     * 验证目标用户是否为家庭成员
+     * @param userId 老年人用户ID
+     * @param targetUserId 目标用户ID
+     * @return 是否为家庭成员
+     */
+    public boolean isFamilyMember(Long userId, Long targetUserId) {
+        List<FamilyContact> familyContacts = getFamilyContacts(userId);
+        // 检查目标用户是否在家庭成员列表中
+        return familyContacts.stream()
+                .anyMatch(contact -> contact.getUserId().equals(targetUserId) || 
+                                   (contact.getEmail() != null && 
+                                    getUserEmailById(targetUserId) != null &&
+                                    contact.getEmail().equals(getUserEmailById(targetUserId))));
+    }
+    
+    /**
+     * 获取家庭成员列表（用于前端选择共享对象）
+     * @param userId 老年人用户ID
+     * @return 家庭成员列表
+     */
+    public List<Map<String, Object>> getFamilyMembersForSharing(Long userId) {
+        List<FamilyContact> contacts = getFamilyContacts(userId);
+        List<Map<String, Object>> familyMembers = new ArrayList<>();
+        
+        for (FamilyContact contact : contacts) {
+            Map<String, Object> member = new HashMap<>();
+            member.put("id", contact.getId());
+            member.put("name", contact.getName());
+            member.put("email", contact.getEmail());
+            member.put("phoneNumber", contact.getPhoneNumber());
+            member.put("relationship", contact.getRelationship());
+            member.put("isEmergencyContact", contact.isEmergencyContact());
+            familyMembers.add(member);
+        }
+        
+        return familyMembers;
+    }
+    
+    /**
+     * 根据用户ID获取用户邮箱（辅助方法）
+     * @param userId 用户ID
+     * @return 用户邮箱
+     */
+    private String getUserEmailById(Long userId) {
+        // 这里需要注入UserService来获取用户信息
+        // 暂时返回null，实际使用时需要注入UserService
+        return null;
+    }
+    
+    /**
+     * 发送健康数据共享通知给家庭成员
+     * @param userId 老年人用户ID
+     * @param healthRecord 健康记录
+     * @param sharedWithUserId 共享目标用户ID
+     */
+    public void notifyFamilyMemberOfHealthShare(Long userId, HealthRecord healthRecord, Long sharedWithUserId) {
+        List<FamilyContact> contacts = getFamilyContacts(userId);
+        
+        for (FamilyContact contact : contacts) {
+            if (contact.getEmail() != null) {
+                String subject = "健康数据共享通知";
+                String message = buildHealthShareNotificationMessage(healthRecord, contact.getName());
+                
+                try {
+                    emailService.sendHealthAlertEmail(contact.getEmail(), subject, message);
+                    System.out.println("健康数据共享通知已发送给: " + contact.getName());
+                } catch (Exception e) {
+                    System.err.println("发送健康数据共享通知失败: " + e.getMessage());
+                }
+            }
+        }
+    }
+    
+    /**
+     * 构建健康数据共享通知消息
+     * @param healthRecord 健康记录
+     * @param contactName 联系人姓名
+     * @return 通知消息
+     */
+    private String buildHealthShareNotificationMessage(HealthRecord healthRecord, String contactName) {
+        StringBuilder message = new StringBuilder();
+        message.append("亲爱的 ").append(contactName).append("：\n\n");
+        message.append("您的家人刚刚共享了一条健康数据记录：\n\n");
+        message.append("数据类型：").append(getTypeDisplayName(healthRecord.getType())).append("\n");
+        message.append("数据值：").append(healthRecord.getValue()).append("\n");
+        message.append("记录时间：").append(healthRecord.getRecordTime()).append("\n");
+        message.append("共享时间：").append(healthRecord.getSharedAt()).append("\n\n");
+        message.append("请及时查看并关注家人的健康状况。\n\n");
+        message.append("此邮件由IBM AI Elderly系统自动发送。");
+        
+        return message.toString();
+    }
+    
+    /**
+     * 获取健康数据类型的显示名称
+     * @param type 数据类型
+     * @return 显示名称
+     */
+    private String getTypeDisplayName(String type) {
+        switch (type.toLowerCase()) {
+            case "bloodpressure":
+                return "血压";
+            case "bloodsugar":
+                return "血糖";
+            case "steps":
+                return "步数";
+            default:
+                return type;
+        }
+    }
+    
+    // ========== 新增功能结束 ==========
 }

@@ -1,14 +1,23 @@
 package com.example.demo.controller;
 
-import com.example.demo.pojo.HealthRecord;
-import com.example.demo.service.HealthService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.pojo.HealthRecord;
+import com.example.demo.service.HealthService;
 
 @RestController
 @RequestMapping("/api/health")
@@ -131,4 +140,192 @@ public class HealthController {
             return ResponseEntity.internalServerError().body(response);
         }
     }
+    
+    // ========== 新增共享功能相关接口 ==========
+    
+    /**
+     * 共享健康记录给家庭成员或医生
+     */
+    @PostMapping("/share")
+    public ResponseEntity<Map<String, Object>> shareHealthRecord(
+            @RequestBody Map<String, Object> shareData,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            // TODO: Extract userId from JWT token
+            Long userId = 1L;
+
+            Long recordId = Long.valueOf(shareData.get("recordId").toString());
+            Long sharedWithUserId = Long.valueOf(shareData.get("sharedWithUserId").toString());
+            String sharedWithRole = (String) shareData.get("sharedWithRole");
+
+            if (recordId == null || sharedWithUserId == null || sharedWithRole == null) {
+                response.put("success", false);
+                response.put("message", "recordId, sharedWithUserId, and sharedWithRole are required");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            boolean success = healthService.shareHealthRecord(recordId, userId, sharedWithUserId, sharedWithRole);
+            
+            if (success) {
+                response.put("success", true);
+                response.put("message", "Health record shared successfully");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Failed to share health record");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to share health record: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 取消共享健康记录
+     */
+    @DeleteMapping("/share/{recordId}")
+    public ResponseEntity<Map<String, Object>> unshareHealthRecord(
+            @PathVariable Long recordId,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            // TODO: Extract userId from JWT token
+            Long userId = 1L;
+
+            boolean success = healthService.unshareHealthRecord(recordId, userId);
+            
+            if (success) {
+                response.put("success", true);
+                response.put("message", "Health record unshared successfully");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Failed to unshare health record");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to unshare health record: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 获取共享给当前用户的健康记录（供家庭成员/医生查看）
+     */
+    @GetMapping("/shared-with-me")
+    public ResponseEntity<Map<String, Object>> getSharedRecordsForMe(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            // TODO: Extract userId from JWT token
+            Long userId = 1L;
+
+            List<HealthRecord> sharedRecords = healthService.getSharedRecordsForUser(userId);
+            response.put("success", true);
+            response.put("records", sharedRecords);
+            response.put("count", sharedRecords.size());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error fetching shared health records");
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 获取用户共享的所有健康记录
+     */
+    @GetMapping("/my-shared")
+    public ResponseEntity<Map<String, Object>> getMySharedRecords(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            // TODO: Extract userId from JWT token
+            Long userId = 1L;
+
+            List<HealthRecord> sharedRecords = healthService.getUserSharedRecords(userId);
+            response.put("success", true);
+            response.put("records", sharedRecords);
+            response.put("count", sharedRecords.size());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error fetching my shared health records");
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 获取可共享的用户列表（家庭成员和医生）
+     */
+    @GetMapping("/shareable-users")
+    public ResponseEntity<Map<String, Object>> getShareableUsers(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            // TODO: Extract userId from JWT token
+            Long userId = 1L;
+
+            List<Map<String, Object>> shareableUsers = healthService.getShareableUsers(userId);
+            response.put("success", true);
+            response.put("users", shareableUsers);
+            response.put("count", shareableUsers.size());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error fetching shareable users");
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    // ========== 新增共享功能接口结束 ==========
 }
