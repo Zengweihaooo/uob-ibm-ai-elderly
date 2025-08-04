@@ -1,8 +1,8 @@
-# AI Companion Emotion Expression System
+# Emotion Companion Expression System
 
 ## Overview
 
-The AI Companion Emotion Expression System is a sophisticated feature that simulates realistic AI assistant behavior and emotional responses. The AI companion will not randomly move around but will express emotions through sounds and visual cues, responding to user interactions and showing signs of neglect when ignored.
+The Emotion Companion Expression System is a sophisticated feature that simulates realistic AI assistant behavior and emotional responses. The emotion companion will not randomly move around but will express emotions through sounds and visual cues, responding to user interactions and showing signs of neglect when ignored.
 
 ## Key Features
 
@@ -45,15 +45,15 @@ The AI Companion Emotion Expression System is a sophisticated feature that simul
 
 ## API Endpoints
 
-### 1. Get AI Companion's Emotional State
+### 1. Get Emotion Companion's Emotional State
 ```
-GET /api/ai-companion/state
+GET /api/emotion-companion/state
 ```
-Returns the AI companion's current emotional state, including happiness, energy, responsiveness, and neglect level.
+Returns the emotion companion's current emotional state, including happiness, energy, responsiveness, and neglect level.
 
-### 2. Interact with AI Companion
+### 2. Interact with Emotion Companion
 ```
-POST /api/ai-companion/interact
+POST /api/emotion-companion/interact
 Content-Type: application/json
 
 {
@@ -61,37 +61,37 @@ Content-Type: application/json
     "message": "Optional message"
 }
 ```
-Processes interaction and returns AI companion's emotional response.
+Processes interaction and returns emotion companion's emotional response.
 
-### 3. Get AI Companion's Expressions
+### 3. Get Emotion Companion's Expressions
 ```
-GET /api/ai-companion/expressions
+GET /api/emotion-companion/expressions
 ```
 Returns current sound and visual expressions including LED color.
 
 ### 4. Check Attention Status
 ```
-GET /api/ai-companion/attention-check
+GET /api/emotion-companion/attention-check
 ```
-Checks if AI companion needs attention based on neglect level.
+Checks if emotion companion needs attention based on neglect level.
 
 ### 5. Get Activity Status
 ```
-GET /api/ai-companion/activity
+GET /api/emotion-companion/activity
 ```
 Returns current activity mode and status information.
 
-### 6. Put AI Companion to Sleep
+### 6. Put Emotion Companion to Sleep
 ```
-POST /api/ai-companion/sleep
+POST /api/emotion-companion/sleep
 ```
-Puts AI companion into sleep mode.
+Puts emotion companion into sleep mode.
 
-### 7. Wake Up AI Companion
+### 7. Wake Up Emotion Companion
 ```
-POST /api/ai-companion/wake
+POST /api/emotion-companion/wake
 ```
-Wakes up AI companion from sleep mode.
+Wakes up emotion companion from sleep mode.
 
 ## Emotional Logic
 
@@ -112,7 +112,7 @@ Wakes up AI companion from sleep mode.
 - **Responsiveness**: Stays high but decreases slightly when neglected
 - **Range**: 0-100 for both
 
-## AI Companion Types Supported
+## Emotion Companion Types Supported
 
 ### Personalities
 - **Friendly**: Warm and approachable responses
@@ -132,7 +132,7 @@ Run the test script to verify all functionality:
 
 ```bash
 cd springboot
-./test-ai-companion-api.sh
+./test-emotion-companion-api.sh
 ```
 
 The test script will:
@@ -145,7 +145,7 @@ The test script will:
 
 ## Configuration
 
-### Default AI Companion Settings
+### Default Emotion Companion Settings
 - **Name**: Alexa
 - **Personality**: Friendly
 - **Avatar**: Assistant
@@ -161,7 +161,7 @@ The test script will:
 ## Integration
 
 This system integrates with the existing application and can be extended to:
-- Send notifications when AI companion needs attention
+- Send notifications when emotion companion needs attention
 - Integrate with smart home systems
 - Connect to voice assistants
 - Provide analytics on user interaction patterns
@@ -172,7 +172,7 @@ This system integrates with the existing application and can be extended to:
 1. **Multiple Personalities**: Different AI personalities affecting behavior
 2. **Learning System**: AI learns from user preferences and interactions
 3. **Environmental Factors**: Time of day, user schedule affecting AI mood
-4. **Voice Integration**: Voice interaction with AI companion
+4. **Voice Integration**: Voice interaction with emotion companion
 5. **Custom Avatars**: User-customizable AI appearances
 6. **Social Features**: AI interaction with other smart devices
 7. **Predictive Responses**: AI anticipates user needs based on patterns
@@ -180,11 +180,11 @@ This system integrates with the existing application and can be extended to:
 ## Technical Implementation
 
 ### Services
-- **AICompanionService**: Core emotional logic and behavior management
-- **AICompanionController**: REST API endpoints
+- **EmotionCompanionService**: Core emotional logic and behavior management
+- **EmotionCompanionController**: REST API endpoints
 
 ### Data Model
-- **AICompanion**: Complete AI companion entity with emotional and behavioral attributes
+- **EmotionCompanion**: Complete emotion companion entity with emotional and behavioral attributes
 - **In-Memory Storage**: For demo purposes (can be replaced with database)
 
 ### Dependencies

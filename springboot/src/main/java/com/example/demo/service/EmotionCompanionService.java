@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.pojo.AICompanion;
+import com.example.demo.pojo.EmotionCompanion;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -10,16 +10,16 @@ import java.util.Map;
 import java.util.Random;
 
 @Service
-public class AICompanionService {
+public class EmotionCompanionService {
 
     private final Random random = new Random();
 
     /**
-     * Update AI companion's emotional state based on interaction and neglect
-     * @param companion The AI companion to update
+     * Update emotion companion's emotional state based on interaction and neglect
+     * @param companion The emotion companion to update
      * @param hasInteraction Whether there was recent interaction
      */
-    public void updateAIEmotion(AICompanion companion, boolean hasInteraction) {
+    public void updateEmotionCompanionEmotion(EmotionCompanion companion, boolean hasInteraction) {
         LocalDateTime now = LocalDateTime.now();
         
         // Update neglect level
@@ -47,10 +47,10 @@ public class AICompanionService {
 
     /**
      * Update neglect level based on time since last attention
-     * @param companion The AI companion to update
+     * @param companion The emotion companion to update
      * @param currentTime Current time
      */
-    private void updateNeglectLevel(AICompanion companion, LocalDateTime currentTime) {
+    private void updateNeglectLevel(EmotionCompanion companion, LocalDateTime currentTime) {
         if (companion.getLastAttentionTime() == null) {
             companion.setLastAttentionTime(currentTime);
             companion.setNeglectLevel(0);
@@ -71,10 +71,10 @@ public class AICompanionService {
 
     /**
      * Update emotion based on neglect level and interaction
-     * @param companion The AI companion to update
+     * @param companion The emotion companion to update
      * @param hasInteraction Whether there was recent interaction
      */
-    private void updateEmotionBasedOnNeglect(AICompanion companion, boolean hasInteraction) {
+    private void updateEmotionBasedOnNeglect(EmotionCompanion companion, boolean hasInteraction) {
         if (hasInteraction) {
             // Happy when getting attention
             companion.setEmotion("happy");
@@ -96,9 +96,9 @@ public class AICompanionService {
 
     /**
      * Update energy and responsiveness based on time and activity
-     * @param companion The AI companion to update
+     * @param companion The emotion companion to update
      */
-    private void updateEnergyAndResponsiveness(AICompanion companion) {
+    private void updateEnergyAndResponsiveness(EmotionCompanion companion) {
         // Energy naturally decreases over time but AI maintains high responsiveness
         int energyDecrease = random.nextInt(2) + 1; // 1-2 points
         companion.setEnergy(Math.max(0, companion.getEnergy() - energyDecrease));
@@ -115,9 +115,9 @@ public class AICompanionService {
 
     /**
      * Increase happiness when there's interaction
-     * @param companion The AI companion to update
+     * @param companion The emotion companion to update
      */
-    private void increaseHappiness(AICompanion companion) {
+    private void increaseHappiness(EmotionCompanion companion) {
         int happinessIncrease = random.nextInt(8) + 3; // 3-10 points
         companion.setHappiness(Math.min(100, companion.getHappiness() + happinessIncrease));
         companion.setLastInteraction(LocalDateTime.now());
@@ -126,9 +126,9 @@ public class AICompanionService {
 
     /**
      * Decrease happiness when neglected
-     * @param companion The AI companion to update
+     * @param companion The emotion companion to update
      */
-    private void decreaseHappiness(AICompanion companion) {
+    private void decreaseHappiness(EmotionCompanion companion) {
         if (companion.getNeglectLevel() > 20) {
             int happinessDecrease = random.nextInt(2) + 1; // 1-2 points
             companion.setHappiness(Math.max(0, companion.getHappiness() - happinessDecrease));
@@ -137,9 +137,9 @@ public class AICompanionService {
 
     /**
      * Update visual and sound expressions based on emotion
-     * @param companion The AI companion to update
+     * @param companion The emotion companion to update
      */
-    private void updateExpressions(AICompanion companion) {
+    private void updateExpressions(EmotionCompanion companion) {
         String emotion = companion.getEmotion();
         String personality = companion.getPersonality();
         
@@ -152,11 +152,11 @@ public class AICompanionService {
 
     /**
      * Update sound expression based on emotion and personality
-     * @param companion The AI companion to update
+     * @param companion The emotion companion to update
      * @param emotion Current emotion
      * @param personality AI personality
      */
-    private void updateSoundExpression(AICompanion companion, String emotion, String personality) {
+    private void updateSoundExpression(EmotionCompanion companion, String emotion, String personality) {
         String sound = "silent";
         
         // Determine sound based on emotion and personality
@@ -193,11 +193,11 @@ public class AICompanionService {
 
     /**
      * Update visual expression based on emotion and personality
-     * @param companion The AI companion to update
+     * @param companion The emotion companion to update
      * @param emotion Current emotion
      * @param personality AI personality
      */
-    private void updateVisualExpression(AICompanion companion, String emotion, String personality) {
+    private void updateVisualExpression(EmotionCompanion companion, String emotion, String personality) {
         String expression = "neutral_led";
         String ledColor = "blue";
         
@@ -236,9 +236,9 @@ public class AICompanionService {
 
     /**
      * Update activity mode based on energy and emotion
-     * @param companion The AI companion to update
+     * @param companion The emotion companion to update
      */
-    private void updateActivityMode(AICompanion companion) {
+    private void updateActivityMode(EmotionCompanion companion) {
         String emotion = companion.getEmotion();
         int energy = companion.getEnergy();
         
@@ -256,19 +256,19 @@ public class AICompanionService {
     }
 
     /**
-     * Process interaction with AI companion
-     * @param companion The AI companion to interact with
+     * Process interaction with emotion companion
+     * @param companion The emotion companion to interact with
      * @param interactionType Type of interaction
      * @return Response message
      */
-    public Map<String, Object> processInteraction(AICompanion companion, String interactionType) {
+    public Map<String, Object> processInteraction(EmotionCompanion companion, String interactionType) {
         Map<String, Object> response = new HashMap<>();
         
-        // Update AI state based on interaction
-        updateAIEmotion(companion, true);
+        // Update emotion companion state based on interaction
+        updateEmotionCompanionEmotion(companion, true);
         companion.setLastAttentionTime(LocalDateTime.now());
         
-        String aiName = companion.getName();
+        String companionName = companion.getName();
         String emotion = companion.getEmotion();
         String sound = companion.getCurrentSound();
         String expression = companion.getVisualExpression();
@@ -280,7 +280,7 @@ public class AICompanionService {
             case "talk":
                 companion.setLastChat(LocalDateTime.now());
                 companion.setChatCount(companion.getChatCount() + 1);
-                response.put("message", aiName + " is happy to chat with you! " + 
+                response.put("message", companionName + " is happy to chat with you! " + 
                            "LED is " + ledColor + ". " + 
                            (sound.equals("silent") ? "" : "Making " + sound + " sounds."));
                 break;
@@ -288,21 +288,21 @@ public class AICompanionService {
             case "help":
                 companion.setLastCommand(LocalDateTime.now());
                 companion.setCurrentTask("processing_command");
-                response.put("message", aiName + " is ready to help! " +
+                response.put("message", companionName + " is ready to help! " +
                            "Showing " + expression + " with " + ledColor + " LED.");
                 break;
             case "question":
                 companion.setCurrentTask("thinking");
                 companion.setActivityMode("thinking");
-                response.put("message", aiName + " is thinking about your question! " +
+                response.put("message", companionName + " is thinking about your question! " +
                            "LED is " + ledColor + " and " + sound + " sounds.");
                 break;
             case "greet":
-                response.put("message", aiName + " greets you warmly! " +
+                response.put("message", companionName + " greets you warmly! " +
                            "LED is " + ledColor + " and showing " + expression + ".");
                 break;
             default:
-                response.put("message", aiName + " responds to your interaction with " + 
+                response.put("message", companionName + " responds to your interaction with " + 
                            expression + " and " + ledColor + " LED.");
         }
         
@@ -321,11 +321,11 @@ public class AICompanionService {
     }
 
     /**
-     * Get AI companion's current emotional state summary
-     * @param companion The AI companion to analyze
+     * Get emotion companion's current emotional state summary
+     * @param companion The emotion companion to analyze
      * @return Emotional state summary
      */
-    public Map<String, Object> getEmotionalState(AICompanion companion) {
+    public Map<String, Object> getEmotionalState(EmotionCompanion companion) {
         Map<String, Object> state = new HashMap<>();
         
         state.put("emotion", companion.getEmotion());
@@ -353,10 +353,10 @@ public class AICompanionService {
 
     /**
      * Generate human-readable emotional description
-     * @param companion The AI companion to describe
+     * @param companion The emotion companion to describe
      * @return Emotional description
      */
-    private String generateEmotionalDescription(AICompanion companion) {
+    private String generateEmotionalDescription(EmotionCompanion companion) {
         String name = companion.getName();
         String emotion = companion.getEmotion();
         String sound = companion.getCurrentSound();
