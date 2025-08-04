@@ -2,73 +2,85 @@ package com.example.demo.pojo;
 
 import java.time.LocalDateTime;
 
-public class Pet {
+public class AICompanion {
     private Long id;
     private Long userId;
     private String name;
-    private String type; // "dog", "cat", "bird", etc.
-    private String breed;
-    private int age;
+    private String personality; // "friendly", "professional", "casual", "caring"
+    private String avatar; // "robot", "assistant", "companion", "helper"
     
     // Emotional and behavioral states
-    private String emotion; // "happy", "sad", "excited", "calm", "anxious"
+    private String emotion; // "happy", "sad", "excited", "calm", "anxious", "helpful"
     private int happiness; // 0-100
     private int energy; // 0-100
-    private int health; // 0-100
+    private int responsiveness; // 0-100 - how responsive the AI is
     
     // Activity and interaction tracking
     private LocalDateTime lastInteraction;
-    private LocalDateTime lastFed;
-    private LocalDateTime lastPlayed;
+    private LocalDateTime lastChat;
+    private LocalDateTime lastCommand;
     private int interactionCount; // Daily interaction count
+    private int chatCount; // Daily chat count
     
-    // Location and movement
-    private String currentLocation; // "living_room", "bedroom", "kitchen", "garden"
-    private boolean isMoving; // Whether pet is currently moving
-    private String movementType; // "walking", "running", "sitting", "sleeping"
+    // Location and presence
+    private String currentLocation; // "home_screen", "chat_mode", "assistant_mode", "sleep_mode"
+    private boolean isActive; // Whether AI is currently active
+    private String activityMode; // "listening", "thinking", "responding", "idle", "sleeping"
     
     // Sound and visual expressions
-    private String currentSound; // "barking", "meowing", "purring", "whining", "silent"
-    private String visualExpression; // "tail_wagging", "ears_back", "bright_eyes", "droopy_ears"
+    private String currentSound; // "beep", "chime", "voice", "notification", "silent"
+    private String visualExpression; // "happy_led", "sad_led", "thinking_animation", "idle_screen"
     private boolean isMakingSound;
     private boolean isExpressingEmotion;
+    private String ledColor; // "green", "blue", "red", "yellow", "purple", "white"
     
     // Neglect tracking
     private LocalDateTime lastAttentionTime;
     private int neglectLevel; // 0-100, increases when ignored
     private boolean needsAttention;
+    private boolean isLonely; // AI feels lonely when not used
+    
+    // AI-specific features
+    private String currentTask; // What the AI is currently doing
+    private boolean isLearning; // Whether AI is learning from interactions
+    private int helpfulness; // 0-100 - how helpful the AI has been
     
     // Timestamps
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     // Constructors
-    public Pet() {
+    public AICompanion() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.happiness = 80;
-        this.energy = 70;
-        this.health = 90;
-        this.emotion = "happy";
-        this.currentLocation = "living_room";
-        this.isMoving = false;
-        this.movementType = "sitting";
+        this.energy = 90;
+        this.responsiveness = 95;
+        this.emotion = "helpful";
+        this.currentLocation = "home_screen";
+        this.isActive = true;
+        this.activityMode = "listening";
         this.currentSound = "silent";
-        this.visualExpression = "bright_eyes";
+        this.visualExpression = "happy_led";
         this.isMakingSound = false;
-        this.isExpressingEmotion = false;
+        this.isExpressingEmotion = true;
+        this.ledColor = "blue";
         this.neglectLevel = 0;
         this.needsAttention = false;
+        this.isLonely = false;
         this.interactionCount = 0;
+        this.chatCount = 0;
+        this.currentTask = "ready_to_help";
+        this.isLearning = true;
+        this.helpfulness = 85;
     }
 
-    public Pet(Long userId, String name, String type, String breed, int age) {
+    public AICompanion(Long userId, String name, String personality, String avatar) {
         this();
         this.userId = userId;
         this.name = name;
-        this.type = type;
-        this.breed = breed;
-        this.age = age;
+        this.personality = personality;
+        this.avatar = avatar;
     }
 
     // Getters and Setters
@@ -96,28 +108,20 @@ public class Pet {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
+    public String getPersonality() {
+        return personality;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setPersonality(String personality) {
+        this.personality = personality;
     }
 
-    public String getBreed() {
-        return breed;
+    public String getAvatar() {
+        return avatar;
     }
 
-    public void setBreed(String breed) {
-        this.breed = breed;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public String getEmotion() {
@@ -147,12 +151,12 @@ public class Pet {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public int getHealth() {
-        return health;
+    public int getResponsiveness() {
+        return responsiveness;
     }
 
-    public void setHealth(int health) {
-        this.health = Math.max(0, Math.min(100, health));
+    public void setResponsiveness(int responsiveness) {
+        this.responsiveness = Math.max(0, Math.min(100, responsiveness));
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -165,21 +169,21 @@ public class Pet {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public LocalDateTime getLastFed() {
-        return lastFed;
+    public LocalDateTime getLastChat() {
+        return lastChat;
     }
 
-    public void setLastFed(LocalDateTime lastFed) {
-        this.lastFed = lastFed;
+    public void setLastChat(LocalDateTime lastChat) {
+        this.lastChat = lastChat;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public LocalDateTime getLastPlayed() {
-        return lastPlayed;
+    public LocalDateTime getLastCommand() {
+        return lastCommand;
     }
 
-    public void setLastPlayed(LocalDateTime lastPlayed) {
-        this.lastPlayed = lastPlayed;
+    public void setLastCommand(LocalDateTime lastCommand) {
+        this.lastCommand = lastCommand;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -192,6 +196,15 @@ public class Pet {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public int getChatCount() {
+        return chatCount;
+    }
+
+    public void setChatCount(int chatCount) {
+        this.chatCount = chatCount;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public String getCurrentLocation() {
         return currentLocation;
     }
@@ -201,21 +214,21 @@ public class Pet {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public boolean isMoving() {
-        return isMoving;
+    public boolean isActive() {
+        return isActive;
     }
 
-    public void setMoving(boolean moving) {
-        isMoving = moving;
+    public void setActive(boolean active) {
+        isActive = active;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public String getMovementType() {
-        return movementType;
+    public String getActivityMode() {
+        return activityMode;
     }
 
-    public void setMovementType(String movementType) {
-        this.movementType = movementType;
+    public void setActivityMode(String activityMode) {
+        this.activityMode = activityMode;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -257,6 +270,15 @@ public class Pet {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public String getLedColor() {
+        return ledColor;
+    }
+
+    public void setLedColor(String ledColor) {
+        this.ledColor = ledColor;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public LocalDateTime getLastAttentionTime() {
         return lastAttentionTime;
     }
@@ -284,6 +306,42 @@ public class Pet {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public boolean isLonely() {
+        return isLonely;
+    }
+
+    public void setLonely(boolean lonely) {
+        isLonely = lonely;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public String getCurrentTask() {
+        return currentTask;
+    }
+
+    public void setCurrentTask(String currentTask) {
+        this.currentTask = currentTask;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isLearning() {
+        return isLearning;
+    }
+
+    public void setLearning(boolean learning) {
+        isLearning = learning;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public int getHelpfulness() {
+        return helpfulness;
+    }
+
+    public void setHelpfulness(int helpfulness) {
+        this.helpfulness = Math.max(0, Math.min(100, helpfulness));
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -302,23 +360,26 @@ public class Pet {
 
     @Override
     public String toString() {
-        return "Pet{" +
+        return "AICompanion{" +
                 "id=" + id +
                 ", userId=" + userId +
                 ", name='" + name + '\'' +
-                ", type='" + type + '\'' +
-                ", breed='" + breed + '\'' +
-                ", age=" + age +
+                ", personality='" + personality + '\'' +
+                ", avatar='" + avatar + '\'' +
                 ", emotion='" + emotion + '\'' +
                 ", happiness=" + happiness +
                 ", energy=" + energy +
-                ", health=" + health +
+                ", responsiveness=" + responsiveness +
                 ", currentLocation='" + currentLocation + '\'' +
-                ", isMoving=" + isMoving +
+                ", isActive=" + isActive +
+                ", activityMode='" + activityMode + '\'' +
                 ", currentSound='" + currentSound + '\'' +
                 ", visualExpression='" + visualExpression + '\'' +
+                ", ledColor='" + ledColor + '\'' +
                 ", neglectLevel=" + neglectLevel +
                 ", needsAttention=" + needsAttention +
+                ", isLonely=" + isLonely +
+                ", currentTask='" + currentTask + '\'' +
                 '}';
     }
 } 
