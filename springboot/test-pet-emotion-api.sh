@@ -27,25 +27,25 @@ print_status() {
 # Test 1: Get pet's emotional state
 echo -e "\n${BLUE}Test 1: Get Pet's Emotional State${NC}"
 response=$(curl -s -X GET "$BASE_URL/state")
-echo "Response: $response" | jq '.'
+echo "Response: $response"
 print_status $? "Get pet emotional state"
 
 # Test 2: Get pet's expressions (sound and visual)
 echo -e "\n${BLUE}Test 2: Get Pet's Expressions${NC}"
 response=$(curl -s -X GET "$BASE_URL/expressions")
-echo "Response: $response" | jq '.'
+echo "Response: $response"
 print_status $? "Get pet expressions"
 
 # Test 3: Check if pet needs attention
 echo -e "\n${BLUE}Test 3: Check Pet Attention Status${NC}"
 response=$(curl -s -X GET "$BASE_URL/attention-check")
-echo "Response: $response" | jq '.'
+echo "Response: $response"
 print_status $? "Check pet attention"
 
 # Test 4: Get pet's movement status
 echo -e "\n${BLUE}Test 4: Get Pet's Movement Status${NC}"
 response=$(curl -s -X GET "$BASE_URL/movement")
-echo "Response: $response" | jq '.'
+echo "Response: $response"
 print_status $? "Get pet movement"
 
 # Test 5: Interact with pet - Pet/Stroke
@@ -56,7 +56,7 @@ response=$(curl -s -X POST "$BASE_URL/interact" \
         "type": "pet",
         "message": "Good boy!"
     }')
-echo "Response: $response" | jq '.'
+echo "Response: $response"
 print_status $? "Pet interaction - stroke"
 
 # Test 6: Interact with pet - Play
@@ -65,9 +65,9 @@ response=$(curl -s -X POST "$BASE_URL/interact" \
     -H "Content-Type: application/json" \
     -d '{
         "type": "play",
-        "message": "Let\'s play fetch!"
+        "message": "Lets play fetch!"
     }')
-echo "Response: $response" | jq '.'
+echo "Response: $response"
 print_status $? "Pet interaction - play"
 
 # Test 7: Interact with pet - Feed
@@ -76,9 +76,9 @@ response=$(curl -s -X POST "$BASE_URL/interact" \
     -H "Content-Type: application/json" \
     -d '{
         "type": "feed",
-        "message": "Here\'s your dinner!"
+        "message": "Heres your dinner!"
     }')
-echo "Response: $response" | jq '.'
+echo "Response: $response"
 print_status $? "Pet interaction - feed"
 
 # Test 8: Interact with pet - Talk
@@ -89,25 +89,25 @@ response=$(curl -s -X POST "$BASE_URL/interact" \
         "type": "talk",
         "message": "How are you doing today?"
     }')
-echo "Response: $response" | jq '.'
+echo "Response: $response"
 print_status $? "Pet interaction - talk"
 
 # Test 9: Make pet stay in place
 echo -e "\n${BLUE}Test 9: Make Pet Stay in Place${NC}"
 response=$(curl -s -X POST "$BASE_URL/stay")
-echo "Response: $response" | jq '.'
+echo "Response: $response"
 print_status $? "Make pet stay"
 
 # Test 10: Check emotional state after interactions
 echo -e "\n${BLUE}Test 10: Check Emotional State After Interactions${NC}"
 response=$(curl -s -X GET "$BASE_URL/state")
-echo "Response: $response" | jq '.'
+echo "Response: $response"
 print_status $? "Check emotional state after interactions"
 
 # Test 11: Check expressions after interactions
 echo -e "\n${BLUE}Test 11: Check Expressions After Interactions${NC}"
 response=$(curl -s -X GET "$BASE_URL/expressions")
-echo "Response: $response" | jq '.'
+echo "Response: $response"
 print_status $? "Check expressions after interactions"
 
 echo -e "\n${YELLOW}🎉 Pet Emotion API Testing Complete!${NC}"
