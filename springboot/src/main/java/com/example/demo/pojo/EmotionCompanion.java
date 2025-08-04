@@ -2,7 +2,7 @@ package com.example.demo.pojo;
 
 import java.time.LocalDateTime;
 
-public class AICompanion {
+public class EmotionCompanion {
     private Long id;
     private Long userId;
     private String name;
@@ -50,7 +50,7 @@ public class AICompanion {
     private LocalDateTime updatedAt;
 
     // Constructors
-    public AICompanion() {
+    public EmotionCompanion() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.happiness = 80;
@@ -75,7 +75,7 @@ public class AICompanion {
         this.helpfulness = 85;
     }
 
-    public AICompanion(Long userId, String name, String personality, String avatar) {
+    public EmotionCompanion(Long userId, String name, String personality, String avatar) {
         this();
         this.userId = userId;
         this.name = name;
@@ -360,7 +360,7 @@ public class AICompanion {
 
     @Override
     public String toString() {
-        return "AICompanion{" +
+        return "EmotionCompanion{" +
                 "id=" + id +
                 ", userId=" + userId +
                 ", name='" + name + '\'' +
