@@ -1,13 +1,18 @@
 package com.example.demo.service;
 
-import com.example.demo.pojo.User;
-import com.example.demo.util.VerificationCodeGenerator;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import com.example.demo.pojo.User;
+import com.example.demo.util.VerificationCodeGenerator;
 
 /**
  * Service class for managing user registration and verification
@@ -196,8 +201,93 @@ public class UserService {
     public Map<String, Integer> getRegistrationStats() {
         Map<String, Integer> stats = new HashMap<>();
         stats.put("total", users.size());
-        stats.put("pending", (int) users.values().stream().filter(u -> u.getStatus() == User.UserStatus.PENDING).count());
-        stats.put("verified", (int) users.values().stream().filter(u -> u.getStatus() == User.UserStatus.VERIFIED).count());
+        stats.put("pending", (int) users.values().stream()
+                .filter(user -> user.getStatus() == User.UserStatus.PENDING).count());
+        stats.put("verified", (int) users.values().stream()
+                .filter(user -> user.getStatus() == User.UserStatus.VERIFIED).count());
         return stats;
     }
+    
+    // ========== 新增角色相关功能 ==========
+    
+    /**
+     * 获取所有医生用户
+     * @return 医生用户列表
+     */
+    public List<User> getDoctors() {
+        return users.values().stream()
+                .filter(user -> user.getRole() == User.UserRole.DOCTOR && 
+                               user.getStatus() == User.UserStatus.VERIFIED)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * 获取所有家庭成员用户
+     * @return 家庭成员用户列表
+     */
+    public List<User> getFamilyMembers() {
+        return users.values().stream()
+                .filter(user -> user.getRole() == User.UserRole.FAMILY && 
+                               user.getStatus() == User.UserStatus.VERIFIED)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * 验证用户是否为医生
+     * @param userId 用户ID
+     * @return 是否为医生
+     */
+    public boolean isDoctor(Long userId) {
+        User user = getUserById(userId);
+        return user != null && user.getRole() == User.UserRole.DOCTOR;
+    }
+    
+    /**
+     * 验证用户是否为家庭成员
+     * @param userId 用户ID
+     * @return 是否为家庭成员
+     */
+    public boolean isFamilyMember(Long userId) {
+        User user = getUserById(userId);
+        return user != null && user.getRole() == User.UserRole.FAMILY;
+    }
+    
+    /**
+     * 根据ID获取用户
+     * @param userId 用户ID
+     * @return 用户对象
+     */
+    public User getUserById(Long userId) {
+        return users.values().stream()
+                .filter(user -> user.getId() != null && user.getId().equals(userId))
+                .findFirst()
+                .orElse(null);
+    }
+    
+    /**
+     * 设置用户角色
+     * @param email 用户邮箱
+     * @param role 角色
+     * @return 是否设置成功
+     */
+    public boolean setUserRole(String email, User.UserRole role) {
+        User user = users.get(email);
+        if (user != null) {
+            user.setRole(role);
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * 获取用户角色
+     * @param userId 用户ID
+     * @return 用户角色
+     */
+    public User.UserRole getUserRole(Long userId) {
+        User user = getUserById(userId);
+        return user != null ? user.getRole() : null;
+    }
+    
+    // ========== 新增角色相关功能结束 ==========
 } 
