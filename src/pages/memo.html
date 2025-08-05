@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memo - Elderly Smart Assistant</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        /* 备忘录页面专用样式 */
+        .memo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+
+        .memo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .memo-header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 300;
+        }
+
+        .memo-header p {
+            font-size: 1.2em;
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+
+        .memo-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .memo-search {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .memo-search input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .memo-search input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .memo-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .memo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .memo-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .memo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .memo-card.encrypted {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+
+        .memo-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .memo-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+            flex: 1;
+        }
+
+        .memo-type {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .memo-type.general {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .memo-type.password {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .memo-type.todo {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .memo-content {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            max-height: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .memo-content.encrypted {
+            color: #f57c00;
+            font-style: italic;
+        }
+
+        .memo-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .memo-actions-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 20px;
+        }
+
+        .memo-stats {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .close {
+            font-size: 2em;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        /* PIN码输入样式 */
+        .pin-input {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .pin-digit {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5em;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .pin-digit:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .memo-container {
+                padding: 15px;
+            }
+
+            .memo-header h1 {
+                font-size: 2em;
+            }
+
+            .memo-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .memo-search {
+                max-width: none;
+            }
+
+            .memo-actions {
+                justify-content: center;
+            }
+
+            .memo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+
+        /* 加载动画 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="memo-container">
+        <!-- 页面头部 -->
+        <div class="memo-header">
+            <h1>📝 Memo</h1>
+            <p>Record your thoughts, passwords and todo items</p>
+        </div>
+
+        <!-- 控制栏 -->
+        <div class="memo-controls">
+            <div class="memo-search">
+                <input type="text" id="searchInput" placeholder="Search memos..." maxlength="50">
+            </div>
+            <div class="memo-actions">
+                <button class="btn btn-secondary" onclick="showPinModal()">🔐 Set PIN Code</button>
+                <button class="btn btn-primary" onclick="showCreateModal()">➕ New Memo</button>
+            </div>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="memo-stats" id="statsContainer" style="display: none;">
+            <h3>📊 Memo Statistics</h3>
+            <div class="stats-grid" id="statsGrid">
+                <!-- 统计信息将通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <!-- 备忘录列表 -->
+        <div id="memoList">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading memos...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建/编辑备忘录模态框 -->
+    <div id="memoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">New Memo</h3>
+                <span class="close" onclick="closeModal('memoModal')">&times;</span>
+            </div>
+            <form id="memoForm">
+                <div class="form-group">
+                    <label class="form-label" for="memoTitle">Title *</label>
+                    <input type="text" id="memoTitle" class="form-input" placeholder="Enter memo title" maxlength="100" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="memoType">Type</label>
+                    <select id="memoType" class="form-select">
+                        <option value="general">📄 General Memo</option>
+                        <option value="password">🔐 Password Memo</option>
+                        <option value="todo">📝 Todo Item</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="memoContent">Content *</label>
+                    <textarea id="memoContent" class="form-input form-textarea" placeholder="Enter memo content" maxlength="1000" required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('memoModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PIN码设置模态框 -->
+    <div id="pinModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🔐 Set PIN Code</h3>
+                <span class="close" onclick="closeModal('pinModal')">&times;</span>
+            </div>
+            <form id="pinForm">
+                <div class="form-group">
+                    <label class="form-label">New PIN Code (at least 4 digits)</label>
+                    <div class="pin-input">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('pinModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Set PIN Code</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PIN码验证模态框 -->
+    <div id="verifyPinModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🔐 Enter PIN Code</h3>
+                <span class="close" onclick="closeModal('verifyPinModal')">&times;</span>
+            </div>
+            <form id="verifyPinForm">
+                <div class="form-group">
+                    <label class="form-label">Please enter PIN code</label>
+                    <div class="pin-input">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('verifyPinModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Verify</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentMemos = [];
+        let currentMemoId = null;
+        let currentPinCode = '';
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMemos();
+            setupEventListeners();
+        });
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 搜索功能
+            document.getElementById('searchInput').addEventListener('input', function() {
+                const keyword = this.value.trim();
+                if (keyword) {
+                    searchMemos(keyword);
+                } else {
+                    loadMemos();
+                }
+            });
+
+            // 备忘录表单提交
+            document.getElementById('memoForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveMemo();
+            });
+
+            // PIN码表单提交
+            document.getElementById('pinForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                setPinCode();
+            });
+
+            // PIN码验证表单提交
+            document.getElementById('verifyPinForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                verifyPinCode();
+            });
+
+            // PIN码输入框自动跳转
+            setupPinInputs();
+        }
+
+        // 设置PIN码输入框
+        function setupPinInputs() {
+            const pinInputs = document.querySelectorAll('.pin-digit');
+            pinInputs.forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    if (this.value && index < pinInputs.length - 1) {
+                        pinInputs[index + 1].focus();
+                    }
+                });
+
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !this.value && index > 0) {
+                        pinInputs[index - 1].focus();
+                    }
+                });
+            });
+        }
+
+        // 加载备忘录列表
+        async function loadMemos() {
+            try {
+                showLoading();
+                const response = await fetch('/api/memo/list', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentMemos = data.memos || [];
+                    displayMemos(currentMemos);
+                    loadStatistics();
+                } else {
+                    showError('加载备忘录失败: ' + data.message);
+                }
+            } catch (error) {
+                showError('网络错误: ' + error.message);
+            }
+        }
+
+        // 显示备忘录列表
+        function displayMemos(memos) {
+            const memoList = document.getElementById('memoList');
+            
+            if (memos.length === 0) {
+                memoList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <div class="empty-state-text">No memos yet</div>
+                        <button class="btn btn-primary" onclick="showCreateModal()">Create your first memo</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const memoGrid = document.createElement('div');
+            memoGrid.className = 'memo-grid';
+
+            memos.forEach(memo => {
+                const memoCard = createMemoCard(memo);
+                memoGrid.appendChild(memoCard);
+            });
+
+            memoList.innerHTML = '';
+            memoList.appendChild(memoGrid);
+        }
+
+        // 创建备忘录卡片
+        function createMemoCard(memo) {
+            const card = document.createElement('div');
+            card.className = `memo-card ${memo.encrypted ? 'encrypted' : ''}`;
+            
+            const content = memo.encrypted ? '🔒 Encrypted content' : memo.content;
+            const contentClass = memo.encrypted ? 'memo-content encrypted' : 'memo-content';
+
+            card.innerHTML = `
+                <div class="memo-header-row">
+                    <h4 class="memo-title">${escapeHtml(memo.title)}</h4>
+                    <span class="memo-type ${memo.type}">
+                        ${memo.typeIcon} ${memo.typeDescription}
+                    </span>
+                </div>
+                <div class="${contentClass}">${escapeHtml(content)}</div>
+                <div class="memo-footer">
+                    <span>📅 ${memo.formattedUpdateTime}</span>
+                    <div class="memo-actions-row">
+                        ${memo.encrypted ? 
+                            `<button class="btn btn-small btn-secondary" onclick="viewEncryptedMemo(${memo.id})">🔓 View</button>` : 
+                            `<button class="btn btn-small btn-secondary" onclick="editMemo(${memo.id})">✏️ Edit</button>`
+                        }
+                        <button class="btn btn-small btn-danger" onclick="deleteMemo(${memo.id})">🗑️ Delete</button>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // 加载统计信息
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/memo/statistics', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayStatistics(data.statistics);
+                }
+            } catch (error) {
+                console.error('加载统计信息失败:', error);
+            }
+        }
+
+        // 显示统计信息
+        function displayStatistics(stats) {
+            const statsContainer = document.getElementById('statsContainer');
+            const statsGrid = document.getElementById('statsGrid');
+
+            statsGrid.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-number">${stats.totalCount}</div>
+                    <div class="stat-label">Total Memos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.generalCount}</div>
+                    <div class="stat-label">General Memos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.passwordCount}</div>
+                    <div class="stat-label">Password Memos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.todoCount}</div>
+                    <div class="stat-label">Todo Items</div>
+                </div>
+            `;
+
+            statsContainer.style.display = 'block';
+        }
+
+        // 搜索备忘录
+        async function searchMemos(keyword) {
+            try {
+                showLoading();
+                const response = await fetch(`/api/memo/search?keyword=${encodeURIComponent(keyword)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentMemos = data.memos || [];
+                    displayMemos(currentMemos);
+                } else {
+                    showError('搜索失败: ' + data.message);
+                }
+            } catch (error) {
+                showError('网络错误: ' + error.message);
+            }
+        }
+
+        // 显示创建备忘录模态框
+        function showCreateModal() {
+            document.getElementById('modalTitle').textContent = 'New Memo';
+            document.getElementById('memoForm').reset();
+            currentMemoId = null;
+            showModal('memoModal');
+        }
+
+        // 显示编辑备忘录模态框
+        function editMemo(memoId) {
+            const memo = currentMemos.find(m => m.id === memoId);
+            if (!memo) return;
+
+            document.getElementById('modalTitle').textContent = 'Edit Memo';
+            document.getElementById('memoTitle').value = memo.title;
+            document.getElementById('memoContent').value = memo.content;
+            document.getElementById('memoType').value = memo.type;
+            currentMemoId = memoId;
+            showModal('memoModal');
+        }
+
+        // 保存备忘录
+        async function saveMemo() {
+            const title = document.getElementById('memoTitle').value.trim();
+            const content = document.getElementById('memoContent').value.trim();
+            const type = document.getElementById('memoType').value;
+
+            if (!title || !content) {
+                alert('Please fill in title and content');
+                return;
+            }
+
+            try {
+                const url = currentMemoId ? `/api/memo/${currentMemoId}` : '/api/memo/create';
+                const method = currentMemoId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content,
+                        type: type
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeModal('memoModal');
+                    loadMemos();
+                    showSuccess(currentMemoId ? 'Memo updated successfully' : 'Memo created successfully');
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                showError('保存失败: ' + error.message);
+            }
+        }
+
+        // 删除备忘录
+        async function deleteMemo(memoId) {
+            if (!confirm('Are you sure you want to delete this memo?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/memo/${memoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadMemos();
+                    showSuccess('Memo deleted successfully');
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                showError('删除失败: ' + error.message);
+            }
+        }
+
+        // 查看加密备忘录
+        function viewEncryptedMemo(memoId) {
+            currentMemoId = memoId;
+            showModal('verifyPinModal');
+        }
+
+        // 验证PIN码
+        async function verifyPinCode() {
+            const pinInputs = document.querySelectorAll('#verifyPinModal .pin-digit');
+            const pinCode = Array.from(pinInputs).map(input => input.value).join('');
+
+            if (pinCode.length !== 4) {
+                alert('Please enter 4-digit PIN code');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/memo/${currentMemoId}/content`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pinCode: pinCode
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeModal('verifyPinModal');
+                    alert(`Memo content:\n\n${data.content}`);
+                    // 清空PIN码输入框
+                    pinInputs.forEach(input => input.value = '');
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                showError('验证失败: ' + error.message);
+            }
+        }
+
+        // 设置PIN码
+        async function setPinCode() {
+            const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
+            const pinCode = Array.from(pinInputs).map(input => input.value).join('');
+
+            if (pinCode.length !== 4) {
+                alert('Please enter 4-digit PIN code');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/memo/set-pin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pinCode: pinCode
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeModal('pinModal');
+                    showSuccess('PIN code set successfully');
+                    // 清空PIN码输入框
+                    pinInputs.forEach(input => input.value = '');
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                showError('设置失败: ' + error.message);
+            }
+        }
+
+        // 显示PIN码设置模态框
+        function showPinModal() {
+            showModal('pinModal');
+        }
+
+        // 显示模态框
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 显示加载状态
+        function showLoading() {
+            document.getElementById('memoList').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>正在加载...</p>
+                </div>
+            `;
+        }
+
+        // 显示成功消息
+        function showSuccess(message) {
+            alert(message); // 简单实现，可以改为更美观的提示
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            alert('Error: ' + message); // 简单实现，可以改为更美观的提示
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html> 
