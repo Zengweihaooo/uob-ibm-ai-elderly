@@ -358,6 +358,31 @@ public class EmotionCompanion {
         this.updatedAt = updatedAt;
     }
 
+    // Additional methods for compatibility
+    public LocalDateTime getLastUpdate() {
+        return this.updatedAt;
+    }
+
+    public void setLastUpdate(LocalDateTime lastUpdate) {
+        this.updatedAt = lastUpdate;
+    }
+
+    public void setIsLonely(boolean isLonely) {
+        this.isLonely = isLonely;
+    }
+
+    public void setIsLearning(boolean isLearning) {
+        this.isLearning = isLearning;
+    }
+
+    public void setIsMakingSound(boolean isMakingSound) {
+        this.isMakingSound = isMakingSound;
+    }
+
+    public void setIsExpressingEmotion(boolean isExpressingEmotion) {
+        this.isExpressingEmotion = isExpressingEmotion;
+    }
+
     @Override
     public String toString() {
         return "EmotionCompanion{" +

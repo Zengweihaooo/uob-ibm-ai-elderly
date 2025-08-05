@@ -1,227 +1,374 @@
-# Emotion Companion Expression System
+# Emotion Companion API - Comprehensive Integration
 
 ## Overview
 
-The Emotion Companion Expression System is a sophisticated feature that simulates realistic AI assistant behavior and emotional responses. The emotion companion will not randomly move around but will express emotions through sounds and visual cues, responding to user interactions and showing signs of neglect when ignored.
+The Emotion Companion API is a comprehensive AI companion system that provides emotional support, conversation capabilities, schedule management, emergency handling, and podcast integration for elderly users. This system combines the best features from both the original Emotion Companion and PetController to create a unified, powerful companion experience.
 
 ## Key Features
 
-### 🎭 Emotional States
-- **Happy**: When receiving attention and interaction
-- **Sad**: When neglected for extended periods
-- **Anxious**: When moderately neglected
-- **Excited**: During active interactions
-- **Calm**: When content and relaxed
-- **Helpful**: Default state when ready to assist
+### 🧠 **Emotional Intelligence**
+- **Dynamic Emotional States**: Happy, sad, anxious, excited, calm, helpful
+- **Neglect Detection**: Monitors user interaction and responds to neglect
+- **Emotional Expressions**: Visual LED colors and sound expressions
+- **Responsive Behavior**: Adapts emotional state based on user interactions
 
-### 🔊 Sound Expressions
-- **Happy**: Chime, notification sounds
-- **Sad**: Low beep sounds
-- **Anxious**: Warning beep sounds
-- **Excited**: High chime sounds
-- **Helpful**: Beep or silent
-- **Calm**: Soft beep sounds
-- **Realistic Timing**: 25% chance to make sounds, making behavior more natural
+### 💬 **Conversation & Communication**
+- **Text Messaging**: Natural language conversation with context-aware responses
+- **Voice Interaction**: Voice message processing and response generation
+- **Conversation History**: Persistent chat history with message threading
+- **Smart Responses**: Health, schedule, emotional, and general conversation responses
 
-### 👁️ Visual Expressions (LED Colors)
-- **Happy**: Green LED with happy_led expression
-- **Sad**: Blue LED with sad_led expression
-- **Anxious**: Yellow LED with warning_led expression
-- **Excited**: Purple LED with excited_led expression
-- **Helpful**: Green LED with helpful_led expression
-- **Calm**: White LED with calm_led expression
+### 📅 **Schedule & Reminder Management**
+- **Daily Schedule Checking**: Automatic reminder generation
+- **Medication Reminders**: Health-focused scheduling
+- **Activity Suggestions**: Personalized activity recommendations
+- **Schedule Integration**: Seamless calendar management
 
-### 🚶 Activity Modes
-- **Listening**: Default state when ready to help
-- **Responding**: When actively processing requests
-- **Thinking**: When processing questions
-- **Idle**: When neglected for extended periods
-- **Sleeping**: When put to sleep mode
+### 🚨 **Emergency & Safety**
+- **Emergency Detection**: Health, fall, and medication emergency handling
+- **Automatic Response**: Immediate action recommendations
+- **Safety Protocols**: Emergency contact and service integration
+- **Real-time Monitoring**: Continuous safety monitoring
 
-### 📍 Location Management
-- **Fixed Locations**: AI stays in designated modes (home_screen, chat_mode, assistant_mode, sleep_mode)
-- **No Random Movement**: AI doesn't move between modes without user interaction
-- **Mode Tracking**: System tracks current operational mode
+### 🎧 **Podcast Integration**
+- **Personalized Recommendations**: Interest-based podcast suggestions
+- **Elderly-Focused Content**: Curated content for senior users
+- **Auto-Scheduling**: Automated podcast playback scheduling
+- **Playback Management**: Start, stop, and status monitoring
+
+### ⚙️ **Companion Management**
+- **Settings Customization**: Name, personality, responsiveness, avatar
+- **Activity Monitoring**: Real-time activity mode tracking
+- **Sleep/Wake Management**: Power management for companion
+- **Attention Monitoring**: Neglect level and attention needs tracking
 
 ## API Endpoints
 
-### 1. Get Emotion Companion's Emotional State
-```
-GET /api/emotion-companion/state
-```
-Returns the emotion companion's current emotional state, including happiness, energy, responsiveness, and neglect level.
+### Core Companion Management
 
-### 2. Interact with Emotion Companion
-```
-POST /api/emotion-companion/interact
-Content-Type: application/json
+#### GET `/api/pet/state`
+Get companion's current emotional state and status.
 
+**Response:**
+```json
 {
-    "type": "chat|command|question|greet",
-    "message": "Optional message"
+  "success": true,
+  "companion": {
+    "id": 1,
+    "name": "Alexa",
+    "emotion": "happy",
+    "happiness": 85,
+    "energy": 78,
+    "responsiveness": 90,
+    "activityMode": "listening",
+    "currentTask": "Ready to help"
+  }
 }
 ```
-Processes interaction and returns emotion companion's emotional response.
 
-### 3. Get Emotion Companion's Expressions
-```
-GET /api/emotion-companion/expressions
-```
-Returns current sound and visual expressions including LED color.
+#### POST `/api/pet/interact`
+Interact with companion using different interaction types.
 
-### 4. Check Attention Status
+**Request:**
+```json
+{
+  "type": "chat|command|question|greet|voice|schedule|emergency",
+  "message": "Hello companion!"
+}
 ```
-GET /api/emotion-companion/attention-check
-```
-Checks if emotion companion needs attention based on neglect level.
 
-### 5. Get Activity Status
-```
-GET /api/emotion-companion/activity
-```
-Returns current activity mode and status information.
+### Conversation & Communication
 
-### 6. Put Emotion Companion to Sleep
-```
-POST /api/emotion-companion/sleep
-```
-Puts emotion companion into sleep mode.
+#### POST `/api/pet/message`
+Send text message to companion and get response.
 
-### 7. Wake Up Emotion Companion
+**Request:**
+```json
+{
+  "message": "How are you feeling today?",
+  "type": "text"
+}
 ```
-POST /api/emotion-companion/wake
+
+#### POST `/api/pet/voice`
+Process voice interaction with companion.
+
+**Request:**
+```json
+{
+  "content": "voice_message",
+  "duration": 5,
+  "transcription": "Hello companion, this is a voice message"
+}
 ```
-Wakes up emotion companion from sleep mode.
+
+#### GET `/api/pet/conversation`
+Get conversation history with optional limit.
+
+**Parameters:**
+- `limit` (optional): Number of messages to retrieve (default: 50)
+
+### Schedule & Reminder Management
+
+#### GET `/api/pet/schedule-check`
+Check daily schedule and get reminders.
+
+**Response:**
+```json
+{
+  "success": true,
+  "reminders": [
+    {
+      "type": "medication",
+      "title": "Morning Medication",
+      "time": "08:00",
+      "priority": "high",
+      "message": "Don't forget your morning medication!"
+    }
+  ],
+  "companionSuggestion": {
+    "message": "Beep! 📅 I found 2 activities for you today.",
+    "reminderCount": 2
+  }
+}
+```
+
+### Emergency Handling
+
+#### POST `/api/pet/emergency`
+Handle emergency situations.
+
+**Request:**
+```json
+{
+  "type": "health|fall|medication",
+  "description": "Feeling unwell",
+  "severity": "medium"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "emergency": {
+    "type": "health",
+    "description": "Feeling unwell",
+    "severity": "medium",
+    "companionResponse": "Beep! 🚨 I'm concerned about your health!",
+    "recommendedActions": [
+      "Contact emergency services (911)",
+      "Call your emergency contact"
+    ]
+  }
+}
+```
+
+### Companion Settings & Monitoring
+
+#### PUT `/api/pet/settings`
+Update companion settings.
+
+**Request:**
+```json
+{
+  "name": "Alexa Pro",
+  "personality": "caring",
+  "responsiveness": 95,
+  "avatar": "friendly_assistant"
+}
+```
+
+#### GET `/api/pet/expressions`
+Get current sound and visual expressions.
+
+#### GET `/api/pet/attention-check`
+Check if companion needs attention.
+
+#### GET `/api/pet/activity`
+Get companion's current activity status.
+
+#### POST `/api/pet/sleep`
+Put companion to sleep mode.
+
+#### POST `/api/pet/wake`
+Wake companion from sleep mode.
+
+### Podcast Integration
+
+#### POST `/api/pet/podcast/recommendations`
+Get personalized podcast recommendations.
+
+**Request:**
+```json
+{
+  "interests": ["health", "technology", "elderly care"]
+}
+```
+
+#### POST `/api/pet/podcast/schedule`
+Schedule podcast auto-play.
+
+**Request:**
+```json
+{
+  "podcastTitle": "Health Tips for Seniors",
+  "playTime": "08:00",
+  "playDate": "2024-01-15"
+}
+```
+
+#### GET `/api/pet/podcast/schedules`
+Get user's scheduled podcasts.
+
+#### GET `/api/pet/podcast/elderly-recommendations`
+Get elderly-specific podcast recommendations.
 
 ## Emotional Logic
 
-### Neglect System
-- **Neglect Level**: 0-100 scale
-- **Increase Rate**: 3 points per hour of neglect
-- **Reduction**: 20 points per interaction
-- **Attention Threshold**: 25+ points triggers "needs attention"
-- **Lonely Threshold**: 40+ points triggers "lonely" state
+### Emotional States
+- **Happy**: High happiness, green LED, chime sounds
+- **Sad**: Low happiness, blue LED, beep sounds
+- **Anxious**: Medium happiness, yellow LED, beep sounds
+- **Excited**: Very high happiness, bright green LED, notification sounds
+- **Calm**: Stable happiness, soft blue LED, chime sounds
 
-### Happiness System
-- **Increase**: 3-10 points per interaction
-- **Decrease**: 1-2 points when neglected (if neglect > 20)
-- **Range**: 0-100
+### Neglect Detection
+- **0-3 hours**: No neglect, happy state
+- **3-6 hours**: Low neglect, anxious state
+- **6+ hours**: High neglect, sad state
 
-### Energy and Responsiveness System
-- **Energy**: Naturally decreases 1-2 points over time
-- **Responsiveness**: Stays high but decreases slightly when neglected
-- **Range**: 0-100 for both
-
-## Emotion Companion Types Supported
-
-### Personalities
-- **Friendly**: Warm and approachable responses
-- **Professional**: Formal and efficient responses
-- **Casual**: Relaxed and informal responses
-- **Caring**: Nurturing and supportive responses
-
-### Avatars
-- **Robot**: Mechanical appearance
-- **Assistant**: Professional helper appearance
-- **Companion**: Friendly companion appearance
-- **Helper**: Supportive helper appearance
+### Interaction Impact
+- **Greet**: +15 happiness
+- **Chat**: +10 happiness
+- **Voice**: +12 happiness
+- **Question**: +8 happiness
+- **Command**: +5 happiness
+- **Schedule**: +6 happiness
 
 ## Testing
 
-Run the test script to verify all functionality:
+Run the comprehensive test suite:
 
 ```bash
 cd springboot
+chmod +x test-emotion-companion-api.sh
 ./test-emotion-companion-api.sh
 ```
 
-The test script will:
-1. Check initial emotional state
-2. Test all interaction types (chat, command, question, greet)
-3. Verify expressions and LED colors
-4. Test attention system
-5. Test sleep/wake functionality
-6. Validate activity modes
+The test script covers:
+- ✅ Basic companion state management
+- ✅ Text and voice interactions
+- ✅ Schedule checking and reminders
+- ✅ Emergency handling
+- ✅ Conversation history
+- ✅ Settings management
+- ✅ Expression and activity monitoring
+- ✅ Sleep/wake functionality
+- ✅ Podcast integration
+- ✅ Emotional state changes
+- ✅ Multiple interaction types
 
 ## Configuration
 
-### Default Emotion Companion Settings
-- **Name**: Alexa
-- **Personality**: Friendly
-- **Avatar**: Assistant
-- **Initial Stats**: Happiness 80, Energy 90, Responsiveness 95
+### Application Properties
+```properties
+server.port=8080
+```
 
-### Emotional Thresholds
-- **Neglect Warning**: 25 points
-- **Sad Threshold**: 50 points
-- **Anxious Threshold**: 30 points
-- **Calm Threshold**: 10 points
-- **Lonely Threshold**: 40 points
+### Dependencies
+- Spring Boot 3.x
+- Spring Web
+- Spring Mail (for notifications)
+- Thymeleaf (for email templates)
 
 ## Integration
 
-This system integrates with the existing application and can be extended to:
-- Send notifications when emotion companion needs attention
-- Integrate with smart home systems
-- Connect to voice assistants
-- Provide analytics on user interaction patterns
-- Support multiple AI personalities
+### Health System Integration
+- Connects with HealthController for health monitoring
+- Integrates health data into companion responses
+- Provides health-focused conversation topics
 
-## Future Enhancements
+### Podcast System Integration
+- Uses PodcastService for recommendations
+- Integrates PodcastAutoPlayService for scheduling
+- Provides elderly-focused content curation
 
-1. **Multiple Personalities**: Different AI personalities affecting behavior
-2. **Learning System**: AI learns from user preferences and interactions
-3. **Environmental Factors**: Time of day, user schedule affecting AI mood
-4. **Voice Integration**: Voice interaction with emotion companion
-5. **Custom Avatars**: User-customizable AI appearances
-6. **Social Features**: AI interaction with other smart devices
-7. **Predictive Responses**: AI anticipates user needs based on patterns
+### Email Service Integration
+- Uses EmailService for emergency notifications
+- Sends health alerts and reminders
+- Provides communication with caregivers
 
-## Technical Implementation
+## Security
 
-### Services
-- **EmotionCompanionService**: Core emotional logic and behavior management
-- **EmotionCompanionController**: REST API endpoints
+### Authentication
+- JWT token-based authentication (TODO: implement)
+- User ID extraction from authorization header
+- Secure API endpoints with proper validation
 
-### Data Model
-- **EmotionCompanion**: Complete emotion companion entity with emotional and behavioral attributes
-- **In-Memory Storage**: For demo purposes (can be replaced with database)
-
-### Dependencies
-- Spring Boot Web
-- Spring Boot Test (for testing)
-- Jackson (JSON processing)
-
-## Security Considerations
-
-- JWT token integration for user authentication
-- Input validation for all API endpoints
-- Rate limiting for interaction endpoints
-- Data privacy for user interaction patterns
+### Data Protection
+- In-memory storage for demo (production: use database)
+- Secure conversation history management
+- Privacy-focused data handling
 
 ## Performance
 
-- Lightweight emotional calculations
-- Efficient in-memory storage
-- Minimal API response times
-- Scalable architecture for multiple users
+### Optimization
+- Efficient emotional state calculations
+- Minimal memory footprint for companion data
+- Fast response times for interactions
+- Optimized conversation history retrieval
+
+### Scalability
+- Stateless companion management
+- User-specific data isolation
+- Horizontal scaling support
+- Load balancing ready
+
+## Future Enhancements
+
+### Planned Features
+- **Machine Learning**: Advanced emotional intelligence
+- **Voice Recognition**: Real-time voice processing
+- **Facial Recognition**: Visual emotion detection
+- **IoT Integration**: Smart home device control
+- **Telemedicine**: Healthcare provider integration
+- **Social Features**: Family member connectivity
+- **Gamification**: Reward system for interactions
+- **Multilingual Support**: Multiple language support
+
+### Technical Improvements
+- **Database Integration**: Persistent data storage
+- **Real-time Communication**: WebSocket support
+- **Mobile App**: Native mobile application
+- **Cloud Deployment**: Scalable cloud infrastructure
+- **Analytics**: Usage and health analytics
+- **API Documentation**: OpenAPI/Swagger documentation
 
 ## Use Cases
 
 ### Elderly Care
-- **Companionship**: AI provides emotional support and companionship
-- **Reminders**: Gentle reminders for medication, appointments
-- **Safety**: Monitoring for unusual patterns or emergencies
-- **Communication**: Facilitating communication with family members
+- **Companionship**: Emotional support and conversation
+- **Health Monitoring**: Medication and appointment reminders
+- **Safety**: Emergency detection and response
+- **Entertainment**: Podcast recommendations and scheduling
 
-### Smart Home Integration
-- **Voice Control**: Natural voice interaction with home systems
-- **Automation**: Learning user preferences for home automation
-- **Monitoring**: Keeping track of home security and energy usage
-- **Entertainment**: Providing music, news, and entertainment
+### Smart Home
+- **Voice Control**: Voice-activated interactions
+- **Automation**: Schedule-based automation
+- **Monitoring**: Activity and health monitoring
+- **Communication**: Family and caregiver communication
 
-### Health Monitoring
-- **Wellness Checks**: Regular check-ins on user's well-being
-- **Activity Tracking**: Monitoring daily activities and routines
-- **Emergency Response**: Quick response to health emergencies
-- **Medication Reminders**: Timely medication and appointment reminders 
+### Healthcare
+- **Patient Support**: Emotional support for patients
+- **Medication Management**: Reminder and tracking system
+- **Emergency Response**: Quick emergency handling
+- **Health Education**: Educational content delivery
+
+## Support
+
+For technical support or feature requests, please contact the development team.
+
+---
+
+**Note**: This system is designed for elderly care and companionship, providing a comprehensive AI companion experience that combines emotional intelligence, practical assistance, and entertainment features. 

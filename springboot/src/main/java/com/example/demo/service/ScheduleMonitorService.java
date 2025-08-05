@@ -5,7 +5,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-import com.example.demo.controller.PetController;
+import com.example.demo.controller.EmotionCompanionController;
 import com.example.demo.pojo.User;
 
 
@@ -28,7 +28,7 @@ public class ScheduleMonitorService {
     private EmailService emailService;
 
     @Autowired
-    private PetController petController;
+    private EmotionCompanionController emotionCompanionController;
 
     @Autowired
     private SmsService smsService;
@@ -102,22 +102,23 @@ public class ScheduleMonitorService {
             String petMessage = "";
             switch (reminderType) {
                 case "health_check":
-                    petMessage = "Meow... I noticed that you haven't checked in on your health information today. Is everything okay?";
+                    petMessage = "Beep... I noticed that you haven't checked in on your health information today. Is everything okay?";
                     break;
                 case "schedule_check":
-                    petMessage = "Purr...📅你还没告诉我今天的计划呢，要一起安排一下吗？";
+                    petMessage = "Chime...📅 You haven't told me your plan for today yet. Shall we arrange it together?";
                     break;
                 case "medication":
-                    petMessage = "Meow! 💊 It's time for your medication! Don't forget to take it!";
+                    petMessage = "Beep! 💊 It's time for your medication! Don't forget to take it!";
                     break;
                 case "appointment":
-                    petMessage = "Purr... 📅 You have an appointment coming up! Let me remind you!";
+                    petMessage = "Chime... 📅 You have an appointment coming up! Let me remind you!";
                     break;
                 default:
-                    petMessage = "Meow! I have a reminder for you!";
+                    petMessage = "Beep! I have a reminder for you!";
             }
             
-            petController.createMessage("pet", petMessage, "reminder", user.getId());
+            // TODO: Implement pet message creation
+            // emotionCompanionController.createMessage("pet", petMessage, "reminder", user.getId());
         } catch (Exception e) {
             System.err.println("Failed to send pet message to user " + user.getId() + ": " + e.getMessage());
         }
@@ -145,7 +146,8 @@ public class ScheduleMonitorService {
         // Send pet message
         try {
             String petMessage = "Meow! 🚨 URGENT: It's time for your " + medicationName + "! Please take it right now!";
-            petController.createMessage("pet", petMessage, "medication_urgent", user.getId());
+            // TODO: Implement companion message creation
+            // emotionCompanionController.createMessage("companion", petMessage, "medication_urgent", user.getId());
         } catch (Exception e) {
             System.err.println("Failed to send urgent pet message: " + e.getMessage());
         }
@@ -174,7 +176,8 @@ public class ScheduleMonitorService {
         // Send pet message
         try {
             String petMessage = "Purr... 📅 Don't forget your " + appointmentTitle + " at " + appointmentTime + "!";
-            petController.createMessage("pet", petMessage, "appointment", user.getId());
+            // TODO: Implement companion message creation
+            // emotionCompanionController.createMessage("companion", petMessage, "appointment", user.getId());
         } catch (Exception e) {
             System.err.println("Failed to send appointment pet message: " + e.getMessage());
         }
