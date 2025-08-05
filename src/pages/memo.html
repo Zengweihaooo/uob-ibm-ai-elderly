@@ -623,7 +623,7 @@
         async function loadMemos() {
             try {
                 showLoading();
-                const response = await fetch('/api/memo/list', {
+                const response = await fetch('http://localhost:8080/api/memo/list', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -705,7 +705,7 @@
         // 加载统计信息
         async function loadStatistics() {
             try {
-                const response = await fetch('/api/memo/statistics', {
+                const response = await fetch('http://localhost:8080/api/memo/statistics', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -753,7 +753,7 @@
         async function searchMemos(keyword) {
             try {
                 showLoading();
-                const response = await fetch(`/api/memo/search?keyword=${encodeURIComponent(keyword)}`, {
+                const response = await fetch(`http://localhost:8080/api/memo/search?keyword=${encodeURIComponent(keyword)}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -806,7 +806,7 @@
             }
 
             try {
-                const url = currentMemoId ? `/api/memo/${currentMemoId}` : '/api/memo/create';
+                const url = currentMemoId ? `http://localhost:8080/api/memo/${currentMemoId}` : 'http://localhost:8080/api/memo/create';
                 const method = currentMemoId ? 'PUT' : 'POST';
 
                 const response = await fetch(url, {
@@ -842,7 +842,7 @@
             }
 
             try {
-                const response = await fetch(`/api/memo/${memoId}`, {
+                const response = await fetch(`http://localhost:8080/api/memo/${memoId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -879,7 +879,7 @@
             }
 
             try {
-                const response = await fetch(`/api/memo/${currentMemoId}/content`, {
+                const response = await fetch(`http://localhost:8080/api/memo/${currentMemoId}/content`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -915,7 +915,7 @@
             }
 
             try {
-                const response = await fetch('/api/memo/set-pin', {
+                const response = await fetch('http://localhost:8080/api/memo/set-pin', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
