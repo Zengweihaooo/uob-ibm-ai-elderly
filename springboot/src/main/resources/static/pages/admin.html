@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - User Management</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--background);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .admin-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--primary-blue);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-subtle);
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .management-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+        }
+        .section-title {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        .user-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+        }
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        .user-info {
+            flex-grow: 1;
+        }
+        .user-email {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .user-meta {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .status-verified {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-left: 0.5rem;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            align-items: end;
+            margin-bottom: 1rem;
+        }
+        .form-group {
+            flex: 1;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        .refresh-btn {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="../../index.html" class="home-btn" aria-label="Home">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 16V10H12V16H15V8H18L10 1L2 8H5V16H8Z" fill="currentColor"/>
+                    </svg>
+                </a>
+                <div class="logo-container">
+                    <a href="https://www.bristol.ac.uk" target="_blank" class="logo-link">
+                        <img src="https://www.bristol.ac.uk/assets/responsive-web-project/2.6.0/images/logos/uob-logo.svg" alt="University of Bristol Logo" class="logo uob-logo">
+                    </a>
+                    <a href="https://www.ibm.com" target="_blank" class="logo-link">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM Logo" class="logo ibm-logo">
+                    </a>
+                </div>
+            </div>
+            <button class="menu-toggle" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="nav-links">
+                <a href="./register.html" class="nav-link">Register</a>
+                <a href="./admin.html" class="nav-link">Admin</a>
+                <a href="./team-members.html" class="nav-link">Team Members</a>
+                <a href="./blogs.html" class="nav-link">Blogs</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1>🛠️ User Management Dashboard</h1>
+                <p>Manage registered users and their verification status</p>
+                <button class="refresh-btn" onclick="loadStats(); loadUsers();">🔄 Refresh Data</button>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">-</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="verifiedUsers">-</div>
+                    <div class="stat-label">Verified Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingUsers">-</div>
+                    <div class="stat-label">Pending Verification</div>
+                </div>
+            </div>
+
+            <!-- Message Display -->
+            <div id="messageContainer"></div>
+
+            <!-- User Management -->
+            <div class="management-section">
+                <h3 class="section-title">Delete Users</h3>
+                
+                <!-- Delete Single User -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Delete Single User:</label>
+                        <input type="email" id="deleteEmail" placeholder="Enter email address">
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteUser()">Delete User</button>
+                </div>
+
+                <!-- Delete by Status -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Delete by Status:</label>
+                        <select id="deleteStatus">
+                            <option value="">Select Status</option>
+                            <option value="PENDING">Pending Verification</option>
+                            <option value="VERIFIED">Verified Users</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteByStatus()">Delete by Status</button>
+                </div>
+            </div>
+
+            <!-- User List -->
+            <div class="management-section">
+                <h3 class="section-title">Registered Users</h3>
+                <div class="user-list" id="userList">
+                    <div class="empty-state">Loading users...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer"></footer>
+
+    <!-- Include existing JS -->
+    <script src="../index.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:8080/user';
+
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('totalUsers').textContent = stats.total || 0;
+                    document.getElementById('verifiedUsers').textContent = stats.verified || 0;
+                    document.getElementById('pendingUsers').textContent = stats.pending || 0;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/register`);
+                if (response.ok) {
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Extract user data from the backend HTML response
+                    const userItems = doc.querySelectorAll('.user-item');
+                    const userList = document.getElementById('userList');
+                    
+                    if (userItems.length === 0) {
+                        userList.innerHTML = '<div class="empty-state">No users registered yet.</div>';
+                        return;
+                    }
+                    
+                    userList.innerHTML = '';
+                    userItems.forEach(item => {
+                        const email = item.querySelector('strong')?.textContent || 'Unknown';
+                        const statusBadge = item.querySelector('.status-badge');
+                        const status = statusBadge?.textContent?.trim() || 'Unknown';
+                        const registered = item.querySelector('small')?.textContent || '';
+                        
+                        const userDiv = document.createElement('div');
+                        userDiv.className = 'user-item';
+                        userDiv.innerHTML = `
+                            <div class="user-info">
+                                <div class="user-email">${email}</div>
+                                <div class="user-meta">${registered}</div>
+                            </div>
+                            <div>
+                                <span class="status-badge ${status.includes('Verified') ? 'status-verified' : 'status-pending'}">
+                                    ${status}
+                                </span>
+                                <button class="btn btn-secondary" onclick="resendCode('${email}')" 
+                                        ${status.includes('Verified') ? 'disabled' : ''}>
+                                    Resend Code
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteUserConfirm('${email}')">Delete</button>
+                            </div>
+                        `;
+                        userList.appendChild(userDiv);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('userList').innerHTML = '<div class="empty-state">Error loading users.</div>';
+            }
+        }
+
+        async function deleteUser() {
+            const email = document.getElementById('deleteEmail').value;
+            if (!email) {
+                showMessage('Please enter an email address.', 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete user: ${email}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(email)}`
+                });
+
+                if (response.ok) {
+                    showMessage(`User ${email} deleted successfully.`, 'success');
+                    document.getElementById('deleteEmail').value = '';
+                    loadStats();
+                    loadUsers();
+                } else {
+                    showMessage(`Failed to delete user ${email}.`, 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        async function deleteByStatus() {
+            const status = document.getElementById('deleteStatus').value;
+            if (!status) {
+                showMessage('Please select a status.', 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete all ${status} users? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/delete-by-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `status=${encodeURIComponent(status)}`
+                });
+
+                if (response.ok) {
+                    showMessage(`Successfully deleted users with status: ${status}`, 'success');
+                    document.getElementById('deleteStatus').value = '';
+                    loadStats();
+                    loadUsers();
+                } else {
+                    showMessage(`Failed to delete users with status: ${status}`, 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        async function deleteUserConfirm(email) {
+            if (!confirm(`Are you sure you want to delete user: ${email}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(email)}`
+                });
+
+                if (response.ok) {
+                    showMessage(`User ${email} deleted successfully.`, 'success');
+                    loadStats();
+                    loadUsers();
+                } else {
+                    showMessage(`Failed to delete user ${email}.`, 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        async function resendCode(email) {
+            try {
+                const response = await fetch(`${API_BASE}/resend`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(email)}`
+                });
+
+                if (response.ok) {
+                    showMessage(`Verification code resent to ${email}.`, 'success');
+                } else {
+                    showMessage(`Failed to resend code to ${email}.`, 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadUsers();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                loadStats();
+                loadUsers();
+            }, 30000);
+        });
+    </script>
+    
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-container">
+            <a href="schedule.html" class="nav-item">
+                <div class="nav-icon">📅</div>
+                <div class="nav-text">Schedule</div>
+            </a>
+            <a href="ai-assistant.html" class="nav-item">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-text">AI Assistant</div>
+            </a>
+            <a href="memo.html" class="nav-item">
+                <div class="nav-icon">📝</div>
+                <div class="nav-text">Memo</div>
+            </a>
+            <a href="chatbot.html" class="nav-item">
+                <div class="nav-icon">💬</div>
+                <div class="nav-text">Chat</div>
+            </a>
+            <a href="admin.html" class="nav-item active">
+                <div class="nav-icon">⚙️</div>
+                <div class="nav-text">Settings</div>
+            </a>
+        </div>
+    </nav>
+</body>
+</html> 
