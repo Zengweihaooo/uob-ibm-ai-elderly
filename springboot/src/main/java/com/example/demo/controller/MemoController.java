@@ -66,7 +66,7 @@ public class MemoController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "创建备忘录失败: " + e.getMessage());
+            response.put("message", "Failed to create memo: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -99,7 +99,7 @@ public class MemoController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "获取备忘录失败: " + e.getMessage());
+            response.put("message", "Failed to get memos: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -133,7 +133,7 @@ public class MemoController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "获取备忘录失败: " + e.getMessage());
+            response.put("message", "Failed to get memo: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -174,7 +174,7 @@ public class MemoController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "更新备忘录失败: " + e.getMessage());
+            response.put("message", "Failed to update memo: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -208,7 +208,7 @@ public class MemoController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "删除备忘录失败: " + e.getMessage());
+            response.put("message", "Failed to delete memo: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -250,7 +250,7 @@ public class MemoController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "PIN码验证失败: " + e.getMessage());
+            response.put("message", "PIN code verification failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -286,7 +286,7 @@ public class MemoController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "设置PIN码失败: " + e.getMessage());
+            response.put("message", "Failed to set PIN code: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -331,7 +331,7 @@ public class MemoController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "获取备忘录内容失败: " + e.getMessage());
+            response.put("message", "Failed to get memo content: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -367,7 +367,7 @@ public class MemoController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "搜索备忘录失败: " + e.getMessage());
+            response.put("message", "Failed to search memos: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -399,7 +399,7 @@ public class MemoController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "获取统计信息失败: " + e.getMessage());
+            response.put("message", "Failed to get statistics: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

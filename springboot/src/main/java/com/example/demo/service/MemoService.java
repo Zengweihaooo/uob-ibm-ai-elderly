@@ -362,7 +362,7 @@ public class MemoService {
         try {
             if (keyword == null || keyword.trim().isEmpty()) {
                 result.put("success", false);
-                result.put("message", "搜索关键词不能为空");
+                result.put("message", "Search keyword cannot be empty");
                 return result;
             }
             
@@ -386,7 +386,7 @@ public class MemoService {
             
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "搜索备忘录失败: " + e.getMessage());
+            result.put("message", "Failed to search memos: " + e.getMessage());
         }
         
         return result;
@@ -422,7 +422,7 @@ public class MemoService {
             
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "获取统计信息失败: " + e.getMessage());
+            result.put("message", "Failed to get statistics: " + e.getMessage());
         }
         
         return result;
