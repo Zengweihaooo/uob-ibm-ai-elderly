@@ -1334,8 +1334,9 @@
 
         // Create contact card HTML
         function createContactCard(contact, searchTerm = '') {
-            const emergencyBadge = contact.emergencyContact ? '<div class="emergency-badge">🚨 Emergency</div>' : '';
-            const emergencyClass = contact.emergencyContact ? 'emergency' : '';
+            const isEmergency = contact.emergencyContact || contact.isEmergencyContact;
+            const emergencyBadge = isEmergency ? '<div class="emergency-badge">🚨 Emergency</div>' : '';
+            const emergencyClass = isEmergency ? 'emergency' : '';
             
             // Highlight search terms
             const highlightText = (text, searchTerm) => {
@@ -1466,7 +1467,7 @@
                         document.getElementById('contactPhone').value = contact.phoneNumber || '';
                         document.getElementById('contactEmail').value = contact.email || '';
                         document.getElementById('notificationPreference').value = contact.notificationPreference || 'ALL';
-                        document.getElementById('isEmergencyContact').checked = contact.emergencyContact || false;
+                        document.getElementById('isEmergencyContact').checked = contact.emergencyContact || contact.isEmergencyContact || false;
                         document.getElementById('contactNotes').value = contact.notes || '';
                         
                         document.getElementById('modalTitle').textContent = 'Edit Contact';
@@ -1569,7 +1570,7 @@
                 phoneNumber: phone,
                 email: email,
                 notificationPreference: document.getElementById('notificationPreference').value,
-                emergencyContact: document.getElementById('isEmergencyContact').checked,
+                isEmergencyContact: document.getElementById('isEmergencyContact').checked,
                 notes: document.getElementById('contactNotes').value
             };
 
@@ -1779,9 +1780,9 @@
 
             // Apply emergency filter
             if (emergencyFilter === 'emergency') {
-                filtered = filtered.filter(contact => contact.emergencyContact === true);
+                filtered = filtered.filter(contact => contact.emergencyContact === true || contact.isEmergencyContact === true);
             } else if (emergencyFilter === 'normal') {
-                filtered = filtered.filter(contact => contact.emergencyContact !== true);
+                filtered = filtered.filter(contact => contact.emergencyContact !== true && contact.isEmergencyContact !== true);
             }
 
             filteredContacts = filtered;
