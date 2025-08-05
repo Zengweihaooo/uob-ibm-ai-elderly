@@ -303,11 +303,11 @@
             overflow-y: auto;
             overflow-x: hidden;
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            /* 关键：让内容溢出时也保持圆角 */
+            /* Critical: Maintain border-radius even when content overflows */
             clip-path: inset(0 round 15px);
         }
 
-        /* 优化滚动条样式，防止遮挡圆角 */
+        /* Optimize scrollbar style to prevent blocking rounded corners */
         .modal-content::-webkit-scrollbar {
             width: 10px;
             background: transparent;
@@ -558,6 +558,139 @@
         .main-content {
             padding-bottom: 100px;
         }
+
+        /* Search and Filter Styles */
+        .search-filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--elderly-shadow);
+            border: 2px solid var(--elderly-border);
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            position: relative;
+            max-width: 600px;
+        }
+
+        .search-box .form-input {
+            padding-right: 45px;
+            font-size: 1.1rem;
+        }
+
+        .search-clear-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .search-clear-btn:hover {
+            background: var(--elderly-light);
+            color: var(--elderly-danger);
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-container .form-select {
+            min-width: 150px;
+            flex: 1;
+        }
+
+        .filter-container .btn {
+            padding: 12px 20px;
+            white-space: nowrap;
+        }
+
+        /* Search result highlight */
+        .search-highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        /* Filter result indicator */
+        .filter-result-info {
+            background: var(--elderly-primary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .filter-container {
+                flex-direction: column;
+            }
+            
+            .filter-container .form-select,
+            .filter-container .btn {
+                width: 100%;
+            }
+        }
+
+        /* Contact History Styles */
+        .history-item {
+            background: var(--elderly-light);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--elderly-primary);
+        }
+
+        .history-action {
+            font-weight: 600;
+            color: var(--elderly-primary);
+            margin-bottom: 5px;
+        }
+
+        .history-time {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .history-details {
+            font-size: 0.95rem;
+            color: var(--elderly-dark);
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .history-empty-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -619,6 +752,36 @@
             <!-- Message Display -->
             <div id="messageContainer"></div>
 
+            <!-- Search and Filter Section -->
+            <div class="search-filter-section">
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" class="form-input" placeholder="🔍 Search contacts (name, phone, email)..." onkeyup="handleSearch()">
+                        <button class="search-clear-btn" id="clearSearchBtn" onclick="clearSearch()" style="display: none;">✕</button>
+                    </div>
+                </div>
+                <div class="filter-container">
+                    <select id="relationshipFilter" class="form-select" onchange="handleFilter()">
+                        <option value="">All Relationships</option>
+                        <option value="spouse">Spouse</option>
+                        <option value="child">Child</option>
+                        <option value="parent">Parent</option>
+                        <option value="sibling">Sibling</option>
+                        <option value="relative">Other Relative</option>
+                        <option value="friend">Friend</option>
+                        <option value="caregiver">Caregiver</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <select id="emergencyFilter" class="form-select" onchange="handleFilter()">
+                        <option value="">All Contacts</option>
+                        <option value="emergency">Emergency Only</option>
+                        <option value="normal">Normal Only</option>
+                    </select>
+                    <button class="btn" onclick="clearAllFilters()">Clear Filters</button>
+                </div>
+            </div>
+
             <!-- Action Buttons -->
             <div class="action-buttons">
                 <button class="btn btn-success" onclick="openAddContactModal()">
@@ -627,9 +790,7 @@
                 <button class="btn" onclick="refreshContacts()">
                     🔄 Refresh Contacts
                 </button>
-                <button class="btn" onclick="exportContacts()">
-                    📋 Export List
-                </button>
+
             </div>
 
             <!-- Contacts Grid -->
@@ -652,13 +813,13 @@
             <span class="nav-icon">🤖</span>
             <span class="nav-label">AI Assistant</span>
         </button>
-        <button class="nav-tab active">
-            <span class="nav-icon">👪</span>
-            <span class="nav-label">Family</span>
-        </button>
         <button class="nav-tab" onclick="window.location.href='schedule.html#pet'">
             <span class="nav-icon">🐱</span>
             <span class="nav-label">Virtual Pet</span>
+        </button>
+        <button class="nav-tab active">
+            <span class="nav-icon">👪</span>
+            <span class="nav-label">Family</span>
         </button>
     </div>
 
@@ -756,6 +917,23 @@
         </div>
     </div>
 
+    <!-- Contact History Modal -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="historyModalTitle">Contact History</h2>
+                <button class="close-btn" onclick="closeHistoryModal()">&times;</button>
+            </div>
+            <div id="historyContent" style="max-height: 400px; overflow-y: auto;">
+                <!-- History content will be populated here -->
+            </div>
+            <div class="action-buttons">
+                <button class="btn" onclick="clearContactHistory()">🗑️ Clear History</button>
+                <button class="btn" onclick="closeHistoryModal()">❌ Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Include existing JS for mobile menu -->
     <script src="../index.js"></script>
     
@@ -764,9 +942,15 @@
         const API_BASE = 'http://localhost:8080/api/family';
         let currentEditingContactId = null;
         let contactToDelete = null;
+        
+        // Search and Filter variables
+        let allContacts = []; // Store all contacts for filtering
+        let filteredContacts = []; // Store filtered results
+        let contactHistory = {}; // Store contact history {contactId: [{action, timestamp, details}]}
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
+            loadContactHistory(); // Load history from localStorage
             loadFamilyContacts();
             loadStatistics();
             initializeDragFunctionality();
@@ -958,6 +1142,10 @@
 
         // Display contacts in grid
         function displayContacts(contacts) {
+            // Store all contacts for filtering
+            allContacts = contacts;
+            filteredContacts = [...contacts];
+            
             const container = document.getElementById('contactsContainer');
             
             if (contacts.length === 0) {
@@ -975,40 +1163,58 @@
         }
 
         // Create contact card HTML
-        function createContactCard(contact) {
+        function createContactCard(contact, searchTerm = '') {
             const emergencyBadge = contact.emergencyContact ? '<div class="emergency-badge">🚨 Emergency</div>' : '';
             const emergencyClass = contact.emergencyContact ? 'emergency' : '';
+            
+            // Highlight search terms
+            const highlightText = (text, searchTerm) => {
+                if (!searchTerm || !text) return text;
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                return text.replace(regex, '<span class="search-highlight">$1</span>');
+            };
+            
+            // Get contact history for last contact info
+            const history = getContactHistory(contact.id);
+            const lastContact = history.length > 0 ? history[0] : null;
+            const lastContactInfo = lastContact ? 
+                `<div class="contact-detail">
+                    <span class="contact-detail-icon">🕒</span>
+                    <span>Last contact: ${formatHistoryAction(lastContact.action)} (${new Date(lastContact.timestamp).toLocaleDateString()})</span>
+                </div>` : '';
             
             return `
                 <div class="contact-card ${emergencyClass}">
                     ${emergencyBadge}
                     <div class="contact-info">
-                        <div class="contact-name">${contact.name || 'Unknown'}</div>
-                        <div class="contact-relationship">${contact.relationship || 'Not specified'}</div>
+                        <div class="contact-name">${highlightText(contact.name || 'Unknown', searchTerm)}</div>
+                        <div class="contact-relationship">${highlightText(contact.relationship || 'Not specified', searchTerm)}</div>
                     </div>
                     <div class="contact-details">
                         ${contact.phoneNumber ? `
                             <div class="contact-detail">
                                 <span class="contact-detail-icon">📞</span>
-                                <span>${contact.phoneNumber}</span>
+                                <span>${highlightText(contact.phoneNumber, searchTerm)}</span>
                             </div>
                         ` : ''}
                         ${contact.email ? `
                             <div class="contact-detail">
                                 <span class="contact-detail-icon">📧</span>
-                                <span>${contact.email}</span>
+                                <span>${highlightText(contact.email, searchTerm)}</span>
                             </div>
                         ` : ''}
                         <div class="contact-detail">
                             <span class="contact-detail-icon">🔔</span>
                             <span>${contact.notificationPreference || 'ALL'}</span>
                         </div>
+                        ${lastContactInfo}
                     </div>
                     <div class="contact-actions">
-                        ${contact.phoneNumber ? `<button class="contact-btn primary" onclick="callContact('${contact.phoneNumber}')">📞 Call</button>` : ''}
+                        ${contact.phoneNumber ? `<button class="contact-btn primary" onclick="callContact('${contact.phoneNumber}', ${contact.id})">📞 Call</button>` : ''}
                         <button class="contact-btn" onclick="sendMessage(${contact.id})">💬 Message</button>
                         <button class="contact-btn" onclick="editContact(${contact.id})">✏️ Edit</button>
                         <button class="contact-btn" onclick="deleteContact(${contact.id}, '${contact.name}')">🗑️ Delete</button>
+                        <button class="contact-btn" onclick="viewContactHistory(${contact.id}, '${contact.name}')">📋 History</button>
                     </div>
                 </div>
             `;
@@ -1135,6 +1341,14 @@
                     const data = await response.json();
                     if (data.success) {
                         showMessage('Contact deleted successfully', 'success');
+                        
+                        // Add to contact history (before deletion, so we keep some record)
+                        addContactHistory(contactToDelete, 'contact_deleted', {
+                            type: 'contact_deleted',
+                            timestamp: new Date().toISOString(),
+                            details: `Contact deleted: ${document.getElementById('deleteContactName').textContent}`
+                        });
+                        
                         loadFamilyContacts();
                         loadStatistics();
                     } else {
@@ -1209,7 +1423,20 @@
                     const data = await response.json();
                     if (data.success) {
                         const action = currentEditingContactId ? 'updated' : 'added';
+                        const actionKey = currentEditingContactId ? 'contact_updated' : 'contact_added';
+                        const contactId = currentEditingContactId || data.contact?.id;
+                        
                         showMessage(`Contact ${action} successfully.`, 'success');
+                        
+                        // Add to contact history
+                        if (contactId) {
+                            addContactHistory(contactId, actionKey, {
+                                type: actionKey,
+                                timestamp: new Date().toISOString(),
+                                details: `Contact ${action}: ${formData.name}`
+                            });
+                        }
+                        
                         closeContactModal();
                         loadFamilyContacts();
                         loadStatistics();
@@ -1229,34 +1456,286 @@
         function refreshContacts() {
             loadFamilyContacts();
             loadStatistics();
-            showMessage('Contacts refreshed', 'success');
+            showMessage('Contacts refreshed successfully', 'success');
         }
 
-        function callContact(phoneNumber) {
+        function callContact(phoneNumber, contactId) {
             if (phoneNumber) {
                 window.location.href = `tel:${phoneNumber}`;
+                
+                // Add to contact history
+                if (contactId) {
+                    addContactHistory(contactId, 'call', {
+                        type: 'call',
+                        phoneNumber: phoneNumber,
+                        timestamp: new Date().toISOString(),
+                        details: `Called ${phoneNumber}`
+                    });
+                }
             }
         }
 
         async function sendMessage(contactId) {
             // This would integrate with your messaging system
             showMessage('Messaging feature coming soon!', 'success');
+            
+            // Add to contact history
+            addContactHistory(contactId, 'message_sent', {
+                type: 'message',
+                timestamp: new Date().toISOString(),
+                details: 'Message sent to contact'
+            });
         }
 
-        function exportContacts() {
-            showMessage('Export feature coming soon!', 'success');
+        // ========== Search and Filter Functions ==========
+
+        // Handle search input
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const clearBtn = document.getElementById('clearSearchBtn');
+            
+            // Show/hide clear button
+            clearBtn.style.display = searchTerm ? 'flex' : 'none';
+            
+            // Apply search and filters
+            applySearchAndFilters();
+        }
+
+        // Handle filter changes
+        function handleFilter() {
+            applySearchAndFilters();
+        }
+
+        // Clear search
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            applySearchAndFilters();
+        }
+
+        // Clear all filters
+        function clearAllFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('relationshipFilter').value = '';
+            document.getElementById('emergencyFilter').value = '';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            applySearchAndFilters();
+        }
+
+        // Apply search and filters
+        function applySearchAndFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const relationshipFilter = document.getElementById('relationshipFilter').value;
+            const emergencyFilter = document.getElementById('emergencyFilter').value;
+
+            let filtered = [...allContacts];
+
+            // Apply search filter
+            if (searchTerm) {
+                filtered = filtered.filter(contact => {
+                    return (contact.name && contact.name.toLowerCase().includes(searchTerm)) ||
+                           (contact.phoneNumber && contact.phoneNumber.includes(searchTerm)) ||
+                           (contact.email && contact.email.toLowerCase().includes(searchTerm)) ||
+                           (contact.relationship && contact.relationship.toLowerCase().includes(searchTerm));
+                });
+            }
+
+            // Apply relationship filter
+            if (relationshipFilter) {
+                filtered = filtered.filter(contact => 
+                    contact.relationship && contact.relationship.toLowerCase() === relationshipFilter
+                );
+            }
+
+            // Apply emergency filter
+            if (emergencyFilter === 'emergency') {
+                filtered = filtered.filter(contact => contact.emergencyContact === true);
+            } else if (emergencyFilter === 'normal') {
+                filtered = filtered.filter(contact => contact.emergencyContact !== true);
+            }
+
+            filteredContacts = filtered;
+            displayFilteredContacts(searchTerm);
+        }
+
+        // Display filtered contacts with search highlighting
+        function displayFilteredContacts(searchTerm = '') {
+            const container = document.getElementById('contactsContainer');
+            
+            // Remove any existing filter info
+            const existingInfo = container.querySelector('.filter-result-info');
+            if (existingInfo) {
+                existingInfo.remove();
+            }
+
+            if (filteredContacts.length === 0) {
+                if (allContacts.length === 0) {
+                    displayEmptyState();
+                } else {
+                    // Show no results message
+                    container.innerHTML = `
+                        <div class="filter-result-info">
+                            No matching contacts found (${allContacts.length} total contacts)
+                        </div>
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🔍</div>
+                            <h3>No Results Found</h3>
+                            <p>Try adjusting your search terms or filters</p>
+                            <button class="btn" onclick="clearAllFilters()">Clear All Filters</button>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            // Show filter result info
+            let infoHtml = '';
+            if (filteredContacts.length !== allContacts.length) {
+                infoHtml = `<div class="filter-result-info">Showing ${filteredContacts.length} / ${allContacts.length} contacts</div>`;
+            }
+
+            let html = infoHtml + '<div class="contacts-grid">';
+            filteredContacts.forEach(contact => {
+                html += createContactCard(contact, searchTerm);
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+
+        // ========== Contact History Functions ==========
+
+        // Add contact history entry
+        function addContactHistory(contactId, action, details) {
+            if (!contactHistory[contactId]) {
+                contactHistory[contactId] = [];
+            }
+            
+            contactHistory[contactId].unshift({
+                action: action,
+                timestamp: new Date().toISOString(),
+                details: details
+            });
+            
+            // Keep only last 50 entries per contact
+            if (contactHistory[contactId].length > 50) {
+                contactHistory[contactId] = contactHistory[contactId].slice(0, 50);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('familyContactHistory', JSON.stringify(contactHistory));
+        }
+
+        // Load contact history from localStorage
+        function loadContactHistory() {
+            const saved = localStorage.getItem('familyContactHistory');
+            if (saved) {
+                try {
+                    contactHistory = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Failed to load contact history:', e);
+                    contactHistory = {};
+                }
+            }
+        }
+
+        // Get contact history for display
+        function getContactHistory(contactId) {
+            return contactHistory[contactId] || [];
+        }
+
+        // Format history action for display
+        function formatHistoryAction(action) {
+            const actionMap = {
+                'call': '📞 Phone Call',
+                'message_sent': '💬 Message Sent',
+                'contact_added': '➕ Contact Added',
+                'contact_updated': '✏️ Contact Updated',
+                'contact_deleted': '🗑️ Contact Deleted',
+                'emergency_alert': '🚨 Emergency Alert',
+                'health_alert': '🏥 Health Alert'
+            };
+            return actionMap[action] || action;
+        }
+
+        // Track current history modal contact ID
+        let currentHistoryContactId = null;
+        function viewContactHistory(contactId, contactName) {
+            currentHistoryContactId = contactId;
+            const history = getContactHistory(contactId);
+            document.getElementById('historyModalTitle').textContent = `${contactName}'s Contact History`;
+            
+            const historyContent = document.getElementById('historyContent');
+            
+            if (history.length === 0) {
+                historyContent.innerHTML = `
+                    <div class="history-empty">
+                        <div class="history-empty-icon">📝</div>
+                        <h3>No Contact History</h3>
+                        <p>Interaction records with this contact will appear here</p>
+                    </div>
+                `;
+            } else {
+                let html = '';
+                history.forEach(item => {
+                    const date = new Date(item.timestamp);
+                    const formattedTime = date.toLocaleString('en-US');
+                    
+                    html += `
+                        <div class="history-item">
+                            <div class="history-action">${formatHistoryAction(item.action)}</div>
+                            <div class="history-time">${formattedTime}</div>
+                            <div class="history-details">${item.details.details || 'No details available'}</div>
+                        </div>
+                    `;
+                });
+                historyContent.innerHTML = html;
+            }
+            
+            resetModalPosition('historyModal');
+            document.getElementById('historyModal').style.display = 'block';
+        }
+
+        // Close history modal
+        function closeHistoryModal() {
+            document.getElementById('historyModal').style.display = 'none';
+            currentHistoryContactId = null; // Clear the current contact ID
+        }
+
+        // Get current history contact ID
+        function getCurrentHistoryContactId() {
+            return currentHistoryContactId;
+        }
+
+        // Update clearContactHistory function
+        function clearContactHistory() {
+            const contactId = getCurrentHistoryContactId();
+            if (contactId && confirm('Are you sure you want to clear all history records for this contact?')) {
+                delete contactHistory[contactId];
+                localStorage.setItem('familyContactHistory', JSON.stringify(contactHistory));
+                showMessage('Contact history cleared successfully', 'success');
+                closeHistoryModal();
+                // Refresh display if needed
+                if (filteredContacts.length > 0) {
+                    applySearchAndFilters();
+                }
+            }
         }
 
         // Close modals when clicking outside
         window.onclick = function(event) {
             const contactModal = document.getElementById('contactModal');
             const deleteModal = document.getElementById('deleteModal');
+            const historyModal = document.getElementById('historyModal');
             
             if (event.target === contactModal) {
                 closeContactModal();
             }
             if (event.target === deleteModal) {
                 closeDeleteModal();
+            }
+            if (event.target === historyModal) {
+                closeHistoryModal();
             }
         }
     </script>
