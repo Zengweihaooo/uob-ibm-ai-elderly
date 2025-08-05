@@ -691,6 +691,58 @@
             font-size: 3rem;
             margin-bottom: 15px;
         }
+
+        /* Message Modal Styles */
+        .template-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .template-btn {
+            background: var(--elderly-light);
+            border: 2px solid var(--elderly-border);
+            color: var(--elderly-dark);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .template-btn:hover {
+            background: var(--elderly-primary);
+            color: white;
+            border-color: var(--elderly-primary);
+        }
+
+        .message-preview {
+            background: var(--elderly-light);
+            border: 2px solid var(--elderly-border);
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 60px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .message-preview.has-content {
+            color: var(--elderly-dark);
+            font-style: normal;
+        }
+
+        .form-input[type="textarea"] {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        @media (max-width: 768px) {
+            .template-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -917,6 +969,67 @@
         </div>
     </div>
 
+    <!-- Send Message Modal -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="messageModalTitle">Send Message</h2>
+                <button class="close-btn" onclick="closeMessageModal()">&times;</button>
+            </div>
+            <form id="messageForm" novalidate>
+                <div class="form-group">
+                    <label class="form-label" for="messageType">Message Type</label>
+                    <select id="messageType" class="form-select">
+                        <option value="general">💬 General Message</option>
+                        <option value="emergency">🚨 Emergency</option>
+                        <option value="health_alert">🏥 Health Alert</option>
+                        <option value="daily_summary">📋 Daily Summary</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="messageContent">Message Content</label>
+                    <textarea id="messageContent" class="form-input" rows="4" placeholder="Enter your message here..." required></textarea>
+                </div>
+
+                <!-- Quick Message Templates -->
+                <div class="form-group">
+                    <label class="form-label">Quick Templates</label>
+                    <div class="template-buttons">
+                        <button type="button" class="template-btn" onclick="useTemplate('Hello! How are you doing today?')">
+                            👋 Greeting
+                        </button>
+                        <button type="button" class="template-btn" onclick="useTemplate('I need some help. Please contact me when you can.')">
+                            🆘 Need Help
+                        </button>
+                        <button type="button" class="template-btn" onclick="useTemplate('Just wanted to let you know I am doing well today.')">
+                            ✅ I am OK
+                        </button>
+                        <button type="button" class="template-btn" onclick="useTemplate('Could you please call me when you have time?')">
+                            📞 Call Request
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Message Preview -->
+                <div class="form-group">
+                    <label class="form-label">Preview</label>
+                    <div id="messagePreview" class="message-preview">
+                        Your message will appear here...
+                    </div>
+                </div>
+
+                <!-- Modal Message Display -->
+                <div id="messageModalMessageContainer"></div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-success">📤 Send Message</button>
+                    <button type="button" class="btn" onclick="closeMessageModal()">❌ Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Contact History Modal -->
     <div id="historyModal" class="modal">
         <div class="modal-content">
@@ -954,6 +1067,63 @@
             loadFamilyContacts();
             loadStatistics();
             initializeDragFunctionality();
+            
+            // Add event listeners for message modal
+            document.getElementById('messageContent').addEventListener('input', updateMessagePreview);
+            document.getElementById('messageType').addEventListener('change', updateMessagePreview);
+            
+            // Handle message form submission
+            document.getElementById('messageForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const messageContent = document.getElementById('messageContent').value.trim();
+                const messageType = document.getElementById('messageType').value;
+                
+                if (!messageContent) {
+                    showMessageModalMessage('Please enter a message.', 'error');
+                    return;
+                }
+                
+                if (!currentMessageContactId) {
+                    showMessageModalMessage('No contact selected.', 'error');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE}/contacts/${currentMessageContactId}/message`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer demo-token-' + Date.now()
+                        },
+                        body: JSON.stringify({
+                            message: messageContent,
+                            type: messageType
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        showMessage(`Message sent successfully to ${currentMessageContactName}!`, 'success');
+                        addContactHistory(currentMessageContactId, 'message_sent', {
+                            type: 'message',
+                            timestamp: new Date().toISOString(),
+                            details: `Sent ${messageType}: "${messageContent}"`
+                        });
+                        closeMessageModal();
+                        
+                        // Refresh contacts to update last contact time
+                        if (filteredContacts.length > 0) {
+                            applySearchAndFilters();
+                        }
+                    } else {
+                        showMessageModalMessage('Failed to send message: ' + data.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    showMessageModalMessage('Error sending message. Please check if the backend is running.', 'error');
+                }
+            });
         });
 
         // Drag functionality for modals
@@ -1235,7 +1405,7 @@
         // Load statistics
         async function loadStatistics() {
             try {
-                const response = await fetch(`${API_BASE}/statistics`, {
+                const response = await fetch(`${API_BASE}/stats`, {
                     headers: {
                         'Authorization': 'Bearer demo-token-' + Date.now()
                     }
@@ -1244,7 +1414,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success) {
-                        const stats = data.statistics;
+                        const stats = data.stats;
                         document.getElementById('totalContacts').textContent = stats.totalContacts || 0;
                         document.getElementById('emergencyContacts').textContent = stats.emergencyContacts || 0;
                         document.getElementById('recentMessages').textContent = stats.recentMessages || 0;
@@ -1475,16 +1645,76 @@
             }
         }
 
+        // Global variable for current message contact
+        let currentMessageContactId = null;
+        let currentMessageContactName = null;
+
         async function sendMessage(contactId) {
-            // This would integrate with your messaging system
-            showMessage('Messaging feature coming soon!', 'success');
+            // Find contact name
+            const contact = allContacts.find(c => c.id === contactId);
+            currentMessageContactId = contactId;
+            currentMessageContactName = contact ? contact.name : 'Unknown Contact';
             
-            // Add to contact history
-            addContactHistory(contactId, 'message_sent', {
-                type: 'message',
-                timestamp: new Date().toISOString(),
-                details: 'Message sent to contact'
-            });
+            // Update modal title
+            document.getElementById('messageModalTitle').textContent = `Send Message to ${currentMessageContactName}`;
+            
+            // Reset form
+            document.getElementById('messageForm').reset();
+            document.getElementById('messageModalMessageContainer').innerHTML = '';
+            
+            // Reset preview
+            updateMessagePreview();
+            
+            // Show modal
+            resetModalPosition('messageModal');
+            document.getElementById('messageModal').style.display = 'block';
+        }
+
+        // Close message modal
+        function closeMessageModal() {
+            document.getElementById('messageModal').style.display = 'none';
+            currentMessageContactId = null;
+            currentMessageContactName = null;
+        }
+
+        // Use template message
+        function useTemplate(templateText) {
+            document.getElementById('messageContent').value = templateText;
+            updateMessagePreview();
+        }
+
+        // Update message preview
+        function updateMessagePreview() {
+            const messageContent = document.getElementById('messageContent').value;
+            const messageType = document.getElementById('messageType').value;
+            const preview = document.getElementById('messagePreview');
+            
+            if (messageContent.trim()) {
+                const typeEmoji = {
+                    'general': '💬',
+                    'emergency': '🚨',
+                    'health_alert': '🏥',
+                    'daily_summary': '📋'
+                };
+                
+                preview.innerHTML = `
+                    <strong>${typeEmoji[messageType]} ${messageType.charAt(0).toUpperCase() + messageType.slice(1).replace('_', ' ')}</strong><br>
+                    <span>${messageContent}</span>
+                `;
+                preview.classList.add('has-content');
+            } else {
+                preview.textContent = 'Your message will appear here...';
+                preview.classList.remove('has-content');
+            }
+        }
+
+        // Show message inside message modal
+        function showMessageModalMessage(message, type = 'success') {
+            const container = document.getElementById('messageModalMessageContainer');
+            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
         }
 
         // ========== Search and Filter Functions ==========
@@ -1727,6 +1957,7 @@
             const contactModal = document.getElementById('contactModal');
             const deleteModal = document.getElementById('deleteModal');
             const historyModal = document.getElementById('historyModal');
+            const messageModal = document.getElementById('messageModal');
             
             if (event.target === contactModal) {
                 closeContactModal();
@@ -1736,6 +1967,9 @@
             }
             if (event.target === historyModal) {
                 closeHistoryModal();
+            }
+            if (event.target === messageModal) {
+                closeMessageModal();
             }
         }
     </script>
