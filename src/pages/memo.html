@@ -923,6 +923,9 @@
         // 查看加密备忘录
         function viewEncryptedMemo(memoId) {
             currentMemoId = memoId;
+            // 清空PIN码输入框
+            const pinInputs = document.querySelectorAll('#verifyPinModal .pin-digit');
+            pinInputs.forEach(input => input.value = '');
             showModal('verifyPinModal');
         }
 
@@ -1000,6 +1003,9 @@
 
         // 显示PIN码设置模态框
         function showPinModal() {
+            // 清空PIN码输入框
+            const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
+            pinInputs.forEach(input => input.value = '');
             showModal('pinModal');
         }
 
@@ -1011,6 +1017,11 @@
         // 关闭模态框
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
+            // 如果是PIN码相关模态框，清空输入框
+            if (modalId === 'pinModal' || modalId === 'verifyPinModal') {
+                const pinInputs = document.querySelectorAll(`#${modalId} .pin-digit`);
+                pinInputs.forEach(input => input.value = '');
+            }
         }
 
         // 显示加载状态
@@ -1046,6 +1057,11 @@
             modals.forEach(modal => {
                 if (event.target === modal) {
                     modal.style.display = 'none';
+                    // 如果是PIN码相关模态框，清空输入框
+                    if (modal.id === 'pinModal' || modal.id === 'verifyPinModal') {
+                        const pinInputs = modal.querySelectorAll('.pin-digit');
+                        pinInputs.forEach(input => input.value = '');
+                    }
                 }
             });
         }
