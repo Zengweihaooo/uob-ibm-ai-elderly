@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重要日期功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>重要日期功能测试</h1>
+    
+    <div class="test-section">
+        <h2>功能概述</h2>
+        <p>已在 <code>schedule.html</code> 页面中添加了重要日期管理功能，包括：</p>
+        <ul>
+            <li>✅ 重要日期导航标签</li>
+            <li>✅ 重要日期统计面板</li>
+            <li>✅ 重要日期列表显示</li>
+            <li>✅ 添加重要日期表单</li>
+            <li>✅ 编辑重要日期表单</li>
+            <li>✅ 重要日期类型筛选</li>
+            <li>✅ 重要日期启用/禁用功能</li>
+            <li>✅ 重要日期删除功能</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>后端API支持</h2>
+        <p>后端已提供完整的重要日期API：</p>
+        <ul>
+            <li>✅ <code>POST /api/important-dates/add</code> - 添加重要日期</li>
+            <li>✅ <code>GET /api/important-dates/all</code> - 获取所有重要日期</li>
+            <li>✅ <code>GET /api/important-dates/type/{type}</code> - 按类型获取重要日期</li>
+            <li>✅ <code>GET /api/important-dates/upcoming</code> - 获取即将到来的重要日期</li>
+            <li>✅ <code>GET /api/important-dates/today</code> - 获取今天的重要日期</li>
+            <li>✅ <code>PUT /api/important-dates/{id}</code> - 更新重要日期</li>
+            <li>✅ <code>DELETE /api/important-dates/{id}</code> - 删除重要日期</li>
+            <li>✅ <code>PUT /api/important-dates/{id}/toggle</code> - 切换重要日期状态</li>
+            <li>✅ <code>GET /api/important-dates/stats</code> - 获取重要日期统计</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>前端功能特性</h2>
+        <ul>
+            <li>✅ 支持生日、纪念日、节日、自定义四种类型</li>
+            <li>✅ 实时统计显示（总数、各类型数量、即将到来、今天）</li>
+            <li>✅ 按类型筛选功能</li>
+            <li>✅ 响应式设计，适配老年用户</li>
+            <li>✅ 演示模式支持（离线时使用示例数据）</li>
+            <li>✅ 中文界面，符合老年用户习惯</li>
+            <li>✅ 大字体、高对比度设计</li>
+            <li>✅ 直观的图标和颜色编码</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>使用方法</h2>
+        <ol>
+            <li>打开 <code>schedule.html</code> 页面</li>
+            <li>点击底部导航栏的"🎉 重要日期"标签</li>
+            <li>查看重要日期统计信息</li>
+            <li>点击"➕ 添加重要日期"按钮添加新的重要日期</li>
+            <li>使用筛选按钮按类型查看重要日期</li>
+            <li>点击重要日期项目进行编辑</li>
+            <li>使用操作按钮启用/禁用或删除重要日期</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>设计特点</h2>
+        <ul>
+            <li>🎨 与现有页面保持统一的设计风格</li>
+            <li>👴 专为老年用户优化的界面设计</li>
+            <li>📱 响应式布局，支持各种设备</li>
+            <li>🔔 直观的提醒和状态显示</li>
+            <li>🎯 简单易用的操作流程</li>
+            <li>💾 支持在线和离线模式</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>测试建议</h2>
+        <ol>
+            <li>启动Spring Boot后端服务</li>
+            <li>在浏览器中打开 <code>schedule.html</code></li>
+            <li>切换到"重要日期"标签</li>
+            <li>测试添加、编辑、删除功能</li>
+            <li>测试筛选功能</li>
+            <li>测试统计信息显示</li>
+            <li>测试响应式布局</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>注意事项</h2>
+        <ul>
+            <li>⚠️ 需要启动后端服务才能使用完整功能</li>
+            <li>⚠️ 演示模式使用本地数据，不会保存到服务器</li>
+            <li>⚠️ 确保浏览器支持现代JavaScript特性</li>
+            <li>⚠️ 建议在Chrome或Firefox浏览器中测试</li>
+        </ul>
+    </div>
+
+    <script>
+        console.log('重要日期功能测试页面已加载');
+        console.log('请访问 schedule.html 页面测试重要日期功能');
+    </script>
+</body>
+</html> 
