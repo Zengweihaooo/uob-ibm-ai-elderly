@@ -614,20 +614,20 @@
     </div>
 
     <script>
-        // 全局变量
+        // Global variables
         let currentMemos = [];
         let currentMemoId = null;
         let currentPinCode = '';
 
-        // 页面加载完成后初始化
+        // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             loadMemos();
             setupEventListeners();
         });
 
-        // 设置事件监听器
+        // Setup event listeners
         function setupEventListeners() {
-            // 搜索功能
+            // Search functionality
             document.getElementById('searchInput').addEventListener('input', function() {
                 const keyword = this.value.trim();
                 if (keyword) {
@@ -637,29 +637,29 @@
                 }
             });
 
-            // 备忘录表单提交
+            // Memo form submission
             document.getElementById('memoForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 saveMemo();
             });
 
-            // PIN码表单提交
+            // PIN code form submission
             document.getElementById('pinForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 setPinCode();
             });
 
-            // PIN码验证表单提交
+            // PIN code verification form submission
             document.getElementById('verifyPinForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 verifyPinCode();
             });
 
-            // PIN码输入框自动跳转
+            // PIN input auto-focus
             setupPinInputs();
         }
 
-        // 设置PIN码输入框
+        // Setup PIN input fields
         function setupPinInputs() {
             const pinInputs = document.querySelectorAll('.pin-digit');
             pinInputs.forEach((input, index) => {
@@ -677,7 +677,7 @@
             });
         }
 
-        // 加载备忘录列表
+        // Load memo list
         async function loadMemos() {
             try {
                 showLoading();
@@ -695,14 +695,14 @@
                     displayMemos(currentMemos);
                     loadStatistics();
                 } else {
-                    showError('加载备忘录失败: ' + data.message);
+                    showError('Failed to load memos: ' + data.message);
                 }
             } catch (error) {
-                showError('网络错误: ' + error.message);
+                showError('Network error: ' + error.message);
             }
         }
 
-        // 显示备忘录列表
+        // Display memo list
         function displayMemos(memos) {
             const memoList = document.getElementById('memoList');
             
@@ -729,7 +729,7 @@
             memoList.appendChild(memoGrid);
         }
 
-        // 创建备忘录卡片
+        // Create memo card
         function createMemoCard(memo) {
             const card = document.createElement('div');
             card.className = `memo-card ${memo.encrypted ? 'encrypted' : ''}`;
@@ -760,7 +760,7 @@
             return card;
         }
 
-        // 加载统计信息
+        // Load statistics
         async function loadStatistics() {
             try {
                 const response = await fetch('http://localhost:8080/api/memo/statistics', {
@@ -776,11 +776,11 @@
                     displayStatistics(data.statistics);
                 }
             } catch (error) {
-                console.error('加载统计信息失败:', error);
+                console.error('Failed to load statistics:', error);
             }
         }
 
-        // 显示统计信息
+        // Display statistics
         function displayStatistics(stats) {
             const statsContainer = document.getElementById('statsContainer');
             const statsGrid = document.getElementById('statsGrid');
@@ -807,7 +807,7 @@
             statsContainer.style.display = 'block';
         }
 
-        // 搜索备忘录
+        // Search memos
         async function searchMemos(keyword) {
             try {
                 showLoading();
@@ -824,14 +824,14 @@
                     currentMemos = data.memos || [];
                     displayMemos(currentMemos);
                 } else {
-                    showError('搜索失败: ' + data.message);
+                    showError('Search failed: ' + data.message);
                 }
             } catch (error) {
-                showError('网络错误: ' + error.message);
+                showError('Network error: ' + error.message);
             }
         }
 
-        // 显示创建备忘录模态框
+        // Show create memo modal
         function showCreateModal() {
             document.getElementById('modalTitle').textContent = 'New Memo';
             document.getElementById('memoForm').reset();
@@ -839,7 +839,7 @@
             showModal('memoModal');
         }
 
-        // 显示编辑备忘录模态框
+        // Show edit memo modal
         function editMemo(memoId) {
             const memo = currentMemos.find(m => m.id === memoId);
             if (!memo) return;
@@ -852,7 +852,7 @@
             showModal('memoModal');
         }
 
-        // 保存备忘录
+        // Save memo
         async function saveMemo() {
             const title = document.getElementById('memoTitle').value.trim();
             const content = document.getElementById('memoContent').value.trim();
@@ -889,11 +889,11 @@
                     showError(data.message);
                 }
             } catch (error) {
-                showError('保存失败: ' + error.message);
+                showError('Save failed: ' + error.message);
             }
         }
 
-        // 删除备忘录
+        // Delete memo
         async function deleteMemo(memoId) {
             if (!confirm('Are you sure you want to delete this memo?')) {
                 return;
@@ -916,17 +916,17 @@
                     showError(data.message);
                 }
             } catch (error) {
-                showError('删除失败: ' + error.message);
+                showError('Delete failed: ' + error.message);
             }
         }
 
-        // 查看加密备忘录
+        // View encrypted memo
         function viewEncryptedMemo(memoId) {
             currentMemoId = memoId;
             showModal('verifyPinModal');
         }
 
-        // 验证PIN码
+        // Verify PIN code
         async function verifyPinCode() {
             const pinInputs = document.querySelectorAll('#verifyPinModal .pin-digit');
             const pinCode = Array.from(pinInputs).map(input => input.value).join('');
@@ -952,17 +952,17 @@
                 if (data.success) {
                     closeModal('verifyPinModal');
                     alert(`Memo content:\n\n${data.content}`);
-                    // 清空PIN码输入框
+                    // Clear PIN input fields
                     pinInputs.forEach(input => input.value = '');
                 } else {
                     showError(data.message);
                 }
             } catch (error) {
-                showError('验证失败: ' + error.message);
+                showError('Verification failed: ' + error.message);
             }
         }
 
-        // 设置PIN码
+        // Set PIN code
         async function setPinCode() {
             const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
             const pinCode = Array.from(pinInputs).map(input => input.value).join('');
@@ -988,59 +988,59 @@
                 if (data.success) {
                     closeModal('pinModal');
                     showSuccess('PIN code set successfully');
-                    // 清空PIN码输入框
+                    // Clear PIN input fields
                     pinInputs.forEach(input => input.value = '');
                 } else {
                     showError(data.message);
                 }
             } catch (error) {
-                showError('设置失败: ' + error.message);
+                showError('Setup failed: ' + error.message);
             }
         }
 
-        // 显示PIN码设置模态框
+        // Show PIN code setup modal
         function showPinModal() {
             showModal('pinModal');
         }
 
-        // 显示模态框
+        // Show modal
         function showModal(modalId) {
             document.getElementById(modalId).style.display = 'block';
         }
 
-        // 关闭模态框
+        // Close modal
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
 
-        // 显示加载状态
+        // Show loading state
         function showLoading() {
             document.getElementById('memoList').innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>正在加载...</p>
+                    <p>Loading...</p>
                 </div>
             `;
         }
 
-        // 显示成功消息
+        // Show success message
         function showSuccess(message) {
             alert(message); // 简单实现，可以改为更美观的提示
         }
 
-        // 显示错误消息
+        // Show error message
         function showError(message) {
             alert('Error: ' + message); // 简单实现，可以改为更美观的提示
         }
 
-        // HTML转义
+        // HTML escape
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // 点击模态框外部关闭
+        // Close modal when clicking outside
         window.onclick = function(event) {
             const modals = document.querySelectorAll('.modal');
             modals.forEach(modal => {
