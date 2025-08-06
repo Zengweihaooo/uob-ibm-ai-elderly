@@ -518,5 +518,23 @@ public class FamilyService {
         }
     }
     
-    // ========== 新增功能结束 ==========
+    
+    /**
+     * If the user does not submit health/schedule data, notify their family contacts
+     */
+    public int notifyFamilyIfNoSubmission(Long userId, boolean isHealthCheck) {
+        String type = isHealthCheck ? "health" : "schedule";
+        String message = isHealthCheck
+            ? "Your family member has not submitted their health data yet today. Please pay attention to their status."
+            : "Your family member has not submitted their schedule yet today. Please pay attention to their status.";
+
+        int notified = 0;
+        for (FamilyContact contact : getFamilyContacts(userId)) {
+            if (contact.getEmail() != null) {
+                emailService.sendHealthAlertEmail(contact.getEmail(), "Notification - " + type, message);
+                notified++;
+            }
+        }
+        return notified;
+    }
 }

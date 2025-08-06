@@ -33,11 +33,15 @@ public class ScheduleMonitorService {
     @Autowired
     private SmsService smsService;
 
+    @Autowired
+    private FamilyService familyService;
+
     @Scheduled(cron = "0 0 9 * * ?") // Check the health data every morning at 9 am
     public void checkHealthSubmission() {
         List<User> users = healthService.getUsersWithoutTodayHealthLog();
         for (User user : users) {
             sendMultiChannelReminder(user, "health_check");
+            familyService.notifyFamilyIfNoSubmission(user.getId(),true);
         }
     }
 
@@ -46,6 +50,7 @@ public class ScheduleMonitorService {
         List<User> users = scheduleService.getUsersWithoutTodaySchedule();
         for (User user : users) {
             sendMultiChannelReminder(user, "schedule_check");
+            familyService.notifyFamilyIfNoSubmission(user.getId(),false);
         }
     }
 
