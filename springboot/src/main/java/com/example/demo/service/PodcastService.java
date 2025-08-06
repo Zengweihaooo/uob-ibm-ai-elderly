@@ -238,34 +238,46 @@ public class PodcastService {
      */
     public Map<String, Object> getTrendingPodcasts(String region) {
         try {
-            // 构建获取热门播客的API URL
-            String url = LISTEN_NOTES_API_BASE_URL + "/podcasts/trending";
+            // 由于Listen Notes API的trending端点可能不存在，我们使用搜索来获取热门播客
+            // 使用一些热门关键词来模拟trending功能
+            String[] trendingKeywords = {"news", "technology", "health", "business", "entertainment"};
             
-            // 构建查询参数
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+            List<Podcast> allTrendingPodcasts = new ArrayList<>();
             
-            // 如果提供了地区参数，添加到查询参数
-            if (region != null && !region.isEmpty()) {
-                builder.queryParam("region", region);
+            // 对每个热门关键词进行搜索
+            for (String keyword : trendingKeywords) {
+                try {
+                    Map<String, Object> searchResult = searchPodcasts(keyword, null, region, "relevance", null);
+                    if ((Boolean) searchResult.get("success")) {
+                        @SuppressWarnings("unchecked")
+                        List<Podcast> podcasts = (List<Podcast>) searchResult.get("podcasts");
+                        if (podcasts != null && !podcasts.isEmpty()) {
+                            // 只取前2个结果，避免重复
+                            allTrendingPodcasts.addAll(podcasts.subList(0, Math.min(2, podcasts.size())));
+                        }
+                    }
+                } catch (Exception e) {
+                    // 继续处理下一个关键词
+                    continue;
+                }
             }
-
-            // 设置HTTP请求头
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("X-ListenAPI-Key", API_TOKEN);
             
-            // 创建HTTP请求实体
-            HttpEntity<String> entity = new HttpEntity<>(headers);
+            // 去重并限制结果数量
+            List<Podcast> uniquePodcasts = new ArrayList<>();
+            for (Podcast podcast : allTrendingPodcasts) {
+                if (uniquePodcasts.stream().noneMatch(p -> p.getId().equals(podcast.getId()))) {
+                    uniquePodcasts.add(podcast);
+                    if (uniquePodcasts.size() >= 10) break; // 限制最多10个
+                }
+            }
             
-            // 发送GET请求
-            ResponseEntity<String> response = restTemplate.exchange(
-                    builder.toUriString(),
-                    HttpMethod.GET,
-                    entity,
-                    String.class
-            );
-
-            // 解析热门播客响应
-            return parseTrendingResponse(response.getBody());
+            // 构建成功响应
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("trendingPodcasts", uniquePodcasts);
+            result.put("totalTrending", uniquePodcasts.size());
+            
+            return result;
             
         } catch (Exception e) {
             // 处理异常
@@ -539,14 +551,49 @@ public class PodcastService {
      */
     public Map<String, Object> getElderlyPodcastRecommendations() {
         try {
-            // 为老年人定制的播客推荐
-            List<String> elderlyInterests = List.of(
-                "health", "wellness", "meditation", "memory", "exercise", 
-                "nutrition", "aging", "family", "hobbies", "travel", 
-                "history", "classical music", "gardening", "cooking"
-            );
+            // 为老年人定制的播客推荐关键词
+            String[] elderlyKeywords = {
+                "health and wellness", "meditation", "classical music", "history", 
+                "gardening", "cooking", "travel stories", "inspirational stories", 
+                "memory exercises", "relaxation", "aging gracefully", "family stories"
+            };
             
-            return getPodcastRecommendations(elderlyInterests);
+            List<Podcast> allElderlyPodcasts = new ArrayList<>();
+            
+            // 对每个老年用户感兴趣的关键词进行搜索
+            for (String keyword : elderlyKeywords) {
+                try {
+                    Map<String, Object> searchResult = searchPodcasts(keyword, "en", null, "relevance", null);
+                    if ((Boolean) searchResult.get("success")) {
+                        @SuppressWarnings("unchecked")
+                        List<Podcast> podcasts = (List<Podcast>) searchResult.get("podcasts");
+                        if (podcasts != null && !podcasts.isEmpty()) {
+                            // 只取前1个结果，避免重复
+                            allElderlyPodcasts.addAll(podcasts.subList(0, Math.min(1, podcasts.size())));
+                        }
+                    }
+                } catch (Exception e) {
+                    // 继续处理下一个关键词
+                    continue;
+                }
+            }
+            
+            // 去重并限制结果数量
+            List<Podcast> uniquePodcasts = new ArrayList<>();
+            for (Podcast podcast : allElderlyPodcasts) {
+                if (uniquePodcasts.stream().noneMatch(p -> p.getId().equals(podcast.getId()))) {
+                    uniquePodcasts.add(podcast);
+                    if (uniquePodcasts.size() >= 8) break; // 限制最多8个
+                }
+            }
+            
+            // 构建成功响应
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("recommendations", uniquePodcasts);
+            result.put("totalRecommendations", uniquePodcasts.size());
+            
+            return result;
             
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
