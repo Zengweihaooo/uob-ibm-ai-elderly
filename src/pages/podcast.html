@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podcast - UOB-IBM AI Elderly Project</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --podcast-primary: #8B5CF6;
+            --podcast-secondary: #A78BFA;
+            --podcast-light: #F3F4F6;
+            --podcast-dark: #1F2937;
+            --podcast-accent: #EC4899;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .podcast-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .podcast-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .podcast-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .podcast-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .player-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .current-episode {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .episode-cover {
+            width: 120px;
+            height: 120px;
+            border-radius: 15px;
+            object-fit: cover;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .episode-info h3 {
+            margin: 0 0 15px 0;
+            color: var(--podcast-dark);
+            font-size: 1.4rem;
+        }
+
+        .episode-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .play-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: var(--podcast-primary);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .play-btn:hover {
+            background: var(--podcast-secondary);
+            transform: scale(1.05);
+        }
+
+        .play-btn.playing {
+            background: var(--podcast-accent);
+        }
+
+        .progress-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--podcast-primary);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .volume-slider {
+            width: 100px;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .volume-fill {
+            height: 100%;
+            background: var(--podcast-primary);
+            border-radius: 2px;
+            width: 70%;
+        }
+
+        .podcast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .podcast-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 350px; /* 统一卡片高度 */
+        }
+
+        .podcast-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .podcast-card:active {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .card-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--podcast-dark);
+            flex: 1;
+            display: flex;
+            align-items: center;
+            line-height: 1.4;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .card-duration {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .podcast-name {
+            font-weight: 500;
+            color: var(--podcast-primary);
+        }
+        
+        .episode-duration {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--podcast-dark);
+        }
+        
+        .search-status {
+            background: var(--podcast-primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+        
+        .search-indicator {
+            font-size: 1.2rem;
+        }
+
+        .category-tags {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .category-tag {
+            padding: 8px 16px;
+            background: var(--podcast-light);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--podcast-dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .category-tag:hover,
+        .category-tag.active {
+            background: var(--podcast-primary);
+            color: white;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--podcast-primary);
+        }
+        
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .search-input {
+            flex: 1;
+            width: auto;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-btn {
+            background: var(--podcast-primary);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+        }
+        
+        .search-btn:hover {
+            background: var(--podcast-secondary);
+            transform: scale(1.05);
+        }
+        
+        .search-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Fixed bottom navigation bar */
+        .bottom-navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 3px solid var(--podcast-primary);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 20px;
+            box-shadow: 0 -4px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-tab {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+            font-family: inherit;
+        }
+
+        .nav-tab:hover {
+            background: var(--podcast-light);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: var(--podcast-primary);
+            color: white;
+        }
+
+        .nav-tab.active .nav-icon {
+            transform: scale(1.2);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--podcast-dark);
+        }
+
+        .nav-tab.active .nav-label {
+            color: white;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .podcast-container {
+                padding: 15px;
+            }
+
+            .podcast-header h1 {
+                font-size: 2rem;
+            }
+
+            .current-episode {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .episode-cover {
+                width: 100px;
+                height: 100px;
+            }
+
+            .podcast-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-tab {
+                min-width: 60px;
+                padding: 8px 10px;
+            }
+            
+            .nav-icon {
+                font-size: 1.3rem;
+            }
+            
+            .nav-label {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="podcast-container">
+        <!-- Header -->
+        <div class="podcast-header">
+            <h1>🎧 Smart Podcast</h1>
+            <p>Health and lifestyle podcasts tailored for elderly</p>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search podcast content..." id="searchInput">
+                <button class="search-btn" id="searchBtn" onclick="performSearch()">🔍</button>
+            </div>
+        </div>
+
+        <!-- Category Tags -->
+        <div class="category-tags" id="categoryTags">
+            <span class="category-tag active" data-category="health">Health & Wellness</span>
+            <span class="category-tag" data-category="exercise">Exercise & Fitness</span>
+            <span class="category-tag" data-category="nutrition">Nutrition & Diet</span>
+            <span class="category-tag" data-category="mental">Mental Health</span>
+            <span class="category-tag" data-category="technology">Technology</span>
+        </div>
+        
+        <!-- Search Status Indicator -->
+        <div class="search-status" id="searchStatus" style="display: none;">
+            <span class="search-indicator">🔍</span>
+            <span class="search-text">Searching episodes...</span>
+        </div>
+
+        <!-- Player Section -->
+        <div class="player-section">
+            <div class="current-episode">
+                <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=120&h=120&fit=crop&crop=center" alt="Podcast Cover" class="episode-cover" id="currentCover">
+                <div class="episode-info">
+                    <h3 id="currentTitle">Healthy Living Guide - Episode 1</h3>
+                    <div class="episode-meta">
+                        <!-- 元数据信息已移除 -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="audio-controls">
+                <button class="play-btn" id="playBtn">▶️</button>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="time-display">
+                        <span id="currentTime">00:00</span>
+                        <span id="totalTime">25:30</span>
+                    </div>
+                </div>
+                <div class="volume-control">
+                    <span>🔊</span>
+                    <div class="volume-slider" id="volumeSlider">
+                        <div class="volume-fill" id="volumeFill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Podcast Grid -->
+        <div class="podcast-grid" id="podcastGrid">
+            <!-- 播客卡片将在这里生成 -->
+        </div>
+    </div>
+
+    <!-- Fixed bottom navigation bar -->
+    <div class="bottom-navigation">
+        <button class="nav-tab" onclick="window.location.href='schedule.html'">
+            <span class="nav-icon">📅</span>
+            <span class="nav-label">Schedule</span>
+        </button>
+        <button class="nav-tab" onclick="window.location.href='schedule.html#important-dates'">
+            <span class="nav-icon">🎉</span>
+            <span class="nav-label">Important Dates</span>
+        </button>
+        <button class="nav-tab" onclick="window.location.href='ai-assistant.html'">
+            <span class="nav-icon">🤖</span>
+            <span class="nav-label">AI Assistant</span>
+        </button>
+        <button class="nav-tab" onclick="window.location.href='schedule.html#pet'">
+            <span class="nav-icon">🐱</span>
+            <span class="nav-label">Virtual Pet</span>
+        </button>
+        <button class="nav-tab" onclick="window.location.href='family.html'">
+            <span class="nav-icon">👪</span>
+            <span class="nav-label">Family</span>
+        </button>
+        <button class="nav-tab" onclick="window.location.href='memo.html'">
+            <span class="nav-icon">📝</span>
+            <span class="nav-label">Memo</span>
+        </button>
+        <button class="nav-tab active">
+            <span class="nav-icon">🎧</span>
+            <span class="nav-label">Podcast</span>
+        </button>
+    </div>
+
+    <script>
+        // Listen Notes API 配置
+        const LISTEN_NOTES_API_KEY = 'a3432f0d55d940e3bbe3d18f7acdeea6';
+        const LISTEN_NOTES_BASE_URL = 'https://listen-api.listennotes.com/api/v2';
+        
+        // 播客数据存储
+        let podcasts = [];
+        let searchResults = []; // 搜索结果存储
+        let currentPodcast = null;
+        let currentEpisode = null;
+        let isPlaying = false;
+        let currentTime = 0;
+        let totalTime = 0;
+        let currentCategory = 'health';
+        let isLoading = false;
+        let audioPlayer = null;
+        let isSearchMode = false; // 是否处于搜索模式
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            initializeAudioPlayer();
+            loadPodcasts(); // 从API加载播客数据
+        });
+
+        // 执行搜索功能
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            
+            // 如果搜索词为空，显示分类播客
+            if (searchTerm === '') {
+                isSearchMode = false;
+                document.getElementById('searchStatus').style.display = 'none';
+                document.getElementById('categoryTags').style.display = 'flex';
+                renderPodcasts();
+                return;
+            }
+            
+            // 立即执行搜索
+            if (searchTerm.length >= 2) {
+                searchEpisodes(searchTerm);
+            } else {
+                alert('Please enter at least 2 characters to search.');
+            }
+        }
+        
+        // 搜索剧集功能
+        async function searchEpisodes(searchTerm) {
+            if (isLoading) return;
+            
+            isLoading = true;
+            isSearchMode = true;
+            
+            // 显示搜索状态
+            document.getElementById('searchStatus').style.display = 'flex';
+            document.getElementById('searchStatus').querySelector('.search-text').textContent = `Searching for "${searchTerm}"...`;
+            document.getElementById('categoryTags').style.display = 'none';
+            
+            showLoadingState();
+            
+            try {
+                console.log('Searching for episodes with term:', searchTerm);
+                
+                // 调用ListenNotes API搜索剧集
+                const response = await fetch(`${LISTEN_NOTES_BASE_URL}/search?q=${encodeURIComponent(searchTerm)}&type=episode&language=en&limit=20`, {
+                    headers: {
+                        'X-ListenAPI-Key': LISTEN_NOTES_API_KEY
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Search API request failed: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log(`Search returned ${data.results.length} episodes`);
+                
+                // 转换搜索结果
+                searchResults = data.results.map(episode => ({
+                    id: episode.id,
+                    title: episode.title_original,
+                    description: stripHtmlTags(episode.description_original),
+                    duration: formatDuration(episode.audio_length_sec),
+                    image: episode.image,
+                    audio: episode.audio,
+                    podcast_title: episode.podcast_title_original,
+                    publisher: episode.publisher_original,
+                    pub_date: formatDate(episode.pub_date_ms),
+                    listennotes_url: episode.listennotes_url,
+                    isEpisode: true // 标记这是剧集而不是播客
+                }));
+                
+                // 更新搜索状态
+                document.getElementById('searchStatus').querySelector('.search-text').textContent = `Found ${searchResults.length} episodes for "${searchTerm}"`;
+                
+                renderSearchResults();
+                
+            } catch (error) {
+                console.error('Error searching episodes:', error);
+                showErrorState('Failed to search episodes. Please try again later.');
+                document.getElementById('searchStatus').style.display = 'none';
+                document.getElementById('categoryTags').style.display = 'flex';
+            } finally {
+                isLoading = false;
+                hideLoadingState();
+            }
+        }
+        
+        // 从Listen Notes API加载播客数据
+        async function loadPodcasts() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            showLoadingState();
+            
+            try {
+                const searchTerms = {
+                    'health': 'health wellness medical',
+                    'exercise': 'fitness',
+                    'nutrition': 'nutrition',
+                    'mental': 'mental health',
+                    'technology': 'technology'
+                };
+                
+                // 备用搜索词，如果主要搜索词返回结果不足
+                const backupSearchTerms = {
+                    'health': 'medical',
+                    'exercise': 'exercise',
+                    'nutrition': 'diet',
+                    'mental': 'psychology',
+                    'technology': 'tech'
+                };
+                
+                let searchTerm = searchTerms[currentCategory] || searchTerms['health'];
+                let response = await fetch(`${LISTEN_NOTES_BASE_URL}/search?q=${encodeURIComponent(searchTerm)}&type=podcast&language=en&limit=10`, {
+                    headers: {
+                        'X-ListenAPI-Key': LISTEN_NOTES_API_KEY
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+                
+                let data = await response.json();
+                
+                // 如果结果不足9个，尝试备用搜索词
+                if (data.results.length < 9) {
+                    console.log(`Primary search returned ${data.results.length} results, trying backup search`);
+                    const backupSearchTerm = backupSearchTerms[currentCategory] || backupSearchTerms['health'];
+                    response = await fetch(`${LISTEN_NOTES_BASE_URL}/search?q=${encodeURIComponent(backupSearchTerm)}&type=podcast&language=en&limit=10`, {
+                        headers: {
+                            'X-ListenAPI-Key': LISTEN_NOTES_API_KEY
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        data = await response.json();
+                        console.log(`Backup search returned ${data.results.length} results`);
+                    }
+                }
+                
+                // 转换API数据为应用格式
+                podcasts = data.results.map(podcast => ({
+                    id: podcast.id,
+                    title: podcast.title_original,
+                    description: stripHtmlTags(podcast.description_original),
+                    duration: formatDuration(podcast.audio_length_sec),
+                    category: determineCategory(podcast.title_original, podcast.description_original),
+                    image: podcast.image,
+                    plays: podcast.total_episodes || 0,
+                    date: formatDate(podcast.latest_pub_date_ms),
+                    publisher: podcast.publisher_original,
+                    listennotes_url: podcast.listennotes_url
+                }));
+                
+                console.log(`Loaded ${podcasts.length} podcasts for category: ${currentCategory}`);
+                
+                if (podcasts.length > 0 && !currentPodcast) {
+                    currentPodcast = podcasts[0];
+                    console.log('Setting initial podcast:', currentPodcast.title);
+                    await loadPodcastEpisodes(currentPodcast.id);
+                    // 确保界面更新
+                    updateCurrentEpisode();
+                }
+                
+                renderPodcasts();
+                
+            } catch (error) {
+                console.error('Error loading podcasts:', error);
+                showErrorState('Failed to load podcasts. Please try again later.');
+            } finally {
+                isLoading = false;
+                hideLoadingState();
+            }
+        }
+        
+        // 统一渲染卡片函数
+        function renderCard(item, isEpisode = false) {
+            const title = item.title || (isEpisode ? 'Untitled Episode' : 'Untitled Podcast');
+            const image = item.image || 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=300&h=200&fit=crop&crop=center';
+            const duration = item.duration || 'Unknown';
+            const clickFunction = isEpisode ? `playEpisode('${item.id}')` : `playPodcast('${item.id}')`;
+            const dataAttribute = isEpisode ? `data-episode-id="${item.id}"` : `data-podcast-id="${item.id}"`;
+            
+            return `
+                <div class="podcast-card" onclick="${clickFunction}; console.log('Clicked ${isEpisode ? 'episode' : 'podcast'}:', '${title}', 'ID:', '${item.id}');" ${dataAttribute}>
+                    <img src="${image}" alt="${title}" class="card-image" onerror="this.src='https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=300&h=200&fit=crop&crop=center'">
+                    <div class="card-content">
+                        <h3 class="card-title">${title}</h3>
+                    </div>
+                    <div class="card-footer">
+                        <span class="episode-duration">⏱️ ${duration}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 渲染搜索结果
+        function renderSearchResults() {
+            const grid = document.getElementById('podcastGrid');
+            
+            if (searchResults.length === 0) {
+                grid.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>No episodes found for your search.</p>
+                        <p>Try different keywords or check spelling.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = searchResults.map(episode => renderCard(episode, true)).join('');
+        }
+        
+        // 渲染播客列表
+        function renderPodcasts() {
+            const grid = document.getElementById('podcastGrid');
+            const filteredPodcasts = podcasts.filter(podcast => podcast.category === currentCategory);
+
+            if (filteredPodcasts.length === 0) {
+                grid.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>No podcasts found for this category.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filteredPodcasts.map(podcast => renderCard(podcast, false)).join('');
+        }
+
+        function setupEventListeners() {
+            // 分类筛选
+            document.querySelectorAll('.category-tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentCategory = this.dataset.category;
+                    loadPodcasts(); // 重新加载对应分类的播客
+                });
+            });
+
+            // 搜索功能 - 只在清空时恢复分类显示
+            document.getElementById('searchInput').addEventListener('input', function() {
+                const searchTerm = this.value.trim();
+                
+                // 如果搜索词为空，显示分类播客
+                if (searchTerm === '') {
+                    isSearchMode = false;
+                    document.getElementById('searchStatus').style.display = 'none';
+                    document.getElementById('categoryTags').style.display = 'flex';
+                    renderPodcasts();
+                }
+            });
+            
+            // 回车键搜索
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            // 播放按钮
+            document.getElementById('playBtn').addEventListener('click', togglePlay);
+
+            // 进度条
+            document.getElementById('progressBar').addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const width = rect.width;
+                const percentage = clickX / width;
+                const newTime = totalTime * percentage;
+                
+                if (audioPlayer) {
+                    audioPlayer.currentTime = newTime;
+                }
+                currentTime = newTime;
+                updateProgress();
+            });
+
+            // 音量控制
+            document.getElementById('volumeSlider').addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const width = rect.width;
+                const percentage = clickX / width;
+                const volume = Math.max(0, Math.min(1, percentage));
+                
+                if (audioPlayer) {
+                    audioPlayer.volume = volume;
+                }
+                document.getElementById('volumeFill').style.width = (percentage * 100) + '%';
+            });
+        }
+
+        // 初始化音频播放器
+        function initializeAudioPlayer() {
+            audioPlayer = new Audio();
+            
+            // 音频播放器事件监听
+            audioPlayer.addEventListener('loadedmetadata', function() {
+                totalTime = audioPlayer.duration;
+                updateProgress();
+            });
+            
+            audioPlayer.addEventListener('timeupdate', function() {
+                currentTime = audioPlayer.currentTime;
+                updateProgress();
+            });
+            
+            audioPlayer.addEventListener('ended', function() {
+                isPlaying = false;
+                document.getElementById('playBtn').innerHTML = '▶️';
+                document.getElementById('playBtn').classList.remove('playing');
+            });
+            
+            audioPlayer.addEventListener('error', function(e) {
+                console.error('Audio playback error:', e);
+                alert('Error playing audio. Please try another episode.');
+                isPlaying = false;
+                document.getElementById('playBtn').innerHTML = '▶️';
+                document.getElementById('playBtn').classList.remove('playing');
+            });
+        }
+        
+        // 加载播客剧集
+        async function loadPodcastEpisodes(podcastId) {
+            try {
+                const response = await fetch(`${LISTEN_NOTES_BASE_URL}/podcasts/${podcastId}`, {
+                    headers: {
+                        'X-ListenAPI-Key': LISTEN_NOTES_API_KEY
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load episodes: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.episodes && data.episodes.length > 0) {
+                    // 选择最新的一集
+                    currentEpisode = data.episodes[0];
+                    console.log('Loaded episode:', currentEpisode.title);
+                    updateCurrentEpisode();
+                } else {
+                    console.warn('No episodes found for this podcast');
+                    currentEpisode = null;
+                }
+                
+            } catch (error) {
+                console.error('Error loading episodes:', error);
+                currentEpisode = null;
+                // 如果无法加载剧集，使用默认信息
+                updateCurrentEpisode();
+            }
+        }
+        
+        function playEpisode(id) {
+            const episode = searchResults.find(e => e.id === id);
+            if (episode) {
+                console.log('Playing episode:', episode.title);
+                
+                // 如果当前正在播放，先停止播放
+                if (isPlaying && audioPlayer) {
+                    console.log('Stopping current playback before switching to new episode');
+                    audioPlayer.pause();
+                    isPlaying = false;
+                    const playBtn = document.getElementById('playBtn');
+                    playBtn.innerHTML = '▶️';
+                    playBtn.classList.remove('playing');
+                }
+                
+                // 设置当前剧集
+                currentEpisode = episode;
+                currentPodcast = {
+                    id: episode.id,
+                    title: episode.podcast_title || 'Unknown Podcast',
+                    description: episode.description || 'No description available',
+                    image: episode.image || 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=120&h=120&fit=crop&crop=center'
+                };
+                
+                // 更新界面显示选中的剧集
+                updateCurrentEpisode();
+                
+                // 直接开始播放，因为搜索结果已经包含了音频URL
+                if (episode.audio) {
+                    console.log('Episode has audio URL, starting playback:', episode.title);
+                    startPlayback();
+                } else {
+                    console.log('No audio URL available for episode');
+                    alert('This episode is not available for playback. Please try another episode.');
+                }
+            } else {
+                console.error('Episode not found with id:', id);
+                alert('Episode not found. Please try again.');
+            }
+        }
+        
+        function playPodcast(id) {
+            const podcast = podcasts.find(p => p.id === id);
+            if (podcast) {
+                console.log('Playing podcast:', podcast.title);
+                
+                // 如果当前正在播放，先停止播放
+                if (isPlaying && audioPlayer) {
+                    console.log('Stopping current playback before switching to new podcast');
+                    audioPlayer.pause();
+                    isPlaying = false;
+                    const playBtn = document.getElementById('playBtn');
+                    playBtn.innerHTML = '▶️';
+                    playBtn.classList.remove('playing');
+                }
+                
+                currentPodcast = podcast;
+                
+                // 立即更新界面显示选中的播客
+                updateCurrentEpisode();
+                
+                loadPodcastEpisodes(podcast.id).then(() => {
+                    // 剧集加载完成后再次更新界面
+                    updateCurrentEpisode();
+                    // 如果有剧集，自动开始播放
+                    if (currentEpisode) {
+                        console.log('Episode loaded, auto-playing:', currentEpisode.title);
+                        // 自动开始播放
+                        startPlayback();
+                    } else {
+                        // 如果没有剧集，显示提示信息
+                        console.log('No episodes available for this podcast');
+                        alert('No episodes available for this podcast. Please try another podcast.');
+                    }
+                }).catch(error => {
+                    console.error('Error loading podcast episodes:', error);
+                    // 即使加载剧集失败，也更新界面显示播客信息
+                    updateCurrentEpisode();
+                    alert('Failed to load podcast episodes. Please try again.');
+                });
+            } else {
+                console.error('Podcast not found with id:', id);
+                alert('Podcast not found. Please try again.');
+            }
+        }
+        
+        // 工具函数：去除HTML标签
+        function stripHtmlTags(html) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+        }
+        
+        // 工具函数：格式化时长
+        function formatDuration(seconds) {
+            if (!seconds) return 'Unknown';
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 工具函数：格式化日期
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Unknown';
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+        
+        // 工具函数：确定播客分类
+        function determineCategory(title, description) {
+            const text = (title + ' ' + description).toLowerCase();
+            
+            if (text.includes('exercise') || text.includes('fitness') || text.includes('workout')) {
+                return 'exercise';
+            } else if (text.includes('nutrition') || text.includes('diet') || text.includes('food')) {
+                return 'nutrition';
+            } else if (text.includes('mental') || text.includes('psychology') || text.includes('mind')) {
+                return 'mental';
+            } else if (text.includes('technology') || text.includes('tech') || text.includes('smart')) {
+                return 'technology';
+            } else {
+                return 'health';
+            }
+        }
+        
+        // 显示加载状态
+        function showLoadingState() {
+            const grid = document.getElementById('podcastGrid');
+            grid.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <div style="margin-bottom: 20px;">🔄</div>
+                    <p>Loading podcasts...</p>
+                </div>
+            `;
+        }
+        
+        // 隐藏加载状态
+        function hideLoadingState() {
+            // 加载状态会在renderPodcasts中自动清除
+        }
+        
+        // 显示错误状态
+        function showErrorState(message) {
+            const grid = document.getElementById('podcastGrid');
+            grid.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #dc3545;">
+                    <div style="margin-bottom: 20px;">❌</div>
+                    <p>${message}</p>
+                    <button onclick="loadPodcasts()" style="margin-top: 10px; padding: 8px 16px; background: var(--podcast-primary); color: white; border: none; border-radius: 4px; cursor: pointer;">Retry</button>
+                </div>
+            `;
+        }
+
+        function updateCurrentEpisode() {
+            if (!currentPodcast) return;
+            
+            console.log('updateCurrentEpisode - currentPodcast:', currentPodcast.title, 'currentEpisode:', currentEpisode?.title);
+            
+            // 更新播客信息，添加安全检查
+            const titleElement = document.getElementById('currentTitle');
+            const coverElement = document.getElementById('currentCover');
+            
+            // 设置默认值，避免显示undefined
+            titleElement.textContent = currentPodcast.title || 'No Title Available';
+            coverElement.src = currentPodcast.image || 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=120&h=120&fit=crop&crop=center';
+            
+            // 如果有剧集信息，更新剧集详情
+            if (currentEpisode) {
+                titleElement.textContent = currentEpisode.title || 'No Episode Title';
+                
+                // 设置音频源
+                if (audioPlayer && currentEpisode.audio) {
+                    console.log('Setting audio source:', currentEpisode.audio);
+                    audioPlayer.src = currentEpisode.audio;
+                    audioPlayer.load();
+                    totalTime = currentEpisode.audio_length_sec || 1800;
+                    console.log('Audio duration set to:', totalTime, 'seconds');
+                } else {
+                    console.log('No audio source available for episode');
+                }
+            } else {
+                console.log('No episode data, using podcast default info');
+                // 使用播客默认信息
+                if (currentPodcast.duration) {
+                    const durationParts = currentPodcast.duration.split(':');
+                    if (durationParts.length === 2) {
+                        const minutes = parseInt(durationParts[0]);
+                        const seconds = parseInt(durationParts[1]);
+                        totalTime = minutes * 60 + seconds;
+                    } else {
+                        totalTime = 1800; // 默认30分钟
+                    }
+                } else {
+                    totalTime = 1800; // 默认30分钟
+                }
+            }
+            
+            currentTime = 0;
+            updateProgress();
+            
+            // 高亮显示当前播放的播客卡片
+            highlightCurrentPodcast();
+        }
+
+        function startPlayback() {
+            console.log('startPlayback called - currentPodcast:', currentPodcast?.title, 'currentEpisode:', currentEpisode?.title);
+            
+            if (!audioPlayer) {
+                console.error('Audio player not initialized');
+                return;
+            }
+            
+            if (!currentPodcast) {
+                console.error('No podcast selected');
+                return;
+            }
+            
+            if (!currentEpisode) {
+                console.error('No episode available for playback');
+                alert('This podcast episode is not available for playback. Please try another podcast.');
+                return;
+            }
+            
+            // 开始播放
+            console.log('Starting playback of episode:', currentEpisode.title);
+            audioPlayer.play().then(() => {
+                console.log('Audio playback started successfully');
+                isPlaying = true;
+                const playBtn = document.getElementById('playBtn');
+                playBtn.innerHTML = '⏸️';
+                playBtn.classList.add('playing');
+            }).catch(error => {
+                console.error('Error playing audio:', error);
+                alert('Error playing audio. Please try again.');
+            });
+        }
+
+        function togglePlay() {
+            console.log('togglePlay called - currentPodcast:', currentPodcast?.title, 'currentEpisode:', currentEpisode?.title);
+            
+            if (!audioPlayer) {
+                alert('Audio player not initialized. Please refresh the page.');
+                return;
+            }
+            
+            if (!currentPodcast) {
+                alert('Please select a podcast first.');
+                return;
+            }
+            
+            const playBtn = document.getElementById('playBtn');
+            
+            if (isPlaying) {
+                // 暂停播放
+                console.log('Pausing audio');
+                audioPlayer.pause();
+                isPlaying = false;
+                playBtn.innerHTML = '▶️';
+                playBtn.classList.remove('playing');
+            } else {
+                // 如果没有剧集但有播客，尝试播放
+                if (!currentEpisode) {
+                    console.log('No episode available for playback');
+                    alert('This podcast episode is not available for playback. Please try another podcast.');
+                    return;
+                }
+                
+                // 开始播放
+                console.log('Starting playback of episode:', currentEpisode.title);
+                audioPlayer.play().then(() => {
+                    console.log('Audio playback started successfully');
+                    isPlaying = true;
+                    playBtn.innerHTML = '⏸️';
+                    playBtn.classList.add('playing');
+                }).catch(error => {
+                    console.error('Error playing audio:', error);
+                    alert('Error playing audio. Please try again.');
+                });
+            }
+        }
+
+        function updateProgress() {
+            const percentage = (currentTime / totalTime) * 100;
+            document.getElementById('progressFill').style.width = percentage + '%';
+            
+            const currentMinutes = Math.floor(currentTime / 60);
+            const currentSeconds = Math.floor(currentTime % 60);
+            const totalMinutes = Math.floor(totalTime / 60);
+            const totalSeconds = Math.floor(totalTime % 60);
+            
+            document.getElementById('currentTime').textContent = 
+                `${String(currentMinutes).padStart(2, '0')}:${String(currentSeconds).padStart(2, '0')}`;
+            document.getElementById('totalTime').textContent = 
+                `${String(totalMinutes).padStart(2, '0')}:${String(totalSeconds).padStart(2, '0')}`;
+        }
+        
+        function highlightCurrentPodcast() {
+            // 移除所有卡片的高亮状态
+            document.querySelectorAll('.podcast-card').forEach(card => {
+                card.style.border = '';
+                card.style.boxShadow = '';
+            });
+            
+            // 高亮当前播放的播客卡片或剧集卡片
+            if (currentPodcast) {
+                let currentCard = null;
+                
+                if (isSearchMode && currentEpisode) {
+                    // 在搜索模式下，高亮剧集卡片
+                    currentCard = document.querySelector(`[data-episode-id="${currentEpisode.id}"]`);
+                } else {
+                    // 在分类模式下，高亮播客卡片
+                    currentCard = document.querySelector(`[data-podcast-id="${currentPodcast.id}"]`);
+                }
+                
+                if (currentCard) {
+                    currentCard.style.border = '3px solid var(--podcast-primary)';
+                    currentCard.style.boxShadow = '0 8px 25px rgba(139, 92, 246, 0.3)';
+                }
+            }
+        }
+    </script>
+</body>
+</html> 
