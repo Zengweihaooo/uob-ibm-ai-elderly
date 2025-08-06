@@ -144,6 +144,83 @@
             color: #999;
             margin-top: 5px;
         }
+
+        /* Fixed bottom navigation bar */
+        .bottom-navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 3px solid #007bff;
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 20px;
+            box-shadow: 0 -4px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-tab {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+            font-family: inherit;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-tab:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .nav-tab.active .nav-icon {
+            transform: scale(1.2);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .nav-tab.active .nav-label {
+            color: white;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .nav-tab {
+                min-width: 60px;
+                padding: 8px 10px;
+            }
+            
+            .nav-icon {
+                font-size: 1.3rem;
+            }
+            
+            .nav-label {
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -408,5 +485,29 @@
             getMemos();
         });
     </script>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-navigation">
+        <a href="schedule.html" class="nav-tab nav-link-tab">
+            <span class="nav-icon">📅</span>
+            <span class="nav-label">Schedule</span>
+        </a>
+        <a href="ai-assistant.html" class="nav-tab nav-link-tab">
+            <span class="nav-icon">🤖</span>
+            <span class="nav-label">AI Assistant</span>
+        </a>
+        <a href="schedule.html#pet" class="nav-tab nav-link-tab">
+            <span class="nav-icon">🐱</span>
+            <span class="nav-label">Virtual Pet</span>
+        </a>
+        <a href="memo.html" class="nav-tab nav-link-tab">
+            <span class="nav-icon">📝</span>
+            <span class="nav-label">Memo</span>
+        </a>
+        <a href="podcast.html" class="nav-tab nav-link-tab">
+            <span class="nav-icon">🎧</span>
+            <span class="nav-label">Podcast</span>
+        </a>
+    </div>
 </body>
 </html> 
