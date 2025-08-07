@@ -58,17 +58,17 @@ public void testCheckHealthSubmission() {
     verify(emailService, times(1)).sendHealthAlertEmail(
         user1.getEmail(),
         "Daily Health Check Reminder",
-        "Hello " + user1.getName() + ", you haven’t submitted today’s health data. Please do it soon."
+        "Hello " + user1.getName() + ", you haven't submitted today's health data. Please do it soon."
     );
     verify(emailService, times(1)).sendHealthAlertEmail(
         user2.getEmail(),
         "Daily Health Check Reminder",
-        "Hello " + user2.getName() + ", you haven’t submitted today’s health data. Please do it soon."
+        "Hello " + user2.getName() + ", you haven't submitted today's health data. Please do it soon."
     );
     verify(emailService, times(1)).sendHealthAlertEmail(
         user3.getEmail(),
         "Daily Health Check Reminder",
-        "Hello " + user3.getName() + ", you haven’t submitted today’s health data. Please do it soon."
+        "Hello " + user3.getName() + ", you haven't submitted today's health data. Please do it soon."
     );
 }
 
@@ -108,17 +108,17 @@ public void testCheckScheduleSubmission() {
     verify(emailService, times(1)).sendHealthAlertEmail(
         user1.getEmail(),
         "Daily Plan Reminder",
-        "Hello " + user1.getName() + ", you haven’t told your pet your plan for today. Please do it now."
+        "Hello " + user1.getName() + ", you haven't told your pet your plan for today. Please do it now."
     );
     verify(emailService, times(1)).sendHealthAlertEmail(
         user2.getEmail(),
         "Daily Plan Reminder",
-        "Hello " + user2.getName() + ", you haven’t told your pet your plan for today. Please do it now."
+        "Hello " + user2.getName() + ", you haven't told your pet your plan for today. Please do it now."
     );
     verify(emailService, times(1)).sendHealthAlertEmail(
         user3.getEmail(),
         "Daily Plan Reminder",
-        "Hello " + user3.getName() + ", you haven’t told your pet your plan for today. Please do it now."
+        "Hello " + user3.getName() + ", you haven't told your pet your plan for today. Please do it now."
     );
 }
 
