@@ -87,8 +87,7 @@ public class FamilyController {
 
             // Create and save contact
             FamilyContact contact = familyService.addFamilyContact(
-                userId, name, phoneNumber, email, relationship, 
-                notificationPreference, isEmergencyContact, notes
+                userId, name, phoneNumber, email, relationship, isEmergencyContact
             );
 
             response.put("success", true);

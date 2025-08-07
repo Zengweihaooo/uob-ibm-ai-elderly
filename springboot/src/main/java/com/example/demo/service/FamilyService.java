@@ -14,12 +14,12 @@ import com.example.demo.pojo.FamilyContact;
 import com.example.demo.pojo.HealthRecord;
 
 /**
- * Service class for family contact management
+ * Service class for managing family contacts and family-related operations
  * 
- * This service handles all business logic related to family contacts,
- * including CRUD operations, message sending, and contact management.
+ * This service handles family contact management, emergency notifications,
+ * and family member communication for the IBM AI Elderly Project.
  * 
- * @author Your Name
+ * @author Weihao Zeng
  * @version 1.0
  */
 @Service
@@ -27,7 +27,7 @@ public class FamilyService {
 
     @Autowired
     private EmailService emailService;
-    
+
     @Autowired
     private SmsService smsService;
 
@@ -38,26 +38,23 @@ public class FamilyService {
     /**
      * Add a new family contact
      * 
-     * @param userId The elderly user's ID
+     * @param userId User ID
      * @param name Contact name
-     * @param phoneNumber Phone number
+     * @param phone Phone number
      * @param email Email address
      * @param relationship Relationship type
-     * @param notificationPreference Notification preference
      * @param isEmergencyContact Whether this is an emergency contact
-     * @param notes Additional notes
      * @return Created family contact
      */
-    public FamilyContact addFamilyContact(Long userId, String name, String phoneNumber, String email,
-                                        String relationship, String notificationPreference,
-                                        Boolean isEmergencyContact, String notes) {
+    public FamilyContact addFamilyContact(Long userId, String name, String phone, String email,
+                                       String relationship, Boolean isEmergencyContact) {
         
         // Validate input
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Contact name is required");
         }
 
-        if ((phoneNumber == null || phoneNumber.trim().isEmpty()) && 
+        if ((phone == null || phone.trim().isEmpty()) && 
             (email == null || email.trim().isEmpty())) {
             throw new IllegalArgumentException("Either phone number or email is required");
         }
@@ -67,13 +64,11 @@ public class FamilyService {
         contact.setId(contactIdCounter++);
         contact.setUserId(userId);
         contact.setName(name.trim());
-        contact.setPhoneNumber(phoneNumber != null ? phoneNumber.trim() : null);
+        contact.setPhone(phone != null ? phone.trim() : null);
         contact.setEmail(email != null ? email.trim() : null);
-        contact.setRelationship(parseRelationship(relationship));
-        contact.setNotificationPreference(parseNotificationPreference(notificationPreference));
-        contact.setEmergencyContact(isEmergencyContact != null ? isEmergencyContact : false);
-        contact.setNotes(notes != null ? notes.trim() : null);
-        contact.setActive(true);
+        contact.setRelationship(relationship != null ? relationship.trim() : "其他");
+        contact.setIsEmergencyContact(isEmergencyContact != null ? isEmergencyContact : false);
+        contact.setIsActive(true);
         contact.setCreatedAt(LocalDateTime.now());
         contact.setUpdatedAt(LocalDateTime.now());
 
@@ -92,7 +87,7 @@ public class FamilyService {
      */
     public List<FamilyContact> getFamilyContacts(Long userId) {
         return familyContacts.stream()
-                .filter(contact -> contact.getUserId().equals(userId) && contact.isActive())
+                .filter(contact -> contact.getUserId().equals(userId) && contact.getIsActive())
                 .collect(Collectors.toList());
     }
 
@@ -107,7 +102,7 @@ public class FamilyService {
         return familyContacts.stream()
                 .filter(contact -> contact.getUserId().equals(userId) && 
                                  contact.getId().equals(contactId) && 
-                                 contact.isActive())
+                                 contact.getIsActive())
                 .findFirst()
                 .orElse(null);
     }
@@ -136,8 +131,8 @@ public class FamilyService {
             }
         }
 
-        if (contactData.containsKey("phoneNumber")) {
-            contact.setPhoneNumber((String) contactData.get("phoneNumber"));
+        if (contactData.containsKey("phone")) {
+            contact.setPhone((String) contactData.get("phone"));
         }
 
         if (contactData.containsKey("email")) {
@@ -145,33 +140,24 @@ public class FamilyService {
         }
 
         if (contactData.containsKey("relationship")) {
-            contact.setRelationship(parseRelationship((String) contactData.get("relationship")));
-        }
-
-        if (contactData.containsKey("notificationPreference")) {
-            contact.setNotificationPreference(parseNotificationPreference((String) contactData.get("notificationPreference")));
+            contact.setRelationship((String) contactData.get("relationship"));
         }
 
         if (contactData.containsKey("isEmergencyContact")) {
-            contact.setEmergencyContact((Boolean) contactData.get("isEmergencyContact"));
+            contact.setIsEmergencyContact((Boolean) contactData.get("isEmergencyContact"));
         }
 
-        if (contactData.containsKey("notes")) {
-            contact.setNotes((String) contactData.get("notes"));
+        if (contactData.containsKey("address")) {
+            contact.setAddress((String) contactData.get("address"));
         }
 
-        if (contactData.containsKey("isActive")) {
-            contact.setActive((Boolean) contactData.get("isActive"));
-        }
-
-        // Validate that at least one contact method exists
-        if (!contact.hasValidContactInfo()) {
+        // Validate contact has at least phone or email
+        if ((contact.getPhone() == null || contact.getPhone().trim().isEmpty()) &&
+            (contact.getEmail() == null || contact.getEmail().trim().isEmpty())) {
             throw new IllegalArgumentException("Either phone number or email is required");
         }
 
         contact.setUpdatedAt(LocalDateTime.now());
-
-        System.out.println("Family contact updated: " + contact.getName() + " for user " + userId);
         return contact;
     }
 
@@ -188,20 +174,18 @@ public class FamilyService {
             return false;
         }
 
-        contact.setActive(false);
+        contact.setIsActive(false);
         contact.setUpdatedAt(LocalDateTime.now());
-
-        System.out.println("Family contact deleted: " + contact.getName() + " for user " + userId);
         return true;
     }
 
     /**
-     * Send message to family contact
+     * Send message to a family contact
      * 
      * @param userId User ID
      * @param contactId Contact ID
      * @param message Message content
-     * @param messageType Message type
+     * @param messageType Message type (email/sms)
      * @return true if sent successfully, false otherwise
      */
     public boolean sendMessageToFamily(Long userId, Long contactId, String message, String messageType) {
@@ -210,49 +194,22 @@ public class FamilyService {
             return false;
         }
 
-        // Check if contact should receive this type of message
-        if (!contact.shouldReceiveNotification(messageType)) {
-            System.out.println("Contact " + contact.getName() + " has notification preference that excludes " + messageType);
-            return false;
-        }
-
         try {
-            // Send email if available
-            if (contact.getEmail() != null && !contact.getEmail().trim().isEmpty()) {
+            if ("email".equalsIgnoreCase(messageType) && contact.getEmail() != null) {
                 String subject = buildMessageSubject(messageType, contact.getName());
-                String emailContent = buildMessageContent(message, messageType, contact.getName());
-                
-                emailService.sendHealthAlertEmail(contact.getEmail(), subject, emailContent);
-                System.out.println("Message sent via email to " + contact.getEmail());
+                String content = buildMessageContent(message, messageType, contact.getName());
+                emailService.sendHealthAlertEmail(contact.getEmail(), subject, content);
+                return true;
+            } else if ("sms".equalsIgnoreCase(messageType) && contact.getPhone() != null) {
+                String content = buildMessageContent(message, messageType, contact.getName());
+                smsService.sendSMS(contact.getPhone(), content);
+                return true;
             }
-
-            // Send SMS if phone number is available
-            if (contact.getPhoneNumber() != null && !contact.getPhoneNumber().trim().isEmpty()) {
-                try {
-                    // 发送SMS，使用传入的消息内容
-                    Map<String, Object> smsResult = smsService.sendSMS(contact.getPhoneNumber(), message, messageType);
-                    
-                    if ((Boolean) smsResult.get("success")) {
-                        System.out.println("SMS发送成功到 " + contact.getPhoneNumber() + 
-                                         ", MessageID: " + smsResult.get("messageId"));
-                    } else {
-                        System.err.println("SMS发送失败到 " + contact.getPhoneNumber() + 
-                                         ": " + smsResult.get("message"));
-                    }
-                } catch (Exception e) {
-                    System.err.println("SMS发送异常: " + e.getMessage());
-                }
-            }
-
-            // Update last contacted time
-            contact.updateLastContacted();
-
-            return true;
-
         } catch (Exception e) {
             System.err.println("Failed to send message to family contact: " + e.getMessage());
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -264,40 +221,26 @@ public class FamilyService {
     public List<FamilyContact> getEmergencyContacts(Long userId) {
         return familyContacts.stream()
                 .filter(contact -> contact.getUserId().equals(userId) && 
-                                 contact.isEmergencyContact() && 
-                                 contact.isActive())
+                                 contact.getIsEmergencyContact() && 
+                                 contact.getIsActive())
                 .collect(Collectors.toList());
     }
 
     /**
-     * Get family contact statistics
+     * Get family statistics for a user
      * 
      * @param userId User ID
-     * @return Statistics map
+     * @return Map containing family statistics
      */
     public Map<String, Object> getFamilyStats(Long userId) {
         List<FamilyContact> userContacts = getFamilyContacts(userId);
         
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalContacts", userContacts.size());
-        stats.put("emergencyContacts", getEmergencyContacts(userId).size());
-        stats.put("activeContacts", userContacts.stream().filter(FamilyContact::isActive).count());
-        
-        // Count by relationship type
-        Map<String, Long> relationshipStats = userContacts.stream()
-                .collect(Collectors.groupingBy(
-                    contact -> contact.getRelationship().name(),
-                    Collectors.counting()
-                ));
-        stats.put("byRelationship", relationshipStats);
-        
-        // Count by notification preference
-        Map<String, Long> notificationStats = userContacts.stream()
-                .collect(Collectors.groupingBy(
-                    contact -> contact.getNotificationPreference().name(),
-                    Collectors.counting()
-                ));
-        stats.put("byNotificationPreference", notificationStats);
+        stats.put("emergencyContacts", userContacts.stream()
+                .filter(contact -> contact.getIsEmergencyContact())
+                .count());
+        stats.put("activeContacts", userContacts.size());
         
         return stats;
     }
@@ -306,7 +249,7 @@ public class FamilyService {
      * Send emergency notification to all emergency contacts
      * 
      * @param userId User ID
-     * @param emergencyType Emergency type
+     * @param emergencyType Type of emergency
      * @param description Emergency description
      * @return Number of contacts notified
      */
@@ -315,208 +258,75 @@ public class FamilyService {
         int notifiedCount = 0;
 
         for (FamilyContact contact : emergencyContacts) {
-            String message = buildEmergencyMessage(emergencyType, description, contact.getName());
-            if (sendMessageToFamily(userId, contact.getId(), message, "emergency")) {
-                notifiedCount++;
+            try {
+                String message = buildEmergencyMessage(emergencyType, description, contact.getName());
+                
+                if (contact.getPhone() != null) {
+                    smsService.sendSMS(contact.getPhone(), message);
+                    notifiedCount++;
+                }
+                
+                if (contact.getEmail() != null) {
+                    String subject = "紧急情况通知 - " + emergencyType;
+                    emailService.sendHealthAlertEmail(contact.getEmail(), subject, message);
+                    notifiedCount++;
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to notify emergency contact " + contact.getName() + ": " + e.getMessage());
             }
         }
 
-        System.out.println("Emergency notification sent to " + notifiedCount + " contacts for user " + userId);
         return notifiedCount;
     }
 
-    // Helper methods
-
-    private FamilyContact.RelationshipType parseRelationship(String relationship) {
-        if (relationship == null) {
-            return FamilyContact.RelationshipType.OTHER;
-        }
-        
-        try {
-            return FamilyContact.RelationshipType.valueOf(relationship.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return FamilyContact.RelationshipType.OTHER;
-        }
-    }
-
-    private FamilyContact.NotificationPreference parseNotificationPreference(String preference) {
-        if (preference == null) {
-            return FamilyContact.NotificationPreference.ALL;
-        }
-        
-        try {
-            return FamilyContact.NotificationPreference.valueOf(preference.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return FamilyContact.NotificationPreference.ALL;
-        }
-    }
-
+    /**
+     * Build message subject
+     */
     private String buildMessageSubject(String messageType, String contactName) {
         switch (messageType.toLowerCase()) {
-            case "emergency":
-                return "🚨 Emergency Alert - " + contactName;
             case "health":
-                return "🏥 Health Update - " + contactName;
-            case "daily_summary":
-                return "📋 Daily Summary - " + contactName;
+                return "健康状态更新 - " + contactName;
+            case "schedule":
+                return "日程提醒 - " + contactName;
+            case "emergency":
+                return "紧急情况通知 - " + contactName;
             default:
-                return "�� Message from Elderly Care App - " + contactName;
+                return "消息通知 - " + contactName;
         }
     }
 
+    /**
+     * Build message content
+     */
     private String buildMessageContent(String message, String messageType, String contactName) {
         StringBuilder content = new StringBuilder();
-        content.append("Dear ").append(contactName).append(",\n\n");
-        
-        switch (messageType.toLowerCase()) {
-            case "emergency":
-                content.append("�� EMERGENCY ALERT 🚨\n\n");
-                break;
-            case "health":
-                content.append("🏥 Health Update\n\n");
-                break;
-            case "daily_summary":
-                content.append("📋 Daily Summary\n\n");
-                break;
-        }
-        
+        content.append("亲爱的 ").append(contactName).append("，\n\n");
         content.append(message).append("\n\n");
-        content.append("Best regards,\nElderly Care App Team");
+        content.append("此消息由AI老年人陪伴系统自动发送。\n");
+        content.append("发送时间：").append(LocalDateTime.now().toString());
         
         return content.toString();
     }
 
-
+    /**
+     * Build emergency message
+     */
     private String buildEmergencyMessage(String emergencyType, String description, String contactName) {
-        return "Emergency situation detected: " + emergencyType + "\n\n" +
-               "Description: " + description + "\n\n" +
-               "Please check on your loved one immediately and contact emergency services if necessary.";
+        return "紧急情况通知：\n" + emergencyType + "\n" + description + "\n\n联系人：" + contactName;
     }
 
-    // Utility methods for testing and debugging
-
+    /**
+     * Get all contacts (for testing)
+     */
     public List<FamilyContact> getAllContacts() {
         return new ArrayList<>(familyContacts);
     }
 
+    /**
+     * Clear all contacts (for testing)
+     */
     public void clearAllContacts() {
         familyContacts.clear();
         contactIdCounter = 1L;
     }
-    
-    // ========== 新增家庭成员验证和共享相关功能 ==========
-    
-    /**
-     * 验证目标用户是否为家庭成员
-     * @param userId 老年人用户ID
-     * @param targetUserId 目标用户ID
-     * @return 是否为家庭成员
-     */
-    public boolean isFamilyMember(Long userId, Long targetUserId) {
-        List<FamilyContact> familyContacts = getFamilyContacts(userId);
-        // 检查目标用户是否在家庭成员列表中
-        return familyContacts.stream()
-                .anyMatch(contact -> contact.getUserId().equals(targetUserId) || 
-                                   (contact.getEmail() != null && 
-                                    getUserEmailById(targetUserId) != null &&
-                                    contact.getEmail().equals(getUserEmailById(targetUserId))));
-    }
-    
-    /**
-     * 获取家庭成员列表（用于前端选择共享对象）
-     * @param userId 老年人用户ID
-     * @return 家庭成员列表
-     */
-    public List<Map<String, Object>> getFamilyMembersForSharing(Long userId) {
-        List<FamilyContact> contacts = getFamilyContacts(userId);
-        List<Map<String, Object>> familyMembers = new ArrayList<>();
-        
-        for (FamilyContact contact : contacts) {
-            Map<String, Object> member = new HashMap<>();
-            member.put("id", contact.getId());
-            member.put("name", contact.getName());
-            member.put("email", contact.getEmail());
-            member.put("phoneNumber", contact.getPhoneNumber());
-            member.put("relationship", contact.getRelationship());
-            member.put("isEmergencyContact", contact.isEmergencyContact());
-            familyMembers.add(member);
-        }
-        
-        return familyMembers;
-    }
-    
-    /**
-     * 根据用户ID获取用户邮箱（辅助方法）
-     * @param userId 用户ID
-     * @return 用户邮箱
-     */
-    private String getUserEmailById(Long userId) {
-        // 这里需要注入UserService来获取用户信息
-        // 暂时返回null，实际使用时需要注入UserService
-        return null;
-    }
-    
-    /**
-     * 发送健康数据共享通知给家庭成员
-     * @param userId 老年人用户ID
-     * @param healthRecord 健康记录
-     * @param sharedWithUserId 共享目标用户ID
-     */
-    public void notifyFamilyMemberOfHealthShare(Long userId, HealthRecord healthRecord, Long sharedWithUserId) {
-        List<FamilyContact> contacts = getFamilyContacts(userId);
-        
-        for (FamilyContact contact : contacts) {
-            if (contact.getEmail() != null) {
-                String subject = "健康数据共享通知";
-                String message = buildHealthShareNotificationMessage(healthRecord, contact.getName());
-                
-                try {
-                    emailService.sendHealthAlertEmail(contact.getEmail(), subject, message);
-                    System.out.println("健康数据共享通知已发送给: " + contact.getName());
-                } catch (Exception e) {
-                    System.err.println("发送健康数据共享通知失败: " + e.getMessage());
-                }
-            }
-        }
-    }
-    
-    /**
-     * 构建健康数据共享通知消息
-     * @param healthRecord 健康记录
-     * @param contactName 联系人姓名
-     * @return 通知消息
-     */
-    private String buildHealthShareNotificationMessage(HealthRecord healthRecord, String contactName) {
-        StringBuilder message = new StringBuilder();
-        message.append("亲爱的 ").append(contactName).append("：\n\n");
-        message.append("您的家人刚刚共享了一条健康数据记录：\n\n");
-        message.append("数据类型：").append(getTypeDisplayName(healthRecord.getType())).append("\n");
-        message.append("数据值：").append(healthRecord.getValue()).append("\n");
-        message.append("记录时间：").append(healthRecord.getRecordTime()).append("\n");
-        message.append("共享时间：").append(healthRecord.getSharedAt()).append("\n\n");
-        message.append("请及时查看并关注家人的健康状况。\n\n");
-        message.append("此邮件由IBM AI Elderly系统自动发送。");
-        
-        return message.toString();
-    }
-    
-    /**
-     * 获取健康数据类型的显示名称
-     * @param type 数据类型
-     * @return 显示名称
-     */
-    private String getTypeDisplayName(String type) {
-        switch (type.toLowerCase()) {
-            case "bloodpressure":
-                return "血压";
-            case "bloodsugar":
-                return "血糖";
-            case "steps":
-                return "步数";
-            default:
-                return type;
-        }
-    }
-    
-    // ========== 新增功能结束 ==========
 }

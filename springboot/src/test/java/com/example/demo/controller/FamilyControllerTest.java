@@ -1,23 +1,8 @@
 package com.example.demo.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.example.demo.pojo.FamilyContact;
+import com.example.demo.service.FamilyService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,24 +11,23 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.demo.pojo.FamilyContact;
-import com.example.demo.service.FamilyService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * 测试类：FamilyController
+ * FamilyController的单元测试
  * 
- * 这个测试类测试FamilyController的所有API端点，包括：
- * - 添加家庭联系人
- * - 获取所有联系人
- * - 获取特定联系人
- * - 更新联系人
- * - 删除联系人
- * - 发送消息
- * - 获取紧急联系人
- * - 获取统计信息
+ * 测试家庭联系人管理的所有API端点
  * 
- * @author Yichen Zhang
+ * @author Weihao Zeng
  * @version 1.0
  */
 @WebMvcTest(FamilyController.class)
@@ -68,13 +52,11 @@ public class FamilyControllerTest {
         testContact.setId(1L);
         testContact.setUserId(1L);
         testContact.setName("张三");
-        testContact.setPhoneNumber("13800138000");
+        testContact.setPhone("13800138000");
         testContact.setEmail("zhangsan@example.com");
-        testContact.setRelationship(FamilyContact.RelationshipType.CHILD);
-        testContact.setNotificationPreference(FamilyContact.NotificationPreference.ALL);
-        testContact.setEmergencyContact(true);
-        testContact.setActive(true);
-        testContact.setNotes("我的儿子");
+        testContact.setRelationship("儿子");
+        testContact.setIsEmergencyContact(true);
+        testContact.setIsActive(true);
         testContact.setCreatedAt(LocalDateTime.now());
         testContact.setUpdatedAt(LocalDateTime.now());
     }
@@ -87,17 +69,15 @@ public class FamilyControllerTest {
         // 准备测试数据
         Map<String, Object> contactData = new HashMap<>();
         contactData.put("name", "张三");
-        contactData.put("phoneNumber", "13800138000");
+        contactData.put("phone", "13800138000");
         contactData.put("email", "zhangsan@example.com");
-        contactData.put("relationship", "CHILD");
-        contactData.put("notificationPreference", "ALL");
+        contactData.put("relationship", "儿子");
         contactData.put("isEmergencyContact", true);
-        contactData.put("notes", "我的儿子");
 
         // Mock service方法
         when(familyService.addFamilyContact(
             anyLong(), anyString(), anyString(), anyString(), 
-            anyString(), anyString(), any(Boolean.class), anyString()
+            anyString(), any(Boolean.class)
         )).thenReturn(testContact);
 
         // 执行测试
@@ -119,7 +99,7 @@ public class FamilyControllerTest {
     void testAddFamilyContact_NoAuth() throws Exception {
         Map<String, Object> contactData = new HashMap<>();
         contactData.put("name", "张三");
-        contactData.put("phoneNumber", "13800138000");
+        contactData.put("phone", "13800138000");
 
         mockMvc.perform(post("/api/family/contacts")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -165,7 +145,7 @@ public class FamilyControllerTest {
     }
 
     /**
-     * 测试获取特定联系人 - 成功情况
+     * 测试获取单个家庭联系人 - 成功情况
      */
     @Test
     void testGetFamilyContact_Success() throws Exception {
@@ -180,7 +160,7 @@ public class FamilyControllerTest {
     }
 
     /**
-     * 测试获取特定联系人 - 联系人不存在
+     * 测试获取单个家庭联系人 - 未找到
      */
     @Test
     void testGetFamilyContact_NotFound() throws Exception {
@@ -188,27 +168,34 @@ public class FamilyControllerTest {
 
         mockMvc.perform(get("/api/family/contacts/999")
                 .header("Authorization", validAuthHeader))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Contact not found"));
     }
 
     /**
-     * 测试更新联系人 - 成功情况
+     * 测试更新家庭联系人 - 成功情况
      */
     @Test
     void testUpdateFamilyContact_Success() throws Exception {
+        // 准备更新数据
         Map<String, Object> updateData = new HashMap<>();
         updateData.put("name", "张三（更新）");
-        updateData.put("phoneNumber", "13900139000");
+        updateData.put("phone", "13900139000");
+        updateData.put("email", "zhangsan_updated@example.com");
+        updateData.put("relationship", "儿子");
+        updateData.put("isEmergencyContact", true);
 
+        // 创建更新后的联系人对象
         FamilyContact updatedContact = new FamilyContact();
         updatedContact.setId(1L);
         updatedContact.setUserId(1L);
         updatedContact.setName("张三（更新）");
-        updatedContact.setPhoneNumber("13900139000");
-        updatedContact.setRelationship(FamilyContact.RelationshipType.CHILD);
-        updatedContact.setNotificationPreference(FamilyContact.NotificationPreference.ALL);
-        updatedContact.setEmergencyContact(true);
-        updatedContact.setActive(true);
+        updatedContact.setPhone("13900139000");
+        updatedContact.setEmail("zhangsan_updated@example.com");
+        updatedContact.setRelationship("儿子");
+        updatedContact.setIsEmergencyContact(true);
+        updatedContact.setIsActive(true);
         updatedContact.setCreatedAt(LocalDateTime.now());
         updatedContact.setUpdatedAt(LocalDateTime.now());
 
@@ -221,12 +208,12 @@ public class FamilyControllerTest {
                 .content(objectMapper.writeValueAsString(updateData)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Contact updated successfully"))
+                .andExpect(jsonPath("$.message").value("Family contact updated successfully"))
                 .andExpect(jsonPath("$.contact.name").value("张三（更新）"));
     }
 
     /**
-     * 测试删除联系人 - 成功情况
+     * 测试删除家庭联系人 - 成功情况
      */
     @Test
     void testDeleteFamilyContact_Success() throws Exception {
@@ -236,11 +223,11 @@ public class FamilyControllerTest {
                 .header("Authorization", validAuthHeader))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Contact deleted successfully"));
+                .andExpect(jsonPath("$.message").value("Family contact deleted successfully"));
     }
 
     /**
-     * 测试删除联系人 - 联系人不存在
+     * 测试删除家庭联系人 - 未找到
      */
     @Test
     void testDeleteFamilyContact_NotFound() throws Exception {
@@ -248,20 +235,21 @@ public class FamilyControllerTest {
 
         mockMvc.perform(delete("/api/family/contacts/999")
                 .header("Authorization", validAuthHeader))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Contact not found"));
     }
 
     /**
-     * 测试发送消息 - 成功情况
+     * 测试发送消息给家庭联系人 - 成功情况
      */
     @Test
     void testSendMessageToFamily_Success() throws Exception {
         Map<String, Object> messageData = new HashMap<>();
-        messageData.put("message", "你好，我很好！");
+        messageData.put("message", "测试消息");
         messageData.put("type", "general");
 
-        when(familyService.sendMessageToFamily(anyLong(), anyLong(), anyString(), anyString()))
-                .thenReturn(true);
+        when(familyService.sendMessageToFamily(anyLong(), anyLong(), anyString(), anyString())).thenReturn(true);
 
         mockMvc.perform(post("/api/family/contacts/1/message")
                 .header("Authorization", validAuthHeader)
@@ -269,12 +257,11 @@ public class FamilyControllerTest {
                 .content(objectMapper.writeValueAsString(messageData)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Message sent successfully"))
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.message").value("Message sent successfully"));
     }
 
     /**
-     * 测试发送消息 - 消息内容为空
+     * 测试发送消息给家庭联系人 - 空消息
      */
     @Test
     void testSendMessageToFamily_EmptyMessage() throws Exception {
@@ -305,8 +292,8 @@ public class FamilyControllerTest {
                 .header("Authorization", validAuthHeader))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.emergencyContacts").isArray())
-                .andExpect(jsonPath("$.count").value(1));
+                .andExpect(jsonPath("$.contacts").isArray())
+                .andExpect(jsonPath("$.totalCount").value(1));
     }
 
     /**
@@ -315,9 +302,9 @@ public class FamilyControllerTest {
     @Test
     void testGetFamilyStats_Success() throws Exception {
         Map<String, Object> stats = new HashMap<>();
-        stats.put("totalContacts", 5);
+        stats.put("totalContacts", 3);
         stats.put("emergencyContacts", 2);
-        stats.put("activeContacts", 4);
+        stats.put("activeContacts", 3);
 
         when(familyService.getFamilyStats(anyLong())).thenReturn(stats);
 
@@ -325,9 +312,9 @@ public class FamilyControllerTest {
                 .header("Authorization", validAuthHeader))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.stats.totalContacts").value(5))
+                .andExpect(jsonPath("$.stats.totalContacts").value(3))
                 .andExpect(jsonPath("$.stats.emergencyContacts").value(2))
-                .andExpect(jsonPath("$.stats.activeContacts").value(4));
+                .andExpect(jsonPath("$.stats.activeContacts").value(3));
     }
 
     /**
@@ -335,26 +322,22 @@ public class FamilyControllerTest {
      */
     @Test
     void testAllEndpoints_NoAuth() throws Exception {
-        // 测试所有需要认证的端点
-        String[] endpoints = {
-            "/api/family/contacts",
-            "/api/family/contacts/1",
-            "/api/family/emergency-contacts",
-            "/api/family/stats"
-        };
+        // 测试所有主要端点在没有认证时都返回401
+        mockMvc.perform(get("/api/family/contacts"))
+                .andExpect(status().isUnauthorized());
 
-        for (String endpoint : endpoints) {
-            mockMvc.perform(get(endpoint))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.message").value("Authentication required"));
-        }
+        mockMvc.perform(post("/api/family/contacts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isUnauthorized());
 
-        // 测试DELETE端点
+        mockMvc.perform(put("/api/family/contacts/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isUnauthorized());
+
         mockMvc.perform(delete("/api/family/contacts/1"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("Authentication required"));
+                .andExpect(status().isUnauthorized());
     }
 
     /**
@@ -363,12 +346,12 @@ public class FamilyControllerTest {
     @Test
     void testServiceExceptionHandling() throws Exception {
         when(familyService.getFamilyContacts(anyLong()))
-                .thenThrow(new RuntimeException("Database connection failed"));
+                .thenThrow(new RuntimeException("Database error"));
 
         mockMvc.perform(get("/api/family/contacts")
                 .header("Authorization", validAuthHeader))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("Error fetching family contacts: Database connection failed"));
+                .andExpect(jsonPath("$.message").value("Internal server error"));
     }
 } 

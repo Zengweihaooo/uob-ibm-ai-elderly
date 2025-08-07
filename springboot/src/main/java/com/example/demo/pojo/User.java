@@ -32,29 +32,30 @@ public class User {
         ADMIN            // 管理员
     }
     
-    private String email;
-    private String name;
     private Long id;
+    private String username;
+    private String email;
+    private String passwordHash;
+    private String name;
     private String verificationCode;
     private UserStatus status;
+    private UserRole role;
+    private String phoneNumber;
+    private Boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime verifiedAt;
     private LocalDateTime codeExpiresAt;
-    private String phoneNumber;
-    
-    // ========== 新增角色字段 ==========
-    private UserRole role;
-    // ========== 新增字段结束 ==========
+    private LocalDateTime updatedAt;
     
     /**
      * Default constructor
      */
     public User() {
         this.status = UserStatus.UNREGISTERED;
-        this.createdAt = LocalDateTime.now();
-        // ========== 初始化角色字段 ==========
         this.role = UserRole.ELDERLY; // 默认为老年人用户
-        // ========== 初始化结束 ==========
+        this.isVerified = false;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
     
     /**
@@ -65,6 +66,7 @@ public class User {
     public User(String email) {
         this();
         this.email = email;
+        this.username = email.split("@")[0]; // Use email prefix as username
         this.name = email.split("@")[0]; // Use email prefix as name
     }
 
@@ -89,12 +91,28 @@ public class User {
         this.id = id;
     }
     
+    public String getUsername() {
+        return username;
+    }
+    
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    
     public String getEmail() {
         return email;
     }
     
     public void setEmail(String email) {
         this.email = email;
+    }
+    
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+    
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
     
     public String getName() {
@@ -121,6 +139,30 @@ public class User {
         this.status = status;
     }
     
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
+    
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+    
+    public Boolean getIsVerified() {
+        return isVerified;
+    }
+    
+    public void setIsVerified(Boolean isVerified) {
+        this.isVerified = isVerified;
+    }
+    
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -145,23 +187,13 @@ public class User {
         this.codeExpiresAt = codeExpiresAt;
     }
     
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
     
-    // ========== 新增角色相关getter和setter方法 ==========
-    public UserRole getRole() {
-        return role;
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
-
-    public void setRole(UserRole role) {
-        this.role = role;
-    }
-    // ========== 新增方法结束 ==========
     
     /**
      * Check if the verification code has expired
@@ -177,21 +209,25 @@ public class User {
      */
     public void verify() {
         this.status = UserStatus.VERIFIED;
+        this.isVerified = true;
         this.verifiedAt = LocalDateTime.now();
         this.verificationCode = null;
         this.codeExpiresAt = null;
+        this.updatedAt = LocalDateTime.now();
     }
     
     @Override
     public String toString() {
         return "User{" +
-                "email='" + email + '\'' +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", name='" + name + '\'' +
                 ", status=" + status +
+                ", role=" + role +
+                ", isVerified=" + isVerified +
                 ", createdAt=" + createdAt +
                 ", verifiedAt=" + verifiedAt +
-                // ========== 新增角色字段到toString方法 ==========
-                ", role=" + role +
-                // ========== 新增字段结束 ==========
                 '}';
     }
 } 
