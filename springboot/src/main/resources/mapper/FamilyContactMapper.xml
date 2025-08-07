@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.FamilyContactMapper">
+
+    <!-- Result Map -->
+    <resultMap id="FamilyContactResultMap" type="com.example.demo.pojo.FamilyContact">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="relationship" property="relationship" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="is_emergency_contact" property="isEmergencyContact" jdbcType="BOOLEAN"/>
+        <result column="is_active" property="isActive" jdbcType="BOOLEAN"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- Base Columns -->
+    <sql id="Base_Column_List">
+        id, user_id, name, relationship, phone, email, address, 
+        is_emergency_contact, is_active, created_at, updated_at
+    </sql>
+
+    <!-- Insert -->
+    <insert id="insert" parameterType="com.example.demo.pojo.FamilyContact" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO family_contacts (
+            user_id, name, relationship, phone, email, address,
+            is_emergency_contact, is_active, created_at, updated_at
+        ) VALUES (
+            #{userId}, #{name}, #{relationship}, #{phone}, #{email}, #{address},
+            #{isEmergencyContact}, #{isActive}, #{createdAt}, #{updatedAt}
+        )
+    </insert>
+
+    <!-- Update -->
+    <update id="update" parameterType="com.example.demo.pojo.FamilyContact">
+        UPDATE family_contacts
+        SET user_id = #{userId},
+            name = #{name},
+            relationship = #{relationship},
+            phone = #{phone},
+            email = #{email},
+            address = #{address},
+            is_emergency_contact = #{isEmergencyContact},
+            is_active = #{isActive},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete by ID -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM family_contacts WHERE id = #{id}
+    </delete>
+
+    <!-- Find by ID -->
+    <select id="findById" parameterType="java.lang.Long" resultMap="FamilyContactResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM family_contacts
+        WHERE id = #{id}
+    </select>
+
+    <!-- Find by User ID -->
+    <select id="findByUserId" parameterType="java.lang.Long" resultMap="FamilyContactResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM family_contacts
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Find Active by User ID -->
+    <select id="findActiveByUserId" parameterType="java.lang.Long" resultMap="FamilyContactResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM family_contacts
+        WHERE user_id = #{userId} AND is_active = 1
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Find Emergency Contacts by User ID -->
+    <select id="findEmergencyContactsByUserId" parameterType="java.lang.Long" resultMap="FamilyContactResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM family_contacts
+        WHERE user_id = #{userId} AND is_emergency_contact = 1 AND is_active = 1
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Find by Relationship -->
+    <select id="findByRelationship" resultMap="FamilyContactResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM family_contacts
+        WHERE user_id = #{userId} AND relationship = #{relationship} AND is_active = 1
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Count by User ID -->
+    <select id="countByUserId" parameterType="java.lang.Long" resultType="int">
+        SELECT COUNT(*)
+        FROM family_contacts
+        WHERE user_id = #{userId} AND is_active = 1
+    </select>
+
+    <!-- Find by Phone -->
+    <select id="findByPhone" parameterType="java.lang.String" resultMap="FamilyContactResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM family_contacts
+        WHERE phone = #{phone} AND is_active = 1
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Find by Email -->
+    <select id="findByEmail" parameterType="java.lang.String" resultMap="FamilyContactResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM family_contacts
+        WHERE email = #{email} AND is_active = 1
+        ORDER BY created_at DESC
+    </select>
+
+</mapper> 

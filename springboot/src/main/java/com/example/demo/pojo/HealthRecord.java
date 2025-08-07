@@ -12,7 +12,7 @@ public class HealthRecord {
     
     // ========== 新增共享功能相关字段 ==========
     // 是否已共享
-    private boolean shared;
+    private Boolean shared;
     // 共享目标用户ID
     private Long sharedWithUserId;
     // 共享对象角色（family 或 doctor）
@@ -86,12 +86,12 @@ public class HealthRecord {
         this.notes = notes;
     }
 
-    // ========== 新增共享功能相关getter和setter方法 ==========
-    public boolean isShared() {
+    // ========== 共享功能相关getter和setter ==========
+    public Boolean getShared() {
         return shared;
     }
 
-    public void setShared(boolean shared) {
+    public void setShared(Boolean shared) {
         this.shared = shared;
     }
 
@@ -118,7 +118,7 @@ public class HealthRecord {
     public void setSharedAt(LocalDateTime sharedAt) {
         this.sharedAt = sharedAt;
     }
-    // ========== 新增getter和setter方法结束 ==========
+    // ========== 共享功能相关getter和setter结束 ==========
 
     @Override
     public String toString() {
@@ -129,12 +129,10 @@ public class HealthRecord {
                 ", value='" + value + '\'' +
                 ", recordTime=" + recordTime +
                 ", notes='" + notes + '\'' +
-                // ========== 新增共享字段到toString方法 ==========
                 ", shared=" + shared +
                 ", sharedWithUserId=" + sharedWithUserId +
                 ", sharedWithRole='" + sharedWithRole + '\'' +
                 ", sharedAt=" + sharedAt +
-                // ========== 新增字段结束 ==========
                 '}';
     }
 } 

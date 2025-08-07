@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.pojo.User;
+import com.example.demo.mapper.UserMapper;
 import com.example.demo.util.VerificationCodeGenerator;
 
 /**
@@ -26,14 +26,14 @@ import com.example.demo.util.VerificationCodeGenerator;
 @Service
 public class UserService {
     
-    // In-memory storage for users (consider using database in production)
-    private final Map<String, User> users = new ConcurrentHashMap<>();
-    
-    // Verification code expiry time in minutes
-    private static final int CODE_EXPIRY_MINUTES = 15;
+    @Autowired
+    private UserMapper userMapper;
     
     @Autowired
     private EmailService emailService;
+    
+    // Verification code expiry time in minutes
+    private static final int CODE_EXPIRY_MINUTES = 15;
     
     /**
      * Register a new user or resend verification code
@@ -49,17 +49,23 @@ public class UserService {
         
         email = email.trim().toLowerCase();
         
-        User user = users.get(email);
+        User user = userMapper.findByEmail(email);
         if (user == null) {
             user = new User(email);
-            users.put(email, user);
+            userMapper.insert(user);
         }
         
         // Generate new verification code
         String verificationCode = VerificationCodeGenerator.generateCode();
+        LocalDateTime codeExpiresAt = LocalDateTime.now().plusMinutes(CODE_EXPIRY_MINUTES);
+        
+        // Update verification code in database
+        userMapper.updateVerificationCode(user.getId(), verificationCode, codeExpiresAt);
+        
+        // Update user object
         user.setVerificationCode(verificationCode);
         user.setStatus(User.UserStatus.PENDING);
-        user.setCodeExpiresAt(LocalDateTime.now().plusMinutes(CODE_EXPIRY_MINUTES));
+        user.setCodeExpiresAt(codeExpiresAt);
         
         // Send verification email
         emailService.sendVerificationEmail(email, verificationCode);
@@ -80,7 +86,7 @@ public class UserService {
         }
         
         email = email.trim().toLowerCase();
-        User user = users.get(email);
+        User user = userMapper.findByEmail(email);
         
         if (user == null || user.getStatus() != User.UserStatus.PENDING) {
             return false;
@@ -91,6 +97,10 @@ public class UserService {
         }
         
         if (code.equals(user.getVerificationCode())) {
+            // Update verification status in database
+            userMapper.updateVerificationStatus(user.getId(), "VERIFIED", LocalDateTime.now());
+            
+            // Update user object
             user.verify();
             return true;
         }
@@ -99,10 +109,10 @@ public class UserService {
     }
     
     /**
-     * Delete a user by email address
+     * Delete a user by email
      * 
-     * @param email The email address of the user to delete
-     * @return true if user was deleted, false if user was not found
+     * @param email The email address
+     * @return true if deleted, false if not found
      */
     public boolean deleteUser(String email) {
         if (email == null || email.trim().isEmpty()) {
@@ -110,15 +120,21 @@ public class UserService {
         }
         
         email = email.trim().toLowerCase();
-        User removedUser = users.remove(email);
-        return removedUser != null;
+        User user = userMapper.findByEmail(email);
+        
+        if (user == null) {
+            return false;
+        }
+        
+        int result = userMapper.deleteById(user.getId());
+        return result > 0;
     }
     
     /**
-     * Delete multiple users by email addresses
+     * Delete multiple users by email list
      * 
-     * @param emails List of email addresses to delete
-     * @return Number of users successfully deleted
+     * @param emails List of email addresses
+     * @return Number of users deleted
      */
     public int deleteUsers(List<String> emails) {
         if (emails == null || emails.isEmpty()) {
@@ -131,35 +147,42 @@ public class UserService {
                 deletedCount++;
             }
         }
+        
         return deletedCount;
     }
     
     /**
-     * Delete all users with a specific status
+     * Delete users by status
      * 
-     * @param status The user status to filter by for deletion
+     * @param status The user status to delete
      * @return Number of users deleted
      */
     public int deleteUsersByStatus(User.UserStatus status) {
-        List<String> emailsToDelete = users.values().stream()
-                .filter(user -> user.getStatus() == status)
-                .map(User::getEmail)
-                .toList();
+        List<User> usersToDelete = userMapper.findByStatus(status.name());
+        int deletedCount = 0;
         
-        return deleteUsers(emailsToDelete);
+        for (User user : usersToDelete) {
+            int result = userMapper.deleteById(user.getId());
+            if (result > 0) {
+                deletedCount++;
+            }
+        }
+        
+        return deletedCount;
     }
     
     /**
      * Get user by email
      * 
      * @param email The email address
-     * @return The user object or null if not found
+     * @return The user, or null if not found
      */
     public User getUserByEmail(String email) {
-        if (email == null) {
+        if (email == null || email.trim().isEmpty()) {
             return null;
         }
-        return users.get(email.trim().toLowerCase());
+        
+        return userMapper.findByEmail(email.trim().toLowerCase());
     }
     
     /**
@@ -168,126 +191,123 @@ public class UserService {
      * @return List of all users
      */
     public List<User> getAllUsers() {
-        return new ArrayList<>(users.values());
+        return userMapper.findAll();
     }
     
     /**
      * Get users by status
      * 
-     * @param status The user status to filter by
+     * @param status The user status
      * @return List of users with the specified status
      */
     public List<User> getUsersByStatus(User.UserStatus status) {
-        return users.values().stream()
-                .filter(user -> user.getStatus() == status)
-                .toList();
+        return userMapper.findByStatus(status.name());
     }
     
     /**
-     * Delete expired verification codes
-     * This method should be called periodically to clean up expired codes
+     * Clean up expired verification codes
      */
     public void cleanupExpiredCodes() {
-        users.values().removeIf(user -> 
-            user.getStatus() == User.UserStatus.PENDING && user.isCodeExpired()
-        );
+        List<User> expiredUsers = userMapper.findUsersWithExpiredCodes();
+        for (User user : expiredUsers) {
+            // Update status to UNREGISTERED for expired codes
+            userMapper.updateVerificationStatus(user.getId(), "UNREGISTERED", null);
+        }
     }
     
     /**
      * Get registration statistics
      * 
-     * @return Map containing user counts by status
+     * @return Map containing registration statistics
      */
     public Map<String, Integer> getRegistrationStats() {
         Map<String, Integer> stats = new HashMap<>();
-        stats.put("total", users.size());
-        stats.put("pending", (int) users.values().stream()
-                .filter(user -> user.getStatus() == User.UserStatus.PENDING).count());
-        stats.put("verified", (int) users.values().stream()
-                .filter(user -> user.getStatus() == User.UserStatus.VERIFIED).count());
+        
+        stats.put("total", userMapper.countByStatus("VERIFIED"));
+        stats.put("pending", userMapper.countByStatus("PENDING"));
+        stats.put("unregistered", userMapper.countByStatus("UNREGISTERED"));
+        
         return stats;
     }
     
-    // ========== 新增角色相关功能 ==========
-    
     /**
-     * 获取所有医生用户
-     * @return 医生用户列表
+     * Get all doctors
+     * 
+     * @return List of doctors
      */
     public List<User> getDoctors() {
-        return users.values().stream()
-                .filter(user -> user.getRole() == User.UserRole.DOCTOR && 
-                               user.getStatus() == User.UserStatus.VERIFIED)
-                .collect(Collectors.toList());
+        return userMapper.findByRole("DOCTOR");
     }
     
     /**
-     * 获取所有家庭成员用户
-     * @return 家庭成员用户列表
+     * Get all family members
+     * 
+     * @return List of family members
      */
     public List<User> getFamilyMembers() {
-        return users.values().stream()
-                .filter(user -> user.getRole() == User.UserRole.FAMILY && 
-                               user.getStatus() == User.UserStatus.VERIFIED)
-                .collect(Collectors.toList());
+        return userMapper.findByRole("FAMILY");
     }
     
     /**
-     * 验证用户是否为医生
-     * @param userId 用户ID
-     * @return 是否为医生
+     * Check if user is a doctor
+     * 
+     * @param userId The user ID
+     * @return true if user is a doctor, false otherwise
      */
     public boolean isDoctor(Long userId) {
-        User user = getUserById(userId);
+        User user = userMapper.findById(userId);
         return user != null && user.getRole() == User.UserRole.DOCTOR;
     }
     
     /**
-     * 验证用户是否为家庭成员
-     * @param userId 用户ID
-     * @return 是否为家庭成员
+     * Check if user is a family member
+     * 
+     * @param userId The user ID
+     * @return true if user is a family member, false otherwise
      */
     public boolean isFamilyMember(Long userId) {
-        User user = getUserById(userId);
+        User user = userMapper.findById(userId);
         return user != null && user.getRole() == User.UserRole.FAMILY;
     }
     
     /**
-     * 根据ID获取用户
-     * @param userId 用户ID
-     * @return 用户对象
+     * Get user by ID
+     * 
+     * @param userId The user ID
+     * @return The user, or null if not found
      */
     public User getUserById(Long userId) {
-        return users.values().stream()
-                .filter(user -> user.getId() != null && user.getId().equals(userId))
-                .findFirst()
-                .orElse(null);
+        return userMapper.findById(userId);
     }
     
     /**
-     * 设置用户角色
-     * @param email 用户邮箱
-     * @param role 角色
-     * @return 是否设置成功
+     * Set user role
+     * 
+     * @param email The user email
+     * @param role The new role
+     * @return true if updated, false otherwise
      */
     public boolean setUserRole(String email, User.UserRole role) {
-        User user = users.get(email);
-        if (user != null) {
-            user.setRole(role);
-            return true;
+        User user = userMapper.findByEmail(email);
+        if (user == null) {
+            return false;
         }
-        return false;
+        
+        user.setRole(role);
+        user.setUpdatedAt(LocalDateTime.now());
+        
+        int result = userMapper.update(user);
+        return result > 0;
     }
     
     /**
-     * 获取用户角色
-     * @param userId 用户ID
-     * @return 用户角色
+     * Get user role
+     * 
+     * @param userId The user ID
+     * @return The user role, or null if user not found
      */
     public User.UserRole getUserRole(Long userId) {
-        User user = getUserById(userId);
+        User user = userMapper.findById(userId);
         return user != null ? user.getRole() : null;
     }
-    
-    // ========== 新增角色相关功能结束 ==========
 } 
