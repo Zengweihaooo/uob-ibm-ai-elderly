@@ -610,64 +610,6 @@
         .modal-btn:hover {
             transform: translateY(-2px);
         }
-
-        /* Bottom Navigation Styles */
-        .bottom-navigation {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: white;
-            border-top: 3px solid var(--elderly-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .nav-tab {
-            flex: 1;
-            max-width: 200px;
-            height: 100%;
-            background: none;
-            border: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: #666;
-            font-family: inherit;
-            text-decoration: none;
-        }
-
-        .nav-tab:hover {
-            background: #f8f9fa;
-            color: var(--elderly-primary);
-        }
-
-        .nav-tab.active {
-            background: var(--elderly-primary);
-            color: white;
-        }
-
-        .nav-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
-        }
-
-        .nav-label {
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        /* Adjust container padding for bottom navigation */
-        .chat-container {
-            margin-bottom: 100px;
-        }
     </style>
 </head>
 <body>
@@ -1467,29 +1409,35 @@
         // Initialize the chat when page loads
         document.addEventListener('DOMContentLoaded', initializeChat);
     </script>
-
-    <!-- Bottom Navigation -->
-    <div class="bottom-navigation">
-        <a href="schedule.html" class="nav-tab nav-link-tab">
-            <span class="nav-icon">📅</span>
-            <span class="nav-label">Schedule</span>
-        </a>
-        <a href="ai-assistant.html" class="nav-tab nav-link-tab">
-            <span class="nav-icon">🤖</span>
-            <span class="nav-label">AI Assistant</span>
-        </a>
-        <a href="schedule.html#pet" class="nav-tab nav-link-tab">
-            <span class="nav-icon">🐱</span>
-            <span class="nav-label">Virtual Pet</span>
-        </a>
-        <a href="memo.html" class="nav-tab nav-link-tab">
-            <span class="nav-icon">📝</span>
-            <span class="nav-label">Memo</span>
-        </a>
-        <a href="podcast.html" class="nav-tab nav-link-tab">
-            <span class="nav-icon">🎧</span>
-            <span class="nav-label">Podcast</span>
-        </a>
-    </div>
+    
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-container">
+            <a href="schedule.html" class="nav-item">
+                <div class="nav-icon">📅</div>
+                <div class="nav-text">Schedule</div>
+            </a>
+            <a href="ai-assistant.html" class="nav-item">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-text">AI Assistant</div>
+            </a>
+            <a href="memo.html" class="nav-item">
+                <div class="nav-icon">📝</div>
+                <div class="nav-text">Memo</div>
+            </a>
+            <a href="chatbot.html" class="nav-item active">
+                <div class="nav-icon">💬</div>
+                <div class="nav-text">Chat</div>
+            </a>
+            <a href="admin.html" class="nav-item">
+                <div class="nav-icon">⚙️</div>
+                <div class="nav-text">Settings</div>
+            </a>
+            <a href="podcast.html" class="nav-item">
+                <div class="nav-icon">🎧</div>
+                <div class="nav-text">Podcast</div>
+            </a>
+        </div>
+    </nav>
 </body>
 </html> 

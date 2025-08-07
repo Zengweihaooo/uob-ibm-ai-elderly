@@ -10,7 +10,7 @@ import com.example.demo.pojo.User;
 
 
 /**
- * This service is used to monitor the health and schedule of the users
+ * This service is used to monitor the health and schedule of the users (user only)
  * It will send reminder emails to the users who haven't submitted the health and schedule data today
  * @author Lepeng Zhou
  * @version 1.0
