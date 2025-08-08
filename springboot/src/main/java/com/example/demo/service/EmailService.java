@@ -103,7 +103,14 @@ public class EmailService {
             System.out.println("Verification email sent successfully to: " + toEmail + " with code: " + verificationCode);
         } catch (MessagingException e) {
             System.err.println("Failed to send verification email to: " + toEmail + " => " + e.getMessage());
+            System.err.println("Error type: " + e.getClass().getSimpleName());
+            e.printStackTrace(); // 打印完整堆栈跟踪
             throw new RuntimeException("Failed to send verification email", e);
+        } catch (Exception e) {
+            System.err.println("Unexpected error sending email to: " + toEmail + " => " + e.getMessage());
+            System.err.println("Error type: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            throw new RuntimeException("Unexpected error sending verification email", e);
         }
     }
 
