@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.example.demo.controller.EmotionCompanionController;
 import com.example.demo.pojo.User;
+import com.example.demo.pojo.ImportantDate;
 
 
 /**
@@ -32,6 +33,9 @@ public class ScheduleMonitorService {
 
     @Autowired
     private SmsService smsService;
+
+    @Autowired
+    private ImportantDateService importantDateService;
 
     @Scheduled(cron = "0 0 9 * * ?") // Check the health data every morning at 9 am
     public void checkHealthSubmission() {
@@ -180,6 +184,20 @@ public class ScheduleMonitorService {
             // emotionCompanionController.createMessage("companion", petMessage, "appointment", user.getId());
         } catch (Exception e) {
             System.err.println("Failed to send appointment pet message: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Check and send important date reminders
+     * Runs every day at 8:00 AM to send reminders for important dates
+     */
+    @Scheduled(cron = "0 0 8 * * ?") // Check important dates every morning at 8 am
+    public void checkImportantDateReminders() {
+        try {
+            System.out.println("Checking for important date reminders...");
+            importantDateService.sendAllPendingReminders();
+        } catch (Exception e) {
+            System.err.println("Error checking important date reminders: " + e.getMessage());
         }
     }
 }

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重要日期提醒</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e8f4fd;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        .reminder-content {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0066cc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .date-info {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .date-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+        .date-details {
+            color: #555;
+            margin: 5px 0;
+        }
+        .reminder-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .reminder-week {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .reminder-day {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        .action-buttons {
+            text-align: center;
+            margin: 25px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 5px;
+            background-color: #0066cc;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background-color: #0052a3;
+        }
+        .tips {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .tips h4 {
+            color: #0c5460;
+            margin-top: 0;
+        }
+        .tips ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .tips li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🎉 重要日期提醒</div>
+            <div class="subtitle">IBM AI 老年人陪伴系统</div>
+        </div>
+
+        <!-- Greeting -->
+        <div class="reminder-content">
+            <h3>亲爱的 <span th:text="${userName}">用户</span>，</h3>
+            <p>我们注意到您有一个重要的日期即将到来，希望这个提醒能帮助您做好准备！</p>
+        </div>
+
+        <!-- Date Information -->
+        <div class="date-info">
+            <div class="date-title">
+                <span th:text="${importantDate.title}">重要日期</span>
+                <span class="reminder-type" th:class="${reminderType == 'week' ? 'reminder-week' : 'reminder-day'}" 
+                      th:text="${reminderType == 'week' ? '一周前提醒' : '一天前提醒'}">提醒类型</span>
+            </div>
+            <div class="date-details">
+                <strong>日期类型：</strong><span th:text="${importantDate.type}">生日</span><br>
+                <strong>具体日期：</strong><span th:text="${#temporals.format(importantDate.date, 'yyyy年MM月dd日')}">2025年01月01日</span><br>
+                <span th:if="${importantDate.description}" th:text="'描述：' + ${importantDate.description}"></span>
+            </div>
+        </div>
+
+        <!-- Reminder Content Based on Type -->
+        <div th:if="${reminderType == 'week'}" class="reminder-content">
+            <h4>📅 一周前提醒</h4>
+            <p>距离这个重要日期还有一周时间，建议您：</p>
+            <ul>
+                <li>准备相关的礼物或安排</li>
+                <li>确认当天的具体时间安排</li>
+                <li>通知相关的亲朋好友</li>
+                <li>准备相关的庆祝活动</li>
+            </ul>
+        </div>
+
+        <div th:if="${reminderType == 'day'}" class="reminder-content">
+            <h4>🎯 一天前提醒</h4>
+            <p>明天就是重要日期了！请确保：</p>
+            <ul>
+                <li>所有准备工作已经完成</li>
+                <li>确认当天的具体安排</li>
+                <li>准备好相关的物品或礼物</li>
+                <li>设置好提醒闹钟</li>
+            </ul>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="tips">
+            <h4>💡 温馨提示</h4>
+            <ul>
+                <li>如果您需要修改或取消这个重要日期，请登录系统进行管理</li>
+                <li>您可以在系统中添加更多的重要日期提醒</li>
+                <li>如有任何问题，请联系我们的客服团队</li>
+            </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="#" class="btn">查看详情</a>
+            <a href="#" class="btn">管理重要日期</a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>此邮件由 IBM AI 老年人陪伴系统自动发送</p>
+            <p>发送时间：<span th:text="${#temporals.format(timestamp, 'yyyy年MM月dd日 HH:mm')}">2025年01月01日 09:00</span></p>
+            <p>如果您不希望收到此类提醒，请在系统设置中调整通知偏好</p>
+        </div>
+    </div>
+</body>
+</html> 
