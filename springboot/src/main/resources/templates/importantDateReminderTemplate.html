@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>重要日期提醒</title>
+    <title>Important Date Reminder</title>
     <style>
         body {
-            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             line-height: 1.6;
             color: #333;
             max-width: 600px;
@@ -124,74 +124,74 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <div class="logo">🎉 重要日期提醒</div>
-            <div class="subtitle">IBM AI 老年人陪伴系统</div>
+            <div class="logo">🎉 Important Date Reminder</div>
+            <div class="subtitle">IBM AI Elderly Companion System</div>
         </div>
 
         <!-- Greeting -->
         <div class="reminder-content">
-            <h3>亲爱的 <span th:text="${userName}">用户</span>，</h3>
-            <p>我们注意到您有一个重要的日期即将到来，希望这个提醒能帮助您做好准备！</p>
+            <h3>Dear <span th:text="${userName}">User</span>,</h3>
+            <p>We noticed you have an important date approaching, and we hope this reminder helps you prepare!</p>
         </div>
 
         <!-- Date Information -->
         <div class="date-info">
             <div class="date-title">
-                <span th:text="${importantDate.title}">重要日期</span>
+                <span th:text="${importantDate.title}">Important Date</span>
                 <span class="reminder-type" th:class="${reminderType == 'week' ? 'reminder-week' : 'reminder-day'}" 
-                      th:text="${reminderType == 'week' ? '一周前提醒' : '一天前提醒'}">提醒类型</span>
+                      th:text="${reminderType == 'week' ? 'One Week Reminder' : 'One Day Reminder'}">Reminder Type</span>
             </div>
             <div class="date-details">
-                <strong>日期类型：</strong><span th:text="${importantDate.type}">生日</span><br>
-                <strong>具体日期：</strong><span th:text="${#temporals.format(importantDate.date, 'yyyy年MM月dd日')}">2025年01月01日</span><br>
-                <span th:if="${importantDate.description}" th:text="'描述：' + ${importantDate.description}"></span>
+                <strong>Date Type:</strong><span th:text="${importantDate.type}">Birthday</span><br>
+                <strong>Specific Date:</strong><span th:text="${#temporals.format(importantDate.date, 'yyyy-MM-dd')}">2025-01-01</span><br>
+                <span th:if="${importantDate.description}" th:text="'Description: ' + ${importantDate.description}"></span>
             </div>
         </div>
 
         <!-- Reminder Content Based on Type -->
         <div th:if="${reminderType == 'week'}" class="reminder-content">
-            <h4>📅 一周前提醒</h4>
-            <p>距离这个重要日期还有一周时间，建议您：</p>
+            <h4>📅 One Week Reminder</h4>
+            <p>This important date is one week away. We suggest you:</p>
             <ul>
-                <li>准备相关的礼物或安排</li>
-                <li>确认当天的具体时间安排</li>
-                <li>通知相关的亲朋好友</li>
-                <li>准备相关的庆祝活动</li>
+                <li>Prepare related gifts or arrangements</li>
+                <li>Confirm the specific time schedule for the day</li>
+                <li>Notify relevant family and friends</li>
+                <li>Prepare related celebration activities</li>
             </ul>
         </div>
 
         <div th:if="${reminderType == 'day'}" class="reminder-content">
-            <h4>🎯 一天前提醒</h4>
-            <p>明天就是重要日期了！请确保：</p>
+            <h4>🎯 One Day Reminder</h4>
+            <p>Tomorrow is the important date! Please ensure:</p>
             <ul>
-                <li>所有准备工作已经完成</li>
-                <li>确认当天的具体安排</li>
-                <li>准备好相关的物品或礼物</li>
-                <li>设置好提醒闹钟</li>
+                <li>All preparations are completed</li>
+                <li>Confirm the specific arrangements for the day</li>
+                <li>Prepare related items or gifts</li>
+                <li>Set up reminder alarms</li>
             </ul>
         </div>
 
         <!-- Tips Section -->
         <div class="tips">
-            <h4>💡 温馨提示</h4>
+            <h4>💡 Helpful Tips</h4>
             <ul>
-                <li>如果您需要修改或取消这个重要日期，请登录系统进行管理</li>
-                <li>您可以在系统中添加更多的重要日期提醒</li>
-                <li>如有任何问题，请联系我们的客服团队</li>
+                <li>If you need to modify or cancel this important date, please log into the system to manage it</li>
+                <li>You can add more important date reminders in the system</li>
+                <li>If you have any questions, please contact our customer service team</li>
             </ul>
         </div>
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <a href="#" class="btn">查看详情</a>
-            <a href="#" class="btn">管理重要日期</a>
+            <a href="#" class="btn">View Details</a>
+            <a href="#" class="btn">Manage Important Dates</a>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p>此邮件由 IBM AI 老年人陪伴系统自动发送</p>
-            <p>发送时间：<span th:text="${#temporals.format(timestamp, 'yyyy年MM月dd日 HH:mm')}">2025年01月01日 09:00</span></p>
-            <p>如果您不希望收到此类提醒，请在系统设置中调整通知偏好</p>
+            <p>This email was automatically sent by IBM AI Elderly Companion System</p>
+            <p>Sent at: <span th:text="${#temporals.format(timestamp, 'yyyy-MM-dd HH:mm')}">2025-01-01 09:00</span></p>
+            <p>If you don't want to receive such reminders, please adjust your notification preferences in the system settings</p>
         </div>
     </div>
 </body>
