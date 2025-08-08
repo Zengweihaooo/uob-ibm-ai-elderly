@@ -22,6 +22,10 @@ public class ImportantDate {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
+    // Email notification tracking
+    private LocalDateTime weekReminderSent;
+    private LocalDateTime dayReminderSent;
+    
     // Default constructor
     public ImportantDate() {
         this.enabled = true;
@@ -120,6 +124,22 @@ public class ImportantDate {
         this.updatedAt = updatedAt;
     }
     
+    public LocalDateTime getWeekReminderSent() {
+        return weekReminderSent;
+    }
+    
+    public void setWeekReminderSent(LocalDateTime weekReminderSent) {
+        this.weekReminderSent = weekReminderSent;
+    }
+    
+    public LocalDateTime getDayReminderSent() {
+        return dayReminderSent;
+    }
+    
+    public void setDayReminderSent(LocalDateTime dayReminderSent) {
+        this.dayReminderSent = dayReminderSent;
+    }
+    
     @Override
     public String toString() {
         return "ImportantDate{" +
@@ -133,6 +153,8 @@ public class ImportantDate {
                 ", enabled=" + enabled +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
+                ", weekReminderSent=" + weekReminderSent +
+                ", dayReminderSent=" + dayReminderSent +
                 '}';
     }
 } 

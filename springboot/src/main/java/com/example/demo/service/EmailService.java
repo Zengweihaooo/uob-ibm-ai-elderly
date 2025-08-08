@@ -223,4 +223,55 @@ public class EmailService {
             throw new RuntimeException("Failed to send daily plan reminder email", e);
         }
     }
+
+    /**
+     * Send important date reminder email
+     * 
+     * @param toEmail The recipient's email address
+     * @param userName The user's name
+     * @param importantDate The important date object
+     * @param reminderType The type of reminder (week/day)
+     * @throws RuntimeException if email sending fails
+     */
+    public void sendImportantDateReminderEmail(String toEmail, String userName, 
+                                             com.example.demo.pojo.ImportantDate importantDate, 
+                                             String reminderType) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            // Set sender, recipient, and subject
+            helper.setFrom(fromAddress);
+            helper.setTo(toEmail);
+            
+            String subject = "";
+            if ("week".equals(reminderType)) {
+                subject = "重要日期提醒 - 一周前通知";
+            } else if ("day".equals(reminderType)) {
+                subject = "重要日期提醒 - 一天前通知";
+            } else {
+                subject = "重要日期提醒";
+            }
+
+            helper.setSubject(subject);
+
+            // Create HTML content for important date reminder
+            Context ctx = new Context();
+            ctx.setVariable("toEmail", toEmail);
+            ctx.setVariable("userName", userName);
+            ctx.setVariable("importantDate", importantDate);
+            ctx.setVariable("reminderType", reminderType);
+            ctx.setVariable("timestamp", java.time.LocalDateTime.now());
+
+            String htmlContent = templateEngine.process("importantDateReminderTemplate", ctx);
+            helper.setText(htmlContent, true);  // true = HTML mode
+
+            mailSender.send(mimeMessage);
+            System.out.println("Important date reminder email sent successfully to: " + toEmail + 
+                             " for date: " + importantDate.getTitle() + " (reminder type: " + reminderType + ")");
+        } catch (MessagingException e) {
+            System.err.println("Failed to send important date reminder email to: " + toEmail + " => " + e.getMessage());
+            throw new RuntimeException("Failed to send important date reminder email", e);
+        }
+    }
 }
