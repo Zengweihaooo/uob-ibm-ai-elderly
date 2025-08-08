@@ -11,8 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.pojo.User;
+import com.example.demo.pojo.EmailVerificationResult;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.util.VerificationCodeGenerator;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service class for managing user registration and verification
@@ -32,19 +34,30 @@ public class UserService {
     @Autowired
     private EmailService emailService;
     
+    @Autowired
+    private EmailVerificationService emailVerificationService;
+    
     // Verification code expiry time in minutes
     private static final int CODE_EXPIRY_MINUTES = 15;
     
     /**
-     * Register a new user or resend verification code
+     * Register a new user with enhanced validation (增强版)
      * 
      * @param email The email address to register
      * @return The user object
      * @throws IllegalArgumentException if email is invalid
      */
+    @Transactional
     public User registerUser(String email) {
-        if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("Email cannot be empty");
+        // 1. 最终邮箱验证
+        EmailVerificationResult verificationResult = emailVerificationService.verifyEmailForRegistration(email);
+        if (!verificationResult.isSuccess()) {
+            throw new IllegalArgumentException(verificationResult.getMessage());
+        }
+        
+        // 2. 数据库连接检查
+        if (!isDatabaseAvailable()) {
+            throw new RuntimeException("数据库连接不可用");
         }
         
         email = email.trim().toLowerCase();
@@ -309,5 +322,19 @@ public class UserService {
     public User.UserRole getUserRole(Long userId) {
         User user = userMapper.findById(userId);
         return user != null ? user.getRole() : null;
+    }
+    
+    /**
+     * 检查数据库是否可用
+     */
+    private boolean isDatabaseAvailable() {
+        try {
+            // 尝试执行一个简单的查询来检查数据库连接
+            userMapper.findAll();
+            return true;
+        } catch (Exception e) {
+            System.err.println("Database connection failed: " + e.getMessage());
+            return false;
+        }
     }
 } 

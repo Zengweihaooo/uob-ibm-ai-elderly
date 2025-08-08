@@ -102,4 +102,20 @@ INSERT OR IGNORE INTO users (username, email, password_hash, name, status, role,
 VALUES ('doctor1', 'doctor1@hospital.com', 'hashed_password', '王医生', 'VERIFIED', 'DOCTOR', 1);
 
 INSERT OR IGNORE INTO users (username, email, password_hash, name, status, role, is_verified) 
-VALUES ('family1', 'family1@example.com', 'hashed_password', '张小明', 'VERIFIED', 'FAMILY', 1); 
+VALUES ('family1', 'family1@example.com', 'hashed_password', '张小明', 'VERIFIED', 'FAMILY', 1);
+
+-- UK Medical Terms Mapping Table (英国医疗术语映射表)
+CREATE TABLE IF NOT EXISTS uk_medical_terms (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    colloquial_term TEXT NOT NULL, -- 口语化表达
+    standard_term TEXT NOT NULL, -- 标准医疗术语
+    category TEXT, -- symptom, body_part, medication, location
+    urgency_level TEXT, -- low, medium, high, emergency
+    region_specific BOOLEAN DEFAULT 0, -- 是否为地区特定表达
+    confidence_score REAL DEFAULT 1.0 -- 匹配置信度
+);
+
+-- Create index for UK medical terms
+CREATE INDEX IF NOT EXISTS idx_uk_medical_terms_colloquial ON uk_medical_terms(colloquial_term);
+CREATE INDEX IF NOT EXISTS idx_uk_medical_terms_category ON uk_medical_terms(category);
+CREATE INDEX IF NOT EXISTS idx_uk_medical_terms_urgency ON uk_medical_terms(urgency_level); 

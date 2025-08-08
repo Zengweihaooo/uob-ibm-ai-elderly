@@ -1,7 +1,12 @@
 package com.example.demo.controller;
 
 import com.example.demo.pojo.User;
+import com.example.demo.pojo.EmailVerificationResult;
+import com.example.demo.pojo.PermissionResult;
+import com.example.demo.pojo.RateLimitResult;
 import com.example.demo.service.UserService;
+import com.example.demo.service.EmailVerificationService;
+import com.example.demo.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +36,12 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private EmailVerificationService emailVerificationService;
+    
+    @Autowired
+    private PermissionService permissionService;
 
     /**
      * Display the user registration page
@@ -391,5 +404,165 @@ public class UserController {
         response.put("success", false);
         response.put("message", "Invalid token");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+    
+    /**
+     * 邮箱验证API
+     */
+    @PostMapping("/api/validate-email")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> validateEmail(
+            @RequestBody Map<String, Object> request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // 1. 权限验证
+            PermissionResult permissionResult = permissionService.validateRegistrationPermission(authHeader);
+            if (!permissionResult.isAllowed()) {
+                response.put("success", false);
+                response.put("message", "权限不足: " + permissionResult.getMessage());
+                response.put("errorCode", "PERMISSION_DENIED");
+                return ResponseEntity.status(403).body(response);
+            }
+            
+            // 2. 输入验证
+            String email = (String) request.get("email");
+            String context = (String) request.getOrDefault("context", "USER_REGISTRATION");
+            
+            if (email == null || email.trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "邮箱地址不能为空");
+                response.put("errorCode", "EMAIL_EMPTY");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // 3. 请求频率限制
+            RateLimitResult rateLimitResult = permissionService.checkRateLimit(authHeader, "email_validation");
+            if (!rateLimitResult.isAllowed()) {
+                response.put("success", false);
+                response.put("message", "请求过于频繁，请稍后再试");
+                response.put("errorCode", "RATE_LIMIT_EXCEEDED");
+                return ResponseEntity.status(429).body(response);
+            }
+            
+            // 4. 邮箱验证
+            EmailVerificationResult verificationResult = emailVerificationService.verifyEmailForRegistration(email.trim());
+            
+            response.put("success", verificationResult.isSuccess());
+            response.put("message", verificationResult.getMessage());
+            response.put("errorCode", verificationResult.getErrorCode());
+            response.put("email", verificationResult.getEmail());
+            response.put("timestamp", LocalDateTime.now().toString());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "验证过程中发生错误: " + e.getMessage());
+            response.put("errorCode", "VALIDATION_ERROR");
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 增强版用户注册API
+     */
+    @PostMapping("/api/register-enhanced")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> registerUserEnhanced(
+            @RequestBody Map<String, Object> request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // 1. 权限验证
+            PermissionResult permissionResult = permissionService.validateRegistrationPermission(authHeader);
+            if (!permissionResult.isAllowed()) {
+                response.put("success", false);
+                response.put("message", "权限不足: " + permissionResult.getMessage());
+                response.put("errorCode", "PERMISSION_DENIED");
+                return ResponseEntity.status(403).body(response);
+            }
+            
+            // 2. 输入验证
+            String email = (String) request.get("email");
+            String timestamp = (String) request.get("timestamp");
+            
+            if (email == null || email.trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "邮箱地址不能为空");
+                response.put("errorCode", "EMAIL_EMPTY");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // 3. 时间戳验证（防止重放攻击）
+            if (!isValidTimestamp(timestamp)) {
+                response.put("success", false);
+                response.put("message", "请求时间戳无效");
+                response.put("errorCode", "INVALID_TIMESTAMP");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // 4. 请求频率限制
+            RateLimitResult rateLimitResult = permissionService.checkRateLimit(authHeader, "user_registration");
+            if (!rateLimitResult.isAllowed()) {
+                response.put("success", false);
+                response.put("message", "注册请求过于频繁，请稍后再试");
+                response.put("errorCode", "RATE_LIMIT_EXCEEDED");
+                return ResponseEntity.status(429).body(response);
+            }
+            
+            // 5. 邮箱验证（再次验证）
+            EmailVerificationResult verificationResult = emailVerificationService.verifyEmailForRegistration(email.trim());
+            if (!verificationResult.isSuccess()) {
+                response.put("success", false);
+                response.put("message", verificationResult.getMessage());
+                response.put("errorCode", verificationResult.getErrorCode());
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // 6. 业务逻辑处理
+            User user = userService.registerUser(email.trim());
+            
+            response.put("success", true);
+            response.put("message", "注册成功！验证邮件已发送到: " + user.getEmail());
+            response.put("user", user);
+            response.put("email", user.getEmail());
+            response.put("timestamp", LocalDateTime.now().toString());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            response.put("errorCode", "VALIDATION_ERROR");
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "注册失败，请稍后重试");
+            response.put("errorCode", "REGISTRATION_ERROR");
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 验证时间戳
+     */
+    private boolean isValidTimestamp(String timestamp) {
+        try {
+            if (timestamp == null) return false;
+            
+            LocalDateTime requestTime = LocalDateTime.parse(timestamp);
+            LocalDateTime now = LocalDateTime.now();
+            Duration duration = Duration.between(requestTime, now);
+            
+            // 允许5分钟的时间差
+            return Math.abs(duration.toMinutes()) <= 5;
+        } catch (Exception e) {
+            return false;
+        }
     }
 } 
