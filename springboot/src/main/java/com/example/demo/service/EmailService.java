@@ -104,7 +104,7 @@ public class EmailService {
         } catch (MessagingException e) {
             System.err.println("Failed to send verification email to: " + toEmail + " => " + e.getMessage());
             System.err.println("Error type: " + e.getClass().getSimpleName());
-            e.printStackTrace(); // 打印完整堆栈跟踪
+            e.printStackTrace(); // Print full stack trace
             throw new RuntimeException("Failed to send verification email", e);
         } catch (Exception e) {
             System.err.println("Unexpected error sending email to: " + toEmail + " => " + e.getMessage());
@@ -253,11 +253,11 @@ public class EmailService {
             
             String subject = "";
             if ("week".equals(reminderType)) {
-                subject = "重要日期提醒 - 一周前通知";
+                subject = "Important Date Reminder - One Week Notice";
             } else if ("day".equals(reminderType)) {
-                subject = "重要日期提醒 - 一天前通知";
+                subject = "Important Date Reminder - One Day Notice";
             } else {
-                subject = "重要日期提醒";
+                subject = "Important Date Reminder";
             }
 
             helper.setSubject(subject);
