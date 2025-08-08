@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>重要日期提醒测试</title>
+    <title>Important Date Reminder Test</title>
     <style>
         body {
-            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             line-height: 1.6;
             color: #333;
             max-width: 800px;
@@ -152,92 +152,92 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div class="title">🎉 重要日期提醒测试</div>
-            <div class="subtitle">IBM AI 老年人陪伴系统 - 邮件提醒功能演示</div>
+            <div class="title">🎉 Important Date Reminder Test</div>
+            <div class="subtitle">IBM AI Elderly Companion System - Email Reminder Feature Demo</div>
         </div>
 
         <!-- Add Important Date Section -->
         <div class="section">
-            <h3>📅 添加重要日期</h3>
+            <h3>📅 Add Important Date</h3>
             <form id="addImportantDateForm">
                 <div class="form-group">
-                    <label for="userId">用户ID:</label>
+                    <label for="userId">User ID:</label>
                     <input type="number" id="userId" name="userId" value="1" required>
                 </div>
                 <div class="form-group">
-                    <label for="title">标题:</label>
-                    <input type="text" id="title" name="title" placeholder="例如：生日、纪念日等" required>
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" placeholder="e.g., Birthday, Anniversary, etc." required>
                 </div>
                 <div class="form-group">
-                    <label for="date">日期:</label>
+                    <label for="date">Date:</label>
                     <input type="date" id="date" name="date" required>
                 </div>
                 <div class="form-group">
-                    <label for="type">类型:</label>
+                    <label for="type">Type:</label>
                     <select id="type" name="type" required>
-                        <option value="birthday">生日</option>
-                        <option value="anniversary">纪念日</option>
-                        <option value="holiday">节日</option>
-                        <option value="custom">自定义</option>
+                        <option value="birthday">Birthday</option>
+                        <option value="anniversary">Anniversary</option>
+                        <option value="holiday">Holiday</option>
+                        <option value="custom">Custom</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="description">描述:</label>
-                    <textarea id="description" name="description" placeholder="可选描述信息"></textarea>
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" placeholder="Optional description"></textarea>
                 </div>
-                <button type="submit" class="btn">添加重要日期</button>
+                <button type="submit" class="btn">Add Important Date</button>
             </form>
             <div id="addResult"></div>
         </div>
 
         <!-- Get Important Dates Section -->
         <div class="section">
-            <h3>📋 查看重要日期</h3>
+            <h3>📋 View Important Dates</h3>
             <div class="form-group">
-                <label for="getUserId">用户ID:</label>
+                <label for="getUserId">User ID:</label>
                 <input type="number" id="getUserId" value="1">
-                <button onclick="getImportantDates()" class="btn">获取重要日期</button>
+                <button onclick="getImportantDates()" class="btn">Get Important Dates</button>
             </div>
             <div id="importantDatesList"></div>
         </div>
 
         <!-- Get Upcoming Dates Section -->
         <div class="section">
-            <h3>🔮 即将到来的重要日期</h3>
+            <h3>🔮 Upcoming Important Dates</h3>
             <div class="form-group">
-                <label for="upcomingUserId">用户ID:</label>
+                <label for="upcomingUserId">User ID:</label>
                 <input type="number" id="upcomingUserId" value="1">
-                <button onclick="getUpcomingDates()" class="btn">获取即将到来的日期</button>
+                <button onclick="getUpcomingDates()" class="btn">Get Upcoming Dates</button>
             </div>
             <div id="upcomingDatesList"></div>
         </div>
 
         <!-- Get Statistics Section -->
         <div class="section">
-            <h3>📊 重要日期统计</h3>
+            <h3>📊 Important Date Statistics</h3>
             <div class="form-group">
-                <label for="statsUserId">用户ID:</label>
+                <label for="statsUserId">User ID:</label>
                 <input type="number" id="statsUserId" value="1">
-                <button onclick="getStats()" class="btn">获取统计信息</button>
+                <button onclick="getStats()" class="btn">Get Statistics</button>
             </div>
             <div id="statsResult"></div>
         </div>
 
         <!-- Send Reminders Section -->
         <div class="section">
-            <h3>📧 发送邮件提醒</h3>
-            <p>手动触发发送所有待发送的重要日期提醒邮件</p>
-            <button onclick="sendReminders()" class="btn btn-success">发送提醒邮件</button>
+            <h3>📧 Send Email Reminders</h3>
+            <p>Manually trigger sending all pending important date reminder emails</p>
+            <button onclick="sendReminders()" class="btn btn-success">Send Reminder Emails</button>
             <div id="sendRemindersResult"></div>
         </div>
 
         <!-- Add Default Holidays Section -->
         <div class="section">
-            <h3>🎊 添加默认节日</h3>
+            <h3>🎊 Add Default Holidays</h3>
             <div class="form-group">
-                <label for="holidayUserId">用户ID:</label>
+                <label for="holidayUserId">User ID:</label>
                 <input type="number" id="holidayUserId" value="1">
-                <button onclick="addDefaultHolidays()" class="btn btn-secondary">添加默认节日</button>
+                <button onclick="addDefaultHolidays()" class="btn btn-secondary">Add Default Holidays</button>
             </div>
             <div id="holidaysResult"></div>
         </div>
@@ -278,7 +278,7 @@
                 }
             })
             .catch(error => {
-                document.getElementById('addResult').innerHTML = `<div class="result error">❌ 请求失败: ${error.message}</div>`;
+                document.getElementById('addResult').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
             });
         });
 
@@ -291,20 +291,20 @@
             .then(data => {
                 const listDiv = document.getElementById('importantDatesList');
                 if (data.success) {
-                    let html = '<h4>重要日期列表:</h4>';
+                    let html = '<h4>Important Dates List:</h4>';
                     if (data.importantDates && data.importantDates.length > 0) {
                         data.importantDates.forEach(date => {
                             html += `
                                 <div class="important-date-item">
                                     <div class="important-date-title">${date.title}</div>
                                     <div class="important-date-details">
-                                        类型: ${date.type} | 日期: ${date.date} | 描述: ${date.description || '无'}
+                                        Type: ${date.type} | Date: ${date.date} | Description: ${date.description || 'None'}
                                     </div>
                                 </div>
                             `;
                         });
                     } else {
-                        html += '<p>暂无重要日期</p>';
+                        html += '<p>No important dates found</p>';
                     }
                     listDiv.innerHTML = html;
                 } else {
@@ -312,7 +312,7 @@
                 }
             })
             .catch(error => {
-                document.getElementById('importantDatesList').innerHTML = `<div class="result error">❌ 请求失败: ${error.message}</div>`;
+                document.getElementById('importantDatesList').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
             });
         }
 
@@ -325,20 +325,20 @@
             .then(data => {
                 const listDiv = document.getElementById('upcomingDatesList');
                 if (data.success) {
-                    let html = '<h4>即将到来的重要日期:</h4>';
+                    let html = '<h4>Upcoming Important Dates:</h4>';
                     if (data.upcomingDates && data.upcomingDates.length > 0) {
                         data.upcomingDates.forEach(date => {
                             html += `
                                 <div class="important-date-item">
                                     <div class="important-date-title">${date.title}</div>
                                     <div class="important-date-details">
-                                        类型: ${date.type} | 日期: ${date.date} | 描述: ${date.description || '无'}
+                                        Type: ${date.type} | Date: ${date.date} | Description: ${date.description || 'None'}
                                     </div>
                                 </div>
                             `;
                         });
                     } else {
-                        html += '<p>暂无即将到来的重要日期</p>';
+                        html += '<p>No upcoming important dates found</p>';
                     }
                     listDiv.innerHTML = html;
                 } else {
@@ -346,7 +346,7 @@
                 }
             })
             .catch(error => {
-                document.getElementById('upcomingDatesList').innerHTML = `<div class="result error">❌ 请求失败: ${error.message}</div>`;
+                document.getElementById('upcomingDatesList').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
             });
         }
 
@@ -360,14 +360,14 @@
                 const resultDiv = document.getElementById('statsResult');
                 if (data.success) {
                     const stats = data.stats;
-                    let html = '<h4>统计信息:</h4><div class="stats-grid">';
-                    html += `<div class="stat-item"><div class="stat-number">${stats.total}</div><div class="stat-label">总计</div></div>`;
-                    html += `<div class="stat-item"><div class="stat-number">${stats.birthdays}</div><div class="stat-label">生日</div></div>`;
-                    html += `<div class="stat-item"><div class="stat-number">${stats.anniversaries}</div><div class="stat-label">纪念日</div></div>`;
-                    html += `<div class="stat-item"><div class="stat-number">${stats.holidays}</div><div class="stat-label">节日</div></div>`;
-                    html += `<div class="stat-item"><div class="stat-number">${stats.custom}</div><div class="stat-label">自定义</div></div>`;
-                    html += `<div class="stat-item"><div class="stat-number">${stats.upcoming}</div><div class="stat-label">即将到来</div></div>`;
-                    html += `<div class="stat-item"><div class="stat-number">${stats.today}</div><div class="stat-label">今天</div></div>`;
+                    let html = '<h4>Statistics:</h4><div class="stats-grid">';
+                    html += `<div class="stat-item"><div class="stat-number">${stats.total}</div><div class="stat-label">Total</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.birthdays}</div><div class="stat-label">Birthdays</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.anniversaries}</div><div class="stat-label">Anniversaries</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.holidays}</div><div class="stat-label">Holidays</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.custom}</div><div class="stat-label">Custom</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.upcoming}</div><div class="stat-label">Upcoming</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.today}</div><div class="stat-label">Today</div></div>`;
                     html += '</div>';
                     resultDiv.innerHTML = html;
                 } else {
@@ -375,7 +375,7 @@
                 }
             })
             .catch(error => {
-                document.getElementById('statsResult').innerHTML = `<div class="result error">❌ 请求失败: ${error.message}</div>`;
+                document.getElementById('statsResult').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
             });
         }
 
@@ -397,7 +397,7 @@
                 }
             })
             .catch(error => {
-                document.getElementById('sendRemindersResult').innerHTML = `<div class="result error">❌ 请求失败: ${error.message}</div>`;
+                document.getElementById('sendRemindersResult').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
             });
         }
 
@@ -421,7 +421,7 @@
                 }
             })
             .catch(error => {
-                document.getElementById('holidaysResult').innerHTML = `<div class="result error">❌ 请求失败: ${error.message}</div>`;
+                document.getElementById('holidaysResult').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
             });
         }
     </script>
