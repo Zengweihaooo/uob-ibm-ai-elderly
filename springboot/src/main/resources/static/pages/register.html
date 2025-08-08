@@ -547,7 +547,24 @@
                         updateStepIndicator(currentStep);
                     }
                 } else {
-                    showMessage('Failed to send verification code. Please try again.', 'error');
+                    // Handle validation errors from backend
+                    const htmlText = await response.text();
+                    console.log('Registration error response received:', htmlText);
+                    
+                    if (htmlText.includes('Error:')) {
+                        // Extract error message from HTML response
+                        const errorMatch = htmlText.match(/Error: ([^<]+)/);
+                        const errorMsg = errorMatch ? errorMatch[1] : 'Registration failed. Please try again.';
+                        showMessage(errorMsg, 'error');
+                    } else if (htmlText.includes('请使用有效的邮箱域名')) {
+                        showMessage('请使用有效的邮箱域名，不能使用测试域名（如 example.com）', 'error');
+                    } else if (htmlText.includes('邮箱格式无效')) {
+                        showMessage('邮箱格式无效，请输入正确的邮箱地址', 'error');
+                    } else if (htmlText.includes('该邮箱已被注册')) {
+                        showMessage('该邮箱已被注册，请使用其他邮箱地址', 'error');
+                    } else {
+                        showMessage('Failed to send verification code. Please try again.', 'error');
+                    }
                 }
             } catch (error) {
                 showMessage('Network error. Please check your connection and try again.', 'error');

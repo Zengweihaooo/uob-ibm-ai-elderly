@@ -37,7 +37,7 @@ public class DatabaseConfig {
      * Ensure database directory exists
      */
     @Bean
-    public void ensureDatabaseDirectoryExists() {
+    public String ensureDatabaseDirectoryExists() {
         // 创建数据库文件目录
         File dataDir = new File("data");
         if (!dataDir.exists()) {
@@ -57,6 +57,7 @@ public class DatabaseConfig {
         }
 
         System.out.println("Database will be created at: " + new File(databasePath).getAbsolutePath());
+        return "Database directories initialized";
     }
 
     /**
