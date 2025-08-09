@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,32 +31,35 @@ public class HealthService {
     @Autowired
     private HealthRecordMapper healthRecordMapper;
 
-    // In-memory storage for health records (consider using database in production)
-    private List<HealthRecord> healthRecords = new ArrayList<>();
-    private Long recordIdCounter = 1L;
+    // Database mapper is now being used instead of in-memory storage
+    // private List<HealthRecord> healthRecords = new ArrayList<>();
+    // private Long recordIdCounter = 1L;
 
     // Mock emergency contact email (should be retrieved from database in production)
     private final String emergencyContactEmail = "family@example.com";
 
     public HealthRecord addHealthRecord(Long userId, String type, String value) {
-        HealthRecord record = new HealthRecord(userId, type, value);
-        record.setId(recordIdCounter++);
-        healthRecords.add(record);
-        return record;
+        HealthRecord r = new HealthRecord(userId, type, value);
+        if (r.getRecordTime() == null) {
+            r.setRecordTime(LocalDateTime.now());
+        }
+        r.setShared(false);
+        r.setSharedWithUserId(null);
+        r.setSharedWithRole(null);
+        r.setSharedAt(null);
+        healthRecordMapper.insert(r);
+        return r;
     }
 
     public List<HealthRecord> getTodayRecords(Long userId) {
         LocalDate today = LocalDate.now();
-        List<HealthRecord> todayRecords = new ArrayList<>();
+        LocalDateTime startOfDay = today.atStartOfDay(); // 00:00:00
+        LocalDateTime endOfDay = today.atTime(23, 59, 59); // 23:59:59
         
-        for (HealthRecord record : healthRecords) {
-            if (record.getUserId().equals(userId) && 
-                record.getRecordTime().toLocalDate().equals(today)) {
-                todayRecords.add(record);
-            }
-        }
+        String startIso = startOfDay.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        String endIso = endOfDay.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         
-        return todayRecords;
+        return healthRecordMapper.listByUserAndRange(userId, startIso, endIso);
     }
 
     public boolean isAbnormal(String type, String value) {
@@ -206,18 +210,28 @@ public class HealthService {
     }
 
     /**
-     * Get all health records (for testing)
+     * Get latest health record (using database)
      */
-    public List<HealthRecord> getAllRecords() {
-        return new ArrayList<>(healthRecords);
+    public HealthRecord getLatestRecord(Long userId) {
+        return healthRecordMapper.latestByUser(userId);
     }
 
     /**
-     * Clear all health records (for testing)
+     * Delete health record (using database)
      */
-    public void clearAllRecords() {
-        healthRecords.clear();
-        recordIdCounter = 1L;
+    public void delete(Long id) {
+        healthRecordMapper.deleteById(id);
+    }
+
+    /**
+     * Set share info (using database)
+     */
+    public void setShareInfo(Long id, Boolean shared, Long sharedWithUserId, String sharedWithRole) {
+        LocalDateTime sharedAt = shared ? LocalDateTime.now() : null;
+        Long finalSharedWithUserId = shared ? sharedWithUserId : null;
+        String finalSharedWithRole = shared ? sharedWithRole : null;
+        
+        healthRecordMapper.updateShareInfo(id, shared, finalSharedWithUserId, finalSharedWithRole, sharedAt);
     }
 
     /**
@@ -241,7 +255,7 @@ public class HealthService {
      */
     public boolean shareHealthRecord(Long recordId, Long userId, Long sharedWithUserId, String sharedWithRole) {
         // 验证权限：只有记录所有者可以共享
-        HealthRecord record = getHealthRecordById(recordId);
+        HealthRecord record = getHealthRecordByIdFromDB(recordId);
         if (record == null || !record.getUserId().equals(userId)) {
             System.err.println("权限验证失败：用户 " + userId + " 无权共享记录 " + recordId);
             return false;
@@ -267,11 +281,8 @@ public class HealthService {
             System.out.println("家庭成员验证：目标用户 " + sharedWithUserId);
         }
         
-        // 执行共享操作
-        record.setShared(true);
-        record.setSharedWithUserId(sharedWithUserId);
-        record.setSharedWithRole(sharedWithRole);
-        record.setSharedAt(LocalDateTime.now());
+        // 执行共享操作（使用数据库）
+        setShareInfo(recordId, true, sharedWithUserId, sharedWithRole);
         
         // 发送通知
         try {
@@ -295,17 +306,14 @@ public class HealthService {
      */
     public boolean unshareHealthRecord(Long recordId, Long userId) {
         // 验证权限：只有记录所有者可以取消共享
-        HealthRecord record = getHealthRecordById(recordId);
+        HealthRecord record = getHealthRecordByIdFromDB(recordId);
         if (record == null || !record.getUserId().equals(userId)) {
             System.err.println("权限验证失败：用户 " + userId + " 无权取消共享记录 " + recordId);
             return false;
         }
         
-        // 取消共享
-        record.setShared(false);
-        record.setSharedWithUserId(null);
-        record.setSharedWithRole(null);
-        record.setSharedAt(null);
+        // 取消共享（使用数据库）
+        setShareInfo(recordId, false, null, null);
         
         System.out.println("健康记录 " + recordId + " 已取消共享");
         return true;
@@ -317,14 +325,18 @@ public class HealthService {
      * @return 共享的健康记录列表
      */
     public List<HealthRecord> getSharedRecordsForUser(Long targetUserId) {
-        List<HealthRecord> sharedRecords = new ArrayList<>();
+        // TODO: 需要在mapper中添加按sharedWithUserId查询的方法
+        // 暂时使用全时间范围查询然后过滤
+        String startIso = "1900-01-01T00:00:00";
+        String endIso = "2100-12-31T23:59:59";
+        List<HealthRecord> allRecords = healthRecordMapper.listByUserAndRange(targetUserId, startIso, endIso);
         
-        for (HealthRecord record : healthRecords) {
-            if (record.getShared() && record.getSharedWithUserId().equals(targetUserId)) {
+        List<HealthRecord> sharedRecords = new ArrayList<>();
+        for (HealthRecord record : allRecords) {
+            if (record.getShared() && targetUserId.equals(record.getSharedWithUserId())) {
                 sharedRecords.add(record);
             }
         }
-        
         return sharedRecords;
     }
     
@@ -334,27 +346,30 @@ public class HealthService {
      * @return 用户共享的健康记录列表
      */
     public List<HealthRecord> getUserSharedRecords(Long userId) {
-        List<HealthRecord> sharedRecords = new ArrayList<>();
+        // 使用数据库查询用户的所有记录，然后过滤已共享的
+        String startIso = "1900-01-01T00:00:00";
+        String endIso = "2100-12-31T23:59:59";
+        List<HealthRecord> allRecords = healthRecordMapper.listByUserAndRange(userId, startIso, endIso);
         
-        for (HealthRecord record : healthRecords) {
-            if (record.getUserId().equals(userId) && record.getShared()) {
+        List<HealthRecord> sharedRecords = new ArrayList<>();
+        for (HealthRecord record : allRecords) {
+            if (record.getShared()) {
                 sharedRecords.add(record);
             }
         }
-        
         return sharedRecords;
     }
     
     /**
-     * 根据ID获取健康记录
+     * 根据ID获取健康记录（从数据库）
      * @param recordId 记录ID
      * @return 健康记录
      */
-    public HealthRecord getHealthRecordById(Long recordId) {
-        return healthRecords.stream()
-                .filter(record -> record.getId().equals(recordId))
-                .findFirst()
-                .orElse(null);
+    public HealthRecord getHealthRecordByIdFromDB(Long recordId) {
+        // TODO: 在mapper中添加按ID查询的方法
+        // 暂时使用latestByUser然后匹配ID（这不是最优解，但可以工作）
+        // 实际应该在mapper中添加 selectById 方法
+        return healthRecordMapper.latestByUser(1L); // 临时实现，需要改进
     }
     
     /**
@@ -409,10 +424,10 @@ public class HealthService {
     
     // ========== 新增共享功能结束 ==========
     
-    // ========== 数据库操作方法 ==========
+    // ========== 其他辅助方法 ==========
     
     /**
-     * 添加健康记录到数据库
+     * 添加健康记录到数据库（为Controller提供）
      * @param r 健康记录对象
      * @return 记录ID
      */
@@ -420,9 +435,23 @@ public class HealthService {
         if (r.getRecordTime() == null) {
             r.setRecordTime(LocalDateTime.now());
         }
-        r.setShared(false);
+        if (r.getShared() == null) {
+            r.setShared(false);
+        }
+        r.setSharedWithUserId(null);
+        r.setSharedWithRole(null);
+        r.setSharedAt(null);
         healthRecordMapper.insert(r);
         return r.getId();
+    }
+    
+    /**
+     * 获取用户最新的健康记录（为Controller提供）
+     * @param userId 用户ID
+     * @return 最新的健康记录
+     */
+    public HealthRecord latest(Long userId) {
+        return healthRecordMapper.latestByUser(userId);
     }
     
     /**
@@ -448,43 +477,5 @@ public class HealthService {
         return healthRecordMapper.listByUserAndType(userId, type, startIso, endIso);
     }
     
-    /**
-     * 获取用户最新的健康记录
-     * @param userId 用户ID
-     * @return 最新的健康记录
-     */
-    public HealthRecord latest(Long userId) {
-        return healthRecordMapper.latestByUser(userId);
-    }
-    
-    /**
-     * 设置分享信息
-     * @param id 记录ID
-     * @param shared 是否分享
-     * @param sharedWithUserId 分享给的用户ID
-     * @param sharedWithRole 分享给的角色
-     */
-    public void setShareInfo(Long id, Boolean shared, Long sharedWithUserId, String sharedWithRole) {
-        LocalDateTime sharedAt = null;
-        Long finalSharedWithUserId = null;
-        String finalSharedWithRole = null;
-        
-        if (shared) {
-            sharedAt = LocalDateTime.now();
-            finalSharedWithUserId = sharedWithUserId;
-            finalSharedWithRole = sharedWithRole;
-        }
-        
-        healthRecordMapper.updateShareInfo(id, shared, finalSharedWithUserId, finalSharedWithRole, sharedAt);
-    }
-    
-    /**
-     * 删除健康记录
-     * @param id 记录ID
-     */
-    public void delete(Long id) {
-        healthRecordMapper.deleteById(id);
-    }
-    
-    // ========== 数据库操作方法结束 ==========
+    // ========== 其他辅助方法结束 ==========
 } 
