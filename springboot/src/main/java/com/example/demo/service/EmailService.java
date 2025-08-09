@@ -103,7 +103,14 @@ public class EmailService {
             System.out.println("Verification email sent successfully to: " + toEmail + " with code: " + verificationCode);
         } catch (MessagingException e) {
             System.err.println("Failed to send verification email to: " + toEmail + " => " + e.getMessage());
+            System.err.println("Error type: " + e.getClass().getSimpleName());
+            e.printStackTrace(); // Print full stack trace
             throw new RuntimeException("Failed to send verification email", e);
+        } catch (Exception e) {
+            System.err.println("Unexpected error sending email to: " + toEmail + " => " + e.getMessage());
+            System.err.println("Error type: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            throw new RuntimeException("Unexpected error sending verification email", e);
         }
     }
 
@@ -221,6 +228,57 @@ public class EmailService {
         } catch (MessagingException e) {
             System.err.println("Failed to send daily plan reminder email to: " + toEmail + " => " + e.getMessage());
             throw new RuntimeException("Failed to send daily plan reminder email", e);
+        }
+    }
+
+    /**
+     * Send important date reminder email
+     * 
+     * @param toEmail The recipient's email address
+     * @param userName The user's name
+     * @param importantDate The important date object
+     * @param reminderType The type of reminder (week/day)
+     * @throws RuntimeException if email sending fails
+     */
+    public void sendImportantDateReminderEmail(String toEmail, String userName, 
+                                             com.example.demo.pojo.ImportantDate importantDate, 
+                                             String reminderType) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            // Set sender, recipient, and subject
+            helper.setFrom(fromAddress);
+            helper.setTo(toEmail);
+            
+            String subject = "";
+            if ("week".equals(reminderType)) {
+                subject = "Important Date Reminder - One Week Notice";
+            } else if ("day".equals(reminderType)) {
+                subject = "Important Date Reminder - One Day Notice";
+            } else {
+                subject = "Important Date Reminder";
+            }
+
+            helper.setSubject(subject);
+
+            // Create HTML content for important date reminder
+            Context ctx = new Context();
+            ctx.setVariable("toEmail", toEmail);
+            ctx.setVariable("userName", userName);
+            ctx.setVariable("importantDate", importantDate);
+            ctx.setVariable("reminderType", reminderType);
+            ctx.setVariable("timestamp", java.time.LocalDateTime.now());
+
+            String htmlContent = templateEngine.process("importantDateReminderTemplate", ctx);
+            helper.setText(htmlContent, true);  // true = HTML mode
+
+            mailSender.send(mimeMessage);
+            System.out.println("Important date reminder email sent successfully to: " + toEmail + 
+                             " for date: " + importantDate.getTitle() + " (reminder type: " + reminderType + ")");
+        } catch (MessagingException e) {
+            System.err.println("Failed to send important date reminder email to: " + toEmail + " => " + e.getMessage());
+            throw new RuntimeException("Failed to send important date reminder email", e);
         }
     }
 }
