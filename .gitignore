@@ -1,1 +1,16 @@
 .DS_Store
+
+# Spring Boot logs
+springboot/*.log
+springboot/application*.log
+springboot/server*.log
+
+# Database files
+springboot/data/
+springboot/*.db
+
+# Test/Development files
+springboot/src/main/resources/static/css/email-validation.css
+springboot/src/main/resources/static/js/email-validation.js
+springboot/src/main/resources/static/pages/email-validation-demo.html
+springboot/src/main/resources/static/test-email-validation.html

@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
 import com.example.demo.pojo.ImportantDate;
+import com.example.demo.pojo.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,6 +23,12 @@ public class ImportantDateService {
     // In-memory storage for demo purposes
     private final Map<Long, ImportantDate> importantDates = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(1);
+    
+    @Autowired
+    private EmailService emailService;
+    
+    @Autowired
+    private UserService userService;
     
     /**
      * Add a new important date
@@ -233,5 +241,98 @@ public class ImportantDateService {
         }
         
         return holidays;
+    }
+    
+    /**
+     * Send email reminder for important dates
+     * 
+     * @param importantDate The important date
+     * @param reminderType The type of reminder (week/day)
+     */
+    public void sendImportantDateReminder(ImportantDate importantDate, String reminderType) {
+        try {
+            // Get user information
+            User user = userService.getUserById(importantDate.getUserId());
+            if (user == null || user.getEmail() == null) {
+                System.err.println("User not found or email not available for user ID: " + importantDate.getUserId());
+                return;
+            }
+            
+            // Send email reminder
+            emailService.sendImportantDateReminderEmail(
+                user.getEmail(), 
+                user.getName(), 
+                importantDate, 
+                reminderType
+            );
+            
+            // Update reminder sent timestamp
+            if ("week".equals(reminderType)) {
+                importantDate.setWeekReminderSent(LocalDateTime.now());
+            } else if ("day".equals(reminderType)) {
+                importantDate.setDayReminderSent(LocalDateTime.now());
+            }
+            
+            System.out.println("Important date reminder sent successfully for: " + importantDate.getTitle() + 
+                             " (reminder type: " + reminderType + ")");
+        } catch (Exception e) {
+            System.err.println("Failed to send important date reminder: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Get important dates that need week reminders (7 days before)
+     * 
+     * @return List of important dates needing week reminders
+     */
+    public List<ImportantDate> getImportantDatesNeedingWeekReminders() {
+        LocalDate today = LocalDate.now();
+        LocalDate weekFromNow = today.plusDays(7);
+        
+        return importantDates.values().stream()
+                .filter(ImportantDate::isEnabled)
+                .filter(date -> {
+                    LocalDate nextOccurrence = getNextOccurrence(date.getDate(), today);
+                    return nextOccurrence.equals(weekFromNow) && date.getWeekReminderSent() == null;
+                })
+                .toList();
+    }
+    
+    /**
+     * Get important dates that need day reminders (1 day before)
+     * 
+     * @return List of important dates needing day reminders
+     */
+    public List<ImportantDate> getImportantDatesNeedingDayReminders() {
+        LocalDate today = LocalDate.now();
+        LocalDate tomorrow = today.plusDays(1);
+        
+        return importantDates.values().stream()
+                .filter(ImportantDate::isEnabled)
+                .filter(date -> {
+                    LocalDate nextOccurrence = getNextOccurrence(date.getDate(), today);
+                    return nextOccurrence.equals(tomorrow) && date.getDayReminderSent() == null;
+                })
+                .toList();
+    }
+    
+    /**
+     * Send reminders for all important dates that need them
+     */
+    public void sendAllPendingReminders() {
+        // Send week reminders
+        List<ImportantDate> weekReminders = getImportantDatesNeedingWeekReminders();
+        for (ImportantDate date : weekReminders) {
+            sendImportantDateReminder(date, "week");
+        }
+        
+        // Send day reminders
+        List<ImportantDate> dayReminders = getImportantDatesNeedingDayReminders();
+        for (ImportantDate date : dayReminders) {
+            sendImportantDateReminder(date, "day");
+        }
+        
+        System.out.println("Sent " + weekReminders.size() + " week reminders and " + 
+                         dayReminders.size() + " day reminders");
     }
 } 

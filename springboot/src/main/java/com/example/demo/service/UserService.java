@@ -47,41 +47,53 @@ public class UserService {
      * @return The user object
      * @throws IllegalArgumentException if email is invalid
      */
-    @Transactional
     public User registerUser(String email) {
-        // 1. 最终邮箱验证
-        EmailVerificationResult verificationResult = emailVerificationService.verifyEmailForRegistration(email);
-        if (!verificationResult.isSuccess()) {
-            throw new IllegalArgumentException(verificationResult.getMessage());
-        }
-        
-        // 2. 数据库连接检查
-        if (!isDatabaseAvailable()) {
-            throw new RuntimeException("数据库连接不可用");
-        }
-        
+        // 1. 最终邮箱验证 - 但允许已存在但未验证的邮箱重新发送
         email = email.trim().toLowerCase();
         
-        User user = userMapper.findByEmail(email);
-        if (user == null) {
-            user = new User(email);
-            userMapper.insert(user);
+        User existingUser = userMapper.findByEmail(email);
+        
+        // 如果邮箱已存在且已验证，拒绝注册
+        if (existingUser != null && existingUser.getStatus() == User.UserStatus.VERIFIED) {
+            throw new IllegalArgumentException("该邮箱已被注册并验证，请使用其他邮箱或联系管理员重置");
         }
         
-        // Generate new verification code
+        // 基础邮箱格式验证（不包括数据库重复检查）
+        EmailVerificationResult formatCheck = emailVerificationService.validateEmailFormatOnly(email);
+        if (!formatCheck.isSuccess()) {
+            throw new IllegalArgumentException(formatCheck.getMessage());
+        }
+        
+        // 2. 生成验证码
         String verificationCode = VerificationCodeGenerator.generateCode();
         LocalDateTime codeExpiresAt = LocalDateTime.now().plusMinutes(CODE_EXPIRY_MINUTES);
         
-        // Update verification code in database
+        // 3. 先尝试发送邮件（在数据库操作之前）
+        try {
+            emailService.sendVerificationEmail(email, verificationCode);
+        } catch (Exception e) {
+            // 邮件发送失败，不进行数据库操作
+            throw new RuntimeException("邮件发送失败: " + e.getMessage(), e);
+        }
+        
+        // 4. 邮件发送成功后，进行数据库操作
+        User user;
+        if (existingUser == null) {
+            // 创建新用户
+            user = new User(email);
+            userMapper.insert(user);
+        } else {
+            // 更新现有用户
+            user = existingUser;
+        }
+        
+        // 5. 更新验证码
         userMapper.updateVerificationCode(user.getId(), verificationCode, codeExpiresAt);
         
-        // Update user object
+        // 6. 更新用户对象
         user.setVerificationCode(verificationCode);
         user.setStatus(User.UserStatus.PENDING);
         user.setCodeExpiresAt(codeExpiresAt);
-        
-        // Send verification email
-        emailService.sendVerificationEmail(email, verificationCode);
         
         return user;
     }
