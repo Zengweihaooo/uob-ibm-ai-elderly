@@ -52,9 +52,15 @@ CREATE TABLE IF NOT EXISTS health_records (
     user_id BIGINT NOT NULL,
     type VARCHAR(50) NOT NULL,
     value VARCHAR(255) NOT NULL,
+    unit VARCHAR(50),
     record_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    is_abnormal BOOLEAN DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    notes TEXT,
+    shared BOOLEAN DEFAULT 0,
+    shared_with_user_id BIGINT,
+    shared_with_role VARCHAR(50),
+    shared_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Schedules Table (if not exists)
@@ -118,4 +124,12 @@ CREATE TABLE IF NOT EXISTS uk_medical_terms (
 -- Create index for UK medical terms
 CREATE INDEX IF NOT EXISTS idx_uk_medical_terms_colloquial ON uk_medical_terms(colloquial_term);
 CREATE INDEX IF NOT EXISTS idx_uk_medical_terms_category ON uk_medical_terms(category);
-CREATE INDEX IF NOT EXISTS idx_uk_medical_terms_urgency ON uk_medical_terms(urgency_level); 
+CREATE INDEX IF NOT EXISTS idx_uk_medical_terms_urgency ON uk_medical_terms(urgency_level);
+
+-- Schema Version Table (数据库版本表)
+CREATE TABLE IF NOT EXISTS schema_version (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    version VARCHAR(20) NOT NULL,
+    description TEXT,
+    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+); 

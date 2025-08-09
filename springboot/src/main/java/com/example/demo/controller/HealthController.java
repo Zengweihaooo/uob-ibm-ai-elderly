@@ -9,11 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.pojo.HealthRecord;
@@ -328,4 +330,121 @@ public class HealthController {
     }
     
     // ========== 新增共享功能接口结束 ==========
+    
+    // ========== 数据库操作相关接口 ==========
+    
+    /**
+     * 添加健康记录到数据库
+     */
+    @PostMapping("/record-db")
+    public ResponseEntity<Map<String, Object>> addRecord(@RequestBody HealthRecord record) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            Long id = healthService.addRecord(record);
+            response.put("id", id);
+            response.put("status", "ok");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", "Failed to add record: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 更新健康记录的分享信息
+     */
+    @PatchMapping("/share/{id}")
+    public ResponseEntity<Map<String, Object>> updateShareInfo(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> shareData) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            Boolean shared = (Boolean) shareData.get("shared");
+            Long sharedWithUserId = shareData.get("sharedWithUserId") != null ? 
+                Long.valueOf(shareData.get("sharedWithUserId").toString()) : null;
+            String sharedWithRole = (String) shareData.get("sharedWithRole");
+            
+            healthService.setShareInfo(id, shared, sharedWithUserId, sharedWithRole);
+            response.put("status", "ok");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", "Failed to update share info: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 获取用户指定时间范围内的健康记录历史
+     */
+    @GetMapping("/history")
+    public ResponseEntity<List<HealthRecord>> getHistory(
+            @RequestParam Long userId,
+            @RequestParam String start,
+            @RequestParam String end) {
+        
+        try {
+            List<HealthRecord> records = healthService.history(userId, start, end);
+            return ResponseEntity.ok(records);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    /**
+     * 获取用户指定类型和时间范围内的健康记录历史
+     */
+    @GetMapping("/history/type")
+    public ResponseEntity<List<HealthRecord>> getHistoryByType(
+            @RequestParam Long userId,
+            @RequestParam String type,
+            @RequestParam String start,
+            @RequestParam String end) {
+        
+        try {
+            List<HealthRecord> records = healthService.historyByType(userId, type, start, end);
+            return ResponseEntity.ok(records);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    /**
+     * 获取用户最新的健康记录
+     */
+    @GetMapping("/latest")
+    public ResponseEntity<HealthRecord> getLatest(@RequestParam Long userId) {
+        
+        try {
+            HealthRecord record = healthService.latest(userId);
+            return ResponseEntity.ok(record);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    /**
+     * 删除健康记录
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> deleteRecord(@PathVariable Long id) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            healthService.delete(id);
+            response.put("status", "deleted");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", "Failed to delete record: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    // ========== 数据库操作相关接口结束 ==========
 }

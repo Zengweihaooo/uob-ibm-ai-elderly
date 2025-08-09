@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.pojo.HealthRecord;
 import com.example.demo.pojo.User;
 import com.example.demo.pojo.FamilyContact;
+import com.example.demo.mapper.HealthRecordMapper;
 
 @Service
 public class HealthService {
@@ -25,6 +26,9 @@ public class HealthService {
     
     @Autowired
     private FamilyService familyService;
+    
+    @Autowired
+    private HealthRecordMapper healthRecordMapper;
 
     // In-memory storage for health records (consider using database in production)
     private List<HealthRecord> healthRecords = new ArrayList<>();
@@ -404,4 +408,83 @@ public class HealthService {
     }
     
     // ========== 新增共享功能结束 ==========
+    
+    // ========== 数据库操作方法 ==========
+    
+    /**
+     * 添加健康记录到数据库
+     * @param r 健康记录对象
+     * @return 记录ID
+     */
+    public Long addRecord(HealthRecord r) {
+        if (r.getRecordTime() == null) {
+            r.setRecordTime(LocalDateTime.now());
+        }
+        r.setShared(false);
+        healthRecordMapper.insert(r);
+        return r.getId();
+    }
+    
+    /**
+     * 获取用户指定时间范围内的健康记录历史
+     * @param userId 用户ID
+     * @param startIso 开始时间（ISO格式）
+     * @param endIso 结束时间（ISO格式）
+     * @return 健康记录列表
+     */
+    public List<HealthRecord> history(Long userId, String startIso, String endIso) {
+        return healthRecordMapper.listByUserAndRange(userId, startIso, endIso);
+    }
+    
+    /**
+     * 获取用户指定类型和时间范围内的健康记录历史
+     * @param userId 用户ID
+     * @param type 记录类型
+     * @param startIso 开始时间（ISO格式）
+     * @param endIso 结束时间（ISO格式）
+     * @return 健康记录列表
+     */
+    public List<HealthRecord> historyByType(Long userId, String type, String startIso, String endIso) {
+        return healthRecordMapper.listByUserAndType(userId, type, startIso, endIso);
+    }
+    
+    /**
+     * 获取用户最新的健康记录
+     * @param userId 用户ID
+     * @return 最新的健康记录
+     */
+    public HealthRecord latest(Long userId) {
+        return healthRecordMapper.latestByUser(userId);
+    }
+    
+    /**
+     * 设置分享信息
+     * @param id 记录ID
+     * @param shared 是否分享
+     * @param sharedWithUserId 分享给的用户ID
+     * @param sharedWithRole 分享给的角色
+     */
+    public void setShareInfo(Long id, Boolean shared, Long sharedWithUserId, String sharedWithRole) {
+        LocalDateTime sharedAt = null;
+        Long finalSharedWithUserId = null;
+        String finalSharedWithRole = null;
+        
+        if (shared) {
+            sharedAt = LocalDateTime.now();
+            finalSharedWithUserId = sharedWithUserId;
+            finalSharedWithRole = sharedWithRole;
+        }
+        
+        healthRecordMapper.updateShareInfo(id, shared, finalSharedWithUserId, finalSharedWithRole, sharedAt);
+    }
+    
+    /**
+     * 删除健康记录
+     * @param id 记录ID
+     */
+    public void delete(Long id) {
+        healthRecordMapper.deleteById(id);
+    }
+    
+    // ========== 数据库操作方法结束 ==========
 } 

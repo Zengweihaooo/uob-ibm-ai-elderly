@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.HealthRecordMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="HealthRecordResultMap" type="com.example.demo.pojo.HealthRecord">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="value" property="value" jdbcType="VARCHAR"/>
+        <result column="unit" property="unit" jdbcType="VARCHAR"/>
+        <result column="record_time" property="recordTime" typeHandler="com.example.demo.config.SQLiteLocalDateTimeTypeHandler"/>
+        <result column="notes" property="notes" jdbcType="VARCHAR"/>
+        <result column="shared" property="shared" jdbcType="INTEGER"/>
+        <result column="shared_with_user_id" property="sharedWithUserId" jdbcType="BIGINT"/>
+        <result column="shared_with_role" property="sharedWithRole" jdbcType="VARCHAR"/>
+        <result column="shared_at" property="sharedAt" typeHandler="com.example.demo.config.SQLiteLocalDateTimeTypeHandler"/>
+        <result column="created_at" property="createdAt" typeHandler="com.example.demo.config.SQLiteLocalDateTimeTypeHandler"/>
+        <result column="updated_at" property="updatedAt" typeHandler="com.example.demo.config.SQLiteLocalDateTimeTypeHandler"/>
+    </resultMap>
+    
+    <!-- 插入健康记录 -->
+    <insert id="insert" parameterType="com.example.demo.pojo.HealthRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO health_records (
+            user_id, type, value, unit, record_time, notes, 
+            shared, shared_with_user_id, shared_with_role, shared_at,
+            created_at, updated_at
+        ) VALUES (
+            #{userId}, #{type}, #{value}, #{unit}, #{recordTime, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler}, #{notes},
+            #{shared, jdbcType=INTEGER}, #{sharedWithUserId}, #{sharedWithRole}, #{sharedAt, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            #{createdAt, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler}, #{updatedAt, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler}
+        )
+    </insert>
+    
+    <!-- 更新分享信息 -->
+    <update id="updateShareInfo">
+        UPDATE health_records 
+        SET shared = #{shared, jdbcType=INTEGER},
+            shared_with_user_id = #{sharedWithUserId},
+            shared_with_role = #{sharedWithRole},
+            shared_at = #{sharedAt, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            updated_at = datetime('now')
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 根据用户ID和时间范围查询健康记录 -->
+    <select id="listByUserAndRange" resultMap="HealthRecordResultMap">
+        SELECT * FROM health_records 
+        WHERE user_id = #{userId}
+        AND record_time BETWEEN #{startIso} AND #{endIso}
+        ORDER BY record_time DESC, id DESC
+    </select>
+    
+    <!-- 根据用户ID、类型和时间范围查询健康记录 -->
+    <select id="listByUserAndType" resultMap="HealthRecordResultMap">
+        SELECT * FROM health_records 
+        WHERE user_id = #{userId}
+        AND type = #{type}
+        AND record_time BETWEEN #{startIso} AND #{endIso}
+        ORDER BY record_time DESC, id DESC
+    </select>
+    
+    <!-- 获取用户最新的健康记录 -->
+    <select id="latestByUser" resultMap="HealthRecordResultMap">
+        SELECT * FROM health_records 
+        WHERE user_id = #{userId}
+        ORDER BY record_time DESC, id DESC
+        LIMIT 1
+    </select>
+    
+    <!-- 根据ID删除健康记录 -->
+    <delete id="deleteById">
+        DELETE FROM health_records WHERE id = #{id}
+    </delete>
+    
+</mapper>
+

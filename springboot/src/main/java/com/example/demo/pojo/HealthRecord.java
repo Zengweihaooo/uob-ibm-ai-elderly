@@ -7,8 +7,11 @@ public class HealthRecord {
     private Long userId;
     private String type;
     private String value;
+    private String unit;
     private LocalDateTime recordTime;
     private String notes;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     
     // ========== 新增共享功能相关字段 ==========
     // 是否已共享
@@ -29,6 +32,8 @@ public class HealthRecord {
         this.type = type;
         this.value = value;
         this.recordTime = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
         // ========== 初始化共享相关字段 ==========
         this.shared = false;
         this.sharedWithUserId = null;
@@ -70,6 +75,14 @@ public class HealthRecord {
         this.value = value;
     }
 
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
     public LocalDateTime getRecordTime() {
         return recordTime;
     }
@@ -84,6 +97,22 @@ public class HealthRecord {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     // ========== 共享功能相关getter和setter ==========
@@ -127,8 +156,11 @@ public class HealthRecord {
                 ", userId=" + userId +
                 ", type='" + type + '\'' +
                 ", value='" + value + '\'' +
+                ", unit='" + unit + '\'' +
                 ", recordTime=" + recordTime +
                 ", notes='" + notes + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
                 ", shared=" + shared +
                 ", sharedWithUserId=" + sharedWithUserId +
                 ", sharedWithRole='" + sharedWithRole + '\'' +
