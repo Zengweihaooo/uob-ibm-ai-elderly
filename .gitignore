@@ -1,1 +1,4 @@
 .DS_Storedocs/keys/*.json
+
+# secrets
+/docs/keys/*.json
