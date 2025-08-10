@@ -433,7 +433,7 @@ public class UserController {
             
             if (email == null || email.trim().isEmpty()) {
                 response.put("success", false);
-                response.put("message", "邮箱地址不能为空");
+                response.put("message", "Email address cannot be empty");
                 response.put("errorCode", "EMAIL_EMPTY");
                 return ResponseEntity.badRequest().body(response);
             }
@@ -442,7 +442,7 @@ public class UserController {
             RateLimitResult rateLimitResult = permissionService.checkRateLimit(authHeader, "email_validation");
             if (!rateLimitResult.isAllowed()) {
                 response.put("success", false);
-                response.put("message", "请求过于频繁，请稍后再试");
+                response.put("message", "Request too frequent, please try again later");
                 response.put("errorCode", "RATE_LIMIT_EXCEEDED");
                 return ResponseEntity.status(429).body(response);
             }
@@ -460,7 +460,7 @@ public class UserController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "验证过程中发生错误: " + e.getMessage());
+            response.put("message", "Error occurred during validation: " + e.getMessage());
             response.put("errorCode", "VALIDATION_ERROR");
             return ResponseEntity.internalServerError().body(response);
         }
@@ -482,7 +482,7 @@ public class UserController {
             PermissionResult permissionResult = permissionService.validateRegistrationPermission(authHeader);
             if (!permissionResult.isAllowed()) {
                 response.put("success", false);
-                response.put("message", "权限不足: " + permissionResult.getMessage());
+                response.put("message", "Insufficient permissions: " + permissionResult.getMessage());
                 response.put("errorCode", "PERMISSION_DENIED");
                 return ResponseEntity.status(403).body(response);
             }
@@ -493,7 +493,7 @@ public class UserController {
             
             if (email == null || email.trim().isEmpty()) {
                 response.put("success", false);
-                response.put("message", "邮箱地址不能为空");
+                response.put("message", "Email address cannot be empty");
                 response.put("errorCode", "EMAIL_EMPTY");
                 return ResponseEntity.badRequest().body(response);
             }
@@ -501,7 +501,7 @@ public class UserController {
             // 3. 时间戳验证（防止重放攻击）
             if (!isValidTimestamp(timestamp)) {
                 response.put("success", false);
-                response.put("message", "请求时间戳无效");
+                response.put("message", "Request timestamp is invalid");
                 response.put("errorCode", "INVALID_TIMESTAMP");
                 return ResponseEntity.badRequest().body(response);
             }
@@ -510,7 +510,7 @@ public class UserController {
             RateLimitResult rateLimitResult = permissionService.checkRateLimit(authHeader, "user_registration");
             if (!rateLimitResult.isAllowed()) {
                 response.put("success", false);
-                response.put("message", "注册请求过于频繁，请稍后再试");
+                response.put("message", "Registration request too frequent, please try again later");
                 response.put("errorCode", "RATE_LIMIT_EXCEEDED");
                 return ResponseEntity.status(429).body(response);
             }
@@ -528,7 +528,7 @@ public class UserController {
             User user = userService.registerUser(email.trim());
             
             response.put("success", true);
-            response.put("message", "注册成功！验证邮件已发送到: " + user.getEmail());
+            response.put("message", "Registration successful! Verification email sent to: " + user.getEmail());
             response.put("user", user);
             response.put("email", user.getEmail());
             response.put("timestamp", LocalDateTime.now().toString());
@@ -542,7 +542,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "注册失败，请稍后重试");
+            response.put("message", "Registration failed, please try again later");
             response.put("errorCode", "REGISTRATION_ERROR");
             return ResponseEntity.internalServerError().body(response);
         }
@@ -559,7 +559,7 @@ public class UserController {
             LocalDateTime now = LocalDateTime.now();
             Duration duration = Duration.between(requestTime, now);
             
-            // 允许5分钟的时间差
+            // Allow 5 minutes time difference
             return Math.abs(duration.toMinutes()) <= 5;
         } catch (Exception e) {
             return false;

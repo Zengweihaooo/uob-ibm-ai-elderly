@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * 邮箱验证服务 - 专门处理用户注册时的邮箱验证
+ * Email verification service - specifically handles email verification during user registration
  * 
  * @author AI Assistant
  * @version 1.0
@@ -28,13 +28,13 @@ public class EmailVerificationService {
     private EmailService emailService;
     
     /**
-     * 邮箱验证服务 - 专门处理用户注册时的邮箱验证
+     * Email verification service - specifically handles email verification during user registration
      */
     public EmailVerificationResult verifyEmailForRegistration(String email) {
         EmailVerificationResult result = new EmailVerificationResult();
         
         try {
-            // 1. 基础格式验证
+            // 1. Basic format validation
             ValidationResult formatResult = validateEmailFormat(email);
             if (!formatResult.isValid()) {
                 logValidationFailure(email, formatResult.getErrorCode(), formatResult.getMessage());
@@ -44,7 +44,7 @@ public class EmailVerificationService {
                 return result;
             }
             
-            // 2. 域名验证
+            // 2. Domain validation
             ValidationResult domainResult = validateEmailDomain(email);
             if (!domainResult.isValid()) {
                 logValidationFailure(email, domainResult.getErrorCode(), domainResult.getMessage());
@@ -54,7 +54,7 @@ public class EmailVerificationService {
                 return result;
             }
             
-            // 3. 重复检查
+            // 3. Duplicate check
             ValidationResult duplicateResult = checkEmailDuplicate(email);
             if (!duplicateResult.isValid()) {
                 logValidationFailure(email, duplicateResult.getErrorCode(), duplicateResult.getMessage());
@@ -64,7 +64,7 @@ public class EmailVerificationService {
                 return result;
             }
             
-            // 4. 安全检查
+            // 4. Security check
             ValidationResult securityResult = performSecurityChecks(email);
             if (!securityResult.isValid()) {
                 logValidationFailure(email, securityResult.getErrorCode(), securityResult.getMessage());
@@ -74,10 +74,10 @@ public class EmailVerificationService {
                 return result;
             }
             
-            // 5. 验证通过
+            // 5. Validation passed
             logValidationSuccess(email);
             result.setSuccess(true);
-            result.setMessage("邮箱验证通过，可以注册");
+            result.setMessage("Email validation passed, registration allowed");
             result.setEmail(email);
             
             return result;
@@ -85,7 +85,7 @@ public class EmailVerificationService {
         } catch (Exception e) {
             logValidationFailure(email, "VALIDATION_ERROR", e.getMessage());
             result.setSuccess(false);
-            result.setMessage("邮箱验证过程中发生错误: " + e.getMessage());
+            result.setMessage("Error occurred during email validation: " + e.getMessage());
             result.setErrorCode("VALIDATION_ERROR");
             return result;
         }
@@ -98,20 +98,20 @@ public class EmailVerificationService {
         EmailVerificationResult result = new EmailVerificationResult();
         
         try {
-            // 再次验证邮箱
+            // Re-validate email
             EmailVerificationResult validationResult = verifyEmailForRegistration(email);
             if (!validationResult.isSuccess()) {
                 return validationResult;
             }
             
-            // 生成验证码
+            // Generate verification code
             String verificationCode = generateVerificationCode();
             
-            // 发送验证邮件
+            // Send verification email
             emailService.sendVerificationEmail(email, verificationCode);
             
             result.setSuccess(true);
-            result.setMessage("验证邮件发送成功");
+            result.setMessage("Verification email sent successfully");
             result.setEmail(email);
             result.setVerificationCode(verificationCode);
             
@@ -119,7 +119,7 @@ public class EmailVerificationService {
             
         } catch (Exception e) {
             result.setSuccess(false);
-            result.setMessage("发送验证邮件失败: " + e.getMessage());
+            result.setMessage("Failed to send verification email: " + e.getMessage());
             result.setErrorCode("EMAIL_SEND_ERROR");
             return result;
         }
@@ -132,7 +132,7 @@ public class EmailVerificationService {
         EmailVerificationResult result = new EmailVerificationResult();
         
         try {
-            // 1. 基础格式验证
+            // 1. Basic format validation
             ValidationResult formatResult = validateEmailFormat(email);
             if (!formatResult.isValid()) {
                 result.setSuccess(false);
@@ -141,7 +141,7 @@ public class EmailVerificationService {
                 return result;
             }
             
-            // 2. 域名验证
+            // 2. Domain validation
             ValidationResult domainResult = validateEmailDomain(email);
             if (!domainResult.isValid()) {
                 result.setSuccess(false);
@@ -150,7 +150,7 @@ public class EmailVerificationService {
                 return result;
             }
             
-            // 3. 安全检查
+            // 3. Security check
             ValidationResult securityResult = performSecurityChecks(email);
             if (!securityResult.isValid()) {
                 result.setSuccess(false);
@@ -159,16 +159,16 @@ public class EmailVerificationService {
                 return result;
             }
             
-            // 验证通过
+            // Validation passed
             result.setSuccess(true);
-            result.setMessage("邮箱格式验证通过");
+            result.setMessage("Email format validation passed");
             result.setEmail(email);
             
             return result;
             
         } catch (Exception e) {
             result.setSuccess(false);
-            result.setMessage("邮箱格式验证过程中发生错误: " + e.getMessage());
+            result.setMessage("Error occurred during email format validation: " + e.getMessage());
             result.setErrorCode("VALIDATION_ERROR");
             return result;
         }
@@ -179,26 +179,26 @@ public class EmailVerificationService {
      */
     private ValidationResult validateEmailFormat(String email) {
         if (email == null || email.trim().isEmpty()) {
-            return new ValidationResult(false, "邮箱地址不能为空", "EMAIL_EMPTY");
+            return new ValidationResult(false, "Email address cannot be empty", "EMAIL_EMPTY");
         }
         
-        // 更严格的邮箱格式验证
+        // More strict email format validation
         String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
         if (!email.matches(emailRegex)) {
-            return new ValidationResult(false, "邮箱格式不正确，请检查邮箱地址", "EMAIL_FORMAT_INVALID");
+            return new ValidationResult(false, "Email format is incorrect, please check the email address", "EMAIL_FORMAT_INVALID");
         }
         
-        // 检查邮箱长度
+        // Check email length
         if (email.length() > 100) {
-            return new ValidationResult(false, "邮箱地址过长，请使用较短的邮箱地址", "EMAIL_TOO_LONG");
+            return new ValidationResult(false, "Email address is too long, please use a shorter email address", "EMAIL_TOO_LONG");
         }
         
-        // 检查特殊字符
+        // Check special characters
         if (email.contains("..") || email.contains("__") || email.contains("--")) {
-            return new ValidationResult(false, "邮箱地址包含无效字符", "EMAIL_INVALID_CHARS");
+            return new ValidationResult(false, "Email address contains invalid characters", "EMAIL_INVALID_CHARS");
         }
         
-        return new ValidationResult(true, "邮箱格式正确", "FORMAT_VALID");
+        return new ValidationResult(true, "Email format is correct", "FORMAT_VALID");
     }
     
     /**
@@ -207,27 +207,27 @@ public class EmailVerificationService {
     private ValidationResult validateEmailDomain(String email) {
         String domain = email.substring(email.indexOf("@") + 1);
         
-        // 检查常见无效域名
+        // Check common invalid domains
         List<String> invalidDomains = Arrays.asList(
             "example.com", "test.com", "invalid.com", "localhost", 
             "temp.com", "demo.com", "fake.com", "spam.com"
         );
         
         if (invalidDomains.contains(domain.toLowerCase())) {
-            return new ValidationResult(false, "请使用有效的邮箱域名，不能使用测试域名", "INVALID_DOMAIN");
+            return new ValidationResult(false, "Please use a valid email domain, test domains are not allowed", "INVALID_DOMAIN");
         }
         
-        // 检查域名长度
+        // Check domain length
         if (domain.length() < 3 || domain.length() > 50) {
-            return new ValidationResult(false, "邮箱域名长度不正确", "DOMAIN_LENGTH_INVALID");
+            return new ValidationResult(false, "Email domain length is incorrect", "DOMAIN_LENGTH_INVALID");
         }
         
-        // 检查域名格式
+        // Check domain format
         if (!domain.matches("^[a-zA-Z0-9.-]+$")) {
-            return new ValidationResult(false, "邮箱域名包含无效字符", "DOMAIN_INVALID_CHARS");
+            return new ValidationResult(false, "Email domain contains invalid characters", "DOMAIN_INVALID_CHARS");
         }
         
-        return new ValidationResult(true, "邮箱域名有效", "DOMAIN_VALID");
+        return new ValidationResult(true, "Email domain is valid", "DOMAIN_VALID");
     }
     
     /**
@@ -237,19 +237,19 @@ public class EmailVerificationService {
         try {
             User existingUser = userMapper.findByEmail(email.trim().toLowerCase());
             if (existingUser != null) {
-                String message = "该邮箱已被注册";
+                String message = "This email is already registered";
                 if (existingUser.getStatus() == User.UserStatus.PENDING) {
-                    message += "，但尚未验证。您可以重新发送验证码";
+                    message += ", but not yet verified. You can resend the verification code";
                 } else if (existingUser.getStatus() == User.UserStatus.VERIFIED) {
-                    message += "。如果您忘记密码，请联系管理员";
+                    message += ". If you forgot your password, please contact administrator";
                 }
                 return new ValidationResult(false, message, "EMAIL_ALREADY_EXISTS");
             }
-            return new ValidationResult(true, "邮箱可用", "EMAIL_AVAILABLE");
+            return new ValidationResult(true, "Email is available", "EMAIL_AVAILABLE");
         } catch (Exception e) {
-            // 如果数据库查询失败，暂时允许注册以测试邮件发送功能
+            // If database query fails, temporarily allow registration to test email sending functionality
             System.err.println("Database query failed during email check: " + e.getMessage());
-            return new ValidationResult(true, "邮箱可用 (数据库检查跳过)", "EMAIL_AVAILABLE");
+            return new ValidationResult(true, "Email is available (database check skipped)", "EMAIL_AVAILABLE");
         }
     }
     
@@ -257,7 +257,7 @@ public class EmailVerificationService {
      * 安全检查
      */
     private ValidationResult performSecurityChecks(String email) {
-        // 检查是否包含可疑内容
+        // Check if contains suspicious content
         String lowerEmail = email.toLowerCase();
         List<String> suspiciousPatterns = Arrays.asList(
             "admin", "root", "test", "temp", "spam", "fake"
@@ -265,11 +265,11 @@ public class EmailVerificationService {
         
         for (String pattern : suspiciousPatterns) {
             if (lowerEmail.contains(pattern)) {
-                return new ValidationResult(false, "邮箱地址包含可疑内容", "SUSPICIOUS_EMAIL");
+                return new ValidationResult(false, "Email address contains suspicious content", "SUSPICIOUS_EMAIL");
             }
         }
         
-        return new ValidationResult(true, "安全检查通过", "SECURITY_VALID");
+        return new ValidationResult(true, "Security check passed", "SECURITY_VALID");
     }
     
     /**
