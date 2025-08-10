@@ -32,7 +32,8 @@ class SpeechService {
         this.recognition = new SpeechRecognition();
         this.recognition.continuous = true;
         this.recognition.interimResults = true;
-        this.recognition.lang = 'en-US';
+        // Prefer UK English; fallback will switch to en-US on error
+        this.recognition.lang = 'en-GB';
         this.recognition.maxAlternatives = 1;
     }
 
@@ -134,6 +135,15 @@ class SpeechService {
             console.error('Speech recognition error:', event.error);
             this.isRecording = false;
             
+            // Language fallback: if en-GB not supported, try en-US once
+            if (event && event.error === 'language-not-supported' && this.recognition && this.recognition.lang === 'en-GB') {
+                try {
+                    this.recognition.lang = 'en-US';
+                    this.recognition.start();
+                    return;
+                } catch (_) { /* ignore and continue to report error */ }
+            }
+
             let errorMessage = 'Speech recognition error';
             switch (event.error) {
                 case 'no-speech':
@@ -214,15 +224,25 @@ class SpeechService {
 
         const utterance = new SpeechSynthesisUtterance(text);
         
-        // Set voice (use best available English voice if none specified)
+        // Set voice (prefer UK English female if available)
         if (voice) {
             utterance.voice = voice;
         } else if (this.voices.length > 0) {
-            // Use the first available English voice (prioritized local ones)
-            utterance.voice = this.voices[0];
+            const prefer = [
+                v => v.lang === 'en-GB' && /female|Google UK English Female|en-GB.*A|en-GB.*C/i.test(v.name || ''),
+                v => v.lang === 'en-GB',
+                v => (v.lang || '').startsWith('en')
+            ];
+            let chosen = null;
+            for (const rule of prefer) {
+                chosen = this.voices.find(rule);
+                if (chosen) break;
+            }
+            utterance.voice = chosen || this.voices[0];
         }
 
-        utterance.lang = 'en-US';
+        // Prefer UK English for synthesis
+        utterance.lang = 'en-GB';
         utterance.rate = Math.max(0.1, Math.min(2, rate)); // Clamp between 0.1 and 2
         utterance.pitch = Math.max(0, Math.min(2, pitch)); // Clamp between 0 and 2
         utterance.volume = Math.max(0, Math.min(1, volume)); // Clamp between 0 and 1
