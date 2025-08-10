@@ -87,6 +87,44 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Emotion Companion (一人一条当前情绪状态)
+CREATE TABLE IF NOT EXISTS emotion_companion (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    name TEXT,
+    personality TEXT,
+    avatar TEXT,
+    emotion TEXT,
+    happiness INTEGER,
+    energy INTEGER,
+    responsiveness INTEGER,
+    last_interaction TEXT,
+    last_chat TEXT,
+    last_command TEXT,
+    interaction_count INTEGER,
+    chat_count INTEGER,
+    current_location TEXT,
+    is_active INTEGER,
+    activity_mode TEXT,
+    current_sound TEXT,
+    visual_expression TEXT,
+    is_making_sound INTEGER,
+    is_expressing_emotion INTEGER,
+    led_color TEXT,
+    last_attention_time TEXT,
+    neglect_level INTEGER,
+    needs_attention INTEGER,
+    is_lonely INTEGER,
+    current_task TEXT,
+    is_learning INTEGER,
+    helpfulness INTEGER,
+    created_at TEXT,
+    updated_at TEXT
+);
+
+-- 索引
+CREATE UNIQUE INDEX IF NOT EXISTS ux_emotion_companion_user ON emotion_companion(user_id);
+
 -- Insert sample data for testing
 INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
 VALUES (1, '张小明', '儿子', '+86 138 0013 8000', 'xiaoming@example.com', 1);
@@ -132,4 +170,4 @@ CREATE TABLE IF NOT EXISTS schema_version (
     version VARCHAR(20) NOT NULL,
     description TEXT,
     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-); 
+);

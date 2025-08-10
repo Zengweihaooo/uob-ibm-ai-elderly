@@ -5,7 +5,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-import com.example.demo.controller.EmotionCompanionController;
+// import com.example.demo.controller.EmotionCompanionController;
 import com.example.demo.pojo.User;
 import com.example.demo.pojo.ImportantDate;
 
@@ -28,8 +28,8 @@ public class ScheduleMonitorService {
     @Autowired
     private EmailService emailService;
 
-    @Autowired
-    private EmotionCompanionController emotionCompanionController;
+    // @Autowired
+    // private EmotionCompanionController emotionCompanionController;
 
     @Autowired
     private SmsService smsService;
