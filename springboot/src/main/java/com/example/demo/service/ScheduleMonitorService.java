@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.example.demo.controller.EmotionCompanionController;
 import com.example.demo.pojo.User;
+import com.example.demo.pojo.ImportantDate;
 
 
 /**
@@ -36,6 +37,12 @@ public class ScheduleMonitorService {
     @Autowired
     private FamilyService familyService;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private ImportantDateService importantDateService;
+
     @Scheduled(cron = "0 0 9 * * ?") // Check the health data every morning at 9 am
     public void checkHealthSubmission() {
         List<User> users = healthService.getUsersWithoutTodayHealthLog();
@@ -60,10 +67,40 @@ public class ScheduleMonitorService {
      * @param user User to send reminder to
      * @param reminderType Type of reminder
      */
+
+    // Override: Send directly using subject/message
+    public void sendMultiChannelReminder(User user, String subject, String message) {
+        // Email
+        try {
+            emailService.sendHealthAlertEmail(user.getEmail(), subject, message);
+        } catch (Exception e) {
+            System.err.println("Failed to send email reminder to " + user.getEmail() + ": " + e.getMessage());
+        }
+
+        // SMS
+        try {
+            if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
+                smsService.sendSMS(user.getPhoneNumber(), message, "REMINDER");
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to send SMS reminder to " + user.getPhoneNumber() + ": " + e.getMessage());
+        }
+
+        // Companion（宠物端）
+        try {
+            String petMessage = message; // 自定义提醒直接复用文案最稳
+            // TODO: 如需落消息到对话流，解开下行并实现：
+            // emotionCompanionController.createMessage("pet", petMessage, "reminder", user.getId());
+        } catch (Exception e) {
+            System.err.println("Failed to send pet message to user " + user.getId() + ": " + e.getMessage());
+        }
+    }
+
+    
     public void sendMultiChannelReminder(User user, String reminderType) {
-        String subject = "";
-        String message = "";
-        
+        String subject;
+        String message;
+
         switch (reminderType) {
             case "health_check":
                 subject = "Daily Health Check Reminder";
@@ -85,49 +122,11 @@ public class ScheduleMonitorService {
                 subject = "General Reminder";
                 message = "Hello " + user.getName() + ", you have a reminder from your AI companion.";
         }
-        
-        // Send email reminder
-        try {
-            emailService.sendHealthAlertEmail(user.getEmail(), subject, message);
-        } catch (Exception e) {
-            System.err.println("Failed to send email reminder to " + user.getEmail() + ": " + e.getMessage());
-        }
-        
-        // Send SMS reminder (if phone number is available)
-        try {
-            if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
-                smsService.sendSMS(user.getPhoneNumber(), message, "REMINDER");
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to send SMS reminder to " + user.getPhoneNumber() + ": " + e.getMessage());
-        }
-        
-        // Send pet message
-        try {
-            String petMessage = "";
-            switch (reminderType) {
-                case "health_check":
-                    petMessage = "Beep... I noticed that you haven't checked in on your health information today. Is everything okay?";
-                    break;
-                case "schedule_check":
-                    petMessage = "Chime...📅 You haven't told me your plan for today yet. Shall we arrange it together?";
-                    break;
-                case "medication":
-                    petMessage = "Beep! 💊 It's time for your medication! Don't forget to take it!";
-                    break;
-                case "appointment":
-                    petMessage = "Chime... 📅 You have an appointment coming up! Let me remind you!";
-                    break;
-                default:
-                    petMessage = "Beep! I have a reminder for you!";
-            }
-            
-            // TODO: Implement pet message creation
-            // emotionCompanionController.createMessage("pet", petMessage, "reminder", user.getId());
-        } catch (Exception e) {
-            System.err.println("Failed to send pet message to user " + user.getId() + ": " + e.getMessage());
-        }
+
+        // 统一走重载
+        sendMultiChannelReminder(user, subject, message);
     }
+
 
     /**
      * Send urgent reminder for medication
@@ -187,4 +186,43 @@ public class ScheduleMonitorService {
             System.err.println("Failed to send appointment pet message: " + e.getMessage());
         }
     }
+
+    @Scheduled(cron = "0 0 8 * * ?") // 每天早上 8 点检查
+    public void checkImportantDates() {
+    List<User> allUsers = userService.getAllUsers(); // 或 userService.getAllUsers()
+    for (User user : allUsers) {
+        List<ImportantDate> todayDates = importantDateService.getTodayImportantDates(user.getId());
+        for (ImportantDate date : todayDates) {
+            handleImportantDateReminder(user, date);
+        }
+    }
+    }
+
+    private void handleImportantDateReminder(User user, ImportantDate date) {
+        String subject = "Reminder: " + date.getTitle();
+        String message;
+
+    
+        switch (date.getType()) {
+            case "birthday":
+                message = "Happy Birthday " + user.getName() + "! Your AI companion wishes you joy and health!";
+                break;
+            case "anniversary":
+                message = "Today marks a special day: " + date.getTitle() + ". Wishing you a meaningful celebration!";
+                break;
+            case "holiday":
+                message = "It's " + date.getTitle() + "! Enjoy the holiday and stay well!";
+                break;
+            case "custom":
+            default:
+                message = "Reminder: " + date.getDescription();
+        }
+    
+        // 推送多渠道提醒（已有封装）
+        sendMultiChannelReminder(user, "important_date:" + message);
+    }
+    
+
+
+
 }
