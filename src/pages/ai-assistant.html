@@ -817,15 +817,14 @@
             
             try {
                 // Send message to backend API
-                const response = await fetch('http://localhost:8080/api/chat/message', {
+                const response = await fetch('http://localhost:8080/api/gemini/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('authToken') || 'guest'}`
                     },
                     body: JSON.stringify({
-                        content: message,
-                        attachments: []
+                        message: message
                     })
                 });
 
@@ -834,10 +833,13 @@
                 // Remove AI typing indicator
                 hideTypingIndicator();
                 
-                if (result.success && result.aiResponse && result.aiResponse.content) {
-                    addMessage('assistant', result.aiResponse.content);
+                if (result.status === 'success' && result.response) {
+                    addMessage('assistant', result.response);
+                } else if (result.response) {
+                    // Fallback response from controller
+                    addMessage('assistant', result.response);
                 } else {
-                    addMessage('assistant', 'I apologize, but I encountered an error. Please try again.');
+                    addMessage('assistant', 'Sorry, I couldn\'t process your message. Please try again.');
                 }
             } catch (error) {
                 console.error('Error sending message:', error);

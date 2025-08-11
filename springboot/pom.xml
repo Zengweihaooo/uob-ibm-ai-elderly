@@ -110,6 +110,12 @@
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-texttospeech</artifactId>
       </dependency>
+      
+      <!-- Google Cloud Vertex AI Gemini -->
+      <dependency>
+        <groupId>com.google.cloud</groupId>
+        <artifactId>google-cloud-aiplatform</artifactId>
+      </dependency>
     </dependencies>
 
     <build>
