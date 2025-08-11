@@ -2,10 +2,11 @@ package com.example.demo.controller;
 
 import com.example.demo.pojo.ImportantDate;
 import com.example.demo.service.ImportantDateService;
-import com.example.demo.service.UserService;
+// import com.example.demo.service.UserService; // Unused
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -26,8 +27,8 @@ public class ImportantDateController {
     @Autowired
     private ImportantDateService importantDateService;
     
-    @Autowired
-    private UserService userService;
+    // @Autowired
+    // private UserService userService; // Not used currently
 
     /**
      * Add a new important date
@@ -36,21 +37,32 @@ public class ImportantDateController {
      * @return Response with created important date
      */
     @PostMapping("/add")
-    public ResponseEntity<Map<String, Object>> addImportantDate(@RequestBody Map<String, Object> requestBody) {
+    public ResponseEntity<Map<String, Object>> addImportantDate(
+            @RequestBody Map<String, Object> requestBody,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            Long userId = Long.valueOf(requestBody.get("userId").toString());
+            Long userId;
+            if (requestBody.get("userId") != null) {
+                userId = Long.valueOf(requestBody.get("userId").toString());
+            } else {
+                userId = getUserIdFromToken(authHeader);
+            }
             String title = (String) requestBody.get("title");
             String dateStr = (String) requestBody.get("date");
             String type = (String) requestBody.get("type");
             String description = (String) requestBody.get("description");
+            Boolean enabled = (Boolean) requestBody.getOrDefault("enabled", Boolean.TRUE);
             
             LocalDate date = LocalDate.parse(dateStr);
             
             ImportantDate importantDate = importantDateService.addImportantDate(
                 userId, title, date, type, description
             );
+            if (enabled != null) {
+                importantDate.setEnabled(enabled);
+            }
             
             response.put("success", true);
             response.put("message", "Important date added successfully");
@@ -61,6 +73,50 @@ public class ImportantDateController {
             response.put("success", false);
             response.put("message", "Failed to add important date: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * Get all important dates for the authenticated user (frontend compatibility)
+     * 
+     * Frontend expects: GET /api/important-dates/all
+     */
+    @GetMapping("/all")
+    public ResponseEntity<Map<String, Object>> getAllForCurrentUser(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Long userId = getUserIdFromToken(authHeader);
+            List<ImportantDate> importantDates = importantDateService.getImportantDatesByUser(userId);
+            response.put("success", true);
+            response.put("importantDates", importantDates);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to get important dates: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * Get stats for the authenticated user (frontend compatibility)
+     * 
+     * Frontend expects: GET /api/important-dates/stats
+     */
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getStatsForCurrentUser(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Long userId = getUserIdFromToken(authHeader);
+            Map<String, Object> stats = importantDateService.getImportantDateStats(userId);
+            response.put("success", true);
+            response.put("stats", stats);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to get important date stats: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
@@ -228,6 +284,14 @@ public class ImportantDateController {
     }
 
     /**
+     * Compatibility for frontend calling PUT /{id}/toggle
+     */
+    @PutMapping("/{id}/toggle")
+    public ResponseEntity<Map<String, Object>> toggleImportantDatePut(@PathVariable Long id) {
+        return toggleImportantDate(id);
+    }
+
+    /**
      * Manually trigger email reminders for all pending important dates
      * 
      * @return Response with reminder sending result
@@ -273,5 +337,11 @@ public class ImportantDateController {
             response.put("message", "Failed to add default holidays: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    // ==================== Helper ====================
+    private Long getUserIdFromToken(String authHeader) {
+        // TODO: parse JWT from Authorization header. For now, return a default user ID
+        return 1L;
     }
 } 
