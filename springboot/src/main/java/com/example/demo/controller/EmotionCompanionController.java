@@ -28,7 +28,7 @@ import com.example.demo.service.PodcastAutoPlayService;
 import com.example.demo.service.PodcastService;
 
 @RestController
-@RequestMapping("/api/pet")
+@RequestMapping("/api/companion")
 @CrossOrigin(origins = "*")
 public class EmotionCompanionController {
 

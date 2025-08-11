@@ -3,582 +3,670 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Pet Reminder App</title>
+    <title>Login - Pet Reminder App</title>
     <link rel="stylesheet" href="../styles/main.css">
-    <link rel="stylesheet" href="../styles/app-theme.css">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        .register-container {
-            max-width: 450px;
-            width: 90%;
-            margin: 4rem auto 2rem;
-            padding: 2rem 1rem;
+        :root {
+            --primary-blue: #0f62fe;
+            --primary-blue-hover: #0043ce;
+            --success-green: #24a148;
+            --warning-orange: #f1c21b;
+            --error-red: #da1e28;
+            --background: #ffffff;
+            --surface: #f4f4f4;
+            --text-primary: #161616;
+            --text-secondary: #525252;
+            --border-subtle: #e0e0e0;
+            --border-strong: #8d8d8d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
             background: var(--background);
-            border: 1px solid var(--border-subtle);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            min-height: 600px;
         }
-        .register-container h1 {
-            font-size: 24px;
-            font-weight: 500;
+
+        .auth-sidebar {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #0043ce 100%);
+            color: white;
+            padding: 3rem 2rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             text-align: center;
-            margin-bottom: 1.5rem;
-            color: var(--primary-blue);
         }
+
+        .auth-sidebar h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .auth-sidebar p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .pet-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .auth-main {
+            flex: 1.2;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px 16px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+        }
+
+        .auth-tab.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+            background: var(--background);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .form-group input.error {
+            border-color: var(--error-red);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-blue-hover);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 2px solid var(--border-subtle);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--border-subtle);
+        }
+
+        .btn-guest {
+            background: var(--warning-orange);
+            color: var(--text-primary);
+        }
+
+        .btn-guest:hover:not(:disabled) {
+            background: #d2a106;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            color: white;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #99d3ff;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--border-subtle);
+        }
+
+        .divider span {
+            background: var(--background);
+            padding: 0 1rem;
+        }
+
+        .verification-section {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .verification-code {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .verification-code input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+        }
+
+        .verification-code input:focus {
+            border-color: var(--primary-blue);
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .forgot-password a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .auth-container {
+                flex-direction: column;
+                max-width: 400px;
+            }
+
+            .auth-sidebar {
+                padding: 2rem 1rem;
+                min-height: 200px;
+            }
+
+            .auth-main {
+                padding: 2rem 1rem;
+            }
+
+            .pet-icon {
+                font-size: 3rem;
+            }
+
+            .auth-sidebar h2 {
+                font-size: 1.5rem;
+            }
+
+            .auth-sidebar p {
+                font-size: 1rem;
+            }
+        }
+
         .step-indicator {
             display: flex;
             justify-content: center;
             margin-bottom: 2rem;
+            gap: 1rem;
         }
+
         .step {
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 10px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 16px;
+            position: relative;
         }
+
         .step.active {
             background-color: var(--primary-blue);
             color: white;
         }
-        .step.inactive {
-            background-color: #e0e0e0;
-            color: #666;
-        }
+
         .step.completed {
-            background-color: #4CAF50;
+            background-color: var(--success-green);
             color: white;
         }
-        .register-form label {
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 0.25rem;
-            display: block;
-            color: var(--text-primary);
+
+        .step.inactive {
+            background-color: var(--border-subtle);
+            color: var(--text-secondary);
         }
-        .register-form input, .register-form select {
-            width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            border: 1px solid var(--border-subtle);
-            border-radius: 4px;
-            font-size: 14px;
-            box-sizing: border-box;
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 30px;
+            height: 2px;
+            background: var(--border-subtle);
+            margin-left: 10px;
         }
-        .register-form input:focus, .register-form select:focus {
-            outline: none;
-            border-color: var(--primary-blue);
-        }
-        .register-form button {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: var(--primary-blue);
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: opacity 0.3s ease;
-            margin-top: 0.5rem;
-        }
-        .register-form button:hover {
-            opacity: 0.9;
-        }
-        .register-form button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        .register-form button.secondary {
-            background-color: #6c757d;
-            margin-top: 0.5rem;
-        }
-        .register-form button.secondary:hover {
-            background-color: #5a6268;
-        }
-        .verification-code-input {
-            text-align: center;
-            font-size: 24px;
-            letter-spacing: 8px;
-            font-weight: bold;
-            margin-bottom: 1.5rem;
-        }
-        .message {
-            padding: 0.75rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-            font-size: 14px;
-        }
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .message.info {
-            background-color: #cce5ff;
-            color: #004085;
-            border: 1px solid #99d3ff;
-        }
-        .step-content {
+
+        .step:last-child::after {
             display: none;
         }
-        .step-content.active {
-            display: block;
-        }
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        .password-requirements {
-            font-size: 12px;
-            color: #666;
-            margin-top: -0.5rem;
-            margin-bottom: 1rem;
-        }
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        /* Mode Selection Styles */
-        .mode-selection {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        
-        .mode-option {
-            border: 2px solid var(--border-subtle);
-            border-radius: 12px;
-            padding: 2rem 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: white;
-            text-align: center;
-        }
-        
-        .mode-option:hover {
-            border-color: var(--primary-blue);
-            box-shadow: 0 4px 12px rgba(44, 90, 160, 0.1);
-            transform: translateY(-2px);
-        }
-        
-        .mode-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        
-        .mode-option h3 {
-            font-size: 1.5rem;
-            margin: 0 0 1rem 0;
-            color: var(--primary-blue);
-            font-weight: 600;
-        }
-        
-        .mode-option p {
-            font-size: 1rem;
-            color: #666;
-            margin: 0 0 1.5rem 0;
-            line-height: 1.5;
-        }
-        
-        .mode-option ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            text-align: left;
-        }
-        
-        .mode-option li {
-            font-size: 0.9rem;
-            color: #555;
-            margin-bottom: 0.5rem;
-            padding-left: 1rem;
-            position: relative;
-        }
-        
-        @media (min-width: 768px) {
-            .mode-selection {
-                flex-direction: row;
-                gap: 2rem;
-            }
-            
-            .mode-option {
-                flex: 1;
-            }
-        }
-        
-        @media (max-width: 600px) {
-            .register-container {
-                margin-top: 3rem;
-                padding: 1.5rem 1rem;
-            }
-            
-            .mode-option {
-                padding: 1.5rem 1rem;
-            }
-            
-            .mode-icon {
-                font-size: 2.5rem;
-            }
 
-            /* Bottom Navigation Styles */
-            .bottom-navigation {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                height: 80px;
-                background: white;
-                border-top: 3px solid var(--primary-blue);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-                z-index: 1000;
-            }
-
-            .nav-tab {
-                flex: 1;
-                max-width: 200px;
-                height: 100%;
-                background: none;
-                border: none;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                color: #666;
-                font-family: inherit;
-                text-decoration: none;
-            }
-
-            .nav-tab:hover {
-                background: #f8f9fa;
-                color: var(--primary-blue);
-            }
-
-            .nav-tab.active {
-                background: var(--primary-blue);
-                color: white;
-            }
-
-            .nav-icon {
-                font-size: 24px;
-                margin-bottom: 4px;
-            }
-
-            .nav-label {
-                font-size: 12px;
-                font-weight: 500;
-            }
-
-            /* Adjust container padding for bottom navigation */
-            .register-container {
-                margin-bottom: 100px;
-            }
+        .step.completed::after {
+            background: var(--success-green);
         }
     </style>
 </head>
 <body>
-    <!-- Navigation (reuse existing styles) -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-left">
-                <a href="../../index.html" class="home-btn" aria-label="Home">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 16V10H12V16H15V8H18L10 1L2 8H5V16H8Z" fill="currentColor"/>
-                    </svg>
-                </a>
-                <div class="logo-container">
-                    <a href="https://www.bristol.ac.uk" target="_blank" class="logo-link">
-                        <img src="https://www.bristol.ac.uk/assets/responsive-web-project/2.6.0/images/logos/uob-logo.svg" alt="University of Bristol Logo" class="logo uob-logo">
-                    </a>
-                    <a href="https://www.ibm.com" target="_blank" class="logo-link">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM Logo" class="logo ibm-logo">
-                    </a>
-                </div>
+    <div class="auth-container">
+        <!-- 左侧信息栏 -->
+        <div class="auth-sidebar">
+            <div class="pet-icon">🐾</div>
+            <h2>Pet Reminder App</h2>
+            <p>Your AI companion for elderly care. Join our community and start caring for your virtual pet while staying connected with your loved ones.</p>
+        </div>
+
+        <!-- 右侧认证表单 -->
+        <div class="auth-main">
+            <!-- 标签页切换 -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Login</button>
+                <button class="auth-tab" data-tab="register">Register</button>
             </div>
-            <button class="menu-toggle" aria-label="Toggle navigation menu">
-                <span></span><span></span><span></span>
-            </button>
-            <div class="nav-links">
-                <a href="https://github.com/Zengweihaooo/uob-ibm-ai-elderly" target="_blank" class="nav-link">GitHub Repo</a>
-                <a href="https://github.com/users/Zengweihaooo/projects/1" target="_blank" class="nav-link">Project Management</a>
-                <div class="dropdown">
-                    <button class="dropdown-btn">Other Platform</button>
-                    <div class="dropdown-content">
-                        <a href="https://www.figma.com/design/ACpMwWcBol9t5wt5u9FkEH/IBM-prototype?node-id=0-1&t=3kvjgXeg7PRMyNxk-1" target="_blank">Figma</a>
-                        <a href="https://teams.microsoft.com/l/channel/19%3ATbJ7cTNrm0h8XNuEz0v9KnBaIb_BxAQXu6ELaI9IqCQ1%40thread.tacv2/General?groupId=4992b869-67ca-4b1d-8786-8e16352bf31d&tenantId=b2e47f30-cd7d-4a4e-a5da-b18cf1a4151b" target="_blank">Teams</a>
+
+            <!-- 消息显示区域 -->
+            <div id="message-container"></div>
+
+            <!-- 登录表单 -->
+            <div id="login-form" class="auth-form active">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email Address</label>
+                        <input type="email" id="loginEmail" name="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" name="password" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="loginBtn">Sign In</button>
+                </form>
+                
+                <div class="forgot-password">
+                    <a href="#" id="forgotPasswordLink">Forgot your password?</a>
+                </div>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <button type="button" class="btn btn-guest" id="guestBtn">Continue as Guest</button>
+            </div>
+
+            <!-- 注册表单 -->
+            <div id="register-form" class="auth-form">
+                <!-- 步骤指示器 -->
+                <div class="step-indicator">
+                    <div class="step active" id="step1">1</div>
+                    <div class="step inactive" id="step2">2</div>
+                    <div class="step inactive" id="step3">3</div>
+                </div>
+
+                <!-- 步骤1: 邮箱注册 -->
+                <div id="register-step-1" class="register-step active">
+                    <form id="emailForm">
+                        <div class="form-group">
+                            <label for="registerEmail">Email Address</label>
+                            <input type="email" id="registerEmail" name="email" placeholder="Enter your email address" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="emailBtn">Send Verification Code</button>
+                    </form>
+                </div>
+
+                <!-- 步骤2: 验证码 -->
+                <div id="register-step-2" class="register-step" style="display: none;">
+                    <div class="verification-section">
+                        <h3 style="text-align: center; margin-bottom: 1rem;">Verify Your Email</h3>
+                        <p style="text-align: center; margin-bottom: 1rem; color: var(--text-secondary);">
+                            We've sent a 6-digit code to <strong id="verification-email"></strong>
+                        </p>
+                        
+                        <form id="verificationForm">
+                            <div class="verification-code">
+                                <input type="text" maxlength="1" class="code-input" data-index="0">
+                                <input type="text" maxlength="1" class="code-input" data-index="1">
+                                <input type="text" maxlength="1" class="code-input" data-index="2">
+                                <input type="text" maxlength="1" class="code-input" data-index="3">
+                                <input type="text" maxlength="1" class="code-input" data-index="4">
+                                <input type="text" maxlength="1" class="code-input" data-index="5">
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="verifyBtn">Verify Code</button>
+                        </form>
+
+                        <div style="text-align: center; margin-top: 1rem;">
+                            <button type="button" class="btn btn-secondary" id="resendBtn">Resend Code</button>
+                        </div>
                     </div>
                 </div>
-                <a href="./team-members.html" class="nav-link">Team Members</a>
-                <a href="./blogs.html" class="nav-link">Blogs</a>
+
+                <!-- 步骤3: 完成注册 -->
+                <div id="register-step-3" class="register-step" style="display: none;">
+                    <form id="completeForm">
+                        <div class="form-group">
+                            <label for="userName">Full Name</label>
+                            <input type="text" id="userName" name="name" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userPassword">Password</label>
+                            <input type="password" id="userPassword" name="password" placeholder="Create a password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userRole">I am a:</label>
+                            <select id="userRole" name="role" style="width: 100%; padding: 14px 16px; border: 2px solid var(--border-subtle); border-radius: 8px; font-size: 16px;">
+                                <option value="ELDERLY">Elderly Person</option>
+                                <option value="FAMILY">Family Member</option>
+                                <option value="DOCTOR">Healthcare Provider</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="completeBtn">Complete Registration</button>
+                    </form>
+                </div>
             </div>
         </div>
-    </nav>
-
-    <main class="main-content">
-        <div class="register-container">
-            <h1>📅 AI Elderly Companion</h1>
-            
-            <!-- Mode Selection (New Step 0) -->
-            <div class="step-content active" id="step0Content">
-                <div class="mode-selection">
-                    <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-blue);">Choose Your Experience</h2>
-                    
-                    <div class="mode-option" onclick="selectMode('register')">
-                        <div class="mode-icon">👤</div>
-                        <h3>Create Account</h3>
-                        <p>Register with your email to save your personal schedule and preferences.</p>
-                        <ul>
-                            <li>✅ Personalized daily schedule</li>
-                            <li>✅ Save your activities</li>
-                            <li>✅ Medication reminders</li>
-                            <li>✅ Progress tracking</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="mode-option" onclick="selectMode('guest')">
-                        <div class="mode-icon">🌟</div>
-                        <h3>Guest Mode</h3>
-                        <p>Try our app with sample elderly daily activities without registration.</p>
-                        <ul>
-                            <li>📋 Sample daily activities</li>
-                            <li>📋 Typical elderly routines</li>
-                            <li>📋 Medication reminders</li>
-                            <li>📋 No account needed</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Step Indicator -->
-            <div class="step-indicator" id="stepIndicator" style="display: none;">
-                <div class="step active" id="step1">1</div>
-                <div class="step inactive" id="step2">2</div>
-                <div class="step inactive" id="step3">3</div>
-            </div>
-
-            <!-- Message Display -->
-            <div id="messageContainer"></div>
-
-            <!-- Step 1: Email Registration -->
-            <div class="step-content active" id="step1Content">
-                <form class="register-form" id="emailForm">
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" placeholder="Enter your email address" required>
-                        <div class="password-requirements">
-                            We'll send you a 6-digit verification code to confirm your email address.
-                        </div>
-                    </div>
-                    <button type="submit" id="emailSubmitBtn">
-                        <span id="emailBtnText">Send Verification Code</span>
-                        <span id="emailBtnLoading" class="loading" style="display: none;"></span>
-                    </button>
-                </form>
-            </div>
-
-            <!-- Step 2: Email Verification -->
-            <div class="step-content" id="step2Content">
-                <form class="register-form" id="verificationForm">
-                    <div class="form-group">
-                        <label for="verificationCode">Verification Code</label>
-                        <input type="text" id="verificationCode" name="verificationCode" 
-                               class="verification-code-input" placeholder="123456" 
-                               maxlength="6" pattern="[0-9]{6}" required>
-                        <div class="password-requirements">
-                            Enter the 6-digit code sent to your email address.
-                        </div>
-                    </div>
-                    <button type="submit" id="verifySubmitBtn">
-                        <span id="verifyBtnText">Verify Email</span>
-                        <span id="verifyBtnLoading" class="loading" style="display: none;"></span>
-                    </button>
-                    <button type="button" class="secondary" id="resendBtn">Resend Code</button>
-                </form>
-            </div>
-
-            <!-- Step 3: Complete Registration -->
-            <div class="step-content" id="step3Content">
-                <form class="register-form" id="completeForm">
-                    <div class="form-group">
-                        <label for="fullname">Full Name</label>
-                        <input type="text" id="fullname" name="fullname" placeholder="John Doe" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" placeholder="Create a secure password" required minlength="6">
-                        <div class="password-requirements">
-                            Password must be at least 6 characters long.
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required minlength="6">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="petType">Choose Your Virtual Pet</label>
-                        <select id="petType" name="petType" required>
-                            <option value="">Select a pet type</option>
-                            <option value="cat">🐱 Cat</option>
-                            <option value="dog">🐶 Dog</option>
-                            <option value="rabbit">🐰 Rabbit</option>
-                            <option value="bird">🐦 Bird</option>
-                            <option value="fish">🐠 Fish</option>
-                        </select>
-                    </div>
-
-                    <button type="submit" id="completeSubmitBtn">
-                        <span id="completeBtnText">Complete Registration</span>
-                        <span id="completeBtnLoading" class="loading" style="display: none;"></span>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </main>
-
-    <footer class="footer"></footer>
+    </div>
 
     <script>
-        // Configuration - Use original endpoints
-        const API_BASE = 'http://localhost:8080/user';
-        let currentStep = 0; // Start with mode selection
-        let userEmail = '';
-        let selectedMode = null;
+        // 全局变量
+        let currentStep = 1;
+        let currentEmail = '';
+        let isGuest = false;
 
-        // Mode selection function
-        function selectMode(mode) {
-            selectedMode = mode;
-            
-            if (mode === 'guest') {
-                // Set guest mode and redirect to schedule
-                localStorage.setItem('guestMode', 'true');
-                showMessage('Welcome to Guest Mode! Redirecting to sample schedule...', 'success');
-                setTimeout(() => {
-                    window.location.href = './schedule.html';
-                }, 1500);
-            } else if (mode === 'register') {
-                // Show registration steps
-                document.getElementById('step0Content').classList.remove('active');
-                document.getElementById('stepIndicator').style.display = 'flex';
-                currentStep = 1;
-                updateStepIndicator(currentStep);
+        // DOM 元素
+        const authTabs = document.querySelectorAll('.auth-tab');
+        const authForms = document.querySelectorAll('.auth-form');
+        const messageContainer = document.getElementById('message-container');
+
+        // 标签页切换
+        authTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                switchTab(tabName);
+            });
+        });
+
+        function switchTab(tabName) {
+            // 更新标签页状态
+            authTabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+
+            // 更新表单显示
+            authForms.forEach(form => {
+                form.classList.toggle('active', form.id === `${tabName}-form`);
+            });
+
+            // 清除消息
+            clearMessage();
+
+            // 重置注册步骤
+            if (tabName === 'register') {
+                resetRegistrationSteps();
             }
         }
 
-        // Utility functions
+        // 消息显示函数
         function showMessage(message, type = 'info') {
-            const container = document.getElementById('messageContainer');
-            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+            messageContainer.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
         }
 
         function clearMessage() {
-            document.getElementById('messageContainer').innerHTML = '';
+            messageContainer.innerHTML = '';
         }
 
-        function updateStepIndicator(step) {
-            // Handle step 0 (mode selection)
-            if (step === 0) {
-                document.getElementById('stepIndicator').style.display = 'none';
-                document.querySelectorAll('.step-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                document.getElementById('step0Content').classList.add('active');
-                return;
+        // 按钮加载状态
+        function setButtonLoading(button, loading) {
+            if (loading) {
+                button.classList.add('loading');
+                button.disabled = true;
+            } else {
+                button.classList.remove('loading');
+                button.disabled = false;
             }
+        }
 
-            // Show step indicator for registration steps
-            document.getElementById('stepIndicator').style.display = 'flex';
-            
-            // Update step indicators
+        // 步骤指示器更新
+        function updateStepIndicator(step) {
             for (let i = 1; i <= 3; i++) {
                 const stepEl = document.getElementById(`step${i}`);
-                if (stepEl) {
-                    if (i < step) {
-                        stepEl.className = 'step completed';
-                    } else if (i === step) {
-                        stepEl.className = 'step active';
-                    } else {
-                        stepEl.className = 'step inactive';
-                    }
+                if (i < step) {
+                    stepEl.className = 'step completed';
+                } else if (i === step) {
+                    stepEl.className = 'step active';
+                } else {
+                    stepEl.className = 'step inactive';
                 }
             }
+        }
 
-            // Show/hide content
-            document.querySelectorAll('.step-content').forEach(content => {
-                content.classList.remove('active');
+        // 显示注册步骤
+        function showRegistrationStep(step) {
+            // 隐藏所有步骤
+            document.querySelectorAll('.register-step').forEach(stepEl => {
+                stepEl.style.display = 'none';
             });
-            const currentContent = document.getElementById(`step${step}Content`);
-            if (currentContent) {
-                currentContent.classList.add('active');
-            }
+
+            // 显示当前步骤
+            document.getElementById(`register-step-${step}`).style.display = 'block';
+            
+            // 更新步骤指示器
+            updateStepIndicator(step);
+            currentStep = step;
         }
 
-        function setButtonLoading(buttonId, loading) {
-            const btn = document.getElementById(buttonId);
-            if (!btn) {
-                console.error(`Button with id ${buttonId} not found`);
-                return;
-            }
-            
-            const textId = buttonId.replace('Btn', 'BtnText');
-            const loadingId = buttonId.replace('Btn', 'BtnLoading');
-            
-            const text = document.getElementById(textId);
-            const loadingSpinner = document.getElementById(loadingId);
-            
-            btn.disabled = loading;
-            
-            if (text) {
-                text.style.display = loading ? 'none' : 'inline';
-            }
-            if (loadingSpinner) {
-                loadingSpinner.style.display = loading ? 'inline-block' : 'none';
-            }
+        // 重置注册步骤
+        function resetRegistrationSteps() {
+            showRegistrationStep(1);
+            currentEmail = '';
         }
 
-        // Helper function to check if HTML response indicates success
-        function checkHtmlSuccess(htmlText, successKeyword) {
-            return htmlText.includes(successKeyword) && !htmlText.includes('Error:') && !htmlText.includes('Failed');
-        }
-
-        // Step 1: Email Registration
-        document.getElementById('emailForm').addEventListener('submit', async function(e) {
+        // 登录表单处理
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const loginBtn = document.getElementById('loginBtn');
+            
+            const formData = new FormData(e.target);
+            const email = formData.get('email');
+            const password = formData.get('password');
+
+            setButtonLoading(loginBtn, true);
             clearMessage();
-            
-            const email = document.getElementById('email').value;
-            if (!email) {
-                showMessage('Please enter a valid email address.', 'error');
-                return;
-            }
-            
-            userEmail = email;
-            setButtonLoading('emailSubmitBtn', true);
 
             try {
-                const response = await fetch(`${API_BASE}/register`, {
+                const response = await fetch('http://localhost:8080/user/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('Login successful! Redirecting...', 'success');
+                    // 存储用户信息
+                    localStorage.setItem('userEmail', email);
+                    localStorage.setItem('isLoggedIn', 'true');
+                    
+                    // 重定向到主页面
+                    setTimeout(() => {
+                        window.location.href = '../../index.html';
+                    }, 1500);
+                } else {
+                    showMessage(result.message || 'Login failed. Please check your credentials.', 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showMessage('Network error. Please try again later.', 'error');
+            } finally {
+                setButtonLoading(loginBtn, false);
+            }
+        });
+
+        // 邮箱注册处理
+        document.getElementById('emailForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const emailBtn = document.getElementById('emailBtn');
+            
+            const formData = new FormData(e.target);
+            const email = formData.get('email');
+            currentEmail = email;
+
+            setButtonLoading(emailBtn, true);
+            clearMessage();
+
+            try {
+                const response = await fetch('http://localhost:8080/user/api/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -586,149 +674,131 @@
                     body: `email=${encodeURIComponent(email)}`
                 });
 
-                if (response.ok) {
-                    const htmlText = await response.text();
-                    console.log('Registration response received');
-                    
-                    // Check if the response indicates success
-                    if (checkHtmlSuccess(htmlText, 'Verification email sent')) {
-                        showMessage(`Verification code sent to ${email}. Please check your inbox!`, 'success');
-                        currentStep = 2;
-                        updateStepIndicator(currentStep);
-                    } else if (htmlText.includes('Error:')) {
-                        // Extract error message from HTML
-                        const errorMatch = htmlText.match(/Error: ([^<]+)/);
-                        const errorMsg = errorMatch ? errorMatch[1] : 'Registration failed. Please try again.';
-                        showMessage(errorMsg, 'error');
-                    } else {
-                        showMessage('Registration processed. Please check your email for verification code.', 'info');
-                        currentStep = 2;
-                        updateStepIndicator(currentStep);
-                    }
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('Verification code sent to your email!', 'success');
+                    document.getElementById('verification-email').textContent = email;
+                    showRegistrationStep(2);
                 } else {
-                    // Handle validation errors from backend
-                    const htmlText = await response.text();
-                    console.log('Registration error response received:', htmlText);
-                    
-                    if (htmlText.includes('Error:')) {
-                        // Extract error message from HTML response
-                        const errorMatch = htmlText.match(/Error: ([^<]+)/);
-                        const errorMsg = errorMatch ? errorMatch[1] : 'Registration failed. Please try again.';
-                        showMessage(errorMsg, 'error');
-                    } else if (htmlText.includes('请使用有效的邮箱域名')) {
-                        showMessage('请使用有效的邮箱域名，不能使用测试域名（如 example.com）', 'error');
-                    } else if (htmlText.includes('邮箱格式无效')) {
-                        showMessage('邮箱格式无效，请输入正确的邮箱地址', 'error');
-                    } else if (htmlText.includes('该邮箱已被注册')) {
-                        showMessage('该邮箱已被注册，请使用其他邮箱地址', 'error');
-                    } else {
-                        showMessage('Failed to send verification code. Please try again.', 'error');
-                    }
+                    showMessage(result.message || 'Registration failed. Please try again.', 'error');
                 }
             } catch (error) {
-                showMessage('Network error. Please check your connection and try again.', 'error');
-                console.error('Network error:', error);
+                console.error('Registration error:', error);
+                showMessage('Network error. Please try again later.', 'error');
             } finally {
-                setButtonLoading('emailSubmitBtn', false);
+                setButtonLoading(emailBtn, false);
             }
         });
 
-        // Step 2: Email Verification
-        document.getElementById('verificationForm').addEventListener('submit', async function(e) {
+        // 验证码输入处理
+        const codeInputs = document.querySelectorAll('.code-input');
+        codeInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (value.length === 1 && index < codeInputs.length - 1) {
+                    codeInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+                    codeInputs[index - 1].focus();
+                }
+            });
+        });
+
+        // 验证码验证处理
+        document.getElementById('verificationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            clearMessage();
+            const verifyBtn = document.getElementById('verifyBtn');
             
-            const code = document.getElementById('verificationCode').value;
+            const code = Array.from(codeInputs).map(input => input.value).join('');
             
-            if (!/^\d{6}$/.test(code)) {
-                showMessage('Please enter a valid 6-digit verification code.', 'error');
+            if (code.length !== 6) {
+                showMessage('Please enter the complete 6-digit code.', 'error');
                 return;
             }
-            
-            setButtonLoading('verifySubmitBtn', true);
 
-            try {
-                const response = await fetch(`${API_BASE}/verify`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `email=${encodeURIComponent(userEmail)}&code=${encodeURIComponent(code)}`
-                });
-
-                if (response.ok) {
-                    const htmlText = await response.text();
-                    console.log('Verification response received');
-                    
-                    // Check if the response indicates success
-                    if (checkHtmlSuccess(htmlText, 'verification successful') || checkHtmlSuccess(htmlText, 'Welcome')) {
-                        showMessage('Email verified successfully! Complete your registration below.', 'success');
-                        currentStep = 3;
-                        updateStepIndicator(currentStep);
-                    } else if (htmlText.includes('Invalid') || htmlText.includes('expired')) {
-                        showMessage('Invalid or expired verification code. Please try again.', 'error');
-                    } else {
-                        showMessage('Verification failed. Please check your code and try again.', 'error');
-                    }
-                } else {
-                    showMessage('Verification failed. Please try again.', 'error');
-                }
-            } catch (error) {
-                showMessage('Network error. Please try again.', 'error');
-                console.error('Network error:', error);
-            } finally {
-                setButtonLoading('verifySubmitBtn', false);
-            }
-        });
-
-        // Resend verification code
-        document.getElementById('resendBtn').addEventListener('click', async function() {
+            setButtonLoading(verifyBtn, true);
             clearMessage();
-            this.disabled = true;
-            this.textContent = 'Sending...';
 
             try {
-                const response = await fetch(`${API_BASE}/resend`, {
+                const response = await fetch('http://localhost:8080/user/api/verify', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: `email=${encodeURIComponent(userEmail)}`
+                    body: `email=${encodeURIComponent(currentEmail)}&code=${encodeURIComponent(code)}`
                 });
 
-                if (response.ok) {
-                    const htmlText = await response.text();
-                    console.log('Resend response received');
-                    
-                    if (checkHtmlSuccess(htmlText, 'verification code sent')) {
-                        showMessage('New verification code sent! Please check your email.', 'success');
-                    } else {
-                        showMessage('Code resent. Please check your email.', 'info');
-                    }
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('Email verified successfully!', 'success');
+                    showRegistrationStep(3);
                 } else {
-                    showMessage('Failed to resend code. Please try again.', 'error');
+                    showMessage(result.message || 'Invalid verification code. Please try again.', 'error');
+                    // 清空验证码输入
+                    codeInputs.forEach(input => input.value = '');
+                    codeInputs[0].focus();
                 }
             } catch (error) {
-                showMessage('Network error. Please try again.', 'error');
-                console.error('Network error:', error);
+                console.error('Verification error:', error);
+                showMessage('Network error. Please try again later.', 'error');
             } finally {
-                this.disabled = false;
-                this.textContent = 'Resend Code';
+                setButtonLoading(verifyBtn, false);
             }
         });
 
-        // Step 3: Complete Registration
-        document.getElementById('completeForm').addEventListener('submit', function(e) {
+        // 重发验证码
+        document.getElementById('resendBtn').addEventListener('click', async () => {
+            const resendBtn = document.getElementById('resendBtn');
+            
+            setButtonLoading(resendBtn, true);
+            clearMessage();
+
+            try {
+                const response = await fetch('http://localhost:8080/user/api/resend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(currentEmail)}`
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('New verification code sent!', 'success');
+                    // 清空验证码输入
+                    codeInputs.forEach(input => input.value = '');
+                    codeInputs[0].focus();
+                } else {
+                    showMessage(result.message || 'Failed to resend code. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Resend error:', error);
+                showMessage('Network error. Please try again later.', 'error');
+            } finally {
+                setButtonLoading(resendBtn, false);
+            }
+        });
+
+        // 完成注册处理
+        document.getElementById('completeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            clearMessage();
+            const completeBtn = document.getElementById('completeBtn');
             
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const fullname = document.getElementById('fullname').value;
-            const petType = document.getElementById('petType').value;
-            
+            const formData = new FormData(e.target);
+            const name = formData.get('name');
+            const password = formData.get('password');
+            const confirmPassword = formData.get('confirmPassword');
+            const role = formData.get('role');
+
+            // 验证密码
             if (password !== confirmPassword) {
-                showMessage('Passwords do not match. Please try again.', 'error');
+                showMessage('Passwords do not match.', 'error');
                 return;
             }
 
@@ -737,90 +807,73 @@
                 return;
             }
 
-            setButtonLoading('completeSubmitBtn', true);
-            
-            // Simulate registration completion
-            setTimeout(() => {
-                showMessage(`Welcome ${fullname}! Your account has been created successfully with your ${petType} companion! 🎉`, 'success');
-                
-                // Store user data (in a real app, this would be sent to backend)
-                localStorage.setItem('userData', JSON.stringify({
-                    email: userEmail,
-                    fullname: fullname,
-                    petType: petType,
-                    registrationDate: new Date().toISOString()
-                }));
+            setButtonLoading(completeBtn, true);
+            clearMessage();
 
-                // Store authentication token (simulate)
-                localStorage.setItem('authToken', 'demo-token-' + Date.now());
-                localStorage.removeItem('guestMode'); // Clear any guest mode setting
-                
-                // Redirect to schedule page after a short delay
-                setTimeout(() => {
-                    window.location.href = './schedule.html';
-                }, 2000);
-                
-                setButtonLoading('completeSubmitBtn', false);
+            try {
+                const response = await fetch('http://localhost:8080/user/api/complete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(currentEmail)}&name=${encodeURIComponent(name)}&password=${encodeURIComponent(password)}&role=${encodeURIComponent(role)}`
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('Registration completed successfully! You can now sign in.', 'success');
+                    
+                    // 存储用户信息
+                    localStorage.setItem('userEmail', currentEmail);
+                    localStorage.setItem('isLoggedIn', 'true');
+                    
+                    // 切换到登录页面或重定向
+                    setTimeout(() => {
+                        window.location.href = '../../index.html';
+                    }, 2000);
+                } else {
+                    showMessage(result.message || 'Registration completion failed. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Complete registration error:', error);
+                showMessage('Network error. Please try again later.', 'error');
+            } finally {
+                setButtonLoading(completeBtn, false);
+            }
+        });
+
+        // 游客模式处理
+        document.getElementById('guestBtn').addEventListener('click', () => {
+            showMessage('Entering guest mode...', 'info');
+            
+            // 设置游客模式标识
+            localStorage.setItem('isGuest', 'true');
+            localStorage.setItem('userEmail', 'guest@example.com');
+            localStorage.removeItem('isLoggedIn');
+            
+            // 重定向到主页面
+            setTimeout(() => {
+                window.location.href = '../../index.html';
             }, 1000);
         });
 
-        // Auto-format verification code input
-        const verificationInput = document.getElementById('verificationCode');
-        if (verificationInput) {
-            verificationInput.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-                if (value.length > 6) value = value.slice(0, 6); // Limit to 6 digits
-                e.target.value = value;
-            });
-        }
+        // 忘记密码处理
+        document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showMessage('Password reset functionality will be available soon.', 'info');
+        });
 
-        // Mobile menu toggle functionality (simplified version without marked dependency)
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const navLinks = document.querySelector('.nav-links');
-
-            if (menuToggle && navLinks) {
-                menuToggle.addEventListener('click', function() {
-                    menuToggle.classList.toggle('active');
-                    navLinks.classList.toggle('active');
-                });
-
-                // Close menu when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (!event.target.closest('.nav-container')) {
-                        menuToggle.classList.remove('active');
-                        navLinks.classList.remove('active');
-                    }
-                });
-            }
-
-                    // Initialize step indicator
-        updateStepIndicator(currentStep);
-    });
-</script>
-
-    <!-- Bottom Navigation -->
-    <div class="bottom-navigation">
-        <a href="schedule.html" class="nav-tab nav-link-tab">
-            <span class="nav-icon">📅</span>
-            <span class="nav-label">Schedule</span>
-        </a>
-        <a href="ai-assistant.html" class="nav-tab nav-link-tab">
-            <span class="nav-icon">🤖</span>
-            <span class="nav-label">AI Assistant</span>
-        </a>
-        <a href="schedule.html#pet" class="nav-tab nav-link-tab">
-            <span class="nav-icon">🐱</span>
-            <span class="nav-label">Virtual Pet</span>
-        </a>
-        <a href="memo.html" class="nav-tab nav-link-tab">
-            <span class="nav-icon">📝</span>
-            <span class="nav-label">Memo</span>
-        </a>
-        <a href="podcast.html" class="nav-tab nav-link-tab">
-            <span class="nav-icon">🎧</span>
-            <span class="nav-label">Podcast</span>
-        </a>
-    </div>
+        // 页面加载时检查登录状态 - 已禁用自动重定向
+        // window.addEventListener('load', () => {
+        //     const isLoggedIn = localStorage.getItem('isLoggedIn');
+        //     const isGuest = localStorage.getItem('isGuest');
+        //     
+        //     if (isLoggedIn || isGuest) {
+        //         // 如果已经登录或处于游客模式，重定向到主页
+        //         window.location.href = '../../index.html';
+        //     }
+        // });
+    </script>
 </body>
-</html> 
+</html>

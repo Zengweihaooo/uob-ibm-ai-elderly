@@ -50,6 +50,8 @@
                 </div>
                 <a href="./src/pages/team-members.html" class="nav-link">Team Members</a>
                 <a href="./src/pages/blogs.html" class="nav-link">Blogs</a>
+                <!-- Simple Login Link -->
+                <a href="./src/pages/register.html" class="nav-link login-btn">Login</a>
             </div>
         </div>
     </nav>
@@ -390,7 +392,25 @@
 
         // Refresh updates every 5 minutes
         setInterval(fetchUpdates, 5 * 60 * 1000);
+
+        // Simple page functionality - no complex user status management needed
     </script>
     <script src="src/index.js"></script>
+
+    <style>
+        .login-btn {
+            background-color: var(--primary-blue);
+            color: white !important;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .login-btn:hover {
+            background-color: var(--primary-blue-hover);
+        }
+    </style>
 </body>
 </html> 

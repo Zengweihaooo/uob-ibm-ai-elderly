@@ -81,6 +81,8 @@ public class UserService {
         if (existingUser == null) {
             // 创建新用户
             user = new User(email);
+            // Set a temporary password hash for registration (user will set real password later)
+            user.setPasswordHash("temp_hash_" + System.currentTimeMillis());
             userMapper.insert(user);
         } else {
             // 更新现有用户
@@ -131,6 +133,90 @@ public class UserService {
         }
         
         return false;
+    }
+    
+    /**
+     * Login user with email and password
+     * 
+     * @param email The email address
+     * @param password The password
+     * @return true if login successful, false otherwise
+     */
+    public boolean loginUser(String email, String password) {
+        if (email == null || password == null) {
+            return false;
+        }
+        
+        email = email.trim().toLowerCase();
+        User user = userMapper.findByEmail(email);
+        
+        if (user == null) {
+            return false;
+        }
+        
+        // Check if user is verified
+        if (user.getStatus() != User.UserStatus.VERIFIED) {
+            return false;
+        }
+        
+        // Check password (simple comparison for now - in production use proper hashing)
+        String storedPassword = user.getPasswordHash();
+        if (storedPassword != null && storedPassword.equals(password)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Complete user registration with additional details
+     * 
+     * @param email The email address
+     * @param name The user's full name
+     * @param password The password
+     * @param role The user role
+     * @return true if completion successful, false otherwise
+     */
+    public boolean completeRegistration(String email, String name, String password, String role) {
+        if (email == null || name == null || password == null || role == null) {
+            return false;
+        }
+        
+        email = email.trim().toLowerCase();
+        User user = userMapper.findByEmail(email);
+        
+        if (user == null || user.getStatus() != User.UserStatus.VERIFIED) {
+            return false;
+        }
+        
+        try {
+            // Update user with complete information
+            user.setName(name);
+            user.setPasswordHash(password); // In production, hash the password
+            user.setRole(User.UserRole.valueOf(role.toUpperCase()));
+            user.setUpdatedAt(LocalDateTime.now());
+            
+            // Update in database
+            userMapper.update(user);
+            
+            return true;
+        } catch (Exception e) {
+            System.out.println("ERROR: Failed to complete registration: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Get user by email
+     * 
+     * @param email The email address
+     * @return User object or null if not found
+     */
+    public User getUserByEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        return userMapper.findByEmail(email.trim().toLowerCase());
     }
     
     /**

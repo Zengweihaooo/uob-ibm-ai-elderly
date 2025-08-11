@@ -237,6 +237,79 @@ public class UserController {
     }
 
     /**
+     * User login API endpoint
+     * 
+     * @param email The email address
+     * @param password The password
+     * @return JSON response with login result
+     */
+    @PostMapping("/login")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> loginUser(@RequestParam("email") String email, 
+                                                        @RequestParam("password") String password) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            boolean loginSuccess = userService.loginUser(email, password);
+            
+            if (loginSuccess) {
+                User user = userService.getUserByEmail(email);
+                response.put("success", true);
+                response.put("message", "Login successful! Welcome back.");
+                response.put("user", Map.of(
+                    "email", user.getEmail(),
+                    "name", user.getName() != null ? user.getName() : user.getUsername(),
+                    "role", user.getRole().toString()
+                ));
+            } else {
+                response.put("success", false);
+                response.put("message", "Invalid email or password. Please check your credentials.");
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Login failed: " + e.getMessage());
+        }
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Complete user registration API endpoint
+     * 
+     * @param email The email address
+     * @param name The user's full name
+     * @param password The password
+     * @param role The user role
+     * @return JSON response with completion result
+     */
+    @PostMapping("/api/complete")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> completeRegistration(@RequestParam("email") String email,
+                                                                   @RequestParam("name") String name,
+                                                                   @RequestParam("password") String password,
+                                                                   @RequestParam("role") String role) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            boolean completed = userService.completeRegistration(email, name, password, role);
+            
+            if (completed) {
+                response.put("success", true);
+                response.put("message", "Registration completed successfully! You can now sign in.");
+                response.put("email", email);
+            } else {
+                response.put("success", false);
+                response.put("message", "Registration completion failed. Please verify your email first.");
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Registration completion failed: " + e.getMessage());
+        }
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Delete a single user by email
      * 
      * @param email The email address of the user to delete
