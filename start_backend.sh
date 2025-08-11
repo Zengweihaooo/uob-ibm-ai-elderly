@@ -6,8 +6,11 @@
 echo "🚀 Starting UOB-IBM AI Elderly Backend..."
 echo "========================================"
 
+# 记录脚本目录绝对路径
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 # 进入springboot目录
-cd "$(dirname "$0")/springboot"
+cd "$SCRIPT_DIR/springboot"
 
 # 检查是否在正确目录
 if [ ! -f "pom.xml" ]; then
@@ -15,11 +18,20 @@ if [ ! -f "pom.xml" ]; then
     exit 1
 fi
 
-# 检查端口8080是否被占用
+# 检查端口8080是否被占用，并尽力结束相关进程
 if lsof -Pi :8080 -sTCP:LISTEN -t >/dev/null ; then
-    echo "⚠️  Port 8080 is already in use. Stopping existing process..."
-    pkill -f "spring-boot:run"
-    sleep 3
+    echo "⚠️  Port 8080 is in use. Attempting to stop existing process..."
+    # 结束 Maven 启动器
+    pkill -f "spring-boot:run" || true
+    # 结束 DemoApplication
+    pkill -f "com.example.demo.DemoApplication" || true
+    # 精确杀掉占用 8080 的进程
+    PIDS=$(lsof -ti:8080) || true
+    if [ -n "$PIDS" ]; then
+        echo "🔪 Killing PIDs: $PIDS"
+        kill -9 $PIDS || true
+    fi
+    sleep 2
 fi
 
 echo "🔧 Starting Spring Boot application..."
@@ -37,5 +49,14 @@ echo "⏹️  To stop the server, press Ctrl+C"
 echo "========================================"
 echo ""
 
+# 注入 Google Cloud 服务账号（如存在）
+KEY_FILE="$SCRIPT_DIR/docs/keys/organic-totem-467918-a5-d17504cd5eba.json"
+if [ -f "$KEY_FILE" ]; then
+  export GOOGLE_APPLICATION_CREDENTIALS="$KEY_FILE"
+  echo "🔐 Using Google credentials: $GOOGLE_APPLICATION_CREDENTIALS"
+else
+  echo "⚠️  Google credentials not found at $KEY_FILE. STT/TTS cloud features will be disabled."
+fi
+
 # 启动Spring Boot
-mvn spring-boot:run 
+mvn -DskipTests spring-boot:run

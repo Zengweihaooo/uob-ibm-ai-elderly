@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Demo - TTS & STT Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+        }
+
+        .demo-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #4299e1;
+        }
+
+        .demo-section h2 {
+            color: #2d3748;
+            margin-top: 0;
+        }
+
+        .demo-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px 0;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .speech-controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+
+        .status.info {
+            background: #bee3f8;
+            color: #2a4365;
+            border: 1px solid #90cdf4;
+        }
+
+        .transcript-display {
+            background: #edf2f7;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            min-height: 60px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .transcript-display .interim {
+            color: #718096;
+            font-style: italic;
+        }
+
+        .transcript-display .final {
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .voice-selector {
+            margin: 15px 0;
+        }
+
+        .voice-selector select {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .settings-panel {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .settings-panel h3 {
+            margin-top: 0;
+            color: #4a5568;
+        }
+
+        .setting-group {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setting-group label {
+            min-width: 80px;
+            font-weight: 500;
+        }
+
+        .setting-group input[type="range"] {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .setting-group .value-display {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 500;
+            color: #4299e1;
+        }
+
+        .browser-support {
+            background: #fffaf0;
+            border: 1px solid #fbd38d;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .browser-support h3 {
+            color: #c05621;
+            margin-top: 0;
+        }
+
+        .support-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+
+        .support-status {
+            font-weight: 500;
+        }
+
+        .support-status.supported {
+            color: #22543d;
+        }
+
+        .support-status.not-supported {
+            color: #742a2a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤🔊 Speech Technology Demo</h1>
+        <p style="text-align: center; color: #718096; font-size: 18px;">
+            Test Text-to-Speech (TTS) and Speech-to-Text (STT) functionality using the Web Speech API
+        </p>
+
+        <!-- Browser Support Check -->
+        <div class="browser-support">
+            <h3>🌐 Browser Support Status</h3>
+            <div class="support-item">
+                <span>Speech Recognition (STT):</span>
+                <span id="sttSupport" class="support-status">Checking...</span>
+            </div>
+            <div class="support-item">
+                <span>Speech Synthesis (TTS):</span>
+                <span id="ttsSupport" class="support-status">Checking...</span>
+            </div>
+        </div>
+
+        <!-- Speech-to-Text Demo -->
+        <div class="demo-section">
+            <h2>🎤 Speech-to-Text (STT) Demo</h2>
+            <p>Click the button and speak to convert your voice to text:</p>
+            
+            <div class="speech-controls">
+                <div id="speechInputDemo"></div>
+                <button onclick="clearTranscript()" style="padding: 12px 20px; background: #e53e3e; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                    Clear Transcript
+                </button>
+            </div>
+
+            <div class="transcript-display" id="transcriptDisplay">
+                <em>Your speech will appear here...</em>
+            </div>
+
+            <div id="speechStatus" class="status info" style="display: none;"></div>
+        </div>
+
+        <!-- Text-to-Speech Demo -->
+        <div class="demo-section">
+            <h2>🔊 Text-to-Speech (TTS) Demo</h2>
+            <p>Enter text below and click the button to hear it spoken:</p>
+            
+            <textarea 
+                id="textToSpeak" 
+                class="text-input" 
+                placeholder="Enter text to be spoken... Try: 'Hello, this is a test of the text-to-speech functionality. How do I sound?'"
+            >Hello, this is a test of the text-to-speech functionality. How do I sound?</textarea>
+
+            <div class="voice-selector">
+                <label for="voiceSelect"><strong>Voice:</strong></label>
+                <select id="voiceSelect">
+                    <option value="">Loading voices...</option>
+                </select>
+            </div>
+
+            <div class="settings-panel">
+                <h3>⚙️ Voice Settings</h3>
+                <div class="setting-group">
+                    <label>Rate:</label>
+                    <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1">
+                    <span class="value-display" id="rateValue">1.0</span>
+                </div>
+                <div class="setting-group">
+                    <label>Pitch:</label>
+                    <input type="range" id="pitchSlider" min="0" max="2" step="0.1" value="1">
+                    <span class="value-display" id="pitchValue">1.0</span>
+                </div>
+                <div class="setting-group">
+                    <label>Volume:</label>
+                    <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
+                    <span class="value-display" id="volumeValue">1.0</span>
+                </div>
+            </div>
+
+            <div class="speech-controls">
+                <div id="speechOutputDemo"></div>
+                <button onclick="stopAllSpeech()" style="padding: 12px 20px; background: #e53e3e; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                    Stop Speaking
+                </button>
+            </div>
+
+            <div id="ttsStatus" class="status info" style="display: none;"></div>
+        </div>
+
+        <!-- Usage Instructions -->
+        <div class="demo-section">
+            <h2>📋 Usage Instructions</h2>
+            <ul>
+                <li><strong>Speech Input:</strong> Click the microphone button and speak clearly. The text will appear in real-time.</li>
+                <li><strong>Speech Output:</strong> Type or paste text, select a voice, adjust settings, and click the speaker button.</li>
+                <li><strong>Keyboard Shortcuts:</strong> Hold Spacebar while focused on an input field to start voice input.</li>
+                <li><strong>Browser Support:</strong> Chrome and Safari work best. Firefox has limited support.</li>
+                <li><strong>Permissions:</strong> You may need to allow microphone access for speech input.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Include Speech Service Scripts -->
+    <script src="src/js/speech-service.js"></script>
+    <script src="src/js/speech-controls.js"></script>
+
+    <script>
+        let speechInputComponent = null;
+        let speechOutputComponent = null;
+
+        // Initialize the demo
+        document.addEventListener('DOMContentLoaded', function() {
+            checkBrowserSupport();
+            initializeSpeechComponents();
+            setupVoiceSelector();
+            setupSettingsControls();
+        });
+
+        function checkBrowserSupport() {
+            // Check STT support
+            const sttSupported = window.speechService && window.speechService.isSTTSupported();
+            const sttElement = document.getElementById('sttSupport');
+            sttElement.textContent = sttSupported ? '✅ Supported' : '❌ Not Supported';
+            sttElement.className = `support-status ${sttSupported ? 'supported' : 'not-supported'}`;
+
+            // Check TTS support
+            const ttsSupported = window.speechService && window.speechService.isTTSSupported();
+            const ttsElement = document.getElementById('ttsSupport');
+            ttsElement.textContent = ttsSupported ? '✅ Supported' : '❌ Not Supported';
+            ttsElement.className = `support-status ${ttsSupported ? 'supported' : 'not-supported'}`;
+        }
+
+        function initializeSpeechComponents() {
+            // Initialize Speech Input
+            const speechInputContainer = document.getElementById('speechInputDemo');
+            if (window.SpeechInputButton) {
+                speechInputComponent = new SpeechInputButton(speechInputContainer, {
+                    onResult: handleSpeechResult,
+                    onError: handleSpeechError,
+                    onStart: () => showStatus('speechStatus', 'Listening... Speak now!', 'info'),
+                    onEnd: () => showStatus('speechStatus', 'Speech recognition ended.', 'success'),
+                    showTranscript: false,
+                    continuous: true
+                });
+            }
+
+            // Initialize Speech Output
+            const speechOutputContainer = document.getElementById('speechOutputDemo');
+            if (window.SpeechOutputButton) {
+                speechOutputComponent = new SpeechOutputButton(speechOutputContainer, {
+                    text: document.getElementById('textToSpeak').value,
+                    onStart: () => showStatus('ttsStatus', 'Speaking...', 'info'),
+                    onEnd: () => showStatus('ttsStatus', 'Finished speaking.', 'success'),
+                    onError: (error) => showStatus('ttsStatus', `Error: ${error}`, 'error')
+                });
+            }
+
+            // Update speech output text when textarea changes
+            document.getElementById('textToSpeak').addEventListener('input', function() {
+                if (speechOutputComponent) {
+                    speechOutputComponent.setText(this.value);
+                }
+            });
+        }
+
+        function setupVoiceSelector() {
+            const voiceSelect = document.getElementById('voiceSelect');
+            
+            function populateVoices() {
+                const voices = window.speechService ? window.speechService.getVoices() : [];
+                voiceSelect.innerHTML = '';
+                
+                if (voices.length === 0) {
+                    voiceSelect.innerHTML = '<option value="">No voices available</option>';
+                    return;
+                }
+
+                // Add default option
+                voiceSelect.innerHTML = '<option value="">Default Voice</option>';
+                
+                // Add available voices
+                voices.forEach((voice, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${voice.name} (${voice.lang})${voice.localService ? ' - Local' : ' - Remote'}`;
+                    if (voice.default) {
+                        option.textContent += ' - Default';
+                    }
+                    voiceSelect.appendChild(option);
+                });
+            }
+
+            // Populate voices immediately and on voiceschanged event
+            populateVoices();
+            if (window.speechSynthesis) {
+                window.speechSynthesis.addEventListener('voiceschanged', populateVoices);
+            }
+
+            // Update voice when selection changes
+            voiceSelect.addEventListener('change', function() {
+                if (speechOutputComponent && window.speechService) {
+                    const voices = window.speechService.getVoices();
+                    const selectedVoice = this.value ? voices[parseInt(this.value)] : null;
+                    speechOutputComponent.options.voice = selectedVoice;
+                }
+            });
+        }
+
+        function setupSettingsControls() {
+            // Rate control
+            const rateSlider = document.getElementById('rateSlider');
+            const rateValue = document.getElementById('rateValue');
+            rateSlider.addEventListener('input', function() {
+                rateValue.textContent = parseFloat(this.value).toFixed(1);
+                if (speechOutputComponent) {
+                    speechOutputComponent.options.rate = parseFloat(this.value);
+                }
+            });
+
+            // Pitch control
+            const pitchSlider = document.getElementById('pitchSlider');
+            const pitchValue = document.getElementById('pitchValue');
+            pitchSlider.addEventListener('input', function() {
+                pitchValue.textContent = parseFloat(this.value).toFixed(1);
+                if (speechOutputComponent) {
+                    speechOutputComponent.options.pitch = parseFloat(this.value);
+                }
+            });
+
+            // Volume control
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeValue = document.getElementById('volumeValue');
+            volumeSlider.addEventListener('input', function() {
+                volumeValue.textContent = parseFloat(this.value).toFixed(1);
+                if (speechOutputComponent) {
+                    speechOutputComponent.options.volume = parseFloat(this.value);
+                }
+            });
+        }
+
+        function handleSpeechResult(result) {
+            const transcriptDisplay = document.getElementById('transcriptDisplay');
+            
+            let displayText = '';
+            if (result.finalTranscript) {
+                displayText += `<span class="final">${result.finalTranscript}</span>`;
+            }
+            if (result.interimTranscript) {
+                displayText += `<span class="interim">${result.interimTranscript}</span>`;
+            }
+            
+            if (displayText) {
+                transcriptDisplay.innerHTML = displayText;
+            }
+
+            // Auto-populate TTS text area with final results
+            if (result.finalTranscript) {
+                const textToSpeak = document.getElementById('textToSpeak');
+                textToSpeak.value = result.finalTranscript;
+                if (speechOutputComponent) {
+                    speechOutputComponent.setText(result.finalTranscript);
+                }
+            }
+        }
+
+        function handleSpeechError(error) {
+            showStatus('speechStatus', `Speech recognition error: ${error}`, 'error');
+        }
+
+        function showStatus(elementId, message, type) {
+            const statusElement = document.getElementById(elementId);
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+            statusElement.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 5000);
+        }
+
+        function clearTranscript() {
+            document.getElementById('transcriptDisplay').innerHTML = '<em>Your speech will appear here...</em>';
+        }
+
+        function stopAllSpeech() {
+            if (window.speechService) {
+                window.speechService.stopSpeaking();
+            }
+        }
+    </script>
+</body>
+</html>

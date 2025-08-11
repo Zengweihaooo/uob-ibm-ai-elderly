@@ -1,0 +1,211 @@
+/* IBM-style Mobile App Theme (modern, refined, high-contrast accessibility) */
+
+:root {
+  --surface: #ffffff;
+  --surface-alt: #f6f8fb;
+  --surface-elev: #fbfcff;
+  --accent: var(--primary-blue);
+  --accent-2: #0043CE;
+  --border-strong: #DDE3EA;
+  --shadow-soft: 0 4px 14px rgba(9, 30, 66, 0.08);
+  --shadow-float: 0 8px 24px rgba(9, 30, 66, 0.12);
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 10px;
+}
+
+/* App header */
+.header {
+  background: radial-gradient(1200px 200px at 50% -100px, rgba(14,97,254,0.18), transparent 60%),
+              linear-gradient(180deg, #0E61FE 0%, #1C47B8 100%);
+  color: #fff;
+  padding: 22px 20px;
+  border-radius: var(--radius-lg);
+  margin: 12px 12px 16px 12px;
+  text-align: left;
+  box-shadow: var(--shadow-soft);
+}
+.header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.header p {
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+/* Cards / Sections */
+.schedule-section,
+.user-info,
+.date-nav,
+.pet-display,
+.pet-interaction,
+.pet-chat,
+.chat-container {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.date-nav { padding: 18px; margin: 12px; }
+.user-info { margin: 12px; padding: 14px 16px; }
+.schedule-section { margin: 12px; padding: 16px; }
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent-2);
+  border: none;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+.btn:hover { box-shadow: var(--shadow-soft); transform: translateY(-1px); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: #0b55df; border-color: #0b55df; }
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.btn-danger { background: #e53935; color: #fff; border-color: #e53935; }
+.btn-warning { background: #FFB020; color: #212529; border-color: #FFB020; }
+.btn-success { background: #2DB24A; color: #fff; border-color: #2DB24A; }
+
+/* Convert action buttons to outlined variants for a lighter look */
+.btn-complete, .btn-edit, .btn-delete {
+  background: #fff !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-strong) !important;
+}
+.btn-complete:hover { border-color: #2DB24A !important; color: #2DB24A !important; box-shadow: var(--shadow-soft); }
+.btn-edit:hover { border-color: #FFB020 !important; color: #FFB020 !important; box-shadow: var(--shadow-soft); }
+.btn-delete:hover { border-color: #E53935 !important; color: #E53935 !important; box-shadow: var(--shadow-soft); }
+
+/* Date controls */
+.date-controls { gap: 12px; }
+.date-btn { border-radius: var(--radius-md); border: 1px solid var(--border-strong); background: #fff !important; color: var(--accent-2) !important; }
+.date-btn:hover { background: var(--surface-alt) !important; }
+.current-date {
+  background: var(--surface-alt);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-weight: 600;
+}
+
+/* Activity list */
+.activity-item {
+  background: var(--surface-elev);
+  border: 1px solid var(--border-strong);
+  border-left: 6px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-soft);
+}
+.activity-item.high-priority { border-left-color: #E53935; }
+.activity-item.medium-priority { border-left-color: #FFB020; }
+.activity-item.low-priority { border-left-color: #2DB24A; }
+
+.activity-time { font-size: 15px; color: var(--accent-2); }
+.activity-title { font-size: 16px; font-weight: 600; }
+.activity-meta { flex-wrap: wrap; gap: 6px; }
+
+/* Chips / badges */
+.priority-badge, .repeat-badge, .notification-badge {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.priority-selector .priority-option,
+.repeat-options .repeat-option,
+.notification-options .notification-option {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+}
+.priority-selector .priority-option.selected,
+.repeat-options .repeat-option.selected,
+.notification-options .notification-option.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Inputs */
+.form-group input, .form-group textarea, .form-group select, #petTextInput {
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-md) !important;
+  background: #fff !important;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus, #petTextInput:focus {
+  box-shadow: 0 0 0 3px rgba(14, 97, 254, 0.1) !important;
+  border-color: var(--accent) !important;
+}
+
+/* Floating Action Button (Add) */
+.fab {
+  position: fixed !important;
+  right: 16px;
+  bottom: 92px; /* above bottom nav */
+  width: 56px;
+  height: 56px;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px !important;
+  box-shadow: var(--shadow-float);
+}
+
+/* Chat tweaks */
+.chat-container { margin: 12px; }
+.tool-btn { border-radius: var(--radius-md); border: 1px solid var(--border-strong); background: #fff; }
+.tool-btn:hover { color: var(--accent); border-color: var(--accent); box-shadow: var(--shadow-soft); }
+#sendBtn { border-radius: var(--radius-md); }
+
+/* Pet components spacing */
+.pet-panel { padding-bottom: 80px; }
+.pet-display, .pet-interaction, .pet-chat { margin: 12px; }
+
+/* Guest mode banner */
+.guest-mode {
+  margin: 12px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Container padding with bottom nav */
+.with-bottom-nav { padding-bottom: 96px; }
+
+@media (max-width: 768px) {
+  .header { margin: 8px 8px 12px 8px; }
+  .schedule-section, .user-info, .date-nav { margin: 8px; }
+  .chat-container, .pet-display, .pet-interaction, .pet-chat { margin: 8px; }
+  .fab { right: 14px; bottom: 86px; }
+}
+
+

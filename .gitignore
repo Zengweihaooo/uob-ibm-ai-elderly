@@ -1,5 +1,14 @@
 .DS_Store
 
+# Google Cloud credentials
+docs/keys/*.json
+.env
+
+# Log files
+*.log
+backend.log
+frontend.log
+
 # Spring Boot logs
 springboot/*.log
 springboot/application*.log
