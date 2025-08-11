@@ -309,6 +309,44 @@
             text-decoration: underline;
         }
 
+        .back-link {
+            margin-bottom: 2rem;
+        }
+
+        .back-link a {
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link a:hover {
+            color: var(--primary-blue);
+            text-decoration: underline;
+        }
+
+        .forgot-step {
+            display: none;
+        }
+
+        .forgot-step.active {
+            display: block;
+        }
+
+        .resend-section {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .resend-section a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .resend-section a:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             .auth-container {
                 flex-direction: column;
@@ -436,6 +474,53 @@
                 <button type="button" class="btn btn-guest" id="guestBtn">Continue as Guest</button>
             </div>
 
+            <!-- 忘记密码表单 -->
+            <div id="forgot-password-form" class="auth-form">
+                <div class="back-link">
+                    <a href="#" id="backToLogin">← Back to Login</a>
+                </div>
+                
+                <!-- 步骤1: 输入邮箱 -->
+                <div id="forgot-step-1" class="forgot-step active">
+                    <h3>Reset Your Password</h3>
+                    <p>Enter your email address and we'll send you a verification code to reset your password.</p>
+                    
+                    <form id="forgotEmailForm">
+                        <div class="form-group">
+                            <label for="forgotEmail">Email Address</label>
+                            <input type="email" id="forgotEmail" name="email" placeholder="Enter your email" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="sendResetCodeBtn">Send Reset Code</button>
+                    </form>
+                </div>
+                
+                <!-- 步骤2: 输入验证码和新密码 -->
+                <div id="forgot-step-2" class="forgot-step">
+                    <h3>Enter Reset Code</h3>
+                    <p>We've sent a 6-digit code to your email. Enter the code and your new password below.</p>
+                    
+                    <form id="resetPasswordForm">
+                        <div class="form-group">
+                            <label for="resetCode">Verification Code</label>
+                            <input type="text" id="resetCode" name="resetCode" placeholder="Enter 6-digit code" maxlength="6" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password (min 6 chars)" minlength="6" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password" minlength="6" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="resetPasswordBtn">Reset Password</button>
+                    </form>
+                    
+                    <div class="resend-section">
+                        <p>Didn't receive the code? <a href="#" id="resendResetCode">Resend Code</a></p>
+                    </div>
+                </div>
+            </div>
+
             <!-- 注册表单 -->
             <div id="register-form" class="auth-form">
                 <!-- 步骤指示器 -->
@@ -551,6 +636,39 @@
             }
         }
 
+        // 显示指定表单（用于忘记密码功能）
+        function showForm(formId) {
+            // 隐藏所有表单
+            authForms.forEach(form => {
+                form.classList.remove('active');
+            });
+            
+            // 显示指定表单
+            const targetForm = document.getElementById(formId);
+            if (targetForm) {
+                targetForm.classList.add('active');
+            }
+            
+            // 更新标签页状态（如果是login或register表单）
+            if (formId === 'login-form') {
+                authTabs.forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.tab === 'login');
+                });
+            } else if (formId === 'register-form') {
+                authTabs.forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.tab === 'register');
+                });
+            } else {
+                // 对于forgot-password-form，取消所有标签页的active状态
+                authTabs.forEach(tab => {
+                    tab.classList.remove('active');
+                });
+            }
+            
+            // 清除消息
+            clearMessage();
+        }
+
         // 消息显示函数
         function showMessage(message, type = 'info') {
             messageContainer.innerHTML = `<div class="message ${type}">${message}</div>`;
@@ -633,14 +751,18 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showMessage('Login successful! Redirecting...', 'success');
+                    showMessage('Login successful! Redirecting to your schedule...', 'success');
                     // 存储用户信息
                     localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userName', result.user.name || 'User');
+                    localStorage.setItem('userRole', result.user.role || 'ELDERLY');
                     localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('authToken', 'user-token-' + Date.now());
+                    localStorage.removeItem('guestMode');
                     
-                    // 重定向到主页面
+                    // 重定向到schedule页面
                     setTimeout(() => {
-                        window.location.href = '../../index.html';
+                        window.location.href = './schedule.html';
                     }, 1500);
                 } else {
                     showMessage(result.message || 'Login failed. Please check your credentials.', 'error');
@@ -827,10 +949,12 @@
                     // 存储用户信息
                     localStorage.setItem('userEmail', currentEmail);
                     localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('authToken', 'user-token-' + Date.now());
+                    localStorage.removeItem('guestMode');
                     
-                    // 切换到登录页面或重定向
+                    // 切换到schedule页面
                     setTimeout(() => {
-                        window.location.href = '../../index.html';
+                        window.location.href = './schedule.html';
                     }, 2000);
                 } else {
                     showMessage(result.message || 'Registration completion failed. Please try again.', 'error');
@@ -849,20 +973,162 @@
             
             // 设置游客模式标识
             localStorage.setItem('isGuest', 'true');
+            localStorage.setItem('guestMode', 'true');
             localStorage.setItem('userEmail', 'guest@example.com');
             localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('authToken');
             
-            // 重定向到主页面
+            // 重定向到schedule页面
             setTimeout(() => {
-                window.location.href = '../../index.html';
+                window.location.href = './schedule.html';
             }, 1000);
         });
 
         // 忘记密码处理
+        let currentForgotEmail = '';
+        
         document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
             e.preventDefault();
-            showMessage('Password reset functionality will be available soon.', 'info');
+            showForm('forgot-password-form');
+            showForgotStep(1);
         });
+        
+        // 返回登录
+        document.getElementById('backToLogin').addEventListener('click', (e) => {
+            e.preventDefault();
+            showForm('login-form');
+        });
+        
+        // 发送重置验证码
+        document.getElementById('forgotEmailForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const email = formData.get('email');
+            currentForgotEmail = email;
+            
+            const btn = document.getElementById('sendResetCodeBtn');
+            setButtonLoading(btn, true);
+            clearMessage();
+            
+            try {
+                const response = await fetch('http://localhost:8080/user/api/forgot-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(email)}`
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    showForgotStep(2);
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                showMessage('Network error: Unable to send reset code. Please try again.', 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        });
+        
+        // 重置密码
+        document.getElementById('resetPasswordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const resetCode = formData.get('resetCode');
+            const newPassword = formData.get('newPassword');
+            const confirmPassword = formData.get('confirmPassword');
+            
+            // 验证密码匹配
+            if (newPassword !== confirmPassword) {
+                showMessage('Passwords do not match. Please try again.', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('resetPasswordBtn');
+            setButtonLoading(btn, true);
+            clearMessage();
+            
+            try {
+                const response = await fetch('http://localhost:8080/user/api/reset-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(currentForgotEmail)}&resetCode=${encodeURIComponent(resetCode)}&newPassword=${encodeURIComponent(newPassword)}`
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    // 3秒后返回登录页面
+                    setTimeout(() => {
+                        showForm('login-form');
+                        // 清空表单
+                        document.getElementById('forgotEmailForm').reset();
+                        document.getElementById('resetPasswordForm').reset();
+                        showForgotStep(1);
+                    }, 3000);
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                showMessage('Network error: Unable to reset password. Please try again.', 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        });
+        
+        // 重新发送重置验证码
+        document.getElementById('resendResetCode').addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (!currentForgotEmail) {
+                showMessage('Please start the reset process again.', 'error');
+                showForgotStep(1);
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8080/user/api/forgot-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(currentForgotEmail)}`
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('Reset code resent! Please check your email.', 'success');
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                showMessage('Network error: Unable to resend code. Please try again.', 'error');
+            }
+        });
+        
+        // 显示忘记密码步骤
+        function showForgotStep(step) {
+            const steps = document.querySelectorAll('.forgot-step');
+            steps.forEach(s => s.classList.remove('active'));
+            
+            const targetStep = document.getElementById(`forgot-step-${step}`);
+            if (targetStep) {
+                targetStep.classList.add('active');
+            }
+        }
 
         // 页面加载时检查登录状态 - 已禁用自动重定向
         // window.addEventListener('load', () => {

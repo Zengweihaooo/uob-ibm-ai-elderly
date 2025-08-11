@@ -700,12 +700,23 @@
         function initializeApp() {
             // Check user authentication status
             const authToken = localStorage.getItem('authToken');
-            if (authToken === 'demo-token') {
-                currentUser = { name: 'Demo User', email: 'demo@example.com' };
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const isGuest = localStorage.getItem('guestMode') === 'true';
+            
+            if (isLoggedIn && authToken) {
+                // Real logged-in user
+                const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
+                const userName = localStorage.getItem('userName') || 'User';
+                currentUser = { name: userName, email: userEmail };
                 isGuestMode = false;
-            } else if (localStorage.getItem('guestMode') === 'true') {
+            } else if (isGuest) {
+                // Guest mode
                 currentUser = { name: 'Guest User', email: '' };
                 isGuestMode = true;
+            } else if (authToken === 'demo-token') {
+                // Legacy demo token support
+                currentUser = { name: 'Demo User', email: 'demo@example.com' };
+                isGuestMode = false;
             } else {
                 // Redirect to registration page if not authenticated
                 window.location.href = 'register.html';

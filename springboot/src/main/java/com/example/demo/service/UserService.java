@@ -38,7 +38,7 @@ public class UserService {
     private EmailVerificationService emailVerificationService;
     
     // Verification code expiry time in minutes
-    private static final int CODE_EXPIRY_MINUTES = 15;
+    private static final int CODE_EXPIRY_MINUTES = 30;
     
     /**
      * Register a new user with enhanced validation (增强版)
@@ -89,8 +89,9 @@ public class UserService {
             user = existingUser;
         }
         
-        // 5. 更新验证码
+        // 5. 更新验证码和状态
         userMapper.updateVerificationCode(user.getId(), verificationCode, codeExpiresAt);
+        userMapper.updateUserStatus(user.getId(), "PENDING");
         
         // 6. 更新用户对象
         user.setVerificationCode(verificationCode);

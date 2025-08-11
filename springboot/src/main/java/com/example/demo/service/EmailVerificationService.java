@@ -193,8 +193,8 @@ public class EmailVerificationService {
             return new ValidationResult(false, "Email address is too long, please use a shorter email address", "EMAIL_TOO_LONG");
         }
         
-        // Check special characters
-        if (email.contains("..") || email.contains("__") || email.contains("--")) {
+        // Check special characters - only check for obvious invalid patterns
+        if (email.contains("..")) {
             return new ValidationResult(false, "Email address contains invalid characters", "EMAIL_INVALID_CHARS");
         }
         
@@ -207,10 +207,10 @@ public class EmailVerificationService {
     private ValidationResult validateEmailDomain(String email) {
         String domain = email.substring(email.indexOf("@") + 1);
         
-        // Check common invalid domains
+        // Check obviously invalid domains only
         List<String> invalidDomains = Arrays.asList(
-            "example.com", "test.com", "invalid.com", "localhost", 
-            "temp.com", "demo.com", "fake.com", "spam.com"
+            "example.com", "invalid.com", "localhost", "127.0.0.1",
+            "fake.com", "spam.com", "noreply.com", "donotreply.com"
         );
         
         if (invalidDomains.contains(domain.toLowerCase())) {
@@ -257,16 +257,14 @@ public class EmailVerificationService {
      * 安全检查
      */
     private ValidationResult performSecurityChecks(String email) {
-        // Check if contains suspicious content
+        // Very minimal security checks - only reject obviously invalid patterns
         String lowerEmail = email.toLowerCase();
-        List<String> suspiciousPatterns = Arrays.asList(
-            "admin", "root", "test", "temp", "spam", "fake"
-        );
         
-        for (String pattern : suspiciousPatterns) {
-            if (lowerEmail.contains(pattern)) {
-                return new ValidationResult(false, "Email address contains suspicious content", "SUSPICIOUS_EMAIL");
-            }
+        // Only check for obviously fake patterns
+        if (lowerEmail.contains("@@") || 
+            lowerEmail.endsWith("..") ||
+            lowerEmail.startsWith("..")) {
+            return new ValidationResult(false, "Email address format appears invalid", "SUSPICIOUS_EMAIL");
         }
         
         return new ValidationResult(true, "Security check passed", "SECURITY_VALID");

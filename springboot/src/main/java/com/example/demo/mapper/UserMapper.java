@@ -121,6 +121,16 @@ public interface UserMapper {
                               @Param("codeExpiresAt") LocalDateTime codeExpiresAt);
     
     /**
+     * Update user status
+     * 
+     * @param userId The user ID
+     * @param status The new status
+     * @return Number of affected rows
+     */
+    int updateUserStatus(@Param("userId") Long userId, 
+                        @Param("status") String status);
+    
+    /**
      * Count users by status
      * 
      * @param status The user status

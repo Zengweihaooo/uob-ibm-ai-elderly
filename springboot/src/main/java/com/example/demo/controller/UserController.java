@@ -7,6 +7,7 @@ import com.example.demo.pojo.RateLimitResult;
 import com.example.demo.service.UserService;
 import com.example.demo.service.EmailVerificationService;
 import com.example.demo.service.PermissionService;
+import com.example.demo.service.PasswordResetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,6 +43,9 @@ public class UserController {
     
     @Autowired
     private PermissionService permissionService;
+    
+    @Autowired
+    private PasswordResetService passwordResetService;
 
     /**
      * Display the user registration page
@@ -621,6 +625,70 @@ public class UserController {
         }
     }
     
+    /**
+     * Send password reset code to user's email
+     * 
+     * @param email The email address to send reset code to
+     * @return JSON response with result
+     */
+    @PostMapping("/api/forgot-password")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestParam("email") String email) {
+        Map<String, Object> result = passwordResetService.sendPasswordResetCode(email);
+        
+        if ((Boolean) result.get("success")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+    
+    /**
+     * Reset password with verification code
+     * 
+     * @param email The user's email address
+     * @param resetCode The reset verification code
+     * @param newPassword The new password
+     * @return JSON response with result
+     */
+    @PostMapping("/api/reset-password")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> resetPassword(
+            @RequestParam("email") String email,
+            @RequestParam("resetCode") String resetCode,
+            @RequestParam("newPassword") String newPassword) {
+        
+        Map<String, Object> result = passwordResetService.resetPassword(email, resetCode, newPassword);
+        
+        if ((Boolean) result.get("success")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+    
+    /**
+     * Admin function to quickly reset user password (for your current situation)
+     * 
+     * @param email The user's email address
+     * @param newPassword The new password
+     * @return JSON response with result
+     */
+    @PostMapping("/api/admin/reset-password")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> adminResetPassword(
+            @RequestParam("email") String email,
+            @RequestParam("newPassword") String newPassword) {
+        
+        Map<String, Object> result = passwordResetService.adminResetPassword(email, newPassword);
+        
+        if ((Boolean) result.get("success")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
     /**
      * 验证时间戳
      */

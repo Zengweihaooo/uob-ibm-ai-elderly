@@ -596,6 +596,30 @@
             transform: translateY(-2px);
         }
 
+        /* Floating Action Button */
+        .fab {
+            position: fixed !important;
+            bottom: 100px !important;
+            right: 30px !important;
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.8rem !important;
+            font-weight: bold !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+            z-index: 1000 !important;
+            padding: 0 !important;
+            min-width: 60px !important;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4) !important;
+        }
+
         /* Loading and messages */
         .loading {
             text-align: center;

@@ -137,6 +137,14 @@
         WHERE id = #{userId}
     </update>
 
+    <!-- Update User Status -->
+    <update id="updateUserStatus">
+        UPDATE users
+        SET status = #{status},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{userId}
+    </update>
+
     <!-- Count by Status -->
     <select id="countByStatus" parameterType="java.lang.String" resultType="int">
         SELECT COUNT(*)

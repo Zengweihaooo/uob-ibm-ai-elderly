@@ -140,6 +140,67 @@ public class EmailService {
     }
 
     /**
+     * Send password reset email with verification code
+     * 
+     * @param toEmail The recipient's email address
+     * @param resetCode The password reset verification code
+     * @throws RuntimeException if email sending fails
+     */
+    public void sendPasswordResetEmail(String toEmail, String resetCode) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromAddress);
+            helper.setTo(toEmail);
+            helper.setSubject("Pet Reminder App - Password Reset Code");
+
+            // Create HTML content for password reset
+            String htmlContent = String.format(
+                "<html><body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>" +
+                "<div style='max-width: 600px; margin: 0 auto; padding: 20px;'>" +
+                "<h2 style='color: #4CAF50; text-align: center;'>🔒 Password Reset Request</h2>" +
+                "<p>Dear User,</p>" +
+                "<p>You have requested to reset your password for your Pet Reminder App account.</p>" +
+                "<div style='background-color: #f9f9f9; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;'>" +
+                "<h3 style='color: #333; margin-bottom: 10px;'>Your Password Reset Code:</h3>" +
+                "<div style='font-size: 32px; font-weight: bold; color: #4CAF50; letter-spacing: 3px; font-family: monospace;'>%s</div>" +
+                "<p style='color: #666; font-size: 14px; margin-top: 15px;'>This code will expire in 30 minutes</p>" +
+                "</div>" +
+                "<p><strong>How to reset your password:</strong></p>" +
+                "<ol>" +
+                "<li>Go to the login page</li>" +
+                "<li>Click on 'Forgot Password'</li>" +
+                "<li>Enter this verification code</li>" +
+                "<li>Set your new password</li>" +
+                "</ol>" +
+                "<p style='color: #666; font-size: 14px; margin-top: 30px;'>" +
+                "If you did not request this password reset, please ignore this email. Your account remains secure." +
+                "</p>" +
+                "<hr style='border: none; border-top: 1px solid #eee; margin: 30px 0;'>" +
+                "<p style='color: #888; font-size: 12px; text-align: center;'>" +
+                "This email was sent by IBM AI Elderly Project - Pet Reminder App<br>" +
+                "Please do not reply to this email." +
+                "</p>" +
+                "</div></body></html>",
+                resetCode
+            );
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            
+            System.out.println("Password reset email sent successfully to: " + toEmail + " with code: " + resetCode);
+            
+        } catch (MessagingException e) {
+            System.err.println("Failed to send password reset email to: " + toEmail + " => " + e.getMessage());
+            throw new RuntimeException("Failed to send password reset email", e);
+        } catch (Exception e) {
+            System.err.println("Unexpected error sending password reset email to: " + toEmail + " => " + e.getMessage());
+            throw new RuntimeException("Unexpected error sending password reset email", e);
+        }
+    }
+
+    /**
      * Send health alert email to emergency contact
      * 
      * @param toEmail The recipient's email address
