@@ -638,36 +638,36 @@
         <input type="file" id="imageInput" style="display: none;" accept="image/*" multiple>
     </div>
 
-    <!-- Fixed bottom navigation bar -->
+    <!-- Bottom Navigation -->
     <div class="bottom-navigation">
-        <button class="nav-tab" onclick="window.location.href='schedule.html'">
-            <span class="nav-icon">📅</span>
-            <span class="nav-label">Schedule</span>
-        </button>
-        <button class="nav-tab" onclick="window.location.href='schedule.html#important-dates'">
-            <span class="nav-icon">🎉</span>
-            <span class="nav-label">Important Dates</span>
-        </button>
-        <button class="nav-tab active">
-            <span class="nav-icon">🤖</span>
-            <span class="nav-label">AI Assistant</span>
-        </button>
-        <button class="nav-tab" onclick="window.location.href='schedule.html#pet'">
-            <span class="nav-icon">🐱</span>
-            <span class="nav-label">Virtual Pet</span>
-        </button>
-        <button class="nav-tab" onclick="window.location.href='family.html'">
-            <span class="nav-icon">👪</span>
-            <span class="nav-label">Family</span>
-        </button>
-        <button class="nav-tab" onclick="window.location.href='memo.html'">
-            <span class="nav-icon">📝</span>
-            <span class="nav-label">Memo</span>
-        </button>
-        <button class="nav-tab" onclick="window.location.href='podcast.html'">
-            <span class="nav-icon">🎧</span>
-            <span class="nav-label">Podcast</span>
-        </button>
+        <a href="schedule.html" class="nav-tab nav-link-tab">
+            <div class="nav-icon">📅</div>
+            <div class="nav-label">Schedule</div>
+        </a>
+        <a href="schedule.html#important-dates" class="nav-tab nav-link-tab">
+            <div class="nav-icon">🎉</div>
+            <div class="nav-label">Important Dates</div>
+        </a>
+        <a href="ai-assistant.html" class="nav-tab nav-link-tab active">
+            <div class="nav-icon">🤖</div>
+            <div class="nav-label">AI Assistant</div>
+        </a>
+        <a href="schedule.html#pet" class="nav-tab nav-link-tab">
+            <div class="nav-icon">🐱</div>
+            <div class="nav-label">Virtual Pet</div>
+        </a>
+        <a href="family.html" class="nav-tab nav-link-tab">
+            <div class="nav-icon">👪</div>
+            <div class="nav-label">Family</div>
+        </a>
+        <a href="memo.html" class="nav-tab nav-link-tab">
+            <div class="nav-icon">📝</div>
+            <div class="nav-label">Memo</div>
+        </a>
+        <a href="podcast.html" class="nav-tab nav-link-tab">
+            <div class="nav-icon">🎧</div>
+            <div class="nav-label">Podcast</div>
+        </a>
     </div>
 
     <!-- Cloud Voice Scripts -->
@@ -817,7 +817,7 @@
             
             try {
                 // Send message to backend API
-                const response = await fetch('http://localhost:8080/api/gemini/chat', {
+                const response = await fetch('http://localhost:8080/api/gemini-new/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

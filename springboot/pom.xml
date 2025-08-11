@@ -116,6 +116,8 @@
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-aiplatform</artifactId>
       </dependency>
+      
+      <!-- We'll use REST API directly, no additional dependency needed -->
     </dependencies>
 
     <build>

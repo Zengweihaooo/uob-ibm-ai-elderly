@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Test - UOB-IBM AI Elderly</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-link {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px 20px;
+            background: #2c5aa0;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        .nav-link:hover {
+            background: #1e3a5f;
+        }
+        h1 {
+            color: #2c5aa0;
+            text-align: center;
+        }
+        h2 {
+            color: #4a90e2;
+            border-bottom: 2px solid #4a90e2;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Navigation Test Page</h1>
+    
+    <div class="status success">
+        ✅ All navigation links have been updated and should work correctly now!
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Main Application Pages</h2>
+        <p>Test all the main pages of the application:</p>
+        
+        <a href="src/pages/schedule.html" class="nav-link">📅 Schedule</a>
+        <a href="src/pages/schedule.html#important-dates" class="nav-link">🎉 Important Dates</a>
+        <a href="src/pages/ai-assistant.html" class="nav-link">🤖 AI Assistant</a>
+        <a href="src/pages/schedule.html#pet" class="nav-link">🐱 Virtual Pet</a>
+        <a href="src/pages/family.html" class="nav-link">👪 Family</a>
+        <a href="src/pages/memo.html" class="nav-link">📝 Memo</a>
+        <a href="src/pages/podcast.html" class="nav-link">🎧 Podcast</a>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Navigation Issues Fixed</h2>
+        <div class="status info">
+            <strong>Fixed Issues:</strong>
+            <ul>
+                <li>✅ Important Dates now correctly links to schedule.html#important-dates</li>
+                <li>✅ Virtual Pet now correctly links to schedule.html#pet</li>
+                <li>✅ All pages now have consistent navigation bars</li>
+                <li>✅ Navigation links are unified across all pages</li>
+                <li>✅ Hash navigation properly supported in schedule.html</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Navigation Structure</h2>
+        <p><strong>Important Dates</strong> and <strong>Virtual Pet</strong> are integrated features within the Schedule page:</p>
+        <ul>
+            <li><strong>Schedule</strong> - Main scheduling interface</li>
+            <li><strong>Important Dates</strong> - Tab within Schedule page (schedule.html#important-dates)</li>
+            <li><strong>Virtual Pet</strong> - Tab within Schedule page (schedule.html#pet)</li>
+            <li><strong>AI Assistant</strong> - Standalone page with Gemini AI</li>
+            <li><strong>Family</strong> - Contact management page</li>
+            <li><strong>Memo</strong> - Note-taking page</li>
+            <li><strong>Podcast</strong> - Audio content page</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Test Instructions</h2>
+        <ol>
+            <li>Click each navigation link above to test</li>
+            <li>From any page, use the bottom navigation bar</li>
+            <li>Verify that Important Dates opens the correct tab in Schedule</li>
+            <li>Verify that Virtual Pet opens the correct tab in Schedule</li>
+            <li>Check that all 7 navigation items are visible on every page</li>
+        </ol>
+    </div>
+
+    <div class="status success">
+        <strong>✅ Navigation Status:</strong> All links should now work correctly and consistently across all pages!
+    </div>
+</body>
+</html>
