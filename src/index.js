@@ -34,10 +34,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Modal functionality & dynamic updates loading
     // ---------------------------------------------
     
-    // Check if marked library is loaded for markdown parsing
-    if (typeof marked === 'undefined') {
-        console.error('Marked library not loaded - markdown parsing unavailable');
-        return;
+    // Simple content parsing - no markdown library needed
+    function parseContent(content) {
+        // Simple text processing without markdown
+        return content.replace(/\n/g, '<br>');
     }
 
     const modal = document.getElementById('contentModal');
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 `;
                 el.addEventListener('click', () => {
                     modalTitle.textContent = update.title;
-                    modalBody.innerHTML = marked.parse(update.content);
+                    modalBody.innerHTML = parseContent(update.content);
                     modal.style.display = 'block';
                 });
                 updatesList.appendChild(el);

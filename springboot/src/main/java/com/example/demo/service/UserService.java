@@ -283,20 +283,6 @@ public class UserService {
     }
     
     /**
-     * Get user by email
-     * 
-     * @param email The email address
-     * @return The user, or null if not found
-     */
-    public User getUserByEmail(String email) {
-        if (email == null || email.trim().isEmpty()) {
-            return null;
-        }
-        
-        return userMapper.findByEmail(email.trim().toLowerCase());
-    }
-    
-    /**
      * Get all users
      * 
      * @return List of all users
