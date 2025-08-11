@@ -1,5 +1,16 @@
 .DS_Store
 
+# Node.js dependencies
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build directories
+target/
+**/target/
+
 # Google Cloud credentials
 docs/keys/*.json
 .env
