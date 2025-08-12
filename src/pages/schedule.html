@@ -620,6 +620,216 @@
             box-shadow: 0 6px 16px rgba(0,0,0,0.4) !important;
         }
 
+        /* View Toggle Buttons */
+        .view-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .view-btn {
+            background: var(--elderly-light);
+            color: var(--elderly-dark);
+            border: 2px solid var(--elderly-border);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn.active {
+            background: var(--elderly-primary);
+            color: white;
+            border-color: var(--elderly-primary);
+        }
+
+        .view-btn:hover {
+            background: var(--elderly-secondary);
+            color: white;
+            border-color: var(--elderly-secondary);
+        }
+
+        /* Calendar Container */
+        .calendar-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: var(--elderly-shadow);
+            border: 2px solid var(--elderly-border);
+        }
+
+        /* Week View Styles */
+        .week-view {
+            width: 100%;
+        }
+
+        .week-header {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            gap: 1px;
+            margin-bottom: 1px;
+        }
+
+        .week-day-header {
+            background: var(--elderly-primary);
+            color: white;
+            padding: 15px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            gap: 1px;
+            background: var(--elderly-border);
+        }
+
+        .week-time-slot {
+            background: var(--elderly-light);
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-bottom: 1px solid var(--elderly-border);
+        }
+
+        .week-day-cell {
+            background: white;
+            min-height: 60px;
+            padding: 4px;
+            position: relative;
+            border-bottom: 1px solid var(--elderly-border);
+            cursor: pointer;
+        }
+
+        .week-day-cell:hover {
+            background: var(--elderly-light);
+        }
+
+        .week-day-cell.today {
+            background: #e3f2fd;
+        }
+
+        /* Month View Styles */
+        .month-view {
+            width: 100%;
+        }
+
+        .month-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            margin-bottom: 1px;
+        }
+
+        .month-day-header {
+            background: var(--elderly-primary);
+            color: white;
+            padding: 15px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--elderly-border);
+        }
+
+        .month-day-cell {
+            background: white;
+            min-height: 120px;
+            padding: 8px;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid var(--elderly-border);
+        }
+
+        .month-day-cell:hover {
+            background: var(--elderly-light);
+        }
+
+        .month-day-cell.today {
+            background: #e3f2fd;
+        }
+
+        .month-day-cell.other-month {
+            background: #f5f5f5;
+            color: #999;
+        }
+
+        .month-day-number {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        /* Activity indicators in calendar */
+        .calendar-activity {
+            background: var(--elderly-success);
+            color: white;
+            padding: 2px 6px;
+            margin: 2px 0;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+
+        .calendar-activity.high-priority {
+            background: var(--elderly-danger);
+        }
+
+        .calendar-activity.medium-priority {
+            background: var(--elderly-warning);
+            color: var(--elderly-dark);
+        }
+
+        .calendar-activity.completed {
+            background: #6c757d;
+            text-decoration: line-through;
+        }
+
+        /* Responsive design for calendar */
+        @media (max-width: 768px) {
+            .week-header {
+                grid-template-columns: 60px repeat(7, 1fr);
+            }
+            
+            .week-grid {
+                grid-template-columns: 60px repeat(7, 1fr);
+            }
+            
+            .week-day-header {
+                padding: 10px 4px;
+                font-size: 0.9rem;
+            }
+            
+            .month-day-cell {
+                min-height: 80px;
+                padding: 4px;
+            }
+            
+            .view-toggle {
+                flex-wrap: wrap;
+            }
+            
+            .view-btn {
+                padding: 10px 16px;
+                font-size: 1rem;
+            }
+        }
+
         /* Loading and messages */
         .loading {
             text-align: center;
@@ -1316,10 +1526,33 @@
         <!-- Date navigation -->
         <div class="date-nav">
             <h2>Select Date</h2>
-            <div class="date-controls">
+            
+            <!-- View Toggle Buttons -->
+            <div class="view-toggle">
+                <button class="view-btn active" id="dayViewBtn" onclick="switchView('day')">Day</button>
+                <button class="view-btn" id="weekViewBtn" onclick="switchView('week')">Week</button>
+                <button class="view-btn" id="monthViewBtn" onclick="switchView('month')">Month</button>
+            </div>
+            
+            <!-- Day View Controls -->
+            <div class="date-controls" id="dayControls">
                 <button class="date-btn" onclick="changeDate(-1)">← Previous Day</button>
                 <div class="current-date" id="currentDate"></div>
                 <button class="date-btn" onclick="changeDate(1)">Next Day →</button>
+            </div>
+            
+            <!-- Week View Controls -->
+            <div class="date-controls" id="weekControls" style="display: none;">
+                <button class="date-btn" onclick="changeWeek(-1)">← Previous Week</button>
+                <div class="current-date" id="currentWeek"></div>
+                <button class="date-btn" onclick="changeWeek(1)">Next Week →</button>
+            </div>
+            
+            <!-- Month View Controls -->
+            <div class="date-controls" id="monthControls" style="display: none;">
+                <button class="date-btn" onclick="changeMonth(-1)">← Previous Month</button>
+                <div class="current-date" id="currentMonth"></div>
+                <button class="date-btn" onclick="changeMonth(1)">Next Month →</button>
             </div>
         </div>
 
@@ -1358,6 +1591,42 @@
                 <ul class="activity-list" id="medicationReminders">
                     <div class="loading">Loading medication reminders...</div>
                 </ul>
+            </div>
+        </div>
+
+        <!-- Calendar Views -->
+        <div class="calendar-container" id="calendarContainer" style="display: none;">
+            <!-- Week View -->
+            <div class="week-view" id="weekView" style="display: none;">
+                <div class="week-header">
+                    <div class="week-day-header">Time</div>
+                    <div class="week-day-header" id="weekDay0">Sun</div>
+                    <div class="week-day-header" id="weekDay1">Mon</div>
+                    <div class="week-day-header" id="weekDay2">Tue</div>
+                    <div class="week-day-header" id="weekDay3">Wed</div>
+                    <div class="week-day-header" id="weekDay4">Thu</div>
+                    <div class="week-day-header" id="weekDay5">Fri</div>
+                    <div class="week-day-header" id="weekDay6">Sat</div>
+                </div>
+                <div class="week-grid" id="weekGrid">
+                    <!-- Week grid will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Month View -->
+            <div class="month-view" id="monthView" style="display: none;">
+                <div class="month-header">
+                    <div class="month-day-header">Sun</div>
+                    <div class="month-day-header">Mon</div>
+                    <div class="month-day-header">Tue</div>
+                    <div class="month-day-header">Wed</div>
+                    <div class="month-day-header">Thu</div>
+                    <div class="month-day-header">Fri</div>
+                    <div class="month-day-header">Sat</div>
+                </div>
+                <div class="month-grid" id="monthGrid">
+                    <!-- Month grid will be populated by JavaScript -->
+                </div>
             </div>
         </div>
 
@@ -1926,12 +2195,23 @@
         let selectedPriority = 'medium';
         let selectedRepeat = 'none';
         let selectedNotification = '15min';
+        
+        // Calendar view variables
+        let currentView = 'day';
+        let currentWeek = new Date();
+        let currentMonth = new Date();
+        let allActivities = []; // Store all activities for calendar views
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             updateDateDisplay();
             checkUserStatus();
             loadSchedule();
+            
+            // Initialize calendar views
+            updateWeekDisplay();
+            updateMonthDisplay();
+            loadAllActivities();
             initializeFormHandlers();
             
             // Set current date as default
@@ -1978,6 +2258,9 @@
         function checkUserStatus() {
             const token = localStorage.getItem('authToken');
             const guestMode = localStorage.getItem('guestMode');
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const userName = localStorage.getItem('userName');
+            const userEmail = localStorage.getItem('userEmail');
             
             if (guestMode === 'true') {
                 isGuestMode = true;
@@ -1985,27 +2268,19 @@
                 document.getElementById('userWelcome').textContent = 'Guest Mode - Viewing Sample Schedule';
                 document.getElementById('loginBtn').style.display = 'none';
                 document.getElementById('showAddFormBtn').style.display = 'none';
-            } else if (token) {
-                // Verify token with backend
-                fetch('http://localhost:8080/user/api/verify-token', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        currentUser = data.user;
-                        document.getElementById('userWelcome').textContent = `Welcome back, ${data.user.name}!`;
-                        document.getElementById('loginBtn').style.display = 'none';
-                        document.getElementById('logoutBtn').style.display = 'block';
-                        document.getElementById('addActivityForm').style.display = 'block';
-                    } else {
-                        localStorage.removeItem('authToken');
-                    }
-                })
-                .catch(error => {
-                    console.error('Token verification failed:', error);
-                    localStorage.removeItem('authToken');
-                });
+            } else if (isLoggedIn && token) {
+                // User is logged in - use local storage info instead of API call
+                const displayName = userName || userEmail || 'User';
+                currentUser = { name: displayName, email: userEmail };
+                document.getElementById('userWelcome').textContent = `Welcome back, ${displayName}!`;
+                document.getElementById('loginBtn').style.display = 'none';
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) logoutBtn.style.display = 'block';
+                document.getElementById('showAddFormBtn').style.display = 'block';
+            } else {
+                document.getElementById('userWelcome').textContent = 'Please log in to save your schedule data';
+                document.getElementById('loginBtn').style.display = 'block';
+                document.getElementById('showAddFormBtn').style.display = 'none';
             }
         }
 
@@ -2441,6 +2716,37 @@
             .catch(error => {
                 console.error('Error deleting activity:', error);
                 showMessage('Error deleting activity', 'error');
+            });
+        }
+
+        // Toggle activity completion status
+        function toggleComplete(activityId, category) {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                showMessage('Please log in to update activities', 'error');
+                return;
+            }
+
+            fetch(`http://localhost:8080/api/schedule/activity/${activityId}/toggle`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message || 'Activity status updated!', 'success');
+                    loadSchedule(); // Reload to show updated status
+                } else {
+                    showMessage('Failed to update activity status', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating activity status:', error);
+                showMessage('Error updating activity status', 'error');
             });
         }
 
@@ -3364,6 +3670,236 @@
             const today = new Date();
             const date = new Date(dateStr);
             return date.toDateString() === today.toDateString();
+        }
+
+        // Calendar View Functions
+        function switchView(view) {
+            currentView = view;
+            
+            // Update button states
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(view + 'ViewBtn').classList.add('active');
+            
+            // Show/hide appropriate controls
+            document.getElementById('dayControls').style.display = view === 'day' ? 'flex' : 'none';
+            document.getElementById('weekControls').style.display = view === 'week' ? 'flex' : 'none';
+            document.getElementById('monthControls').style.display = view === 'month' ? 'flex' : 'none';
+            
+            // Show/hide content areas
+            document.querySelector('.schedule-content').style.display = view === 'day' ? 'grid' : 'none';
+            document.getElementById('calendarContainer').style.display = view !== 'day' ? 'block' : 'none';
+            document.getElementById('weekView').style.display = view === 'week' ? 'block' : 'none';
+            document.getElementById('monthView').style.display = view === 'month' ? 'block' : 'none';
+            
+            // Update displays and load appropriate data
+            if (view === 'week') {
+                updateWeekDisplay();
+                generateWeekView();
+            } else if (view === 'month') {
+                updateMonthDisplay();
+                generateMonthView();
+            } else {
+                updateDateDisplay();
+                loadSchedule();
+            }
+        }
+
+        function changeWeek(direction) {
+            currentWeek.setDate(currentWeek.getDate() + (direction * 7));
+            updateWeekDisplay();
+            generateWeekView();
+        }
+
+        function changeMonth(direction) {
+            currentMonth.setMonth(currentMonth.getMonth() + direction);
+            updateMonthDisplay();
+            generateMonthView();
+        }
+
+        function updateWeekDisplay() {
+            const startOfWeek = new Date(currentWeek);
+            startOfWeek.setDate(currentWeek.getDate() - currentWeek.getDay());
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            
+            const options = { month: 'long', day: 'numeric', year: 'numeric' };
+            document.getElementById('currentWeek').textContent = 
+                `${startOfWeek.toLocaleDateString('en-US', options)} - ${endOfWeek.toLocaleDateString('en-US', options)}`;
+                
+            // Update week day headers
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(startOfWeek);
+                date.setDate(startOfWeek.getDate() + i);
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const dayNumber = date.getDate();
+                document.getElementById(`weekDay${i}`).textContent = `${dayName} ${dayNumber}`;
+            }
+        }
+
+        function updateMonthDisplay() {
+            const options = { month: 'long', year: 'numeric' };
+            document.getElementById('currentMonth').textContent = currentMonth.toLocaleDateString('en-US', options);
+        }
+
+        function generateWeekView() {
+            const weekGrid = document.getElementById('weekGrid');
+            weekGrid.innerHTML = '';
+            
+            const startOfWeek = new Date(currentWeek);
+            startOfWeek.setDate(currentWeek.getDate() - currentWeek.getDay());
+            
+            // Generate time slots (6 AM to 11 PM)
+            for (let hour = 6; hour <= 23; hour++) {
+                // Time slot label
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'week-time-slot';
+                timeSlot.textContent = hour === 12 ? '12 PM' : 
+                    hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
+                weekGrid.appendChild(timeSlot);
+                
+                // Day cells for this hour
+                for (let day = 0; day < 7; day++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'week-day-cell';
+                    
+                    const cellDate = new Date(startOfWeek);
+                    cellDate.setDate(startOfWeek.getDate() + day);
+                    
+                    if (cellDate.toDateString() === new Date().toDateString()) {
+                        cell.classList.add('today');
+                    }
+                    
+                    cell.addEventListener('click', () => {
+                        currentDate = new Date(cellDate);
+                        switchView('day');
+                    });
+                    
+                    // Add activities for this time slot
+                    addActivitiesToCell(cell, cellDate, hour);
+                    
+                    weekGrid.appendChild(cell);
+                }
+            }
+        }
+
+        function generateMonthView() {
+            const monthGrid = document.getElementById('monthGrid');
+            monthGrid.innerHTML = '';
+            
+            const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+            const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            // Generate 6 weeks (42 days)
+            for (let i = 0; i < 42; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'month-day-cell';
+                
+                const cellDate = new Date(startDate);
+                cellDate.setDate(startDate.getDate() + i);
+                
+                if (cellDate.getMonth() !== currentMonth.getMonth()) {
+                    cell.classList.add('other-month');
+                }
+                
+                if (cellDate.toDateString() === new Date().toDateString()) {
+                    cell.classList.add('today');
+                }
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'month-day-number';
+                dayNumber.textContent = cellDate.getDate();
+                cell.appendChild(dayNumber);
+                
+                cell.addEventListener('click', () => {
+                    currentDate = new Date(cellDate);
+                    switchView('day');
+                });
+                
+                // Add activities for this day
+                addActivitiesToMonthCell(cell, cellDate);
+                
+                monthGrid.appendChild(cell);
+            }
+        }
+
+        function addActivitiesToCell(cell, date, hour) {
+            // Filter activities for this date and hour
+            const dateStr = date.toISOString().split('T')[0];
+            const activities = allActivities.filter(activity => {
+                if (activity.date !== dateStr) return false;
+                if (!activity.time) return false;
+                
+                const activityHour = parseInt(activity.time.split(':')[0]);
+                return activityHour === hour;
+            });
+            
+            activities.forEach(activity => {
+                const activityDiv = document.createElement('div');
+                activityDiv.className = `calendar-activity ${activity.priority}-priority`;
+                if (activity.completed) {
+                    activityDiv.classList.add('completed');
+                }
+                activityDiv.textContent = activity.title;
+                activityDiv.title = `${activity.time} - ${activity.title}`;
+                cell.appendChild(activityDiv);
+            });
+        }
+
+        function addActivitiesToMonthCell(cell, date) {
+            const dateStr = date.toISOString().split('T')[0];
+            const activities = allActivities.filter(activity => activity.date === dateStr);
+            
+            // Show only first 3 activities to avoid overcrowding
+            activities.slice(0, 3).forEach(activity => {
+                const activityDiv = document.createElement('div');
+                activityDiv.className = `calendar-activity ${activity.priority}-priority`;
+                if (activity.completed) {
+                    activityDiv.classList.add('completed');
+                }
+                activityDiv.textContent = activity.time ? 
+                    `${activity.time.slice(0, 5)} ${activity.title}` : activity.title;
+                activityDiv.title = `${activity.time || 'All day'} - ${activity.title}`;
+                cell.appendChild(activityDiv);
+            });
+            
+            if (activities.length > 3) {
+                const moreDiv = document.createElement('div');
+                moreDiv.className = 'calendar-activity';
+                moreDiv.textContent = `+${activities.length - 3} more`;
+                moreDiv.style.background = '#6c757d';
+                cell.appendChild(moreDiv);
+            }
+        }
+
+        // Load all activities for calendar views
+        function loadAllActivities() {
+            const token = localStorage.getItem('authToken');
+            if (!token) return;
+            
+            // Get activities for current month range
+            const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+            const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 2, 0);
+            
+            fetch(`http://localhost:8080/api/schedule/activities?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    allActivities = data.activities || [];
+                    if (currentView === 'week') {
+                        generateWeekView();
+                    } else if (currentView === 'month') {
+                        generateMonthView();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading activities:', error);
+                allActivities = [];
+            });
         }
 
 
