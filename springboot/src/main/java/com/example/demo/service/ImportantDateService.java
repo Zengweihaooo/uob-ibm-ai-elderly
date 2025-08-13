@@ -61,7 +61,6 @@ public class ImportantDateService {
     public List<ImportantDate> getImportantDatesByUser(Long userId) {
         return importantDates.values().stream()
                 .filter(date -> date.getUserId().equals(userId))
-                .filter(ImportantDate::isEnabled)
                 .sorted(Comparator.comparing(ImportantDate::getDate))
                 .toList();
     }
@@ -77,7 +76,6 @@ public class ImportantDateService {
         return importantDates.values().stream()
                 .filter(date -> date.getUserId().equals(userId))
                 .filter(date -> date.getType().equals(type))
-                .filter(ImportantDate::isEnabled)
                 .sorted(Comparator.comparing(ImportantDate::getDate))
                 .toList();
     }
@@ -169,6 +167,23 @@ public class ImportantDateService {
         }
         
         date.setEnabled(!date.isEnabled());
+        date.setUpdatedAt(LocalDateTime.now());
+        return date;
+    }
+
+    /**
+     * Explicitly set enabled status for an important date
+     * 
+     * @param id Important date ID
+     * @param enabled Target enabled status
+     * @return Updated important date
+     */
+    public ImportantDate setImportantDateEnabled(Long id, boolean enabled) {
+        ImportantDate date = importantDates.get(id);
+        if (date == null) {
+            throw new IllegalArgumentException("Important date not found with ID: " + id);
+        }
+        date.setEnabled(enabled);
         date.setUpdatedAt(LocalDateTime.now());
         return date;
     }
