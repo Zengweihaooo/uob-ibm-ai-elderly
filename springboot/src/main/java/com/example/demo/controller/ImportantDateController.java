@@ -292,6 +292,34 @@ public class ImportantDateController {
     }
 
     /**
+     * Explicitly enable/disable an important date (no deletion)
+     */
+    @PutMapping("/{id}/enabled")
+    public ResponseEntity<Map<String, Object>> setEnabled(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Object enabledObj = body.get("enabled");
+            if (enabledObj == null) {
+                response.put("success", false);
+                response.put("message", "Missing 'enabled' field");
+                return ResponseEntity.badRequest().body(response);
+            }
+            boolean enabled = Boolean.TRUE.equals(enabledObj) || (enabledObj instanceof Boolean b && b);
+            ImportantDate result = importantDateService.setImportantDateEnabled(id, enabled);
+            response.put("success", true);
+            response.put("message", "Important date status updated");
+            response.put("importantDate", result);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to update status: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
      * Manually trigger email reminders for all pending important dates
      * 
      * @return Response with reminder sending result
