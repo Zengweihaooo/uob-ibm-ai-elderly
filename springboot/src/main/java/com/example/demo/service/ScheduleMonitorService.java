@@ -5,7 +5,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-import com.example.demo.controller.EmotionCompanionController;
+// import com.example.demo.controller.EmotionCompanionController;
 import com.example.demo.pojo.User;
 import com.example.demo.pojo.ImportantDate;
 
@@ -28,8 +28,8 @@ public class ScheduleMonitorService {
     @Autowired
     private EmailService emailService;
 
-    @Autowired
-    private EmotionCompanionController emotionCompanionController;
+    // @Autowired
+    // private EmotionCompanionController emotionCompanionController;
 
     @Autowired
     private SmsService smsService;
@@ -150,8 +150,10 @@ public class ScheduleMonitorService {
         // Send pet message
         try {
             String petMessage = "Meow! 🚨 URGENT: It's time for your " + medicationName + "! Please take it right now!";
+
             // TODO: Implement companion message creation
             // emotionCompanionController.createMessage("companion", petMessage, "medication_urgent", user.getId());
+
         } catch (Exception e) {
             System.err.println("Failed to send urgent pet message: " + e.getMessage());
         }
@@ -180,8 +182,10 @@ public class ScheduleMonitorService {
         // Send pet message
         try {
             String petMessage = "Purr... 📅 Don't forget your " + appointmentTitle + " at " + appointmentTime + "!";
+
             // TODO: Implement companion message creation
             // emotionCompanionController.createMessage("companion", petMessage, "appointment", user.getId());
+
         } catch (Exception e) {
             System.err.println("Failed to send appointment pet message: " + e.getMessage());
         }

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.EmotionCompanionMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="EmotionCompanionResultMap" type="com.example.demo.pojo.EmotionCompanion">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="personality" property="personality" jdbcType="VARCHAR"/>
+        <result column="avatar" property="avatar" jdbcType="VARCHAR"/>
+        <result column="emotion" property="emotion" jdbcType="VARCHAR"/>
+        <result column="happiness" property="happiness" jdbcType="INTEGER"/>
+        <result column="energy" property="energy" jdbcType="INTEGER"/>
+        <result column="responsiveness" property="responsiveness" jdbcType="INTEGER"/>
+        <result column="last_interaction" property="lastInteraction" typeHandler="com.example.demo.config.SQLiteLocalDateTimeTypeHandler"/>
+        <result column="last_chat" property="lastChat" typeHandler="com.example.demo.config.SQLiteLocalDateTimeTypeHandler"/>
+        <result column="last_command" property="lastCommand" typeHandler="com.example.demo.config.SQLiteLocalDateTimeTypeHandler"/>
+        <result column="interaction_count" property="interactionCount" jdbcType="INTEGER"/>
+        <result column="chat_count" property="chatCount" jdbcType="INTEGER"/>
+        <result column="current_location" property="currentLocation" jdbcType="VARCHAR"/>
+        <result column="is_active" property="active" jdbcType="INTEGER"/>
+        <result column="activity_mode" property="activityMode" jdbcType="VARCHAR"/>
+        <result column="current_sound" property="currentSound" jdbcType="VARCHAR"/>
+        <result column="visual_expression" property="visualExpression" jdbcType="VARCHAR"/>
+        <result column="is_making_sound" property="makingSound" jdbcType="INTEGER"/>
+        <result column="is_expressing_emotion" property="expressingEmotion" jdbcType="INTEGER"/>
+        <result column="led_color" property="ledColor" jdbcType="VARCHAR"/>
+        <result column="last_attention_time" property="lastAttentionTime" typeHandler="com.example.demo.config.SQLiteLocalDateTimeTypeHandler"/>
+        <result column="neglect_level" property="neglectLevel" jdbcType="INTEGER"/>
+        <result column="needs_attention" property="needsAttention" jdbcType="INTEGER"/>
+        <result column="is_lonely" property="lonely" jdbcType="INTEGER"/>
+        <result column="current_task" property="currentTask" jdbcType="VARCHAR"/>
+        <result column="is_learning" property="learning" jdbcType="INTEGER"/>
+        <result column="helpfulness" property="helpfulness" jdbcType="INTEGER"/>
+        <result column="created_at" property="createdAt" typeHandler="com.example.demo.config.SQLiteLocalDateTimeTypeHandler"/>
+        <result column="updated_at" property="updatedAt" typeHandler="com.example.demo.config.SQLiteLocalDateTimeTypeHandler"/>
+    </resultMap>
+    
+    <!-- 插入情感陪伴记录 -->
+    <insert id="insert" parameterType="com.example.demo.pojo.EmotionCompanion" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO emotion_companion (
+            user_id, name, personality, avatar, emotion, happiness, energy, responsiveness,
+            last_interaction, last_chat, last_command, interaction_count, chat_count,
+            current_location, is_active, activity_mode, current_sound, visual_expression,
+            is_making_sound, is_expressing_emotion, led_color, last_attention_time,
+            neglect_level, needs_attention, is_lonely, current_task, is_learning,
+            helpfulness, created_at, updated_at
+        ) VALUES (
+            #{userId}, #{name}, #{personality}, #{avatar}, #{emotion}, #{happiness}, #{energy}, #{responsiveness},
+            #{lastInteraction, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            #{lastChat, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            #{lastCommand, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            #{interactionCount}, #{chatCount}, #{currentLocation}, #{active, jdbcType=INTEGER}, #{activityMode},
+            #{currentSound}, #{visualExpression}, #{makingSound, jdbcType=INTEGER}, #{expressingEmotion, jdbcType=INTEGER},
+            #{ledColor}, #{lastAttentionTime, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            #{neglectLevel}, #{needsAttention, jdbcType=INTEGER}, #{lonely, jdbcType=INTEGER}, #{currentTask},
+            #{learning, jdbcType=INTEGER}, #{helpfulness},
+            #{createdAt, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            #{updatedAt, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler}
+        )
+    </insert>
+    
+    <!-- Upsert 操作：存在则更新，不存在则插入 -->
+    <insert id="upsert" parameterType="com.example.demo.pojo.EmotionCompanion">
+        INSERT INTO emotion_companion (
+            user_id, name, personality, avatar, emotion, happiness, energy, responsiveness,
+            last_interaction, last_chat, last_command, interaction_count, chat_count,
+            current_location, is_active, activity_mode, current_sound, visual_expression,
+            is_making_sound, is_expressing_emotion, led_color, last_attention_time,
+            neglect_level, needs_attention, is_lonely, current_task, is_learning,
+            helpfulness, created_at, updated_at
+        ) VALUES (
+            #{userId}, #{name}, #{personality}, #{avatar}, #{emotion}, #{happiness}, #{energy}, #{responsiveness},
+            #{lastInteraction, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            #{lastChat, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            #{lastCommand, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            #{interactionCount}, #{chatCount}, #{currentLocation}, #{active, jdbcType=INTEGER}, #{activityMode},
+            #{currentSound}, #{visualExpression}, #{makingSound, jdbcType=INTEGER}, #{expressingEmotion, jdbcType=INTEGER},
+            #{ledColor}, #{lastAttentionTime, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            #{neglectLevel}, #{needsAttention, jdbcType=INTEGER}, #{lonely, jdbcType=INTEGER}, #{currentTask},
+            #{learning, jdbcType=INTEGER}, #{helpfulness},
+            #{createdAt, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            #{updatedAt, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler}
+        )
+        ON CONFLICT(user_id) DO UPDATE SET
+            name = excluded.name,
+            personality = excluded.personality,
+            avatar = excluded.avatar,
+            emotion = excluded.emotion,
+            happiness = excluded.happiness,
+            energy = excluded.energy,
+            responsiveness = excluded.responsiveness,
+            last_interaction = excluded.last_interaction,
+            last_chat = excluded.last_chat,
+            last_command = excluded.last_command,
+            interaction_count = excluded.interaction_count,
+            chat_count = excluded.chat_count,
+            current_location = excluded.current_location,
+            is_active = excluded.is_active,
+            activity_mode = excluded.activity_mode,
+            current_sound = excluded.current_sound,
+            visual_expression = excluded.visual_expression,
+            is_making_sound = excluded.is_making_sound,
+            is_expressing_emotion = excluded.is_expressing_emotion,
+            led_color = excluded.led_color,
+            last_attention_time = excluded.last_attention_time,
+            neglect_level = excluded.neglect_level,
+            needs_attention = excluded.needs_attention,
+            is_lonely = excluded.is_lonely,
+            current_task = excluded.current_task,
+            is_learning = excluded.is_learning,
+            helpfulness = excluded.helpfulness,
+            updated_at = excluded.updated_at
+    </insert>
+    
+    <!-- 根据用户ID查找情感陪伴 -->
+    <select id="findByUserId" resultMap="EmotionCompanionResultMap">
+        SELECT * FROM emotion_companion 
+        WHERE user_id = #{userId}
+    </select>
+    
+    <!-- 更新情感陪伴状态 -->
+    <update id="updateState">
+        UPDATE emotion_companion 
+        SET emotion = #{emotion},
+            happiness = #{happiness},
+            energy = #{energy},
+            responsiveness = #{responsiveness},
+            current_location = #{currentLocation},
+            is_active = #{active, jdbcType=INTEGER},
+            activity_mode = #{activityMode},
+            current_sound = #{currentSound},
+            visual_expression = #{visualExpression},
+            is_making_sound = #{makingSound, jdbcType=INTEGER},
+            is_expressing_emotion = #{expressingEmotion, jdbcType=INTEGER},
+            led_color = #{ledColor},
+            last_attention_time = #{lastAttentionTime, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            neglect_level = #{neglectLevel},
+            needs_attention = #{needsAttention, jdbcType=INTEGER},
+            is_lonely = #{lonely, jdbcType=INTEGER},
+            current_task = #{currentTask},
+            is_learning = #{learning, jdbcType=INTEGER},
+            helpfulness = #{helpfulness},
+            updated_at = #{updatedAt, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler}
+        WHERE user_id = #{userId}
+    </update>
+    
+    <!-- 更新最后交互时间 -->
+    <update id="touchInteraction">
+        UPDATE emotion_companion 
+        SET last_interaction = #{when, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            interaction_count = interaction_count + 1,
+            updated_at = #{when, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler}
+        WHERE user_id = #{userId}
+    </update>
+    
+    <!-- 更新最后聊天时间 -->
+    <update id="touchChat">
+        UPDATE emotion_companion 
+        SET last_chat = #{when, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
+            chat_count = chat_count + 1,
+            updated_at = #{when, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler}
+        WHERE user_id = #{userId}
+    </update>
+    
+    <!-- 根据用户ID删除情感陪伴 -->
+    <delete id="deleteByUserId">
+        DELETE FROM emotion_companion WHERE user_id = #{userId}
+    </delete>
+    
+</mapper>
