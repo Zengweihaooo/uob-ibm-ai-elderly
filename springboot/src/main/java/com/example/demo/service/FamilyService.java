@@ -5,13 +5,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.mapper.FamilyContactMapper;
 import com.example.demo.pojo.FamilyContact;
-import com.example.demo.pojo.HealthRecord;
 
 /**
  * Service class for managing family contacts and family-related operations
@@ -31,9 +30,8 @@ public class FamilyService {
     @Autowired
     private SmsService smsService;
 
-    // In-memory storage for family contacts (consider using database in production)
-    private List<FamilyContact> familyContacts = new ArrayList<>();
-    private Long contactIdCounter = 1L;
+    @Autowired
+    private FamilyContactMapper familyContactMapper;
 
     /**
      * Add a new family contact
@@ -59,24 +57,31 @@ public class FamilyService {
             throw new IllegalArgumentException("Either phone number or email is required");
         }
 
-        // Create new contact
-        FamilyContact contact = new FamilyContact();
-        contact.setId(contactIdCounter++);
-        contact.setUserId(userId);
-        contact.setName(name.trim());
-        contact.setPhone(phone != null ? phone.trim() : null);
-        contact.setEmail(email != null ? email.trim() : null);
-        contact.setRelationship(relationship != null ? relationship.trim() : "其他");
-        contact.setIsEmergencyContact(isEmergencyContact != null ? isEmergencyContact : false);
-        contact.setIsActive(true);
-        contact.setCreatedAt(LocalDateTime.now());
-        contact.setUpdatedAt(LocalDateTime.now());
+        try {
+            // Create new contact
+            FamilyContact contact = new FamilyContact();
+            contact.setUserId(userId);
+            contact.setName(name.trim());
+            contact.setPhone(phone != null ? phone.trim() : null);
+            contact.setEmail(email != null ? email.trim() : null);
+            contact.setRelationship(relationship != null ? relationship.trim() : "其他");
+            contact.setIsEmergencyContact(isEmergencyContact != null ? isEmergencyContact : false);
+            contact.setIsActive(true);
+            contact.setCreatedAt(LocalDateTime.now());
+            contact.setUpdatedAt(LocalDateTime.now());
 
-        // Add to storage
-        familyContacts.add(contact);
-
-        System.out.println("Family contact added: " + contact.getName() + " for user " + userId);
-        return contact;
+            // 保存到数据库
+            int result = familyContactMapper.insert(contact);
+            if (result > 0) {
+                System.out.println("Family contact added to database: " + contact.getName() + " for user " + userId);
+                return contact;
+            } else {
+                throw new RuntimeException("Failed to insert family contact into database");
+            }
+        } catch (Exception e) {
+            System.err.println("Error adding family contact: " + e.getMessage());
+            throw new RuntimeException("Failed to add family contact: " + e.getMessage());
+        }
     }
 
     /**
@@ -86,9 +91,12 @@ public class FamilyService {
      * @return List of family contacts
      */
     public List<FamilyContact> getFamilyContacts(Long userId) {
-        return familyContacts.stream()
-                .filter(contact -> contact.getUserId().equals(userId) && contact.getIsActive())
-                .collect(Collectors.toList());
+        try {
+            return familyContactMapper.findActiveByUserId(userId);
+        } catch (Exception e) {
+            System.err.println("Error getting family contacts for user " + userId + ": " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -99,12 +107,17 @@ public class FamilyService {
      * @return Family contact or null if not found
      */
     public FamilyContact getFamilyContact(Long userId, Long contactId) {
-        return familyContacts.stream()
-                .filter(contact -> contact.getUserId().equals(userId) && 
-                                 contact.getId().equals(contactId) && 
-                                 contact.getIsActive())
-                .findFirst()
-                .orElse(null);
+        try {
+            FamilyContact contact = familyContactMapper.findById(contactId);
+            // 验证联系人属于指定用户且处于活跃状态
+            if (contact != null && contact.getUserId().equals(userId) && contact.getIsActive()) {
+                return contact;
+            }
+            return null;
+        } catch (Exception e) {
+            System.err.println("Error getting family contact " + contactId + " for user " + userId + ": " + e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -116,49 +129,62 @@ public class FamilyService {
      * @return Updated family contact or null if not found
      */
     public FamilyContact updateFamilyContact(Long userId, Long contactId, Map<String, Object> contactData) {
-        FamilyContact contact = getFamilyContact(userId, contactId);
-        if (contact == null) {
-            return null;
-        }
-
-        // Update fields if provided
-        if (contactData.containsKey("name")) {
-            String name = (String) contactData.get("name");
-            if (name != null && !name.trim().isEmpty()) {
-                contact.setName(name.trim());
-            } else {
-                throw new IllegalArgumentException("Contact name cannot be empty");
+        try {
+            FamilyContact contact = getFamilyContact(userId, contactId);
+            if (contact == null) {
+                return null;
             }
-        }
 
-        if (contactData.containsKey("phone")) {
-            contact.setPhone((String) contactData.get("phone"));
-        }
+            // Update fields if provided
+            if (contactData.containsKey("name")) {
+                String name = (String) contactData.get("name");
+                if (name != null && !name.trim().isEmpty()) {
+                    contact.setName(name.trim());
+                } else {
+                    throw new IllegalArgumentException("Contact name cannot be empty");
+                }
+            }
 
-        if (contactData.containsKey("email")) {
-            contact.setEmail((String) contactData.get("email"));
-        }
+            if (contactData.containsKey("phone")) {
+                contact.setPhone((String) contactData.get("phone"));
+            }
 
-        if (contactData.containsKey("relationship")) {
-            contact.setRelationship((String) contactData.get("relationship"));
-        }
+            if (contactData.containsKey("email")) {
+                contact.setEmail((String) contactData.get("email"));
+            }
 
-        if (contactData.containsKey("isEmergencyContact")) {
-            contact.setIsEmergencyContact((Boolean) contactData.get("isEmergencyContact"));
-        }
+            if (contactData.containsKey("relationship")) {
+                contact.setRelationship((String) contactData.get("relationship"));
+            }
 
-        if (contactData.containsKey("address")) {
-            contact.setAddress((String) contactData.get("address"));
-        }
+            if (contactData.containsKey("isEmergencyContact")) {
+                contact.setIsEmergencyContact((Boolean) contactData.get("isEmergencyContact"));
+            }
 
-        // Validate contact has at least phone or email
-        if ((contact.getPhone() == null || contact.getPhone().trim().isEmpty()) &&
-            (contact.getEmail() == null || contact.getEmail().trim().isEmpty())) {
-            throw new IllegalArgumentException("Either phone number or email is required");
-        }
+            if (contactData.containsKey("address")) {
+                contact.setAddress((String) contactData.get("address"));
+            }
 
-        contact.setUpdatedAt(LocalDateTime.now());
-        return contact;
+            // Validate contact has at least phone or email
+            if ((contact.getPhone() == null || contact.getPhone().trim().isEmpty()) &&
+                (contact.getEmail() == null || contact.getEmail().trim().isEmpty())) {
+                throw new IllegalArgumentException("Either phone number or email is required");
+            }
+
+            contact.setUpdatedAt(LocalDateTime.now());
+            
+            // 更新到数据库
+            int result = familyContactMapper.update(contact);
+            if (result > 0) {
+                System.out.println("Family contact updated in database: " + contact.getName() + " for user " + userId);
+                return contact;
+            } else {
+                throw new RuntimeException("Failed to update family contact in database");
+            }
+        } catch (Exception e) {
+            System.err.println("Error updating family contact: " + e.getMessage());
+            throw new RuntimeException("Failed to update family contact: " + e.getMessage());
+        }
     }
 
     /**
@@ -169,14 +195,28 @@ public class FamilyService {
      * @return true if deleted, false if not found
      */
     public boolean deleteFamilyContact(Long userId, Long contactId) {
-        FamilyContact contact = getFamilyContact(userId, contactId);
-        if (contact == null) {
+        try {
+            FamilyContact contact = getFamilyContact(userId, contactId);
+            if (contact == null) {
+                return false;
+            }
+
+            contact.setIsActive(false);
+            contact.setUpdatedAt(LocalDateTime.now());
+            
+            // 更新到数据库（软删除）
+            int result = familyContactMapper.update(contact);
+            if (result > 0) {
+                System.out.println("Family contact soft deleted in database: " + contact.getName() + " for user " + userId);
+                return true;
+            } else {
+                System.err.println("Failed to soft delete family contact in database");
+                return false;
+            }
+        } catch (Exception e) {
+            System.err.println("Error deleting family contact: " + e.getMessage());
             return false;
         }
-
-        contact.setIsActive(false);
-        contact.setUpdatedAt(LocalDateTime.now());
-        return true;
     }
 
     /**
@@ -219,11 +259,12 @@ public class FamilyService {
      * @return List of emergency contacts
      */
     public List<FamilyContact> getEmergencyContacts(Long userId) {
-        return familyContacts.stream()
-                .filter(contact -> contact.getUserId().equals(userId) && 
-                                 contact.getIsEmergencyContact() && 
-                                 contact.getIsActive())
-                .collect(Collectors.toList());
+        try {
+            return familyContactMapper.findEmergencyContactsByUserId(userId);
+        } catch (Exception e) {
+            System.err.println("Error getting emergency contacts for user " + userId + ": " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -316,17 +357,15 @@ public class FamilyService {
     }
 
     /**
-     * Get all contacts (for testing)
+     * Get all contacts (for testing/debugging)
      */
     public List<FamilyContact> getAllContacts() {
-        return new ArrayList<>(familyContacts);
-    }
-
-    /**
-     * Clear all contacts (for testing)
-     */
-    public void clearAllContacts() {
-        familyContacts.clear();
-        contactIdCounter = 1L;
+        try {
+            // 返回所有联系人（包括非活跃的）用于调试
+            return familyContactMapper.findByUserId(1L); // 暂时使用用户ID=1进行测试
+        } catch (Exception e) {
+            System.err.println("Error getting all contacts: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 }

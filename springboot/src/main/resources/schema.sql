@@ -126,14 +126,14 @@ CREATE TABLE IF NOT EXISTS emotion_companion (
 CREATE UNIQUE INDEX IF NOT EXISTS ux_emotion_companion_user ON emotion_companion(user_id);
 
 -- Insert sample data for testing
-INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
+/*INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
 VALUES (1, '张小明', '儿子', '+86 138 0013 8000', 'xiaoming@example.com', 1);
 
 INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
 VALUES (1, '李小红', '女儿', '+86 139 0013 9000', 'xiaohong@example.com', 1);
 
 INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
-VALUES (1, '王医生', '医生', '+86 137 0013 7000', 'doctor.wang@hospital.com', 0);
+VALUES (1, '王医生', '医生', '+86 137 0013 7000', 'doctor.wang@hospital.com', 0);*/
 
 -- Insert sample users
 INSERT OR IGNORE INTO users (username, email, password_hash, name, status, role, is_verified) 
