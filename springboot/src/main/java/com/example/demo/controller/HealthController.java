@@ -106,6 +106,35 @@ public class HealthController {
     }
 
     /**
+     * 获取所有健康记录
+     */
+    @GetMapping("/records")
+    public ResponseEntity<Map<String, Object>> getAllHealthRecords(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            List<HealthRecord> records = healthService.getAll();
+            response.put("success", true);
+            response.put("records", records);
+            response.put("count", records.size());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error fetching all health records: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
      * Get health data statistics
      */
     @GetMapping("/stats")

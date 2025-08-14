@@ -69,5 +69,11 @@ public interface HealthRecordMapper {
      * @return 影响的行数
      */
     int deleteById(@Param("id") Long id);
+    
+    /**
+     * 获取所有健康记录
+     * @return 所有健康记录列表
+     */
+    List<HealthRecord> listAll();
 }
 

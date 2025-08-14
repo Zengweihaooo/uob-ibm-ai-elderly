@@ -222,6 +222,57 @@
             font-size: 1rem;
         }
 
+        /* Health Records Display Styling */
+        #health-record-list {
+            margin-top: 15px;
+        }
+
+        #health-record-list p {
+            margin: 10px 0;
+            color: #666;
+            font-style: italic;
+        }
+
+        .health-record-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid var(--elderly-success);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .health-record-item h4 {
+            margin: 0 0 8px 0;
+            color: var(--elderly-primary);
+            font-size: 1.1rem;
+        }
+
+        .health-record-item .record-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .health-record-item .record-value {
+            font-weight: bold;
+            color: var(--elderly-dark);
+        }
+
+        .health-record-item .record-time {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .health-record-item .record-type {
+            background: var(--elderly-light);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: var(--elderly-primary);
+        }
+
         /* Individual chat message styling */
         .message {
             display: flex;
@@ -599,6 +650,14 @@
                     </ul>
                     <p><strong>How can I help you today?</strong> Feel free to ask me anything or use the tools below to share information.</p>
                 </div>
+
+                <!-- Health Records Display -->
+                <div class="welcome-message">
+                    <h3>📋 My Health Records</h3>
+                    <div id="health-record-list">
+                        <p>Loading health data...</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Chat input and tools section -->
@@ -728,6 +787,9 @@
 
             // Load previous chat history from backend
             loadChatHistory();
+            
+            // Load health records from backend
+            loadHealthRecords();
         }
 
         function updateUserWelcome() {
@@ -1189,6 +1251,46 @@
                 console.error('Error loading chat history:', error);
             }
         }
+
+        function loadHealthRecords() {
+            const token = localStorage.getItem('authToken');
+            if (!token) return;
+
+            fetch('http://localhost:8080/api/health/records', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('health-record-list');
+                container.innerHTML = '';
+                if (data.success && data.records.length > 0) {
+                    data.records.forEach(record => {
+                        const div = document.createElement('div');
+                        div.innerHTML = `
+                            <strong>${record.type}</strong>: ${record.value} ${record.unit || ''}<br>
+                            🕒 ${new Date(record.recordTime).toLocaleString()}<br>
+                            📝 ${record.notes || '无'}<hr>`;
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.innerHTML = '<p>No health records found.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('health-record-list').innerHTML = '<p style="color:red;">Error loading data.</p>';
+            });
+        }
+
+
+
+        // Load health records when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHealthRecords();
+        });
     </script>
 </body>
 </html> 
