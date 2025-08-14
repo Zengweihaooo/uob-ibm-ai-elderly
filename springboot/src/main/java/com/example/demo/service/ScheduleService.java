@@ -308,4 +308,85 @@ public class ScheduleService {
         // For demo purposes, we could also send an immediate notification here
         System.out.println("Repeating reminder for activity: " + schedule.getTitle());
     }
+
+    /**
+     * Create a todo item for morning scheduler
+     * 
+     * @param userId User ID
+     * @param title Todo title
+     * @param description Todo description
+     * @param timeString Time string in HH:mm format
+     * @return Created schedule
+     */
+    public Schedule createTodo(Long userId, String title, String description, String timeString) {
+        LocalTime time = LocalTime.parse(timeString);
+        LocalDate today = LocalDate.now();
+        
+        Schedule todo = new Schedule(userId, today, time, title, description, "morning");
+        todo.setPriority("medium");
+        todo.setNotificationTime("5min");
+        
+        return addSchedule(todo);
+    }
+
+    /**
+     * Get active user IDs for morning scheduler
+     * 
+     * @return List of active user IDs
+     */
+    public List<Long> activeUserIds() {
+        // For demo purposes, return a list of demo user IDs
+        // In production, this should filter for actual active users
+        List<Long> activeIds = new ArrayList<>();
+        
+        // Add demo users
+        activeIds.add(1L); // Demo user 1
+        activeIds.add(2L); // Demo user 2
+        
+        // You can also get real users from UserService
+        try {
+            List<User> allUsers = userService.getAllUsers();
+            for (User user : allUsers) {
+                if (user.getId() != null && !activeIds.contains(user.getId())) {
+                    activeIds.add(user.getId());
+                }
+            }
+        } catch (Exception e) {
+            // Log error but continue with demo users
+            System.err.println("Error getting real users: " + e.getMessage());
+        }
+        
+        return activeIds;
+    }
+
+    /**
+     * Get today's schedule for a specific user
+     * 
+     * @param userId User ID
+     * @return List of today's schedules
+     */
+    public List<Schedule> getTodaySchedule(Long userId) {
+        LocalDate today = LocalDate.now();
+        return schedules.values().stream()
+                .filter(schedule -> schedule.getUserId().equals(userId))
+                .filter(schedule -> schedule.getScheduleDate().equals(today))
+                .sorted(Comparator.comparing(Schedule::getActivityTime))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Check if user has morning greeting for today
+     * 
+     * @param userId User ID
+     * @return true if morning greeting exists, false otherwise
+     */
+    public boolean hasMorningGreeting(Long userId) {
+        LocalDate today = LocalDate.now();
+        return schedules.values().stream()
+                .anyMatch(schedule -> 
+                    schedule.getUserId().equals(userId) &&
+                    schedule.getScheduleDate().equals(today) &&
+                    schedule.getTitle().equals("早安问候")
+                );
+    }
 } 

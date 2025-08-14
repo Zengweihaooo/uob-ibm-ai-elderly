@@ -125,6 +125,43 @@ CREATE TABLE IF NOT EXISTS emotion_companion (
 -- 索引
 CREATE UNIQUE INDEX IF NOT EXISTS ux_emotion_companion_user ON emotion_companion(user_id);
 
+-- Pet Mood Table (宠物情绪表)
+CREATE TABLE IF NOT EXISTS pet_mood (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    mood_score INTEGER DEFAULT 0, -- 情绪分数 (-100 到 100)
+    happiness INTEGER DEFAULT 85, -- 快乐度 (0-100)
+    health INTEGER DEFAULT 92,    -- 健康度 (0-100)
+    energy INTEGER DEFAULT 78,    -- 精力值 (0-100)
+    mood_emoji TEXT DEFAULT '😊', -- 情绪表情
+    status TEXT DEFAULT 'Happy & Healthy', -- 状态描述
+    level INTEGER DEFAULT 1,      -- 宠物等级
+    experience INTEGER DEFAULT 0, -- 经验值
+    last_interaction TEXT,        -- 最后交互时间
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 索引
+CREATE UNIQUE INDEX IF NOT EXISTS ux_pet_mood_user ON pet_mood(user_id);
+CREATE INDEX IF NOT EXISTS idx_pet_mood_score ON pet_mood(mood_score);
+CREATE INDEX IF NOT EXISTS idx_pet_mood_last_interaction ON pet_mood(last_interaction);
+
+-- Pet Conversation History Table (宠物对话历史表)
+CREATE TABLE IF NOT EXISTS pet_conversation (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    sender_type TEXT NOT NULL, -- 'user' 或 'pet'
+    message TEXT NOT NULL,
+    message_type TEXT DEFAULT 'text', -- 'text', 'voice', 'emergency'
+    timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 索引
+CREATE INDEX IF NOT EXISTS idx_pet_conversation_user ON pet_conversation(user_id);
+CREATE INDEX IF NOT EXISTS idx_pet_conversation_timestamp ON pet_conversation(timestamp);
+CREATE INDEX IF NOT EXISTS idx_pet_conversation_sender ON pet_conversation(sender_type);
+
 -- Insert sample data for testing
 INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
 VALUES (1, '张小明', '儿子', '+86 138 0013 8000', 'xiaoming@example.com', 1);
