@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  * @author Lepeng Zhou
  * @version 1.0
  */
-@Service
+//@Service
 public class MorningScheduler {
 
     private static final Logger logger = Logger.getLogger(MorningScheduler.class.getName());

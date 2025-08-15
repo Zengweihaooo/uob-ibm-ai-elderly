@@ -342,4 +342,86 @@ public class EmailService {
             throw new RuntimeException("Failed to send important date reminder email", e);
         }
     }
+
+    /**
+     * Send custom email with custom content
+     * 
+     * @param toEmail The recipient's email address
+     * @param subject The email subject
+     * @param content The email content (HTML)
+     * @param senderName The sender's name (optional)
+     * @throws RuntimeException if email sending fails
+     */
+    public void sendCustomEmail(String toEmail, String subject, String content, String senderName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            // Set sender information
+            if (senderName != null && !senderName.trim().isEmpty()) {
+                helper.setFrom(fromAddress, senderName);
+            } else {
+                helper.setFrom(fromAddress);
+            }
+            
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(content, true); // true = HTML mode
+
+            mailSender.send(message);
+            System.out.println("Custom email sent successfully to: " + toEmail + " with subject: " + subject);
+            
+        } catch (MessagingException e) {
+            System.err.println("Failed to send custom email to: " + toEmail + " => " + e.getMessage());
+            System.err.println("Error type: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to send custom email", e);
+        } catch (Exception e) {
+            System.err.println("Unexpected error sending custom email to: " + toEmail + " => " + e.getMessage());
+            System.err.println("Error type: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            throw new RuntimeException("Unexpected error sending custom email", e);
+        }
+    }
+
+    /**
+     * Send plain text custom email
+     * 
+     * @param toEmail The recipient's email address
+     * @param subject The email subject
+     * @param content The email content (plain text)
+     * @param senderName The sender's name (optional)
+     * @throws RuntimeException if email sending fails
+     */
+    public void sendPlainTextEmail(String toEmail, String subject, String content, String senderName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            // Set sender information
+            if (senderName != null && !senderName.trim().isEmpty()) {
+                helper.setFrom(fromAddress, senderName);
+            } else {
+                helper.setFrom(fromAddress);
+            }
+            
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(content, false); // false = plain text mode
+
+            mailSender.send(message);
+            System.out.println("Plain text email sent successfully to: " + toEmail + " with subject: " + subject);
+            
+        } catch (MessagingException e) {
+            System.err.println("Failed to send plain text email to: " + toEmail + " => " + e.getMessage());
+            System.err.println("Error type: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to send plain text email", e);
+        } catch (Exception e) {
+            System.err.println("Unexpected error sending plain text email to: " + toEmail + " => " + e.getMessage());
+            System.err.println("Error type: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            throw new RuntimeException("Unexpected error sending plain text email", e);
+        }
+    }
 }

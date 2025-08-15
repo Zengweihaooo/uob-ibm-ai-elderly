@@ -20,8 +20,8 @@ import com.example.demo.service.ScheduleService;
  * @author Lepeng Zhou
  * @version 1.0
  */
-@RestController
-@RequestMapping("/api/morning")
+//@RestController
+//@RequestMapping("/api/morning")
 @CrossOrigin(origins = "*")
 public class MorningSchedulerController {
 
