@@ -104,7 +104,7 @@ class OnboardingGuide {
         navigation.className = 'onboarding-navigation';
         navigation.innerHTML = `
             <button class="onboarding-btn onboarding-btn-skip" id="onboarding-skip">
-                Skip Guide
+                Skip & Go to AI Assistant
             </button>
             <div class="onboarding-btn-group">
                 <button class="onboarding-btn onboarding-btn-secondary" id="onboarding-prev" style="display: none;">
@@ -145,13 +145,13 @@ class OnboardingGuide {
         // Navigation buttons
         this.nextBtn.addEventListener('click', () => this.nextStep());
         this.prevBtn.addEventListener('click', () => this.prevStep());
-        this.skipBtn.addEventListener('click', () => this.complete());
+        this.skipBtn.addEventListener('click', () => this.skipGuide());
 
         // Keyboard navigation
         this.overlay.addEventListener('keydown', (e) => {
             switch(e.key) {
                 case 'Escape':
-                    this.complete();
+                    this.skipGuide();
                     break;
                 case 'ArrowRight':
                 case ' ':
@@ -168,7 +168,7 @@ class OnboardingGuide {
         // Click outside to close (optional)
         this.overlay.addEventListener('click', (e) => {
             if (e.target === this.overlay) {
-                this.complete();
+                this.skipGuide();
             }
         });
     }
@@ -179,9 +179,14 @@ class OnboardingGuide {
     }
 
     start() {
+        // Reset state for fresh start
         this.isActive = true;
         this.currentStep = 0;
+        
+        // Ensure overlay is visible
         this.overlay.classList.add('active');
+        
+        // Show first step
         this.showStep(0);
         this.updateProgress();
         
@@ -190,6 +195,9 @@ class OnboardingGuide {
         
         // Announce to screen readers
         this.announceStep();
+        
+        // Store that user has seen this session's guide
+        sessionStorage.setItem('onboarding-session', 'true');
     }
 
     showStep(stepIndex) {
@@ -322,9 +330,6 @@ class OnboardingGuide {
         this.overlay.classList.remove('active');
         this.removeHighlights();
         
-        // Mark as completed
-        localStorage.setItem('onboarding-completed', 'true');
-        
         // Navigate to AI Assistant page after completion
         setTimeout(() => {
             window.location.href = './src/pages/ai-assistant.html';
@@ -347,10 +352,38 @@ class OnboardingGuide {
             announcement.remove();
         }, 2000);
     }
+    
+    announceSkipping() {
+        const announcement = document.createElement('div');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.setAttribute('aria-atomic', 'true');
+        announcement.className = 'onboarding-sr-only';
+        announcement.textContent = 'Guide skipped. Navigating to AI Healthcare Assistant.';
+        
+        document.body.appendChild(announcement);
+        
+        setTimeout(() => {
+            announcement.remove();
+        }, 2000);
+    }
 
+    // Method to skip the guide
+    skipGuide() {
+        this.isActive = false;
+        this.overlay.classList.remove('active');
+        this.removeHighlights();
+        
+        // Navigate to AI Assistant page after skipping
+        setTimeout(() => {
+            window.location.href = './src/pages/ai-assistant.html';
+        }, 300);
+        
+        // Announce skipping
+        this.announceSkipping();
+    }
+    
     // Public method to restart onboarding
     restart() {
-        localStorage.removeItem('onboarding-completed');
         this.start();
     }
 

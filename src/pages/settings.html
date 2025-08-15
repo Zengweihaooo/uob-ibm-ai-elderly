@@ -292,7 +292,7 @@
             <div class="setting-item">
                 <div>
                     <div class="setting-label">Restart AI Healthcare Guide</div>
-                    <div class="setting-description">If you forgot how to use certain features, you can review the guide tutorial</div>
+                    <div class="setting-description">Review the guide tutorial anytime. The guide now shows every time you click "Try AI Healthcare Assistant"</div>
                 </div>
                 <button class="btn btn-primary" id="restart-onboarding">
                     🚀 Restart Guide
@@ -357,7 +357,7 @@
             <div class="setting-item">
                 <div>
                     <div class="setting-label">Clear Guide Record</div>
-                    <div class="setting-description">The guide will be shown again next time you access the AI Assistant</div>
+                    <div class="setting-description">Note: The guide now shows every time, but this clears any stored preferences</div>
                 </div>
                 <button class="btn btn-outline" id="clear-onboarding">
                     🗑️ Clear Record
@@ -514,15 +514,18 @@
                 if (window.onboardingGuide) {
                     window.onboardingGuide.restart();
                 } else {
-                    // If not on main page, redirect to main page
-                    window.location.href = '../index.html';
+                    // If not on main page, redirect to main page and show guide
+                    window.location.href = '../index.html#show-guide';
                 }
             }
 
             clearOnboarding() {
-                if (confirm('Are you sure you want to clear the guide record? The guide will be shown again next time you access the AI Assistant.')) {
+                if (confirm('Are you sure you want to clear all guide-related data? This will reset any stored preferences.')) {
+                    // Clear all onboarding-related data
                     localStorage.removeItem('onboarding-completed');
-                    alert('Guide record cleared!');
+                    localStorage.removeItem('onboarding-preferences');
+                    localStorage.removeItem('guide-settings');
+                    alert('All guide data cleared!');
                 }
             }
 

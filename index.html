@@ -402,15 +402,23 @@
             const aiAssistantBtn = document.getElementById('ai-assistant-btn');
             if (aiAssistantBtn) {
                 aiAssistantBtn.addEventListener('click', function(e) {
-                    // Check if user has seen onboarding before
-                    const hasSeenOnboarding = localStorage.getItem('onboarding-completed');
-                    if (!hasSeenOnboarding && window.onboardingGuide) {
+                    // Always show onboarding when clicking the button
+                    if (window.onboardingGuide) {
                         e.preventDefault(); // Prevent immediate navigation
                         // Start onboarding
                         window.onboardingGuide.start();
                     }
-                    // If user has seen onboarding, let normal navigation happen
                 });
+            }
+            
+            // Check if we should show guide from URL hash (e.g., from settings page)
+            if (window.location.hash === '#show-guide' && window.onboardingGuide) {
+                // Remove the hash from URL
+                window.location.hash = '';
+                // Show onboarding after a short delay
+                setTimeout(() => {
+                    window.onboardingGuide.start();
+                }, 500);
             }
         });
     </script>
