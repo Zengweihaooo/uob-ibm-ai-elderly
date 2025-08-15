@@ -14,43 +14,43 @@ class OnboardingGuide {
         this.steps = [
             {
                 icon: '👋',
-                title: '欢迎使用AI陪伴系统',
-                description: '这是一个专为老年人设计的智能陪伴应用，帮助您更好地管理日常生活和健康。',
+                title: 'Welcome to AI Healthcare Assistant',
+                description: 'This is an intelligent healthcare companion designed for elderly users, helping you better manage your daily health and wellness.',
                 highlight: null,
                 tooltip: null
             },
             {
-                icon: '🧭',
-                title: '导航菜单介绍',
-                description: '顶部导航栏包含所有主要功能：AI健康助手、日程管理、备忘录等。',
-                highlight: '.nav-links',
-                tooltip: '这里可以访问所有主要功能'
-            },
-            {
                 icon: '🤖',
-                title: 'AI健康助手',
-                description: '点击"AI Assistant"按钮，获得24/7健康咨询和专业建议。',
-                highlight: 'a[href="./src/pages/ai-assistant.html"]',
-                tooltip: 'AI健康助手随时为您服务'
-            },
-            {
-                icon: '📅',
-                title: '日程管理功能',
-                description: '点击"Daily Schedule"按钮，管理您的日常活动和提醒。',
-                highlight: 'a[href="./src/pages/schedule.html"]',
-                tooltip: '轻松管理您的日程安排'
+                title: 'AI Healthcare Features',
+                description: 'Get 24/7 health consultation, professional medical advice, and personalized health recommendations.',
+                highlight: '.chat-container',
+                tooltip: 'AI-powered healthcare assistance'
             },
             {
                 icon: '🎤',
-                title: '语音交互功能',
-                description: '在AI助手页面，您可以按住麦克风按钮进行语音对话。',
-                highlight: '.cta-button.primary',
-                tooltip: '体验语音交互功能'
+                title: 'Voice Interaction',
+                description: 'Hold the microphone button to speak with the AI assistant using voice commands.',
+                highlight: '.voice-controls',
+                tooltip: 'Voice interaction capabilities'
+            },
+            {
+                icon: '📱',
+                title: 'Easy Navigation',
+                description: 'Simple and intuitive interface designed specifically for elderly users with large buttons and clear text.',
+                highlight: '.main-content',
+                tooltip: 'User-friendly interface design'
+            },
+            {
+                icon: '🔒',
+                title: 'Privacy & Security',
+                description: 'Your health information is protected with secure encryption and privacy controls.',
+                highlight: '.privacy-info',
+                tooltip: 'Data security and privacy'
             },
             {
                 icon: '🎯',
-                title: '开始使用',
-                description: '现在您已经了解了主要功能，可以开始使用了！建议先尝试AI健康助手。',
+                title: 'Ready to Start',
+                description: 'You\'re now ready to use the AI Healthcare Assistant! Start by asking a health question or using voice commands.',
                 highlight: null,
                 tooltip: null
             }
@@ -70,7 +70,7 @@ class OnboardingGuide {
         this.overlay = document.createElement('div');
         this.overlay.className = 'onboarding-overlay';
         this.overlay.setAttribute('role', 'dialog');
-        this.overlay.setAttribute('aria-label', '应用使用引导');
+        this.overlay.setAttribute('aria-label', 'AI Healthcare Assistant Guide');
         this.overlay.setAttribute('aria-describedby', 'onboarding-description');
 
         // Create main container
@@ -81,8 +81,8 @@ class OnboardingGuide {
         const header = document.createElement('div');
         header.className = 'onboarding-header';
         header.innerHTML = `
-            <h1 class="onboarding-title">应用使用引导</h1>
-            <p class="onboarding-subtitle">让我们一起来了解这个智能陪伴系统</p>
+            <h1 class="onboarding-title">AI Healthcare Assistant Guide</h1>
+            <p class="onboarding-subtitle">Let\'s explore the features of your intelligent healthcare companion</p>
         `;
 
         // Create content area
@@ -96,7 +96,7 @@ class OnboardingGuide {
             <div class="progress-bar">
                 <div class="progress-fill" style="width: 0%"></div>
             </div>
-            <div class="progress-text">步骤 1 / ${this.totalSteps}</div>
+            <div class="progress-text">Step 1 / ${this.totalSteps}</div>
         `;
 
         // Create navigation
@@ -104,23 +104,23 @@ class OnboardingGuide {
         navigation.className = 'onboarding-navigation';
         navigation.innerHTML = `
             <button class="onboarding-btn onboarding-btn-skip" id="onboarding-skip">
-                跳过引导
+                Skip Guide
             </button>
             <div class="onboarding-btn-group">
                 <button class="onboarding-btn onboarding-btn-secondary" id="onboarding-prev" style="display: none;">
-                    上一步
+                    Previous
                 </button>
                 <button class="onboarding-btn onboarding-btn-primary" id="onboarding-next">
-                    下一步
+                    Next
                 </button>
             </div>
         `;
 
         // Create skip link for screen readers
         const skipLink = document.createElement('a');
-        skipLink.href = '#main-content';
+        skipLink.href = './src/pages/ai-assistant.html';
         skipLink.className = 'onboarding-sr-only';
-        skipLink.textContent = '跳过引导，直接进入主要内容';
+        skipLink.textContent = 'Skip guide and go to AI Assistant';
 
         // Assemble overlay
         this.container.appendChild(header);
@@ -174,13 +174,8 @@ class OnboardingGuide {
     }
 
     checkFirstTime() {
-        const hasSeenOnboarding = localStorage.getItem('onboarding-completed');
-        if (!hasSeenOnboarding) {
-            // Show after a short delay to let page load
-            setTimeout(() => {
-                this.start();
-            }, 1000);
-        }
+        // Don't auto-start onboarding, wait for user interaction
+        // The onboarding will be triggered when user clicks "Try AI Healthcare Assistant"
     }
 
     start() {
@@ -212,7 +207,7 @@ class OnboardingGuide {
 
         // Update navigation buttons
         this.prevBtn.style.display = stepIndex === 0 ? 'none' : 'inline-flex';
-        this.nextBtn.textContent = stepIndex === this.totalSteps - 1 ? '完成' : '下一步';
+        this.nextBtn.textContent = stepIndex === this.totalSteps - 1 ? 'Finish' : 'Next';
 
         // Handle highlights
         this.handleHighlights(stepIndex);
@@ -303,7 +298,7 @@ class OnboardingGuide {
     updateProgress() {
         const percentage = ((this.currentStep + 1) / this.totalSteps) * 100;
         this.progressFill.style.width = percentage + '%';
-        this.progressText.textContent = `步骤 ${this.currentStep + 1} / ${this.totalSteps}`;
+        this.progressText.textContent = `Step ${this.currentStep + 1} / ${this.totalSteps}`;
     }
 
     announceStep() {
@@ -312,7 +307,7 @@ class OnboardingGuide {
         announcement.setAttribute('aria-live', 'polite');
         announcement.setAttribute('aria-atomic', 'true');
         announcement.className = 'onboarding-sr-only';
-        announcement.textContent = `步骤 ${this.currentStep + 1}：${step.title}。${step.description}`;
+        announcement.textContent = `Step ${this.currentStep + 1}: ${step.title}. ${step.description}`;
         
         document.body.appendChild(announcement);
         
@@ -330,8 +325,10 @@ class OnboardingGuide {
         // Mark as completed
         localStorage.setItem('onboarding-completed', 'true');
         
-        // Focus management
-        document.querySelector('.main-content').focus();
+        // Navigate to AI Assistant page after completion
+        setTimeout(() => {
+            window.location.href = './src/pages/ai-assistant.html';
+        }, 500);
         
         // Announce completion
         this.announceCompletion();
@@ -342,7 +339,7 @@ class OnboardingGuide {
         announcement.setAttribute('aria-live', 'polite');
         announcement.setAttribute('aria-atomic', 'true');
         announcement.className = 'onboarding-sr-only';
-        announcement.textContent = '引导完成，您现在可以开始使用应用了';
+        announcement.textContent = 'Guide completed! You can now start using the AI Healthcare Assistant.';
         
         document.body.appendChild(announcement);
         
@@ -367,19 +364,19 @@ class OnboardingGuide {
 document.addEventListener('DOMContentLoaded', () => {
     window.onboardingGuide = new OnboardingGuide();
     
-    // Add restart button to navigation (for testing)
-    const nav = document.querySelector('.nav-links');
-    if (nav) {
-        const restartBtn = document.createElement('a');
-        restartBtn.href = '#';
-        restartBtn.className = 'nav-link';
-        restartBtn.textContent = '重新引导';
-        restartBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.onboardingGuide.restart();
-        });
-        nav.appendChild(restartBtn);
-    }
+            // Add restart button to navigation (for testing)
+        const nav = document.querySelector('.nav-links');
+        if (nav) {
+            const restartBtn = document.createElement('a');
+            restartBtn.href = '#';
+            restartBtn.className = 'nav-link';
+            restartBtn.textContent = 'Restart Guide';
+            restartBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.onboardingGuide.restart();
+            });
+            nav.appendChild(restartBtn);
+        }
 });
 
 // Export for use in other modules

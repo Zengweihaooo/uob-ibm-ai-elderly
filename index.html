@@ -65,7 +65,7 @@
                 <p class="hero-description">Create emotionally engaging digital agents that reduce social isolation and support elderly users in their daily lives.</p>
                 
                 <div class="cta-buttons">
-                    <a href="./src/pages/ai-assistant.html" class="cta-button primary">Try AI Healthcare Assistant</a>
+                    <a href="./src/pages/ai-assistant.html" class="cta-button primary" id="ai-assistant-btn">Try AI Healthcare Assistant</a>
                     <a href="./src/pages/register.html" class="cta-button secondary">Register or Guest Mode</a>
                 </div>
             </div>
@@ -396,6 +396,23 @@
         setInterval(fetchUpdates, 5 * 60 * 1000);
 
         // Simple page functionality - no complex user status management needed
+        
+        // Add onboarding trigger for AI Healthcare Assistant button
+        document.addEventListener('DOMContentLoaded', function() {
+            const aiAssistantBtn = document.getElementById('ai-assistant-btn');
+            if (aiAssistantBtn) {
+                aiAssistantBtn.addEventListener('click', function(e) {
+                    // Check if user has seen onboarding before
+                    const hasSeenOnboarding = localStorage.getItem('onboarding-completed');
+                    if (!hasSeenOnboarding && window.onboardingGuide) {
+                        e.preventDefault(); // Prevent immediate navigation
+                        // Start onboarding
+                        window.onboardingGuide.start();
+                    }
+                    // If user has seen onboarding, let normal navigation happen
+                });
+            }
+        });
     </script>
     <script src="src/js/onboarding.js"></script>
     <script src="src/index.js"></script>
