@@ -1,0 +1,314 @@
+/* Onboarding Guide Styles  */
+.onboarding-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    display: none;
+    font-family: 'IBM Plex Sans', Arial, sans-serif;
+}
+
+.onboarding-overlay.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.onboarding-container {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 90%;
+    width: 600px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    text-align: center;
+}
+
+.onboarding-header {
+    margin-bottom: 30px;
+}
+
+.onboarding-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 15px;
+    line-height: 1.2;
+}
+
+.onboarding-subtitle {
+    font-size: 1.3rem;
+    color: #666;
+    line-height: 1.4;
+    margin-bottom: 20px;
+}
+
+.onboarding-content {
+    margin-bottom: 40px;
+}
+
+.onboarding-step {
+    display: none;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.onboarding-step.active {
+    display: block;
+}
+
+.onboarding-step-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.onboarding-step-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    line-height: 1.3;
+}
+
+.onboarding-step-description {
+    font-size: 1.2rem;
+    color: #444;
+    line-height: 1.5;
+    margin-bottom: 25px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.onboarding-progress {
+    margin-bottom: 30px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 1.1rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.onboarding-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.onboarding-btn {
+    padding: 18px 36px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 140px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.onboarding-btn:focus {
+    outline: 3px solid #007bff;
+    outline-offset: 2px;
+}
+
+.onboarding-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.onboarding-btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.onboarding-btn-primary:hover {
+    background: #0056b3;
+}
+
+.onboarding-btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.onboarding-btn-secondary:hover {
+    background: #545b62;
+}
+
+.onboarding-btn-skip {
+    background: transparent;
+    color: #666;
+    border: 2px solid #ddd;
+}
+
+.onboarding-btn-skip:hover {
+    background: #f8f9fa;
+    border-color: #999;
+}
+
+.onboarding-highlight {
+    position: absolute;
+    border: 4px solid #007bff;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 123, 255, 0.5);
+    pointer-events: none;
+    z-index: 10000;
+    animation: pulse 2s infinite;
+}
+
+.onboarding-tooltip {
+    position: absolute;
+    background: #007bff;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    max-width: 300px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    z-index: 10001;
+}
+
+.onboarding-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 10px solid transparent;
+    border-top-color: #007bff;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 20px rgba(0, 123, 255, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(0, 123, 255, 0.8);
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(0, 123, 255, 0.5);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .onboarding-container {
+        padding: 30px 20px;
+        margin: 20px;
+        width: calc(100% - 40px);
+    }
+    
+    .onboarding-title {
+        font-size: 2rem;
+    }
+    
+    .onboarding-step-title {
+        font-size: 1.6rem;
+    }
+    
+    .onboarding-step-description {
+        font-size: 1.1rem;
+    }
+    
+    .onboarding-btn {
+        padding: 16px 28px;
+        font-size: 1.1rem;
+        min-width: 120px;
+    }
+    
+    .onboarding-navigation {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+/* Accessibility Features */
+@media (prefers-reduced-motion: reduce) {
+    .onboarding-overlay *,
+    .onboarding-btn,
+    .progress-fill {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .onboarding-container {
+        border: 3px solid #000;
+    }
+    
+    .onboarding-btn {
+        border: 2px solid #000;
+    }
+    
+    .onboarding-overlay {
+        background: rgba(0, 0, 0, 0.95);
+    }
+}
+
+/* Large Text Support */
+@media (prefers-reduced-motion: no-preference) {
+    .onboarding-container {
+        font-size: 1.1em;
+    }
+}
+
+/* Focus Indicators for Keyboard Navigation */
+.onboarding-btn:focus-visible {
+    outline: 3px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Skip Link for Screen Readers */
+.onboarding-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
