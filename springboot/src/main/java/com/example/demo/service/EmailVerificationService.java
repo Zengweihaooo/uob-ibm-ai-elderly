@@ -132,7 +132,7 @@ public class EmailVerificationService {
         EmailVerificationResult result = new EmailVerificationResult();
         
         try {
-            // 1. Basic format validation
+            // Only basic format validation - as the method name suggests
             ValidationResult formatResult = validateEmailFormat(email);
             if (!formatResult.isValid()) {
                 result.setSuccess(false);
@@ -141,25 +141,7 @@ public class EmailVerificationService {
                 return result;
             }
             
-            // 2. Domain validation
-            ValidationResult domainResult = validateEmailDomain(email);
-            if (!domainResult.isValid()) {
-                result.setSuccess(false);
-                result.setMessage(domainResult.getMessage());
-                result.setErrorCode(domainResult.getErrorCode());
-                return result;
-            }
-            
-            // 3. Security check
-            ValidationResult securityResult = performSecurityChecks(email);
-            if (!securityResult.isValid()) {
-                result.setSuccess(false);
-                result.setMessage(securityResult.getMessage());
-                result.setErrorCode(securityResult.getErrorCode());
-                return result;
-            }
-            
-            // Validation passed
+            // Format validation passed
             result.setSuccess(true);
             result.setMessage("Email format validation passed");
             result.setEmail(email);
@@ -209,12 +191,12 @@ public class EmailVerificationService {
         
         // Check obviously invalid domains only
         List<String> invalidDomains = Arrays.asList(
-            "example.com", "invalid.com", "localhost", "127.0.0.1",
-            "fake.com", "spam.com", "noreply.com", "donotreply.com"
+            "localhost", "127.0.0.1",
+            "fake.com", "spam.com"
         );
         
         if (invalidDomains.contains(domain.toLowerCase())) {
-            return new ValidationResult(false, "Please use a valid email domain, test domains are not allowed", "INVALID_DOMAIN");
+            return new ValidationResult(false, "Please use a valid email domain", "INVALID_DOMAIN");
         }
         
         // Check domain length
@@ -257,13 +239,9 @@ public class EmailVerificationService {
      * 安全检查
      */
     private ValidationResult performSecurityChecks(String email) {
-        // Very minimal security checks - only reject obviously invalid patterns
-        String lowerEmail = email.toLowerCase();
-        
-        // Only check for obviously fake patterns
-        if (lowerEmail.contains("@@") || 
-            lowerEmail.endsWith("..") ||
-            lowerEmail.startsWith("..")) {
+        // Minimal security checks - basic format validation is already done
+        // Only check for obviously malformed patterns
+        if (email.contains("@@")) {
             return new ValidationResult(false, "Email address format appears invalid", "SUSPICIOUS_EMAIL");
         }
         
