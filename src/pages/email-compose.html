@@ -350,6 +350,103 @@
             font-weight: 500;
         }
 
+        /* Draft Management Styles */
+        .draft-section {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .draft-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+        }
+
+        .draft-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .draft-item:last-child {
+            border-bottom: none;
+        }
+
+        .draft-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .draft-item.selected {
+            background-color: #e8f5e8;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .draft-info {
+            flex-grow: 1;
+        }
+
+        .draft-subject {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .draft-preview {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 300px;
+        }
+
+        .draft-meta {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .draft-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .draft-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .draft-btn.load {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .draft-btn.load:hover {
+            background-color: #45a049;
+        }
+
+        .draft-btn.delete {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .draft-btn.delete:hover {
+            background-color: #c82333;
+        }
+
         @media (max-width: 768px) {
             .form-row,
             .recipient-options {
@@ -404,6 +501,28 @@
                 <div class="stat-number" id="failedCount">0</div>
                 <div>Failed</div>
             </div>
+        </div>
+
+        <!-- Draft Management -->
+        <div class="draft-section" id="draftSection" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>📝 Saved Drafts</h3>
+                <button type="button" onclick="toggleDraftSection()" class="btn-secondary" style="padding: 8px 16px;">
+                    ✖️ Close
+                </button>
+            </div>
+            <div class="draft-list" id="draftList">
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    <p>Loading drafts...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Draft Toggle Button -->
+        <div style="text-align: center; margin: 15px 0;">
+            <button type="button" onclick="toggleDraftSection()" class="btn-secondary" id="showDraftsBtn">
+                📝 Show Saved Drafts (<span id="draftCountInline">0</span>)
+            </button>
         </div>
 
         <!-- Messages -->
@@ -573,6 +692,9 @@
         let contacts = [];
         let selectedContact = null;
         let currentUserId = 1; // Demo user ID
+        let drafts = [];
+        let selectedDraft = null;
+        let isDraftSectionVisible = false;
 
         // API base URL - will try Spring Boot first, then fall back to demo data
         const API_BASE = 'http://localhost:8080';
@@ -581,6 +703,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadContacts();
             loadStats();
+            loadDrafts();
             setupFormSubmission();
         });
 
@@ -989,6 +1112,195 @@
                 messageDiv.style.display = 'none';
             }, 8000);
         }
+
+        // ===== DRAFT MANAGEMENT FUNCTIONS =====
+
+        // Toggle draft section visibility
+        function toggleDraftSection() {
+            const draftSection = document.getElementById('draftSection');
+            const showDraftsBtn = document.getElementById('showDraftsBtn');
+            
+            isDraftSectionVisible = !isDraftSectionVisible;
+            
+            if (isDraftSectionVisible) {
+                draftSection.style.display = 'block';
+                showDraftsBtn.textContent = '📝 Hide Drafts';
+                loadDrafts(); // Refresh drafts when showing
+            } else {
+                draftSection.style.display = 'none';
+                showDraftsBtn.innerHTML = '📝 Show Saved Drafts (<span id="draftCountInline">' + drafts.length + '</span>)';
+            }
+        }
+
+        // Load drafts from server or demo data
+        async function loadDrafts() {
+            try {
+                const response = await fetch(`${API_BASE}/email/api/drafts`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        drafts = data.drafts;
+                        displayDrafts(drafts);
+                        updateDraftCount();
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.log('Spring Boot API not available, using demo drafts');
+            }
+            
+            // Fallback to demo data
+            drafts = [
+                {
+                    id: 1,
+                    fromEmail: 'elderapp2025@163.com',
+                    toEmail: 'dr.smith@hospital.com',
+                    subject: 'Health Check Inquiry',
+                    content: 'Dear Dr. Smith, I would like to schedule a health check appointment. Please let me know your available times.',
+                    createdAt: '2025-08-15T10:30:00',
+                    status: 'DRAFT'
+                }
+            ];
+            displayDrafts(drafts);
+            updateDraftCount();
+        }
+
+        // Display drafts in the list
+        function displayDrafts(draftsToShow) {
+            const draftList = document.getElementById('draftList');
+            
+            if (draftsToShow.length === 0) {
+                draftList.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <p>No saved drafts</p>
+                        <small>Save a draft to see it here</small>
+                    </div>
+                `;
+                return;
+            }
+
+            draftList.innerHTML = draftsToShow.map(draft => {
+                const createdDate = new Date(draft.createdAt || draft.created_at);
+                const formattedDate = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const contentPreview = (draft.content || '').substring(0, 50) + (draft.content && draft.content.length > 50 ? '...' : '');
+                
+                return `
+                    <div class="draft-item" data-draft-id="${draft.id}">
+                        <div class="draft-info">
+                            <div class="draft-subject">${draft.subject || 'No Subject'}</div>
+                            <div class="draft-preview">To: ${draft.toEmail || 'No recipient'}</div>
+                            <div class="draft-preview">${contentPreview || 'No content'}</div>
+                            <div class="draft-meta">Saved: ${formattedDate}</div>
+                        </div>
+                        <div class="draft-actions">
+                            <button class="draft-btn load" onclick="loadDraftToForm(${draft.id})">
+                                📝 Load
+                            </button>
+                            <button class="draft-btn delete" onclick="deleteDraft(${draft.id})">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load a draft into the form
+        async function loadDraftToForm(draftId) {
+            console.log('Loading draft:', draftId);
+            
+            const draft = drafts.find(d => d.id == draftId);
+            if (!draft) {
+                showMessage('Draft not found', 'error');
+                return;
+            }
+
+            // Clear current form
+            clearForm();
+
+            // Load draft data into form
+            document.getElementById('fromEmail').value = draft.fromEmail || 'elderapp2025@163.com';
+            document.getElementById('senderName').value = draft.senderName || '';
+            document.getElementById('subject').value = draft.subject || '';
+            document.getElementById('content').value = draft.content || '';
+
+            // Set recipient
+            if (draft.toEmail) {
+                // Try to find matching contact
+                const matchingContact = contacts.find(c => c.email === draft.toEmail);
+                if (matchingContact) {
+                    selectContact(matchingContact.id, matchingContact.email, matchingContact.name);
+                } else {
+                    // Use manual input
+                    document.getElementById('manualEmail').value = draft.toEmail;
+                    updateRecipient();
+                }
+            }
+
+            // Update selected draft
+            selectedDraft = draft;
+
+            // Visual feedback
+            document.querySelectorAll('.draft-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            document.querySelector(`[data-draft-id="${draftId}"]`).classList.add('selected');
+
+            showMessage('Draft loaded successfully! You can now edit and send or save it again.', 'success');
+            
+            // Scroll to form
+            document.getElementById('emailForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Delete a draft
+        async function deleteDraft(draftId) {
+            if (!confirm('Are you sure you want to delete this draft?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/email/api/drafts/${draftId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showMessage('Draft deleted successfully', 'success');
+                        loadDrafts(); // Refresh list
+                        loadStats(); // Update stats
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.log('API not available, deleting from local list');
+            }
+
+            // Fallback - remove from local list
+            drafts = drafts.filter(d => d.id != draftId);
+            displayDrafts(drafts);
+            updateDraftCount();
+            showMessage('Draft deleted locally', 'success');
+        }
+
+        // Update draft count display
+        function updateDraftCount() {
+            const draftCountElement = document.getElementById('draftCountInline');
+            if (draftCountElement) {
+                draftCountElement.textContent = drafts.length;
+            }
+        }
+
+        // Update the existing saveDraft function to refresh the draft list
+        const originalSaveDraft = saveDraft;
+        saveDraft = async function() {
+            const result = await originalSaveDraft();
+            // Refresh drafts after saving
+            setTimeout(() => {
+                loadDrafts();
+            }, 1000);
+            return result;
+        };
     </script>
 </body>
 </html>

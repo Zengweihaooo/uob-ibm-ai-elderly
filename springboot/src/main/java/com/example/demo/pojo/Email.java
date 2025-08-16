@@ -21,6 +21,7 @@ public class Email {
     private String content;
     private EmailStatus status;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private LocalDateTime sentAt;
     private String errorMessage;
     
@@ -93,6 +94,14 @@ public class Email {
     
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+    
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
     
     public LocalDateTime getSentAt() {

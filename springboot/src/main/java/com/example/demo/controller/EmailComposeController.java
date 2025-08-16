@@ -193,4 +193,86 @@ public class EmailComposeController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+    
+    /**
+     * Get draft emails
+     */
+    @GetMapping("/api/drafts")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getDrafts(@RequestParam(value = "fromEmail", required = false) String fromEmail) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            List<Email> drafts = emailComposeService.getDrafts(fromEmail);
+            response.put("success", true);
+            response.put("drafts", drafts);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to get drafts: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    /**
+     * Get a specific draft by ID
+     */
+    @GetMapping("/api/drafts/{draftId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getDraft(@PathVariable Long draftId) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            Email draft = emailComposeService.getDraftById(draftId);
+            if (draft != null) {
+                response.put("success", true);
+                response.put("draft", draft);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Draft not found");
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to get draft: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    /**
+     * Update a draft
+     */
+    @PutMapping("/api/drafts/{draftId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateDraft(
+            @PathVariable Long draftId,
+            @RequestParam("fromEmail") String fromEmail,
+            @RequestParam("toEmail") String toEmail,
+            @RequestParam("subject") String subject,
+            @RequestParam("content") String content) {
+        
+        Map<String, Object> result = emailComposeService.updateDraft(draftId, fromEmail, toEmail, subject, content);
+        
+        if ((Boolean) result.get("success")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+    
+    /**
+     * Delete a draft
+     */
+    @DeleteMapping("/api/drafts/{draftId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteDraft(@PathVariable Long draftId) {
+        Map<String, Object> result = emailComposeService.deleteDraft(draftId);
+        
+        if ((Boolean) result.get("success")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
 }

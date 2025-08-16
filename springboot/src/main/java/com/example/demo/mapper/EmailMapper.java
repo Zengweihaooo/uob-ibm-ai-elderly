@@ -75,4 +75,11 @@ public interface EmailMapper {
      */
     @Select("SELECT * FROM emails WHERE from_email = #{fromEmail} ORDER BY created_at DESC LIMIT #{limit}")
     List<Email> findRecentByFromEmail(@Param("fromEmail") String fromEmail, @Param("limit") int limit);
+    
+    /**
+     * Update draft content
+     */
+    @Update("UPDATE emails SET from_email = #{fromEmail}, to_email = #{toEmail}, subject = #{subject}, " +
+            "content = #{content}, updated_at = CURRENT_TIMESTAMP WHERE id = #{id} AND status = 'DRAFT'")
+    int updateDraft(Email email);
 }

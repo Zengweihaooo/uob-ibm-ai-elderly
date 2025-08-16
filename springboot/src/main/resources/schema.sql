@@ -210,6 +210,7 @@ CREATE TABLE IF NOT EXISTS emails (
     content TEXT,
     status TEXT NOT NULL DEFAULT 'DRAFT' CHECK(status IN ('DRAFT', 'SENT', 'FAILED')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     sent_at TIMESTAMP,
     error_message TEXT
 );

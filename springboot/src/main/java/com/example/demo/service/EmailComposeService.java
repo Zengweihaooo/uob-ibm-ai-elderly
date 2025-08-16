@@ -202,4 +202,118 @@ public class EmailComposeService {
         
         return result;
     }
+    
+    /**
+     * Get all drafts, optionally filtered by fromEmail
+     */
+    public List<Email> getDrafts(String fromEmail) {
+        try {
+            if (fromEmail != null && !fromEmail.trim().isEmpty()) {
+                return emailMapper.findByFromEmail(fromEmail).stream()
+                    .filter(email -> "DRAFT".equals(email.getStatus().toString()))
+                    .collect(java.util.stream.Collectors.toList());
+            } else {
+                return emailMapper.findByStatus("DRAFT");
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to get drafts: " + e.getMessage());
+            return List.of();
+        }
+    }
+    
+    /**
+     * Get a specific draft by ID
+     */
+    public Email getDraftById(Long draftId) {
+        try {
+            Email email = emailMapper.findById(draftId);
+            if (email != null && "DRAFT".equals(email.getStatus().toString())) {
+                return email;
+            }
+            return null;
+        } catch (Exception e) {
+            System.err.println("Failed to get draft by ID: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Update a draft
+     */
+    public Map<String, Object> updateDraft(Long draftId, String fromEmail, String toEmail, String subject, String content) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            Email draft = emailMapper.findById(draftId);
+            if (draft == null) {
+                result.put("success", false);
+                result.put("message", "Draft not found");
+                return result;
+            }
+            
+            if (!"DRAFT".equals(draft.getStatus().toString())) {
+                result.put("success", false);
+                result.put("message", "Email is not a draft");
+                return result;
+            }
+            
+            // Update draft fields
+            draft.setFromEmail(fromEmail);
+            draft.setToEmail(toEmail);
+            draft.setSubject(subject);
+            draft.setContent(content);
+            draft.setUpdatedAt(java.time.LocalDateTime.now());
+            
+            emailMapper.updateDraft(draft);
+            
+            result.put("success", true);
+            result.put("message", "Draft updated successfully");
+            result.put("draft", draft);
+            
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "Failed to update draft: " + e.getMessage());
+            System.err.println("Failed to update draft: " + e.getMessage());
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Delete a draft
+     */
+    public Map<String, Object> deleteDraft(Long draftId) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            Email draft = emailMapper.findById(draftId);
+            if (draft == null) {
+                result.put("success", false);
+                result.put("message", "Draft not found");
+                return result;
+            }
+            
+            if (!"DRAFT".equals(draft.getStatus().toString())) {
+                result.put("success", false);
+                result.put("message", "Email is not a draft");
+                return result;
+            }
+            
+            int deleted = emailMapper.deleteById(draftId);
+            if (deleted > 0) {
+                result.put("success", true);
+                result.put("message", "Draft deleted successfully");
+            } else {
+                result.put("success", false);
+                result.put("message", "Failed to delete draft");
+            }
+            
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "Failed to delete draft: " + e.getMessage());
+            System.err.println("Failed to delete draft: " + e.getMessage());
+        }
+        
+        return result;
+    }
 }
