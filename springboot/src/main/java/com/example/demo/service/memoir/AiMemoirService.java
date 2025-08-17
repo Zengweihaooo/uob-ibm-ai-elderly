@@ -1,6 +1,8 @@
 package com.example.demo.service.memoir;
 
 import com.example.demo.service.ai.GeminiClient;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -37,13 +39,34 @@ public class AiMemoirService {
                 String prompt = String.format("Locale: %s\nHint: %s\nOutput schema: {chapters:[{chapter:string,themes:string[]}]}\nReturn only JSON.",
                         locale == null ? "en-US" : locale, hint == null ? "" : hint);
                 String text = gemini.generateText(geminiModel, sys, prompt, 0.3, 0.9, 800);
-                // 简单兜底：若未返回或非JSON，回退mock
                 if (text != null && text.trim().startsWith("{")) {
-                    // 为避免引入JSON库，这里直接以字符串返回给前端；前端/调用方可解析。
-                    Map<String, Object> m = new HashMap<>();
-                    m.put("raw", text);
-                    m.put("source", "gemini");
-                    return m;
+                    // 使用 Jackson 严格解析 JSON，提取 chapters -> [{chapter, themes[]}]
+                    ObjectMapper om = new ObjectMapper();
+                    JsonNode root = om.readTree(text);
+                    JsonNode chaptersNode = root.get("chapters");
+                    if (chaptersNode != null && chaptersNode.isArray()) {
+                        List<Map<String, Object>> chapters = new ArrayList<>();
+                        for (JsonNode c : chaptersNode) {
+                            String chapter = c.hasNonNull("chapter") ? c.get("chapter").asText("") : "";
+                            List<String> themes = new ArrayList<>();
+                            JsonNode themesNode = c.get("themes");
+                            if (themesNode != null && themesNode.isArray()) {
+                                for (JsonNode t : themesNode) {
+                                    if (t != null && !t.isNull()) themes.add(t.asText(""));
+                                }
+                            }
+                            Map<String, Object> one = new HashMap<>();
+                            one.put("chapter", chapter);
+                            one.put("themes", themes);
+                            chapters.add(one);
+                        }
+                        if (!chapters.isEmpty()) {
+                            Map<String, Object> m = new HashMap<>();
+                            m.put("chapters", chapters);
+                            m.put("source", "gemini");
+                            return m;
+                        }
+                    }
                 }
             } catch (Exception ignored) { /* 回退到mock */ }
         }

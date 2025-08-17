@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en-GB">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI 回忆录</title>
+  <title>AI Memoir</title>
   <link rel="stylesheet" href="../styles/main.css" />
   <style>
     .container { max-width: 960px; margin: 24px auto; padding: 0 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
@@ -25,67 +25,112 @@
     .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .chip { display:inline-block; padding: 2px 8px; border-radius: 999px; background:#eef2ff; color:#3730a3; font-size:12px; margin-left:8px; }
     .danger { color:#b91c1c; }
+    .success { color:#166534; }
   </style>
   <!-- 页面目标：用最小 UI 打通 /api/memoir 的项目/分段/导出全流程 -->
 </head>
 <body>
   <div class="container">
-    <h1>📘 AI 回忆录</h1>
-    <p class="muted">创建回忆录项目，按章节与主题录入文字，最后导出为 Markdown 或 PDF。</p>
+  <h1>📘 AI Memoir</h1>
+  <p class="muted">Create a memoir project, add segments by chapter and theme, then export as Markdown or PDF.</p>
 
     <div class="row">
       <div class="card">
-        <h2>新建项目</h2>
-        <label>标题</label>
-        <input id="p-title" type="text" placeholder="例如：奶奶的回忆录" />
-        <label>作者/所有者（可选）</label>
-        <input id="p-owner" type="text" placeholder="例如：Zhang San" />
+  <h2>New Project</h2>
+  <label>Title</label>
+  <input id="p-title" type="text" placeholder="e.g., Grandma's Memoir" />
+  <label>Author/Owner (optional)</label>
+  <input id="p-owner" type="text" placeholder="e.g., Zhang San" />
         <div style="margin-top:12px" class="toolbar">
-          <button class="btn" id="create-project">创建项目</button>
-          <button class="btn btn-outline" id="refresh-projects">刷新列表</button>
+          <button class="btn" id="create-project">Create</button>
+          <button class="btn btn-outline" id="refresh-projects">Refresh</button>
         </div>
       </div>
 
       <div class="card">
-        <h2>已有项目</h2>
+  <h2>Existing Projects</h2>
         <ul id="project-list" class="list"></ul>
       </div>
     </div>
 
     <div id="work-area" class="card" style="display:none;">
       <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;">
-        <h2 id="current-project-title" style="margin:0;">当前项目</h2>
+  <h2 id="current-project-title" style="margin:0;">Current Project</h2>
         <span id="current-project-meta" class="chip"></span>
       </div>
       <div class="toolbar" style="margin-top:8px;">
-        <button class="btn btn-secondary" id="export-md">导出 Markdown</button>
-        <button class="btn" id="export-pdf">导出 PDF</button>
+  <button class="btn btn-secondary" id="export-md">Export Markdown</button>
+  <button class="btn" id="export-pdf">Export PDF</button>
       </div>
 
       <hr style="margin:16px -16px; border:0; border-top:1px solid #f0f0f0;"/>
 
       <div class="row">
         <div>
-          <h2>新增分段</h2>
-          <label>章节</label>
+          <h2>Add Segment</h2>
+          <label>Chapter</label>
           <input id="s-chapter" type="text" placeholder="例如：童年" />
-          <label>主题</label>
+          <label>Theme</label>
           <input id="s-theme" type="text" placeholder="例如：家庭" />
-          <label>正文</label>
-          <textarea id="s-text" placeholder="输入这段故事…"></textarea>
+          <label>Text</label>
+          <textarea id="s-text" placeholder="Write the story here…"></textarea>
           <div style="margin-top:12px" class="toolbar">
-            <button class="btn" id="add-segment">添加分段</button>
+            <button class="btn" id="add-segment">Add</button>
           </div>
-          <p class="muted">提示：可多次添加不同章节/主题的分段，导出时会按章节组织。</p>
+          <p class="muted">Tip: Add multiple segments across chapters/themes. Export groups them by chapter.</p>
+
+          <!-- 新增：语音转文字（STT） -->
+          <div class="card" style="padding:12px; margin-top:16px;">
+            <h2 style="margin-top:0;">Speech to Text (fill into content)</h2>
+            <div class="toolbar" style="margin:6px 0 8px;">
+              <label for="stt-lang" style="margin:0;">Language</label>
+              <select id="stt-lang" style="padding:8px; border:1px solid #ddd; border-radius:8px;">
+                <option value="en-GB" selected>English (UK)</option>
+                <option value="en-US">English (US)</option>
+                <option value="zh-CN">Chinese (Mandarin)</option>
+                <option value="yue-Hant-HK">Chinese (Cantonese)</option>
+              </select>
+            </div>
+            <div class="toolbar">
+              <button class="btn" id="stt-record-btn">🎙️ Start Recording</button>
+              <input id="stt-file" type="file" accept="audio/webm,audio/ogg" />
+              <button class="btn btn-outline" id="stt-upload-btn">Upload & Transcribe</button>
+            </div>
+            <p id="stt-status" class="muted" style="margin-top:6px;">The browser will use the microphone to record (WebM/Opus). If unsupported, upload a local audio file.</p>
+            <div id="stt-result" class="muted" style="margin-top:8px;"></div>
+            <div class="toolbar" style="margin-top:8px;">
+              <button class="btn btn-secondary" id="stt-append">Append transcript to text</button>
+              <button class="btn btn-outline" id="stt-replace">Replace text with transcript</button>
+            </div>
+          </div>
+
+          <!-- AI Assistant: Outline & Draft -->
+          <div class="card" style="padding:12px; margin-top:16px;">
+            <h2 style="margin-top:0;">AI Assistant</h2>
+            <div class="toolbar" style="margin-bottom:8px;">
+              <input id="ai-hint" type="text" placeholder="Outline hint (optional), e.g., childhood in London" style="flex:1;" />
+              <button class="btn btn-outline" id="ai-outline-btn">Generate Outline</button>
+            </div>
+            <div id="ai-outline-status" class="muted" style="margin:4px 0 8px;"></div>
+            <ul id="ai-outline-list" class="list" style="margin-bottom:12px;"></ul>
+
+            <label>Notes for Draft (optional)</label>
+            <textarea id="ai-notes" placeholder="Key points for the draft…"></textarea>
+            <div class="toolbar" style="margin-top:8px;">
+              <button class="btn btn-outline" id="ai-notes-use-stt">Use transcript as notes</button>
+              <button class="btn" id="ai-draft-btn">Generate Draft</button>
+            </div>
+            <div id="ai-draft-status" class="muted" style="margin-top:6px;"></div>
+          </div>
         </div>
         <div>
-          <h2>分段列表</h2>
+          <h2>Segments</h2>
           <ul id="segment-list" class="list"></ul>
         </div>
       </div>
     </div>
 
-    <p class="muted">导航：本页静态路径为 <code>/pages/memoir.html</code>。</p>
+    <p class="muted">Navigation: this page is served at <code>/pages/memoir.html</code>.</p>
   </div>
 
   <script>
@@ -99,15 +144,20 @@
     // 状态
     let currentProject = null;
 
+    // 录音状态
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+
     // 加载项目列表
     async function loadProjects() {
       const listEl = document.getElementById('project-list');
-      listEl.innerHTML = '<li class="muted">加载中…</li>';
+  listEl.innerHTML = '<li class="muted">Loading…</li>';
       try {
         const data = await apiJson('/api/memoir/projects');
         const arr = Array.isArray(data) ? data : (data.items || []);
         if (!arr.length) {
-          listEl.innerHTML = '<li class="muted">暂无项目</li>';
+          listEl.innerHTML = '<li class="muted">No projects yet</li>';
           return;
         }
         listEl.innerHTML = '';
@@ -115,10 +165,10 @@
           const li = document.createElement('li');
           const left = document.createElement('div');
           const right = document.createElement('div');
-          left.innerHTML = `<strong>${escapeHtml(p.title || ('项目#' + p.id))}</strong><div class="muted">ID: ${p.id}${p.owner ? (' · ' + escapeHtml(p.owner)) : ''}</div>`;
+          left.innerHTML = `<strong>${escapeHtml(p.title || ('Project #' + p.id))}</strong><div class="muted">ID: ${p.id}${p.owner ? (' · ' + escapeHtml(p.owner)) : ''}</div>`;
           const btn = document.createElement('button');
           btn.className = 'btn btn-outline';
-          btn.textContent = '进入';
+          btn.textContent = 'Open';
           btn.onclick = () => openProject(p);
           right.appendChild(btn);
           li.appendChild(left);
@@ -126,7 +176,7 @@
           listEl.appendChild(li);
         });
       } catch (e) {
-        listEl.innerHTML = `<li class="danger">加载失败：${e.message}</li>`;
+  listEl.innerHTML = `<li class="danger">Failed to load: ${e.message}</li>`;
       }
     }
 
@@ -134,21 +184,21 @@
     async function createProject() {
       const title = document.getElementById('p-title').value.trim();
       const owner = document.getElementById('p-owner').value.trim();
-      if (!title) { alert('请输入标题'); return; }
+  if (!title) { alert('Please enter a title'); return; }
       try {
         const data = await apiJson('/api/memoir/projects', { method: 'POST', body: JSON.stringify({ title, owner }) });
         // 兼容返回结构 {projectId: n}
         if (data && (data.projectId || data.id)) {
           await loadProjects();
           document.getElementById('p-title').value = '';
-          // 自动进入该项目
+          // 自动进入该项目 / auto open
           openProject({ id: data.projectId || data.id, title, owner });
         } else {
-          alert('创建成功，但响应格式非常规');
+          alert('Created, but response shape is unexpected');
           loadProjects();
         }
       } catch (e) {
-        alert('创建失败：' + e.message);
+        alert('Create failed: ' + e.message);
       }
     }
 
@@ -156,7 +206,7 @@
     async function openProject(p) {
       currentProject = p;
       document.getElementById('work-area').style.display = '';
-      document.getElementById('current-project-title').textContent = p.title || ('项目#' + p.id);
+  document.getElementById('current-project-title').textContent = p.title || ('Project #' + p.id);
       document.getElementById('current-project-meta').textContent = 'ID ' + p.id + (p.owner ? (' · ' + p.owner) : '');
       await loadSegments();
     }
@@ -164,11 +214,11 @@
     // 加载分段
     async function loadSegments() {
       const listEl = document.getElementById('segment-list');
-      listEl.innerHTML = '<li class="muted">加载中…</li>';
+  listEl.innerHTML = '<li class="muted">Loading…</li>';
       try {
         const data = await apiJson(`/api/memoir/projects/${currentProject.id}/segments`);
         const arr = Array.isArray(data) ? data : (data.items || []);
-        if (!arr.length) { listEl.innerHTML = '<li class="muted">暂无分段</li>'; return; }
+  if (!arr.length) { listEl.innerHTML = '<li class="muted">No segments yet</li>'; return; }
         listEl.innerHTML = '';
         arr.forEach(s => {
           const li = document.createElement('li');
@@ -176,7 +226,7 @@
           listEl.appendChild(li);
         });
       } catch (e) {
-        listEl.innerHTML = `<li class="danger">加载失败：${e.message}</li>`;
+  listEl.innerHTML = `<li class="danger">Failed to load: ${e.message}</li>`;
       }
     }
 
@@ -185,7 +235,7 @@
       const chapter = document.getElementById('s-chapter').value.trim();
       const theme = document.getElementById('s-theme').value.trim();
       const text = document.getElementById('s-text').value.trim();
-      if (!text) { alert('请输入正文'); return; }
+  if (!text) { alert('Please enter the text'); return; }
       try {
         await apiJson(`/api/memoir/projects/${currentProject.id}/segments`, {
           method: 'POST',
@@ -194,7 +244,7 @@
         document.getElementById('s-text').value = '';
         await loadSegments();
       } catch (e) {
-        alert('添加失败：' + e.message);
+        alert('Add failed: ' + e.message);
       }
     }
 
@@ -204,7 +254,7 @@
       const url = `/api/memoir/projects/${currentProject.id}/export?format=${fmt}`;
       try {
         const resp = await fetch(url);
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
         const blob = await resp.blob();
         const a = document.createElement('a');
         const fname = (currentProject.title || ('memoir-' + currentProject.id)) + (fmt === 'pdf' ? '.pdf' : '.md');
@@ -214,8 +264,88 @@
         a.click();
         a.remove();
       } catch (e) {
-        alert('导出失败：' + e.message);
+        alert('Export failed: ' + e.message);
       }
+    }
+
+    // ============= 语音转文字（STT）集成 =============
+    async function sttUpload(file, languageCode) {
+      const statusEl = document.getElementById('stt-status');
+      const resultEl = document.getElementById('stt-result');
+  statusEl.textContent = 'Uploading and transcribing…';
+      resultEl.textContent = '';
+      try {
+        const form = new FormData();
+        form.append('audio', file, file.name || 'audio.webm');
+  form.append('languageCode', languageCode || 'en-GB');
+        const resp = await fetch('/api/voice/stt', { method: 'POST', body: form });
+        const data = await resp.json();
+  if (!resp.ok || !data.success) throw new Error(data.error || ('HTTP ' + resp.status));
+        resultEl.textContent = data.text || '';
+  statusEl.innerHTML = '<span class="success">Transcribed</span>';
+      } catch (e) {
+  statusEl.innerHTML = `<span class="danger">Transcription failed: ${escapeHtml(e.message)}</span>`;
+      }
+    }
+
+    async function startRecording() {
+      const statusEl = document.getElementById('stt-status');
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+  statusEl.innerHTML = '<span class="danger">Recording not supported by this browser, please use Upload & Transcribe.</span>';
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+        mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
+        recordedChunks = [];
+        mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
+          const lang = document.getElementById('stt-lang').value;
+          await sttUpload(blob, lang);
+          stream.getTracks().forEach(t => t.stop());
+        };
+        mediaRecorder.start();
+        isRecording = true;
+  document.getElementById('stt-record-btn').textContent = '⏹ Stop & Transcribe';
+  statusEl.textContent = 'Recording… speak now, then click Stop to transcribe.';
+      } catch (e) {
+  statusEl.innerHTML = `<span class="danger">Cannot start recording: ${escapeHtml(e.message)}</span>`;
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && isRecording) {
+        isRecording = false;
+        mediaRecorder.stop();
+  document.getElementById('stt-record-btn').textContent = '🎙️ Start Recording';
+      }
+    }
+
+    function onRecordButton() {
+      if (!isRecording) startRecording(); else stopRecording();
+    }
+
+    async function onUploadButton() {
+      const fileInput = document.getElementById('stt-file');
+      const file = fileInput.files && fileInput.files[0];
+  if (!file) { alert('Please choose an audio file'); return; }
+      const lang = document.getElementById('stt-lang').value;
+      await sttUpload(file, lang);
+    }
+
+    function appendTranscript() {
+      const txt = document.getElementById('stt-result').textContent || '';
+  if (!txt) { alert('No transcript yet'); return; }
+      const area = document.getElementById('s-text');
+      area.value = (area.value ? (area.value + '\n') : '') + txt;
+    }
+
+    function replaceWithTranscript() {
+      const txt = document.getElementById('stt-result').textContent || '';
+  if (!txt) { alert('No transcript yet'); return; }
+      document.getElementById('s-text').value = txt;
     }
 
     // 简单 HTML 转义
@@ -231,6 +361,77 @@
     document.getElementById('add-segment').addEventListener('click', addSegment);
     document.getElementById('export-md').addEventListener('click', () => exportMemoir('markdown'));
     document.getElementById('export-pdf').addEventListener('click', () => exportMemoir('pdf'));
+    // STT
+    document.getElementById('stt-record-btn').addEventListener('click', onRecordButton);
+    document.getElementById('stt-upload-btn').addEventListener('click', onUploadButton);
+    document.getElementById('stt-append').addEventListener('click', appendTranscript);
+    document.getElementById('stt-replace').addEventListener('click', replaceWithTranscript);
+
+    // ===== AI Assistant Integration =====
+    async function generateOutline() {
+      const status = document.getElementById('ai-outline-status');
+      const list = document.getElementById('ai-outline-list');
+      list.innerHTML = '';
+      status.textContent = 'Generating outline…';
+      try {
+        const locale = document.getElementById('stt-lang').value || 'en-GB';
+        const hint = document.getElementById('ai-hint').value || '';
+        const data = await apiJson('/api/memoir/ai/outline', {
+          method: 'POST',
+          body: JSON.stringify({ locale, hint })
+        });
+        let chapters = [];
+        if (Array.isArray(data.chapters)) chapters = data.chapters;
+        else if (data.raw) {
+          // Best-effort parse if Gemini returned raw JSON string
+          try { const parsed = JSON.parse(data.raw); if (parsed && Array.isArray(parsed.chapters)) chapters = parsed.chapters; } catch {}
+        }
+        if (!chapters.length) { status.textContent = 'No chapters returned.'; return; }
+        chapters.forEach(c => {
+          const li = document.createElement('li');
+          const themes = Array.isArray(c.themes) ? c.themes.join(', ') : '';
+          li.innerHTML = `<div><strong>${escapeHtml(c.chapter || '')}</strong><div class="muted">${escapeHtml(themes)}</div></div>`;
+          list.appendChild(li);
+        });
+        status.textContent = data.source ? `Source: ${data.source}` : 'Done';
+      } catch (e) {
+        status.textContent = 'Failed: ' + e.message;
+      }
+    }
+
+    async function generateDraft() {
+      const status = document.getElementById('ai-draft-status');
+      status.textContent = 'Generating draft…';
+      try {
+        const chapter = document.getElementById('s-chapter').value.trim();
+        const theme = document.getElementById('s-theme').value.trim();
+        const notes = document.getElementById('ai-notes').value.trim();
+        const locale = document.getElementById('stt-lang').value || 'en-GB';
+        const data = await apiJson('/api/memoir/ai/draft', {
+          method: 'POST',
+          body: JSON.stringify({ chapter, theme, notes, locale })
+        });
+        if (data && data.text) {
+          const area = document.getElementById('s-text');
+          area.value = (area.value ? (area.value + '\n\n') : '') + data.text;
+          status.textContent = data.source ? `Source: ${data.source}` : 'Done';
+        } else {
+          status.textContent = 'No text returned.';
+        }
+      } catch (e) {
+        status.textContent = 'Failed: ' + e.message;
+      }
+    }
+
+    function useTranscriptAsNotes() {
+      const txt = document.getElementById('stt-result').textContent || '';
+      if (!txt) { alert('No transcript yet'); return; }
+      document.getElementById('ai-notes').value = txt;
+    }
+
+    document.getElementById('ai-outline-btn').addEventListener('click', generateOutline);
+    document.getElementById('ai-draft-btn').addEventListener('click', generateDraft);
+    document.getElementById('ai-notes-use-stt').addEventListener('click', useTranscriptAsNotes);
 
     // 初始化
     loadProjects();

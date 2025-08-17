@@ -1,6 +1,7 @@
 package com.example.demo.service.ai;
 
 import com.google.auth.oauth2.GoogleCredentials;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -22,6 +25,12 @@ public class GeminiClient {
     private static final String DEFAULT_MODEL = "gemini-1.5-flash";
     private static final String API_URL_FMT = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent";
 
+    @Value("${app.ai.gemini.api-key:}")
+    private String configuredApiKey;
+
+    @Value("${app.ai.gemini.api-key-env:GEMINI_API_KEY}")
+    private String apiKeyEnvName;
+
     /**
      * 生成文本（可选 systemInstruction，用于设定写作风格/输出格式）。
      */
@@ -31,11 +40,21 @@ public class GeminiClient {
                                Double temperature,
                                Double topP,
                                Integer maxOutputTokens) throws IOException {
-        GoogleCredentials credentials = getGoogleCredentials();
-        credentials.refreshIfExpired();
-        String accessToken = credentials.getAccessToken().getTokenValue();
-
-        String url = String.format(API_URL_FMT, (model == null || model.isBlank()) ? DEFAULT_MODEL : model);
+        String url;
+        String apiKey = resolveApiKey();
+        HttpHeaders headers = new HttpHeaders();
+        if (apiKey != null && !apiKey.isBlank()) {
+            url = String.format(API_URL_FMT, (model == null || model.isBlank()) ? DEFAULT_MODEL : model)
+                    + "?key=" + URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
+            headers.set("Content-Type", "application/json");
+        } else {
+            GoogleCredentials credentials = getGoogleCredentials();
+            credentials.refreshIfExpired();
+            String accessToken = credentials.getAccessToken().getTokenValue();
+            url = String.format(API_URL_FMT, (model == null || model.isBlank()) ? DEFAULT_MODEL : model);
+            headers.set("Authorization", "Bearer " + accessToken);
+            headers.set("Content-Type", "application/json");
+        }
 
         // 请求体
         Map<String, Object> requestBody = new HashMap<>();
@@ -59,10 +78,6 @@ public class GeminiClient {
         if (topP != null) generationConfig.put("topP", topP);
         if (maxOutputTokens != null) generationConfig.put("maxOutputTokens", maxOutputTokens);
         if (!generationConfig.isEmpty()) requestBody.put("generationConfig", generationConfig);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
-        headers.set("Content-Type", "application/json");
 
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
@@ -92,6 +107,19 @@ public class GeminiClient {
         }
 
         return ""; // 无结果返回空串
+    }
+
+    private String resolveApiKey() {
+        if (configuredApiKey != null && !configuredApiKey.isBlank()) {
+            return configuredApiKey.trim();
+        }
+        String envName = (apiKeyEnvName == null || apiKeyEnvName.isBlank()) ? "GEMINI_API_KEY" : apiKeyEnvName.trim();
+        String envVal = System.getenv(envName);
+        if (envVal == null || envVal.isBlank()) {
+            // 回退到常见的默认环境变量名
+            envVal = System.getenv("GEMINI_API_KEY");
+        }
+        return (envVal == null || envVal.isBlank()) ? null : envVal.trim();
     }
 
     /**
