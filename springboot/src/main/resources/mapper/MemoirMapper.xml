@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.MemoirMapper">
+
+  <!-- 结果映射：项目 -->
+  <resultMap id="MemoirProjectMap" type="com.example.demo.pojo.memoir.MemoirProject">
+    <id column="id" property="id" />
+    <result column="title" property="title" />
+    <result column="owner" property="owner" />
+    <result column="locale" property="locale" />
+    <result column="pin_hash" property="pinHash" />
+    <result column="created_at" property="createdAt" />
+    <result column="updated_at" property="updatedAt" />
+  </resultMap>
+
+  <!-- 结果映射：分段 -->
+  <resultMap id="MemoirSegmentMap" type="com.example.demo.pojo.memoir.MemoirSegment">
+    <id column="id" property="id" />
+    <result column="project_id" property="projectId" />
+    <result column="chapter" property="chapter" />
+    <result column="theme" property="theme" />
+    <result column="prompt_id" property="promptId" />
+    <result column="order_index" property="orderIndex" />
+    <result column="text" property="text" />
+    <result column="audio_url" property="audioUrl" />
+    <result column="tags" property="tags" />
+    <result column="created_at" property="createdAt" />
+    <result column="updated_at" property="updatedAt" />
+  </resultMap>
+
+  <!-- 插入项目 -->
+  <insert id="insertProject" parameterType="com.example.demo.pojo.memoir.MemoirProject" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO memoir_project(title, owner, locale, pin_hash)
+    VALUES(#{title}, #{owner}, #{locale}, #{pinHash})
+  </insert>
+
+  <!-- 按ID查询项目 -->
+  <select id="findProjectById" parameterType="int" resultMap="MemoirProjectMap">
+    SELECT * FROM memoir_project WHERE id = #{id}
+  </select>
+
+  <!-- 按owner列出项目；owner可为空（返回所有） -->
+  <select id="listProjectsByOwner" parameterType="string" resultMap="MemoirProjectMap">
+    SELECT * FROM memoir_project
+    <where>
+      <if test="owner != null and owner != ''">
+        owner = #{owner}
+      </if>
+    </where>
+    ORDER BY id DESC
+  </select>
+
+  <!-- 插入分段 -->
+  <insert id="insertSegment" parameterType="com.example.demo.pojo.memoir.MemoirSegment" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO memoir_segment(project_id, chapter, theme, prompt_id, order_index, text, audio_url, tags)
+    VALUES(#{projectId}, #{chapter}, #{theme}, #{promptId}, #{orderIndex}, #{text}, #{audioUrl}, #{tags})
+  </insert>
+
+  <!-- 按项目列出分段 -->
+  <select id="listSegmentsByProject" parameterType="int" resultMap="MemoirSegmentMap">
+    SELECT * FROM memoir_segment WHERE project_id = #{projectId} ORDER BY order_index ASC, id ASC
+  </select>
+
+</mapper>
