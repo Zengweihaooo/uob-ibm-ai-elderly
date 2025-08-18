@@ -61,6 +61,7 @@
       <div class="toolbar" style="margin-top:8px;">
   <button class="btn btn-secondary" id="export-md">Export Markdown</button>
   <button class="btn" id="export-pdf">Export PDF</button>
+  <button class="btn btn-outline" id="create-share">Create Share</button>
       </div>
 
       <hr style="margin:16px -16px; border:0; border-top:1px solid #f0f0f0;"/>
@@ -361,6 +362,7 @@
     document.getElementById('add-segment').addEventListener('click', addSegment);
     document.getElementById('export-md').addEventListener('click', () => exportMemoir('markdown'));
     document.getElementById('export-pdf').addEventListener('click', () => exportMemoir('pdf'));
+  document.getElementById('create-share').addEventListener('click', createShare);
     // STT
     document.getElementById('stt-record-btn').addEventListener('click', onRecordButton);
     document.getElementById('stt-upload-btn').addEventListener('click', onUploadButton);
@@ -435,6 +437,28 @@
 
     // 初始化
     loadProjects();
+
+    // ===== Share Integration =====
+    async function createShare() {
+      if (!currentProject) { alert('Open a project first'); return; }
+      const pin = prompt('Optional PIN (press Cancel for no PIN)') || '';
+      const daysStr = prompt('Expire in N days (optional, default 7)', '7');
+      const days = daysStr ? parseInt(daysStr, 10) : undefined;
+      const maxStr = prompt('Max downloads (optional)', '3');
+      const maxDownloads = maxStr ? parseInt(maxStr, 10) : undefined;
+      try {
+        const data = await apiJson(`/api/memoir/projects/${currentProject.id}/share`, {
+          method: 'POST',
+          body: JSON.stringify({ pin, days, maxDownloads, scope: 'view' })
+        });
+        const origin = location.origin;
+        const link = `${origin}/s/${data.token}`;
+        const tip = `Share created!\nLink: ${link}\n` + (pin ? `PIN: ${pin}\n` : '') + (data.maxDownloads ? `Max: ${data.maxDownloads}\n` : '') + (data.expiresAt ? `Expires: ${data.expiresAt}` : '');
+        alert(tip);
+      } catch (e) {
+        alert('Create share failed: ' + e.message);
+      }
+    }
   </script>
 </body>
 </html>
