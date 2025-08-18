@@ -283,3 +283,14 @@ CREATE TABLE IF NOT EXISTS memoir_share_token (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(project_id) REFERENCES memoir_project(id)
 );
+
+-- 分享守护表：扩展分享令牌的安全与配额（避免直接修改既有表）
+CREATE TABLE IF NOT EXISTS memoir_share_guard (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    share_id INTEGER UNIQUE NOT NULL,      -- 对应 memoir_share_token.id
+    pin_hash TEXT,                         -- 可选 PIN 哈希（SHA-256/hex）
+    max_downloads INTEGER,                 -- 最大下载次数（空=不限）
+    download_count INTEGER DEFAULT 0,      -- 已下载次数
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(share_id) REFERENCES memoir_share_token(id)
+);
