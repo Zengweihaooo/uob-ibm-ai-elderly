@@ -23,6 +23,33 @@ public class MemoirShareController {
         this.exportService = exportService;
     }
 
+    /** 简单的分享展示页（HTML），允许输入PIN并选择下载格式 */
+    @GetMapping("/s/{token}")
+    public ResponseEntity<String> sharePage(@PathVariable("token") String token) {
+        MemoirShareToken st = shareService.findByToken(token);
+        if (st == null) return ResponseEntity.status(404).body("<h3>Share not found</h3>");
+    boolean needPin = shareService.requiresPin(st.getId());
+        String html = "<!doctype html><html><head><meta charset='utf-8'/><title>AI Memoir Share</title>" +
+                "<meta name='viewport' content='width=device-width,initial-scale=1'/>" +
+                "<style>body{font-family:Arial,'Microsoft YaHei',sans-serif;max-width:720px;margin:40px auto;padding:0 16px;color:#222}" +
+                ".card{border:1px solid #eee;border-radius:8px;padding:16px;box-shadow:0 2px 6px rgba(0,0,0,.05)}" +
+                "label{display:block;margin:8px 0 4px;color:#444}" +
+                "input,select,button{font-size:14px;padding:8px;border:1px solid #ccc;border-radius:6px}" +
+                "button{background:#1a73e8;color:#fff;border:none;cursor:pointer;margin-top:12px}" +
+                "button:disabled{background:#9bbbf1;cursor:not-allowed}" +
+                ".muted{color:#777;font-size:12px;margin-top:8px}" +
+                "</style></head><body>" +
+                "<h2>AI Memoir — Shared Download</h2>" +
+                "<div class='card'><form method='GET' action='/s/" + token + "/download'>" +
+                (needPin ? "<label>PIN (if required)</label><input type='password' name='pin' placeholder='Enter PIN'/>" : "") +
+                "<label>Format</label><select name='format'><option value='pdf' selected>PDF</option><option value='markdown'>Markdown</option></select>" +
+                "<div><button type='submit'>Download</button></div>" +
+                "<div class='muted'>Keep this link safe. Downloads may be limited or expired.</div>" +
+                "</form></div>" +
+                "</body></html>";
+        return ResponseEntity.ok().header("Content-Type", "text/html; charset=utf-8").body(html);
+    }
+
     /** 创建分享链接 */
     @PostMapping("/api/memoir/projects/{id}/share")
     public ResponseEntity<?> createShare(@PathVariable("id") Integer projectId,

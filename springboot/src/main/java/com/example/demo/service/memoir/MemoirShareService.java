@@ -69,6 +69,12 @@ public class MemoirShareService {
         return mapper.findShareByToken(token);
     }
 
+    /** 是否需要 PIN（存在并已设置 pinHash） */
+    public boolean requiresPin(Integer shareId) {
+        MemoirShareGuard gd = mapper.findShareGuard(shareId);
+        return gd != null && org.springframework.util.StringUtils.hasText(gd.getPinHash());
+    }
+
     private String genToken() {
         byte[] buf = new byte[18];
         random.nextBytes(buf);
