@@ -118,6 +118,18 @@
       </dependency>
       
       <!-- We'll use REST API directly, no additional dependency needed -->
+
+            <!-- Markdown & PDF 导出依赖：flexmark + openhtmltopdf -->
+            <dependency>
+                <groupId>com.vladsch.flexmark</groupId>
+                <artifactId>flexmark-all</artifactId>
+                <version>0.64.8</version>
+            </dependency>
+            <dependency>
+                <groupId>com.openhtmltopdf</groupId>
+                <artifactId>openhtmltopdf-pdfbox</artifactId>
+                <version>1.0.10</version>
+            </dependency>
     </dependencies>
 
     <build>

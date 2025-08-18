@@ -235,3 +235,89 @@ CREATE TABLE IF NOT EXISTS schema_version (
     description TEXT,
     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ); 
+
+-- ===================== Memoir Module Tables (AI 回忆录模块) =====================
+-- 回忆录项目表：存储回忆录项目的基础信息
+CREATE TABLE IF NOT EXISTS memoir_project (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    owner VARCHAR(100),
+    locale VARCHAR(20) DEFAULT 'en-US',
+    pin_hash TEXT,                         -- 可选的项目访问PIN哈希
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 回忆录分段表：每段对应一个主题的一次回答/整理文本
+CREATE TABLE IF NOT EXISTS memoir_segment (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL,
+    chapter TEXT NOT NULL,
+    theme TEXT,
+    prompt_id INTEGER,
+    order_index INTEGER DEFAULT 0,
+    text TEXT,                             -- 转写或润色后的文本
+    audio_url TEXT,                        -- 原始录音的存储地址（可选）
+    tags TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(project_id) REFERENCES memoir_project(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_memoir_segment_project ON memoir_segment(project_id);
+CREATE INDEX IF NOT EXISTS idx_memoir_segment_chapter ON memoir_segment(chapter);
+
+-- 媒体表：项目相关的图片/音频等
+CREATE TABLE IF NOT EXISTS memoir_media (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL,
+    type TEXT,                             -- image/audio
+    url TEXT NOT NULL,
+    caption TEXT,
+    source TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(project_id) REFERENCES memoir_project(id)
+);
+
+-- 导出记录表：记录导出历史与文件地址
+CREATE TABLE IF NOT EXISTS memoir_export (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL,
+    format TEXT NOT NULL,                  -- markdown/pdf
+    file_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(project_id) REFERENCES memoir_project(id)
+);
+
+-- 题库表：默认的人生阶段+主题+问题文本
+CREATE TABLE IF NOT EXISTS memoir_prompt_catalog (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chapter TEXT NOT NULL,
+    theme TEXT NOT NULL,
+    text TEXT NOT NULL,
+    locale TEXT DEFAULT 'en-US',
+    therapy_type TEXT,                     -- integrative/instrumental
+    difficulty INTEGER DEFAULT 1
+);
+
+-- 分享令牌表：一次性或限时分享
+CREATE TABLE IF NOT EXISTS memoir_share_token (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL,
+    token TEXT NOT NULL,
+    expires_at TIMESTAMP,
+    scope TEXT DEFAULT 'view',             -- view/export
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(project_id) REFERENCES memoir_project(id)
+);
+
+-- 分享守护表：扩展分享令牌的安全与配额（避免直接修改既有表）
+CREATE TABLE IF NOT EXISTS memoir_share_guard (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    share_id INTEGER UNIQUE NOT NULL,      -- 对应 memoir_share_token.id
+    pin_hash TEXT,                         -- 可选 PIN 哈希（SHA-256/hex）
+    max_downloads INTEGER,                 -- 最大下载次数（空=不限）
+    download_count INTEGER DEFAULT 0,      -- 已下载次数
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(share_id) REFERENCES memoir_share_token(id)
+);

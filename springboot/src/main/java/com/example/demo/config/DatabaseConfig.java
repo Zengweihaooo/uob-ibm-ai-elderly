@@ -73,42 +73,37 @@ public class DatabaseConfig {
         initializer.setDataSource(dataSource);
 
         if (initSchema) {
-            // 检查数据库文件是否存在
+            // 始终执行 schema.sql（包含 CREATE TABLE IF NOT EXISTS，幂等安全），确保新增表被创建
             File dbFile = new File(databasePath);
-            if (!dbFile.exists()) {
-                System.out.println("Database file not found. Initializing new database...");
-                
-                // 设置初始化脚本
-                ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-                
-                // 如果有schema.sql文件，使用它来初始化
-                try {
-                    ClassPathResource schemaResource = new ClassPathResource("schema.sql");
-                    if (schemaResource.exists()) {
-                        populator.addScript(schemaResource);
-                        System.out.println("Found schema.sql, using it for initialization");
-                    }
-                } catch (Exception e) {
-                    System.out.println("No schema.sql found, will rely on Hibernate DDL");
-                }
+            System.out.println((dbFile.exists() ? "Database file exists at: " : "Database file not found. Initializing new database at: ") + dbFile.getAbsolutePath());
 
-                // 如果有data.sql文件，使用它来插入初始数据
-                try {
-                    ClassPathResource dataResource = new ClassPathResource("data.sql");
-                    if (dataResource.exists()) {
-                        populator.addScript(dataResource);
-                        System.out.println("Found data.sql, using it for initial data");
-                    }
-                } catch (Exception e) {
-                    System.out.println("No data.sql found, skipping initial data insertion");
+            ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+            // schema.sql（表结构）
+            try {
+                ClassPathResource schemaResource = new ClassPathResource("schema.sql");
+                if (schemaResource.exists()) {
+                    populator.addScript(schemaResource);
+                    System.out.println("Applying schema.sql for database structure (idempotent)");
+                } else {
+                    System.out.println("schema.sql not found, will rely on Hibernate DDL for JPA entities only");
                 }
-
-                populator.setSeparator(";");
-                populator.setCommentPrefix("--");
-                initializer.setDatabasePopulator(populator);
-            } else {
-                System.out.println("Database file exists at: " + dbFile.getAbsolutePath());
+            } catch (Exception e) {
+                System.out.println("Failed to load schema.sql: " + e.getMessage());
             }
+            // data.sql（初始数据，建议使用 INSERT OR IGNORE）
+            try {
+                ClassPathResource dataResource = new ClassPathResource("data.sql");
+                if (dataResource.exists()) {
+                    populator.addScript(dataResource);
+                    System.out.println("Applying data.sql for seed data (should be idempotent)");
+                }
+            } catch (Exception e) {
+                System.out.println("No data.sql found or failed to load: " + e.getMessage());
+            }
+
+            populator.setSeparator(";");
+            populator.setCommentPrefix("--");
+            initializer.setDatabasePopulator(populator);
         }
 
         return initializer;
