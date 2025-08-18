@@ -51,7 +51,7 @@ public class MemoirShareService {
     public boolean verifyPin(Integer shareId, String pin) {
         MemoirShareGuard gd = mapper.findShareGuard(shareId);
         if (gd == null || !StringUtils.hasText(gd.getPinHash())) return true; // 无 PIN 视为通过
-    return java.util.Objects.equals(sha256(pin), gd.getPinHash());
+        return sha256(pin).equals(gd.getPinHash());
     }
 
     public boolean canDownload(Integer shareId) {
