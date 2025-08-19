@@ -87,6 +87,26 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Important Dates Table (if not exists)
+CREATE TABLE IF NOT EXISTS important_dates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id BIGINT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    date DATE NOT NULL,
+    type VARCHAR(50),
+    repeat_cycle VARCHAR(20) DEFAULT 'yearly',
+    enabled BOOLEAN DEFAULT 1,
+    week_reminder_sent TIMESTAMP,
+    day_reminder_sent TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_important_dates_user ON important_dates(user_id);
+CREATE INDEX IF NOT EXISTS idx_important_dates_date ON important_dates(date);
+CREATE INDEX IF NOT EXISTS idx_important_dates_enabled ON important_dates(enabled);
+
 -- Emotion Companion (一人一条当前情绪状态)
 CREATE TABLE IF NOT EXISTS emotion_companion (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

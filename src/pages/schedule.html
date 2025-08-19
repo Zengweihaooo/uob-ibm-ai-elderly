@@ -1991,11 +1991,11 @@
 
         <!-- Important Dates Filter -->
         <div class="important-dates-filter">
-            <button class="filter-btn active" data-filter="all" onclick="filterImportantDates('all')">All</button>
-            <button class="filter-btn" data-filter="birthday" onclick="filterImportantDates('birthday')">Birthdays</button>
-            <button class="filter-btn" data-filter="anniversary" onclick="filterImportantDates('anniversary')">Anniversaries</button>
-            <button class="filter-btn" data-filter="holiday" onclick="filterImportantDates('holiday')">Holidays</button>
-            <button class="filter-btn" data-filter="custom" onclick="filterImportantDates('custom')">Custom</button>
+            <button class="filter-btn active" data-filter="all" onclick="filterImportantDates('all', this)">All</button>
+            <button class="filter-btn" data-filter="birthday" onclick="filterImportantDates('birthday', this)">Birthdays</button>
+            <button class="filter-btn" data-filter="anniversary" onclick="filterImportantDates('anniversary', this)">Anniversaries</button>
+            <button class="filter-btn" data-filter="holiday" onclick="filterImportantDates('holiday', this)">Holidays</button>
+            <button class="filter-btn" data-filter="custom" onclick="filterImportantDates('custom', this)">Custom</button>
         </div>
 
         <!-- Important Dates List -->
@@ -2048,7 +2048,7 @@
         </div>
 
         <!-- Edit Important Date Form -->
-        <div class="edit-important-date-form" id="editImportantDateForm" style="display: none;">
+        <div class="edit-important-date-form" id="editImportantDateContainer" style="display: none;">
             <h3 class="section-title">✏️ Edit Important Date</h3>
             <form onsubmit="updateImportantDate(event)" id="editImportantDateForm">
                 <input type="hidden" id="editImportantDateId">
@@ -2783,23 +2783,19 @@
             });
         });
 
-        // Handle URL hash navigation
+        // Handle URL hash navigation (preserve current tab via hash)
         function handleUrlHash() {
             const hash = window.location.hash;
             if (hash === '#pet') {
-                // Switch to Virtual Pet tab
                 switchTab('pet');
             } else if (hash === '#importantDates' || hash === '#important-dates') {
-                // Switch to Important Dates tab
                 switchTab('importantDates');
             } else if (hash === '#schedule') {
-                // Switch to Schedule tab (default)
                 switchTab('schedule');
+            } else {
+                // No hash -> keep default or current state
             }
-            // Clear the hash to avoid issues with browser back button
-            if (hash) {
-                history.replaceState(null, null, window.location.pathname);
-            }
+            // Do not clear the hash to avoid losing tab state
         }
 
         // Tab System Functions
@@ -2821,15 +2817,30 @@
             if (tabName === 'schedule') {
                 // Schedule is the main content, hide tab contents
                 currentTab = 'schedule';
+                if (window && window.location) window.location.hash = '#schedule';
             } else if (tabName === 'importantDates') {
                 document.getElementById('importantDatesPanel').style.display = 'flex';
                 currentTab = 'importantDates';
                 loadImportantDates();
+                if (window && window.location) window.location.hash = '#importantDates';
             } else if (tabName === 'pet') {
                 document.getElementById('petPanel').style.display = 'flex';
                 currentTab = 'pet';
                 initializePet();
+                if (window && window.location) window.location.hash = '#pet';
             }
+        }
+
+        // Ensure Important Dates tab stays active (used after add/edit/toggle/delete)
+        function ensureImportantDatesTab() {
+            currentTab = 'importantDates';
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            const tabBtn = document.getElementById('importantDatesTab');
+            if (tabBtn) tabBtn.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => { content.style.display = 'none'; });
+            const panel = document.getElementById('importantDatesPanel');
+            if (panel) panel.style.display = 'flex';
+            if (window && window.location) window.location.hash = '#importantDates';
         }
 
         // Virtual Pet Functions
@@ -2994,7 +3005,7 @@
 
         function startPetVoiceRecording() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                addPetMessage('pet', 'Meow... I can\'t hear you right now. Voice recording is not supported in this browser.');
+                displayPetMessage('pet', 'Meow... I can\'t hear you right now. Voice recording is not supported in this browser.');
                 return;
             }
 
@@ -3005,7 +3016,7 @@
                     voiceBtn.classList.add('recording');
                     voiceBtn.innerHTML = '<span class="voice-icon">🔴</span><span class="voice-text">Recording...</span>';
                     
-                    addPetMessage('user', '🎤 Recording voice message...');
+                    displayPetMessage('user', '🎤 Recording voice message...');
                     
                     // Auto-stop after 5 seconds
                     setTimeout(() => {
@@ -3015,7 +3026,7 @@
                     }, 5000);
                 })
                 .catch(err => {
-                    addPetMessage('pet', 'Meow... I can\'t access your microphone. Please check your permissions.');
+                    displayPetMessage('pet', 'Meow... I can\'t access your microphone. Please check your permissions.');
                 });
         }
 
@@ -3363,14 +3374,19 @@
         }
 
         // Filter important dates by type
-        function filterImportantDates(type) {
+        function filterImportantDates(type, el) {
             currentImportantDateFilter = type;
             
             // Update filter buttons
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (el) {
+                el.classList.add('active');
+            } else {
+                const btn = document.querySelector(`.filter-btn[data-filter="${type}"]`);
+                if (btn) btn.classList.add('active');
+            }
             
             displayImportantDates();
         }
@@ -3468,6 +3484,7 @@
                 if (data.success) {
                     showMessage('Important date added successfully', 'success');
                     hideAddImportantDateForm();
+                    ensureImportantDatesTab();
                     loadImportantDates();
                 } else {
                     showMessage('Add failed: ' + data.message, 'error');
@@ -3484,6 +3501,7 @@
                     enabled: enabled
                 };
                 importantDatesData.push(newDate);
+                ensureImportantDatesTab();
                 displayImportantDates();
                 loadImportantDateStats();
                 showMessage('Important date added successfully (Demo Mode)', 'success');
@@ -3503,12 +3521,12 @@
             document.getElementById('editImportantDateDescription').value = date.description || '';
             document.getElementById('editImportantDateEnabled').checked = date.enabled;
 
-            document.getElementById('editImportantDateForm').style.display = 'block';
+            document.getElementById('editImportantDateContainer').style.display = 'block';
         }
 
         // Hide edit important date form
         function hideEditImportantDateForm() {
-            document.getElementById('editImportantDateForm').style.display = 'none';
+            document.getElementById('editImportantDateContainer').style.display = 'none';
         }
 
         // Update important date
@@ -3548,6 +3566,7 @@
                 if (data.success) {
                     showMessage('Important date updated successfully', 'success');
                     hideEditImportantDateForm();
+                    ensureImportantDatesTab();
                     loadImportantDates();
                 } else {
                     showMessage('Update failed: ' + data.message, 'error');
@@ -3565,6 +3584,7 @@
                         description: description,
                         enabled: enabled
                     };
+                    ensureImportantDatesTab();
                     displayImportantDates();
                     loadImportantDateStats();
                     showMessage('Important date updated successfully (Demo Mode)', 'success');
@@ -3587,6 +3607,7 @@
                 const data = await response.json();
                 if (data.success) {
                     showMessage('Status updated successfully', 'success');
+                    ensureImportantDatesTab();
                     loadImportantDates();
                 } else {
                     showMessage('Status update failed: ' + data.message, 'error');
@@ -3597,6 +3618,7 @@
                 const index = importantDatesData.findIndex(d => d.id === id);
                 if (index !== -1) {
                     importantDatesData[index].enabled = !importantDatesData[index].enabled;
+                    ensureImportantDatesTab();
                     displayImportantDates();
                     showMessage('Status updated successfully (Demo Mode)', 'success');
                 }
@@ -3621,6 +3643,7 @@
                 const data = await response.json();
                 if (data.success) {
                     showMessage('Important date deleted successfully', 'success');
+                    ensureImportantDatesTab();
                     loadImportantDates();
                 } else {
                     showMessage('Delete failed: ' + data.message, 'error');
@@ -3629,6 +3652,7 @@
                 console.error('Error deleting important date:', error);
                 // Remove from local data for demo
                 importantDatesData = importantDatesData.filter(d => d.id !== id);
+                ensureImportantDatesTab();
                 displayImportantDates();
                 loadImportantDateStats();
                 showMessage('Important date deleted successfully (Demo Mode)', 'success');
