@@ -32,6 +32,18 @@
   .pager .info { color:#666; font-size:12px; margin:0 6px; }
   .share-box { background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:12px; margin-top:10px; }
   .inline-input { flex:1; min-width:240px; padding:8px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; }
+  /* Phase 0 TTS toolbar styles extracted from inline */
+  .tts-toolbar { margin-top:10px; gap:10px; align-items:center; flex-wrap:wrap; }
+  .tts-label { display:flex; align-items:center; gap:6px; }
+  /* Pseudo-streaming live transcript */
+  .live-box { max-height: 160px; overflow:auto; background:#fff; border:1px dashed #e5e7eb; border-radius:8px; padding:8px; font-size:14px; white-space: pre-wrap; }
+  .live-status { display:flex; align-items:center; gap:6px; margin:4px 0 6px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; display:inline-block; animation: blink 1.2s infinite; }
+  @keyframes blink { 0% { opacity: .2 } 50% { opacity: 1 } 100% { opacity: .2 } }
+  .hr-soft { margin:12px -12px; border:0; border-top:1px solid #f3f4f6; }
+  .mb-6 { margin-bottom:6px; }
+  .h2-compact { margin:8px 0 6px; }
+  .push-left { margin-right:auto; }
   </style>
   <!-- 页面目标：用最小 UI 打通 /api/memoir 的项目/分段/导出全流程 -->
 </head>
@@ -92,9 +104,9 @@
         <div>
           <h2>Add Segment</h2>
           <label>Chapter</label>
-          <input id="s-chapter" type="text" placeholder="例如：童年" />
+          <input id="s-chapter" type="text" placeholder="e.g., Childhood" />
           <label>Theme</label>
-          <input id="s-theme" type="text" placeholder="例如：家庭" />
+          <input id="s-theme" type="text" placeholder="e.g., Family" />
           <label>Text</label>
           <textarea id="s-text" placeholder="Write the story here…"></textarea>
           <div style="margin-top:12px" class="toolbar">
@@ -125,6 +137,23 @@
               <button class="btn btn-secondary" id="stt-append">Append transcript to text</button>
               <button class="btn btn-outline" id="stt-replace">Replace text with transcript</button>
             </div>
+
+            <!-- Pseudo-streaming (beta) -->
+            <hr class="hr-soft"/>
+            <h2 class="h2-compact">Live Transcription (pseudo-streaming, beta)</h2>
+            <div class="toolbar mb-6">
+              <label class="muted tts-label push-left">
+                <input type="checkbox" id="live-speak-prompt" checked /> Speak gentle prompt at start
+              </label>
+              <button class="btn btn-outline" id="live-start-btn">▶ Start Live</button>
+              <button class="btn btn-outline" id="live-stop-btn" disabled>⏹ Stop</button>
+            </div>
+            <div id="live-status" class="muted live-status"></div>
+            <div id="live-result" class="live-box" aria-live="polite"></div>
+            <div class="toolbar" style="margin-top:8px;">
+              <button class="btn btn-secondary" id="live-append">Append live transcript to text</button>
+              <button class="btn btn-outline" id="live-to-notes">Use live transcript as notes</button>
+            </div>
           </div>
 
           <!-- AI Assistant: Outline & Draft -->
@@ -144,6 +173,16 @@
               <button class="btn" id="ai-draft-btn">Generate Draft</button>
             </div>
             <div id="ai-draft-status" class="muted" style="margin-top:6px;"></div>
+
+            <!-- Phase 0: TTS playback controls -->
+            <div class="toolbar tts-toolbar">
+              <label class="muted tts-label">
+                <input type="checkbox" id="use-cloud-tts" /> Use Cloud TTS
+              </label>
+              <button class="btn btn-outline" id="speak-guide-btn">🔊 Speak Gentle Prompt</button>
+              <button class="btn btn-outline" id="speak-outline-btn">🔊 Speak Outline</button>
+              <button class="btn btn-outline" id="speak-draft-btn">🔊 Speak Draft</button>
+            </div>
           </div>
         </div>
         <div>
@@ -169,11 +208,22 @@
   let allProjects = [];
   let projPage = 1;
   const projPageSize = 8;
+  let lastOutlineSpeechText = '';
+  let lastDraftSpeechText = '';
 
     // 录音状态
     let mediaRecorder = null;
     let recordedChunks = [];
     let isRecording = false;
+
+  // 伪流式转写状态
+  let isLive = false;
+  let liveRecorder = null;
+  let liveQueue = [];
+  let liveProcessing = false;
+  let liveTranscript = '';
+  let liveLastText = '';
+  let liveStream = null;
 
     // 加载项目列表
     async function loadProjects() {
@@ -399,6 +449,124 @@
       document.getElementById('s-text').value = txt;
     }
 
+    // ===== Live (pseudo-streaming) =====
+    async function startLive() {
+      const statusEl = document.getElementById('live-status');
+      const startBtn = document.getElementById('live-start-btn');
+      const stopBtn = document.getElementById('live-stop-btn');
+      const liveBox = document.getElementById('live-result');
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+        statusEl.innerHTML = '<span class="danger">Live not supported on this browser.</span>';
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        liveStream = stream;
+        const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+        liveRecorder = new MediaRecorder(stream, { mimeType: mime });
+        liveQueue = [];
+        liveProcessing = false;
+        liveTranscript = '';
+        liveLastText = '';
+        liveBox.textContent = '';
+        liveRecorder.ondataavailable = e => {
+          if (e.data && e.data.size > 0) {
+            // 控制队列长度，避免积压
+            if (liveQueue.length > 5) liveQueue = liveQueue.slice(-5);
+            liveQueue.push(e.data);
+            processLiveQueue();
+          }
+        };
+        liveRecorder.onstop = () => {
+          stopBtn.disabled = true;
+          startBtn.disabled = false;
+          isLive = false;
+          try { stream.getTracks().forEach(t => t.stop()); } catch {}
+          statusEl.textContent = 'Live stopped.';
+        };
+        // 关键：以时间片启动，产生小块音频
+        liveRecorder.start(1000); // 1s chunks
+        isLive = true;
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        statusEl.innerHTML = '<span class="dot"></span> Listening… sending small chunks for quick transcription';
+        if (document.getElementById('live-speak-prompt').checked) {
+          try { speakText(buildGentlePrompt()); } catch {}
+        }
+      } catch (e) {
+        statusEl.innerHTML = `<span class="danger">Cannot start live: ${escapeHtml(e.message)}</span>`;
+      }
+    }
+
+    function stopLive() {
+      const statusEl = document.getElementById('live-status');
+      const startBtn = document.getElementById('live-start-btn');
+      const stopBtn = document.getElementById('live-stop-btn');
+      if (liveRecorder && isLive) {
+        try { liveRecorder.stop(); } catch {}
+      }
+      if (liveStream) {
+        try { liveStream.getTracks().forEach(t => t.stop()); } catch {}
+      }
+      isLive = false;
+      stopBtn.disabled = true;
+      startBtn.disabled = false;
+      statusEl.textContent = 'Stopping…';
+    }
+
+    async function processLiveQueue() {
+      if (liveProcessing) return;
+      if (!liveQueue.length) return;
+      liveProcessing = true;
+      const blob = liveQueue.shift();
+      const lang = document.getElementById('stt-lang').value || 'en-GB';
+      const statusEl = document.getElementById('live-status');
+      try {
+        const form = new FormData();
+        form.append('audio', blob, 'chunk.webm');
+        form.append('languageCode', lang);
+        const resp = await fetch('/api/voice/stt', { method: 'POST', body: form });
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok && data && data.success && data.text) {
+          const t = String(data.text).trim();
+          if (t && t !== liveLastText) {
+            // 简单双写去重：如果末尾已有该片段则不追加
+            const liveBox = document.getElementById('live-result');
+            if (!liveTranscript.endsWith(t)) {
+              liveTranscript += (liveTranscript ? ' ' : '') + t;
+              liveBox.textContent = liveTranscript;
+              // 滚到底部
+              liveBox.scrollTop = liveBox.scrollHeight;
+            }
+            liveLastText = t;
+          }
+          statusEl.innerHTML = '<span class="dot"></span> Live…';
+        } else {
+          // 允许安静块没有文本
+          statusEl.innerHTML = '<span class="dot"></span> Live…';
+        }
+      } catch (e) {
+        statusEl.innerHTML = `<span class="danger">Live error: ${escapeHtml(e.message)}</span>`;
+      } finally {
+        liveProcessing = false;
+        // 继续处理后续队列
+        if (liveQueue.length) setTimeout(processLiveQueue, 0);
+      }
+    }
+
+    function appendLiveToText() {
+      const t = liveTranscript.trim();
+      if (!t) { alert('No live transcript yet'); return; }
+      const area = document.getElementById('s-text');
+      area.value = (area.value ? (area.value + '\n') : '') + t;
+    }
+
+    function liveToNotes() {
+      const t = liveTranscript.trim();
+      if (!t) { alert('No live transcript yet'); return; }
+      document.getElementById('ai-notes').value = t;
+    }
+
     // 简单 HTML 转义
     function escapeHtml(s) {
       const div = document.createElement('div');
@@ -421,6 +589,11 @@
     document.getElementById('stt-upload-btn').addEventListener('click', onUploadButton);
     document.getElementById('stt-append').addEventListener('click', appendTranscript);
     document.getElementById('stt-replace').addEventListener('click', replaceWithTranscript);
+  // Live (pseudo-streaming)
+  document.getElementById('live-start-btn').addEventListener('click', startLive);
+  document.getElementById('live-stop-btn').addEventListener('click', stopLive);
+  document.getElementById('live-append').addEventListener('click', appendLiveToText);
+  document.getElementById('live-to-notes').addEventListener('click', liveToNotes);
 
     // ===== AI Assistant Integration =====
     async function generateOutline() {
@@ -449,6 +622,11 @@
           list.appendChild(li);
         });
         status.textContent = data.source ? `Source: ${data.source}` : 'Done';
+        // Build a concise speech text for outline
+        lastOutlineSpeechText = chapters.map((c, idx) => {
+          const themes = Array.isArray(c.themes) ? c.themes.filter(Boolean).join(', ') : '';
+          return `${idx + 1}. ${c.chapter || ''}${themes ? ': ' + themes : ''}`;
+        }).join('. ');
       } catch (e) {
         status.textContent = 'Failed: ' + e.message;
       }
@@ -468,14 +646,46 @@
         });
         if (data && data.text) {
           const area = document.getElementById('s-text');
-          area.value = (area.value ? (area.value + '\n\n') : '') + data.text;
-          status.textContent = data.source ? `Source: ${data.source}` : 'Done';
+          const prefix = area.value ? (area.value + '\n\n') : '';
+          area.value = prefix;
+          const full = data.text;
+          lastDraftSpeechText = full || '';
+          // 立即朗读第一句，提升反馈速度
+          try {
+            const firstSentence = (full.match(/[^.!?。！？]+[.!?。！？]/) || [full.slice(0, Math.min(120, full.length))])[0];
+            if (firstSentence) speakText(firstSentence);
+          } catch {}
+          // 打字机式逐步显示
+          await typeOutText(area, full, status, data.source);
         } else {
           status.textContent = 'No text returned.';
         }
       } catch (e) {
         status.textContent = 'Failed: ' + e.message;
       }
+    }
+
+    async function typeOutText(textarea, text, statusEl, source) {
+      return new Promise(resolve => {
+        const chars = Array.from(text);
+        let i = 0;
+        statusEl.textContent = 'Streaming…';
+        const tick = () => {
+          // 每次追加少量字符，感觉更流畅
+          const step = 6;
+          const slice = chars.slice(i, i + step).join('');
+          textarea.value += slice;
+          i += step;
+          if (i < chars.length) {
+            // 适度节流
+            setTimeout(tick, 20);
+          } else {
+            statusEl.textContent = source ? `Source: ${source}` : 'Done';
+            resolve();
+          }
+        };
+        tick();
+      });
     }
 
     function useTranscriptAsNotes() {
@@ -490,6 +700,61 @@
 
     // 初始化
     loadProjects();
+
+    // ===== TTS: speak helpers =====
+    function getLocaleForSpeech() {
+      const val = document.getElementById('stt-lang').value || 'en-GB';
+      // Map STT locale to a typical speechSynthesis locale
+      const map = { 'en-GB': 'en-GB', 'en-US': 'en-US', 'zh-CN': 'zh-CN', 'yue-Hant-HK': 'zh-HK' };
+      return map[val] || 'en-GB';
+    }
+
+    async function speakText(text) {
+      if (!text || !text.trim()) { alert('Nothing to speak'); return; }
+      const useCloud = document.getElementById('use-cloud-tts').checked;
+      const lang = document.getElementById('stt-lang').value || 'en-GB';
+      // Prefer browser TTS for low latency; Cloud TTS optional
+      if (!useCloud && 'speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = getLocaleForSpeech();
+          // Try pick a matching voice
+          const voices = speechSynthesis.getVoices?.() || [];
+          const prefer = voices.find(v => v.lang === utter.lang) || voices.find(v => v.lang?.startsWith(utter.lang.split('-')[0])) || null;
+          if (prefer) utter.voice = prefer;
+          speechSynthesis.speak(utter);
+          return;
+        } catch (_) { /* fallback to cloud */ }
+      }
+      // Cloud TTS fallback
+      try {
+        const resp = await fetch('/api/voice/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, languageCode: lang })
+        });
+        if (!resp.ok) throw new Error('TTS HTTP ' + resp.status);
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.play().finally(() => URL.revokeObjectURL(url));
+      } catch (e) {
+        alert('TTS failed: ' + e.message);
+      }
+    }
+
+    function buildGentlePrompt() {
+      const lang = document.getElementById('stt-lang').value || 'en-GB';
+      if (lang.startsWith('zh')) {
+        return '我们可以一起回忆过去的一段时光。比如童年、家庭或家乡，您愿意从哪里开始分享呢？';
+      }
+      return "Let's gently start with a memory. Perhaps your childhood, your family, or your hometown—where would you like to begin?";
+    }
+
+    document.getElementById('speak-guide-btn').addEventListener('click', () => speakText(buildGentlePrompt()));
+    document.getElementById('speak-outline-btn').addEventListener('click', () => speakText(lastOutlineSpeechText || document.getElementById('ai-outline-list')?.textContent || ''));
+    document.getElementById('speak-draft-btn').addEventListener('click', () => speakText(lastDraftSpeechText || document.getElementById('s-text')?.value || ''));
 
     // ===== Share Integration =====
     async function createShare() {
