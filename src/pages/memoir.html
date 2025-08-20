@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Memoir</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .container { max-width: 960px; margin: 24px auto; padding: 0 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+    .card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 900px) { .row { grid-template-columns: 1fr 1fr; } }
+    h1 { font-size: 24px; margin: 0 0 12px; }
+    h2 { font-size: 18px; margin: 0 0 12px; }
+  label { display: block; font-size: 14px; color: #444; margin: 8px 0 4px; }
+    input[type="text"], textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    textarea { min-height: 120px; resize: vertical; }
+    .btn { display: inline-block; background: #4f46e5; color: #fff; border: none; border-radius: 8px; padding: 10px 14px; font-size: 14px; cursor: pointer; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-secondary { background: #64748b; }
+    .btn-outline { background: transparent; color: #4f46e5; border: 1px solid #4f46e5; }
+    .list { list-style: none; padding: 0; margin: 0; }
+    .list li { padding: 10px 8px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+    .muted { color: #666; font-size: 12px; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .chip { display:inline-block; padding: 2px 8px; border-radius: 999px; background:#eef2ff; color:#3730a3; font-size:12px; margin-left:8px; }
+    .danger { color:#b91c1c; }
+    .success { color:#166534; }
+  .pager { display:flex; align-items:center; gap:8px; justify-content:flex-end; margin-top:8px; }
+  .pager button { padding:6px 10px; font-size:13px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer; }
+  .pager button:disabled { color:#999; border-color:#eee; cursor:not-allowed; }
+  .pager .info { color:#666; font-size:12px; margin:0 6px; }
+  .share-box { background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:12px; margin-top:10px; }
+  .inline-input { flex:1; min-width:240px; padding:8px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; }
+  /* Phase 0 TTS toolbar styles extracted from inline */
+  .tts-toolbar { margin-top:10px; gap:10px; align-items:center; flex-wrap:wrap; }
+  .tts-label { display:flex; align-items:center; gap:6px; }
+  /* Pseudo-streaming live transcript */
+  .live-box { max-height: 160px; overflow:auto; background:#fff; border:1px dashed #e5e7eb; border-radius:8px; padding:8px; font-size:14px; white-space: pre-wrap; }
+  .live-status { display:flex; align-items:center; gap:6px; margin:4px 0 6px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; display:inline-block; animation: blink 1.2s infinite; }
+  @keyframes blink { 0% { opacity: .2 } 50% { opacity: 1 } 100% { opacity: .2 } }
+  .hr-soft { margin:12px -12px; border:0; border-top:1px solid #f3f4f6; }
+  .mb-6 { margin-bottom:6px; }
+  .h2-compact { margin:8px 0 6px; }
+  .push-left { margin-right:auto; }
+  .btn-compact { padding:4px 8px; }
+  .ml-8 { margin-left:8px; }
+  </style>
+  <script>
+    window.API_BASE = window.API_BASE || localStorage.getItem('API_BASE') || 'http://localhost:8080';
+  </script>
+</head>
+<body>
+  <div class="container">
+  <h1>📘 AI Memoir</h1>
+  <p class="muted">Create a memoir project, add segments by chapter and theme, then export as Markdown or PDF.</p>
+
+    <div class="row">
+      <div class="card">
+  <h2>New Project</h2>
+  <label>Title</label>
+  <input id="p-title" type="text" placeholder="e.g., Grandma's Memoir" />
+  <label>Author/Owner (optional)</label>
+  <input id="p-owner" type="text" placeholder="e.g., Zhang San" />
+        <div style="margin-top:12px" class="toolbar">
+          <button class="btn" id="create-project">Create</button>
+          <button class="btn btn-outline" id="refresh-projects">Refresh</button>
+        </div>
+      </div>
+
+      <div class="card">
+  <h2>Existing Projects</h2>
+        <ul id="project-list" class="list"></ul>
+        <div class="pager" id="project-pager" style="display:none;">
+          <button id="project-prev">Prev</button>
+          <span class="info" id="project-page-info"></span>
+          <button id="project-next">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="work-area" class="card" style="display:none;">
+      <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;">
+  <h2 id="current-project-title" style="margin:0;">Current Project</h2>
+        <span id="current-project-meta" class="chip"></span>
+      </div>
+      <div class="toolbar" style="margin-top:8px;">
+  <button class="btn btn-secondary" id="export-md">Export Markdown</button>
+  <button class="btn" id="export-pdf">Export PDF</button>
+  <button class="btn btn-outline" id="create-share">Create Share</button>
+      </div>
+
+      <div id="share-box" class="share-box" style="display:none;">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <input id="share-link" class="inline-input" type="text" readonly value=""/>
+          <button class="btn btn-outline" id="copy-link">Copy</button>
+          <a id="open-link" class="btn" href="#" target="_blank">Open</a>
+        </div>
+        <div class="muted" id="share-pin-line" style="margin-top:6px;"></div>
+        <div class="muted" id="share-meta-line" style="margin-top:2px;"></div>
+      </div>
+
+      <hr style="margin:16px -16px; border:0; border-top:1px solid #f0f0f0;"/>
+
+      <div class="row">
+        <div>
+          <h2>Add Segment</h2>
+          <label>Chapter</label>
+          <input id="s-chapter" type="text" placeholder="e.g., Childhood" />
+          <label>Theme</label>
+          <input id="s-theme" type="text" placeholder="e.g., Family" />
+          <label>Text</label>
+          <textarea id="s-text" placeholder="Write the story here…"></textarea>
+          <div style="margin-top:12px" class="toolbar">
+            <button class="btn" id="add-segment">Add</button>
+          </div>
+          <p class="muted">Tip: Add multiple segments across chapters/themes. Export groups them by chapter.</p>
+
+          <div class="card" style="padding:12px; margin-top:16px;">
+            <h2 style="margin-top:0;">Speech to Text (fill into content)</h2>
+            <div class="toolbar" style="margin:6px 0 8px;">
+              <label for="stt-lang" style="margin:0;">Language</label>
+              <select id="stt-lang" style="padding:8px; border:1px solid #ddd; border-radius:8px;">
+                <option value="en-GB" selected>English (UK)</option>
+                <option value="en-US">English (US)</option>
+                <option value="zh-CN">Chinese (Mandarin)</option>
+                <option value="yue-Hant-HK">Chinese (Cantonese)</option>
+              </select>
+            </div>
+            <div class="toolbar">
+              <button class="btn" id="stt-record-btn">🎙️ Start Recording</button>
+              <input id="stt-file" type="file" accept="audio/webm,audio/ogg" />
+              <button class="btn btn-outline" id="stt-upload-btn">Upload & Transcribe</button>
+            </div>
+            <p id="stt-status" class="muted" style="margin-top:6px;">The browser will use the microphone to record (WebM/Opus). If unsupported, upload a local audio file.</p>
+            <div id="stt-result" class="muted" style="margin-top:8px;"></div>
+            <div class="toolbar" style="margin-top:8px;">
+              <button class="btn btn-secondary" id="stt-append">Append transcript to text</button>
+              <button class="btn btn-outline" id="stt-replace">Replace text with transcript</button>
+            </div>
+
+            <hr class="hr-soft"/>
+            <h2 class="h2-compact">Live Transcription (pseudo-streaming, beta)</h2>
+            <div class="toolbar mb-6">
+              <label class="muted tts-label push-left">
+                <input type="checkbox" id="live-speak-prompt" checked /> Speak gentle prompt at start
+              </label>
+              <button class="btn btn-outline" id="live-start-btn">▶ Start Live</button>
+              <button class="btn btn-outline" id="live-stop-btn" disabled>⏹ Stop</button>
+            </div>
+            <div id="live-status" class="muted live-status"></div>
+            <div id="live-result" class="live-box" aria-live="polite"></div>
+            <div class="toolbar" style="margin-top:8px;">
+              <button class="btn btn-secondary" id="live-append">Append live transcript to text</button>
+              <button class="btn btn-outline" id="live-to-notes">Use live transcript as notes</button>
+            </div>
+          </div>
+
+          <div class="card" style="padding:12px; margin-top:16px;">
+            <h2 style="margin-top:0;">AI Assistant</h2>
+            <div class="toolbar" style="margin-bottom:8px;">
+              <input id="ai-hint" type="text" placeholder="Outline hint (optional), e.g., childhood in London" style="flex:1;" />
+              <button class="btn btn-outline" id="ai-outline-btn">Generate Outline</button>
+            </div>
+            <div id="ai-outline-status" class="muted" style="margin:4px 0 8px;"></div>
+            <ul id="ai-outline-list" class="list" style="margin-bottom:12px;"></ul>
+
+            <label>Notes for Draft (optional)</label>
+            <textarea id="ai-notes" placeholder="Key points for the draft…"></textarea>
+            <div class="toolbar" style="margin-top:8px;">
+              <button class="btn btn-outline" id="ai-notes-use-stt">Use transcript as notes</button>
+              <button class="btn" id="ai-draft-btn">Generate Draft</button>
+            </div>
+            <div id="ai-draft-status" class="muted" style="margin-top:6px;"></div>
+
+            <div class="toolbar tts-toolbar">
+              <label class="muted tts-label">
+                <input type="checkbox" id="use-cloud-tts" /> Use Cloud TTS
+              </label>
+              <button class="btn btn-outline" id="speak-guide-btn">🔊 Speak Gentle Prompt</button>
+              <button class="btn btn-outline" id="speak-outline-btn">🔊 Speak Outline</button>
+              <button class="btn btn-outline" id="speak-draft-btn">🔊 Speak Draft</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2>Segments</h2>
+          <ul id="segment-list" class="list"></ul>
+        </div>
+      </div>
+    </div>
+
+  <p class="muted">Navigation: this page is served at <code>src/pages/memoir.html</code>. Backend API base: <code id="api-base-text"></code> <button id="change-api" class="btn btn-outline btn-compact ml-8">Change API</button></p>
+  </div>
+
+  <script>
+    const API_BASE = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : 'http://localhost:8080';
+    document.getElementById('api-base-text').textContent = API_BASE;
+    document.getElementById('change-api').addEventListener('click', () => {
+      const cur = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : '';
+      const val = prompt('Set Backend API Base (e.g., https://your-backend.example.com)', cur || 'http://localhost:8080');
+      if (val) {
+        try {
+          window.API_BASE = val.trim();
+          localStorage.setItem('API_BASE', window.API_BASE);
+          document.getElementById('api-base-text').textContent = window.API_BASE;
+          alert('API base saved. You can now use the page with the new backend.');
+        } catch (e) {
+          alert('Failed to save API base: ' + e.message);
+        }
+      }
+    });
+
+    async function apiJson(path, options = {}) {
+      const url = path.startsWith('http') ? path : (API_BASE.replace(/\/$/, '') + path);
+      const resp = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return resp.json();
+    }
+
+    let currentProject = null;
+  let allProjects = [];
+  let projPage = 1;
+  const projPageSize = 8;
+  let lastOutlineSpeechText = '';
+  let lastDraftSpeechText = '';
+
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+
+  let isLive = false;
+  let liveRecorder = null;
+  let liveQueue = [];
+  let liveProcessing = false;
+  let liveTranscript = '';
+  let liveLastText = '';
+  let liveStream = null;
+
+    async function loadProjects() {
+      const listEl = document.getElementById('project-list');
+  listEl.innerHTML = '<li class="muted">Loading…</li>';
+      try {
+        const data = await apiJson('/api/memoir/projects');
+        const arr = Array.isArray(data) ? data : (data.items || []);
+        allProjects = arr;
+        if (!arr.length) {
+          listEl.innerHTML = '<li class="muted">No projects yet</li>';
+          document.getElementById('project-pager').style.display = 'none';
+          return;
+        }
+        renderProjectsPage(1);
+      } catch (e) {
+  listEl.innerHTML = `<li class="danger">Failed to load: ${e.message}</li>`;
+      }
+    }
+
+    function renderProjectsPage(page) {
+      const listEl = document.getElementById('project-list');
+      const pager = document.getElementById('project-pager');
+      const info = document.getElementById('project-page-info');
+      const prevBtn = document.getElementById('project-prev');
+      const nextBtn = document.getElementById('project-next');
+      const total = allProjects.length;
+      const pages = Math.max(1, Math.ceil(total / projPageSize));
+      projPage = Math.min(Math.max(1, page), pages);
+      const start = (projPage - 1) * projPageSize;
+      const end = Math.min(start + projPageSize, total);
+      const slice = allProjects.slice(start, end);
+      listEl.innerHTML = '';
+      slice.forEach(p => {
+        const li = document.createElement('li');
+        const left = document.createElement('div');
+        const right = document.createElement('div');
+        left.innerHTML = `<strong>${escapeHtml(p.title || ('Project #' + p.id))}</strong><div class="muted">ID: ${p.id}${p.owner ? (' · ' + escapeHtml(p.owner)) : ''}</div>`;
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline';
+        btn.textContent = 'Open';
+        btn.onclick = () => openProject(p);
+        right.appendChild(btn);
+        li.appendChild(left);
+        li.appendChild(right);
+        listEl.appendChild(li);
+      });
+      if (total > projPageSize) {
+        pager.style.display = '';
+        info.textContent = `Page ${projPage} / ${pages}`;
+        prevBtn.disabled = (projPage === 1);
+        nextBtn.disabled = (projPage === pages);
+      } else {
+        pager.style.display = 'none';
+      }
+    }
+
+    async function createProject() {
+      const title = document.getElementById('p-title').value.trim();
+      const owner = document.getElementById('p-owner').value.trim();
+  if (!title) { alert('Please enter a title'); return; }
+      try {
+        const data = await apiJson('/api/memoir/projects', { method: 'POST', body: JSON.stringify({ title, owner }) });
+        if (data && (data.projectId || data.id)) {
+          await loadProjects();
+          document.getElementById('p-title').value = '';
+          openProject({ id: data.projectId || data.id, title, owner });
+        } else {
+          alert('Created, but response shape is unexpected');
+          loadProjects();
+        }
+      } catch (e) {
+        alert('Create failed: ' + e.message);
+      }
+    }
+
+    async function openProject(p) {
+      currentProject = p;
+      document.getElementById('work-area').style.display = '';
+  document.getElementById('current-project-title').textContent = p.title || ('Project #' + p.id);
+      document.getElementById('current-project-meta').textContent = 'ID ' + p.id + (p.owner ? (' · ' + p.owner) : '');
+      await loadSegments();
+    }
+
+    async function loadSegments() {
+      const listEl = document.getElementById('segment-list');
+  listEl.innerHTML = '<li class="muted">Loading…</li>';
+      try {
+        const data = await apiJson(`/api/memoir/projects/${currentProject.id}/segments`);
+        const arr = Array.isArray(data) ? data : (data.items || []);
+  if (!arr.length) { listEl.innerHTML = '<li class="muted">No segments yet</li>'; return; }
+        listEl.innerHTML = '';
+        arr.forEach(s => {
+          const li = document.createElement('li');
+          li.innerHTML = `<div><strong>${escapeHtml(s.chapter || '-')}</strong><span class=\"chip\">${escapeHtml(s.theme || '-')}</span><div class=\"muted\">${escapeHtml((s.text || '').slice(0, 80))}</div></div>`;
+          listEl.appendChild(li);
+        });
+      } catch (e) {
+  listEl.innerHTML = `<li class="danger">Failed to load: ${e.message}</li>`;
+      }
+    }
+
+    async function addSegment() {
+      const chapter = document.getElementById('s-chapter').value.trim();
+      const theme = document.getElementById('s-theme').value.trim();
+      const text = document.getElementById('s-text').value.trim();
+  if (!text) { alert('Please enter the text'); return; }
+      try {
+        await apiJson(`/api/memoir/projects/${currentProject.id}/segments`, {
+          method: 'POST',
+          body: JSON.stringify({ chapter, theme, text })
+        });
+        document.getElementById('s-text').value = '';
+        await loadSegments();
+      } catch (e) {
+        alert('Add failed: ' + e.message);
+      }
+    }
+
+    async function exportMemoir(fmt) {
+      if (!currentProject) return;
+      const url = `${API_BASE.replace(/\/$/, '')}/api/memoir/projects/${currentProject.id}/export?format=${fmt}`;
+      try {
+        const resp = await fetch(url);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const blob = await resp.blob();
+        const a = document.createElement('a');
+        const fname = (currentProject.title || ('memoir-' + currentProject.id)) + (fmt === 'pdf' ? '.pdf' : '.md');
+        a.href = URL.createObjectURL(blob);
+        a.download = fname;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } catch (e) {
+        alert('Export failed: ' + e.message);
+      }
+    }
+
+    async function sttUpload(file, languageCode) {
+      const statusEl = document.getElementById('stt-status');
+      const resultEl = document.getElementById('stt-result');
+  statusEl.textContent = 'Uploading and transcribing…';
+      resultEl.textContent = '';
+      try {
+        const form = new FormData();
+        form.append('audio', file, file.name || 'audio.webm');
+  form.append('languageCode', languageCode || 'en-GB');
+        const resp = await fetch(`${API_BASE.replace(/\/$/, '')}/api/voice/stt`, { method: 'POST', body: form });
+        const data = await resp.json();
+  if (!resp.ok || !data.success) throw new Error(data.error || ('HTTP ' + resp.status));
+        resultEl.textContent = data.text || '';
+  statusEl.innerHTML = '<span class="success">Transcribed</span>';
+      } catch (e) {
+  statusEl.innerHTML = `<span class=\"danger\">Transcription failed: ${escapeHtml(e.message)}</span>`;
+      }
+    }
+
+    async function startRecording() {
+      const statusEl = document.getElementById('stt-status');
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+  statusEl.innerHTML = '<span class="danger">Recording not supported by this browser, please use Upload & Transcribe.</span>';
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+        mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
+        recordedChunks = [];
+        mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
+          const lang = document.getElementById('stt-lang').value;
+          await sttUpload(blob, lang);
+          stream.getTracks().forEach(t => t.stop());
+        };
+        mediaRecorder.start();
+        isRecording = true;
+  document.getElementById('stt-record-btn').textContent = '⏹ Stop & Transcribe';
+  statusEl.textContent = 'Recording… speak now, then click Stop to transcribe.';
+      } catch (e) {
+  statusEl.innerHTML = `<span class=\"danger\">Cannot start recording: ${escapeHtml(e.message)}</span>`;
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && isRecording) {
+        isRecording = false;
+        mediaRecorder.stop();
+  document.getElementById('stt-record-btn').textContent = '🎙️ Start Recording';
+      }
+    }
+
+    function onRecordButton() {
+      if (!isRecording) startRecording(); else stopRecording();
+    }
+
+    async function onUploadButton() {
+      const fileInput = document.getElementById('stt-file');
+      const file = fileInput.files && fileInput.files[0];
+  if (!file) { alert('Please choose an audio file'); return; }
+      const lang = document.getElementById('stt-lang').value;
+      await sttUpload(file, lang);
+    }
+
+    function appendTranscript() {
+      const txt = document.getElementById('stt-result').textContent || '';
+  if (!txt) { alert('No transcript yet'); return; }
+      const area = document.getElementById('s-text');
+      area.value = (area.value ? (area.value + '\n') : '') + txt;
+    }
+
+    function replaceWithTranscript() {
+      const txt = document.getElementById('stt-result').textContent || '';
+  if (!txt) { alert('No transcript yet'); return; }
+      document.getElementById('s-text').value = txt;
+    }
+
+    async function startLive() {
+      const statusEl = document.getElementById('live-status');
+      const startBtn = document.getElementById('live-start-btn');
+      const stopBtn = document.getElementById('live-stop-btn');
+      const liveBox = document.getElementById('live-result');
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+        statusEl.innerHTML = '<span class="danger">Live not supported on this browser.</span>';
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        liveStream = stream;
+        const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+        liveRecorder = new MediaRecorder(stream, { mimeType: mime });
+        liveQueue = [];
+        liveProcessing = false;
+        liveTranscript = '';
+        liveLastText = '';
+        liveBox.textContent = '';
+        liveRecorder.ondataavailable = e => {
+          if (e.data && e.data.size > 0) {
+            if (liveQueue.length > 5) liveQueue = liveQueue.slice(-5);
+            liveQueue.push(e.data);
+            processLiveQueue();
+          }
+        };
+        liveRecorder.onstop = () => {
+          stopBtn.disabled = true;
+          startBtn.disabled = false;
+          isLive = false;
+          try { stream.getTracks().forEach(t => t.stop()); } catch {}
+          statusEl.textContent = 'Live stopped.';
+        };
+        liveRecorder.start(1000);
+        isLive = true;
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        statusEl.innerHTML = '<span class="dot"></span> Listening… sending small chunks for quick transcription';
+        if (document.getElementById('live-speak-prompt').checked) {
+          try { speakText(buildGentlePrompt()); } catch {}
+        }
+      } catch (e) {
+        statusEl.innerHTML = `<span class=\"danger\">Cannot start live: ${escapeHtml(e.message)}</span>`;
+      }
+    }
+
+    function stopLive() {
+      const statusEl = document.getElementById('live-status');
+      const startBtn = document.getElementById('live-start-btn');
+      const stopBtn = document.getElementById('live-stop-btn');
+      if (liveRecorder && isLive) {
+        try { liveRecorder.stop(); } catch {}
+      }
+      if (liveStream) {
+        try { liveStream.getTracks().forEach(t => t.stop()); } catch {}
+      }
+      isLive = false;
+      stopBtn.disabled = true;
+      startBtn.disabled = false;
+      statusEl.textContent = 'Stopping…';
+    }
+
+    async function processLiveQueue() {
+      if (liveProcessing) return;
+      if (!liveQueue.length) return;
+      liveProcessing = true;
+      const blob = liveQueue.shift();
+      const lang = document.getElementById('stt-lang').value || 'en-GB';
+      const statusEl = document.getElementById('live-status');
+      try {
+        const form = new FormData();
+        form.append('audio', blob, 'chunk.webm');
+        form.append('languageCode', lang);
+        const resp = await fetch(`${API_BASE.replace(/\/$/, '')}/api/voice/stt`, { method: 'POST', body: form });
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok && data && data.success && data.text) {
+          const t = String(data.text).trim();
+          if (t && t !== liveLastText) {
+            const liveBox = document.getElementById('live-result');
+            if (!liveTranscript.endsWith(t)) {
+              liveTranscript += (liveTranscript ? ' ' : '') + t;
+              liveBox.textContent = liveTranscript;
+              liveBox.scrollTop = liveBox.scrollHeight;
+            }
+            liveLastText = t;
+          }
+          statusEl.innerHTML = '<span class="dot"></span> Live…';
+        } else {
+          statusEl.innerHTML = '<span class="dot"></span> Live…';
+        }
+      } catch (e) {
+        statusEl.innerHTML = `<span class=\"danger\">Live error: ${escapeHtml(e.message)}</span>`;
+      } finally {
+        liveProcessing = false;
+        if (liveQueue.length) setTimeout(processLiveQueue, 0);
+      }
+    }
+
+    function appendLiveToText() {
+      const t = liveTranscript.trim();
+      if (!t) { alert('No live transcript yet'); return; }
+      const area = document.getElementById('s-text');
+      area.value = (area.value ? (area.value + '\n') : '') + t;
+    }
+
+    function liveToNotes() {
+      const t = liveTranscript.trim();
+      if (!t) { alert('No live transcript yet'); return; }
+      document.getElementById('ai-notes').value = t;
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s == null ? '' : String(s);
+      return div.innerHTML;
+    }
+
+    document.getElementById('create-project').addEventListener('click', createProject);
+    document.getElementById('refresh-projects').addEventListener('click', loadProjects);
+  document.getElementById('project-prev').addEventListener('click', () => renderProjectsPage(projPage - 1));
+  document.getElementById('project-next').addEventListener('click', () => renderProjectsPage(projPage + 1));
+    document.getElementById('add-segment').addEventListener('click', addSegment);
+    document.getElementById('export-md').addEventListener('click', () => exportMemoir('markdown'));
+    document.getElementById('export-pdf').addEventListener('click', () => exportMemoir('pdf'));
+  document.getElementById('create-share').addEventListener('click', createShare);
+  document.getElementById('copy-link').addEventListener('click', copyShareLink);
+    document.getElementById('stt-record-btn').addEventListener('click', onRecordButton);
+    document.getElementById('stt-upload-btn').addEventListener('click', onUploadButton);
+    document.getElementById('stt-append').addEventListener('click', appendTranscript);
+    document.getElementById('stt-replace').addEventListener('click', replaceWithTranscript);
+  document.getElementById('live-start-btn').addEventListener('click', startLive);
+  document.getElementById('live-stop-btn').addEventListener('click', stopLive);
+  document.getElementById('live-append').addEventListener('click', appendLiveToText);
+  document.getElementById('live-to-notes').addEventListener('click', liveToNotes);
+
+    async function generateOutline() {
+      const status = document.getElementById('ai-outline-status');
+      const list = document.getElementById('ai-outline-list');
+      list.innerHTML = '';
+      status.textContent = 'Generating outline…';
+      try {
+        const locale = document.getElementById('stt-lang').value || 'en-GB';
+        const hint = document.getElementById('ai-hint').value || '';
+        const data = await apiJson('/api/memoir/ai/outline', {
+          method: 'POST',
+          body: JSON.stringify({ locale, hint })
+        });
+        let chapters = [];
+        if (Array.isArray(data.chapters)) chapters = data.chapters;
+        else if (data.raw) {
+          try { const parsed = JSON.parse(data.raw); if (parsed && Array.isArray(parsed.chapters)) chapters = parsed.chapters; } catch {}
+        }
+        if (!chapters.length) { status.textContent = 'No chapters returned.'; return; }
+        chapters.forEach(c => {
+          const li = document.createElement('li');
+          const themes = Array.isArray(c.themes) ? c.themes.join(', ') : '';
+          li.innerHTML = `<div><strong>${escapeHtml(c.chapter || '')}</strong><div class="muted">${escapeHtml(themes)}</div></div>`;
+          list.appendChild(li);
+        });
+        status.textContent = data.source ? `Source: ${data.source}` : 'Done';
+        lastOutlineSpeechText = chapters.map((c, idx) => {
+          const themes = Array.isArray(c.themes) ? c.themes.filter(Boolean).join(', ') : '';
+          return `${idx + 1}. ${c.chapter || ''}${themes ? ': ' + themes : ''}`;
+        }).join('. ');
+      } catch (e) {
+        status.textContent = 'Failed: ' + e.message;
+      }
+    }
+
+    async function generateDraft() {
+      const status = document.getElementById('ai-draft-status');
+      status.textContent = 'Generating draft…';
+      try {
+        const chapter = document.getElementById('s-chapter').value.trim();
+        const theme = document.getElementById('s-theme').value.trim();
+        const notes = document.getElementById('ai-notes').value.trim();
+        const locale = document.getElementById('stt-lang').value || 'en-GB';
+        const data = await apiJson('/api/memoir/ai/draft', {
+          method: 'POST',
+          body: JSON.stringify({ chapter, theme, notes, locale })
+        });
+        if (data && data.text) {
+          const area = document.getElementById('s-text');
+          const prefix = area.value ? (area.value + '\n\n') : '';
+          area.value = prefix;
+          const full = data.text;
+          lastDraftSpeechText = full || '';
+          try {
+            const firstSentence = (full.match(/[^.!?。！？]+[.!?。！？]/) || [full.slice(0, Math.min(120, full.length))])[0];
+            if (firstSentence) speakText(firstSentence);
+          } catch {}
+          await typeOutText(area, full, status, data.source);
+        } else {
+          status.textContent = 'No text returned.';
+        }
+      } catch (e) {
+        status.textContent = 'Failed: ' + e.message;
+      }
+    }
+
+    async function typeOutText(textarea, text, statusEl, source) {
+      return new Promise(resolve => {
+        const chars = Array.from(text);
+        let i = 0;
+        statusEl.textContent = 'Streaming…';
+        const tick = () => {
+          const step = 6;
+          const slice = chars.slice(i, i + step).join('');
+          textarea.value += slice;
+          i += step;
+          if (i < chars.length) {
+            setTimeout(tick, 20);
+          } else {
+            statusEl.textContent = source ? `Source: ${source}` : 'Done';
+            resolve();
+          }
+        };
+        tick();
+      });
+    }
+
+    function useTranscriptAsNotes() {
+      const txt = document.getElementById('stt-result').textContent || '';
+      if (!txt) { alert('No transcript yet'); return; }
+      document.getElementById('ai-notes').value = txt;
+    }
+
+    document.getElementById('ai-outline-btn').addEventListener('click', generateOutline);
+    document.getElementById('ai-draft-btn').addEventListener('click', generateDraft);
+    document.getElementById('ai-notes-use-stt').addEventListener('click', useTranscriptAsNotes);
+
+    loadProjects();
+
+    function getLocaleForSpeech() {
+      const val = document.getElementById('stt-lang').value || 'en-GB';
+      const map = { 'en-GB': 'en-GB', 'en-US': 'en-US', 'zh-CN': 'zh-CN', 'yue-Hant-HK': 'zh-HK' };
+      return map[val] || 'en-GB';
+    }
+
+    async function speakText(text) {
+      if (!text || !text.trim()) { alert('Nothing to speak'); return; }
+      const useCloud = document.getElementById('use-cloud-tts').checked;
+      const lang = document.getElementById('stt-lang').value || 'en-GB';
+      if (!useCloud && 'speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = getLocaleForSpeech();
+          const voices = speechSynthesis.getVoices?.() || [];
+          const prefer = voices.find(v => v.lang === utter.lang) || voices.find(v => v.lang?.startsWith(utter.lang.split('-')[0])) || null;
+          if (prefer) utter.voice = prefer;
+          speechSynthesis.speak(utter);
+          return;
+        } catch (_) { }
+      }
+      try {
+        const resp = await fetch(`${API_BASE.replace(/\/$/, '')}/api/voice/tts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, languageCode: lang })
+        });
+        if (!resp.ok) throw new Error('TTS HTTP ' + resp.status);
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.play().finally(() => URL.revokeObjectURL(url));
+      } catch (e) {
+        alert('TTS failed: ' + e.message);
+      }
+    }
+
+    function buildGentlePrompt() {
+      const lang = document.getElementById('stt-lang').value || 'en-GB';
+      if (lang.startsWith('zh')) {
+        return '我们可以一起回忆过去的一段时光。比如童年、家庭或家乡，您愿意从哪里开始分享呢？';
+      }
+      return "Let's gently start with a memory. Perhaps your childhood, your family, or your hometown—where would you like to begin?";
+    }
+
+    document.getElementById('speak-guide-btn').addEventListener('click', () => speakText(buildGentlePrompt()));
+    document.getElementById('speak-outline-btn').addEventListener('click', () => speakText(lastOutlineSpeechText || document.getElementById('ai-outline-list')?.textContent || ''));
+    document.getElementById('speak-draft-btn').addEventListener('click', () => speakText(lastDraftSpeechText || document.getElementById('s-text')?.value || ''));
+
+    async function createShare() {
+      if (!currentProject) { alert('Open a project first'); return; }
+      const wantPin = confirm('Do you want to set a PIN for this share?');
+      const pin = wantPin ? (prompt('Enter PIN (remember to share it separately)') || '') : '';
+      const daysStr = prompt('Expire in N days (optional, default 7)', '7');
+      const days = daysStr ? parseInt(daysStr, 10) : undefined;
+      const maxStr = prompt('Max downloads (optional)', '3');
+      const maxDownloads = maxStr ? parseInt(maxStr, 10) : undefined;
+      try {
+        const data = await apiJson(`/api/memoir/projects/${currentProject.id}/share`, {
+          method: 'POST',
+          body: JSON.stringify({ pin, days, maxDownloads, scope: 'view' })
+        });
+        const backendOrigin = new URL(API_BASE, location.href).origin;
+        const link = `${backendOrigin}/s/${data.token}`;
+        const box = document.getElementById('share-box');
+        const linkInput = document.getElementById('share-link');
+        const pinLine = document.getElementById('share-pin-line');
+        const metaLine = document.getElementById('share-meta-line');
+        const openLink = document.getElementById('open-link');
+        linkInput.value = link;
+        openLink.href = link;
+        pinLine.textContent = pin ? (`PIN: ${pin}`) : 'No PIN set';
+        const parts = [];
+        if (data.maxDownloads) parts.push(`Max downloads: ${data.maxDownloads}`);
+        if (data.expiresAt) parts.push(`Expires: ${data.expiresAt}`);
+        metaLine.textContent = parts.join(' · ');
+        box.style.display = '';
+      } catch (e) {
+        alert('Create share failed: ' + e.message);
+      }
+    }
+
+    function copyShareLink() {
+      const input = document.getElementById('share-link');
+      const text = input.value || '';
+      if (!text) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          const old = input.value;
+          input.value = old + '  (copied)';
+          setTimeout(() => { input.value = old; }, 600);
+        }).catch(() => fallbackCopy(input));
+      } else {
+        fallbackCopy(input);
+      }
+    }
+
+    function fallbackCopy(input) {
+      input.select();
+      try { document.execCommand('copy'); } catch {}
+      window.getSelection()?.removeAllRanges?.();
+    }
+  </script>
+</body>
+</html>
