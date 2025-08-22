@@ -17,38 +17,38 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /**
- * 回忆录导出服务
- * 中文注释：生成 Markdown 源稿；PDF 通过反射调用 openhtmltopdf，避免编译期依赖冲突
+ * Memoir export service
+ * Description: Generates Markdown source; PDF uses reflection to call openhtmltopdf, avoiding compile-time dependency conflicts
  */
 @Service
 public class MemoirExportService {
     private final MemoirMapper mapper;
-    // 可选：通过配置注册PDF字体，分号分隔多个路径（例如：C:\\fonts\\NotoSansSC-Regular.otf;D:\\fonts\\DejaVuSerif.ttf）
+    // Optional: Register PDF fonts through configuration, semicolon-separated multiple paths (e.g.: C:\\fonts\\NotoSansSC-Regular.otf;D:\\fonts\\DejaVuSerif.ttf)
     @Value("${app.export.pdf.font.paths:}")
     private String pdfFontPaths;
-    // 可选：H2 是否强制换页
+    // Optional: Whether H2 forces page break
     @Value("${app.export.pdf.pagebreak.h2:false}")
     private boolean pageBreakH2;
-    // 可选：HTML baseUri（资源解析基准）。如未设置，将默认使用当前工作目录。
+    // Optional: HTML baseUri (resource parsing base). If not set, will default to current working directory.
     @Value("${app.export.pdf.base-uri:}")
     private String baseUriConfig;
-    // 可选：目录级别（2=H1/H2，3=H1/H2/H3）
+    // Optional: TOC level (2=H1/H2, 3=H1/H2/H3)
     @Value("${app.export.pdf.toc.level:2}")
     private int tocLevel;
-    // 可选：页边距（如："20mm 16mm"）与封面页边距
+    // Optional: Page margins (e.g.: "20mm 16mm") and cover page margins
     @Value("${app.export.pdf.page.margin:20mm 16mm}")
     private String pageMargin;
     @Value("${app.export.pdf.page.margin.cover:25mm 20mm}")
     private String coverMargin;
-    // 可选：水印文本与透明度（0-1）
+    // Optional: Watermark text and opacity (0-1)
     @Value("${app.export.pdf.watermark.text:}")
     private String watermarkText;
     @Value("${app.export.pdf.watermark.opacity:0.08}")
     private double watermarkOpacity;
-    // 可选：封面背景图（URL 或相对路径）
+    // Optional: Cover background image (URL or relative path)
     @Value("${app.export.pdf.cover.image:}")
     private String coverImage;
-    // 可选：PDF 加密与权限
+    // Optional: PDF encryption and permissions
     @Value("${app.export.pdf.security.enabled:false}")
     private boolean pdfSecEnabled;
     @Value("${app.export.pdf.security.user-password:}")
@@ -123,7 +123,7 @@ public class MemoirExportService {
                 }
             }
         }
-    // 先基于 markdown 粗略提取 TOC（仅识别 # 与 ## 标题），同时准备 slug 用于锚点
+    // First roughly extract TOC based on markdown (only recognize # and ## titles), while preparing slug for anchors
         StringBuilder toc = new StringBuilder();
         boolean hasToc = false;
         java.util.List<String[]> headingList = new java.util.ArrayList<>(); // [level, title, slug]

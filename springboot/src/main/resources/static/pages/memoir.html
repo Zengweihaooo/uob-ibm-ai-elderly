@@ -45,7 +45,7 @@
   .h2-compact { margin:8px 0 6px; }
   .push-left { margin-right:auto; }
   </style>
-  <!-- 页面目标：用最小 UI 打通 /api/memoir 的项目/分段/导出全流程 -->
+  <!-- Page goal: Use minimal UI to connect the complete /api/memoir project/segment/export workflow -->
 </head>
 <body>
   <div class="container">
@@ -114,7 +114,7 @@
           </div>
           <p class="muted">Tip: Add multiple segments across chapters/themes. Export groups them by chapter.</p>
 
-          <!-- 新增：语音转文字（STT） -->
+          <!-- New: Speech to Text (STT) -->
           <div class="card" style="padding:12px; margin-top:16px;">
             <h2 style="margin-top:0;">Speech to Text (fill into content)</h2>
             <div class="toolbar" style="margin:6px 0 8px;">
@@ -196,14 +196,14 @@
   </div>
 
   <script>
-    // 简单的 fetch 封装
+    // Simple fetch wrapper
     async function apiJson(url, options = {}) {
       const resp = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       return resp.json();
     }
 
-    // 状态
+    // State
     let currentProject = null;
   let allProjects = [];
   let projPage = 1;
@@ -211,12 +211,12 @@
   let lastOutlineSpeechText = '';
   let lastDraftSpeechText = '';
 
-    // 录音状态
+    // Recording state
     let mediaRecorder = null;
     let recordedChunks = [];
     let isRecording = false;
 
-  // 伪流式转写状态
+  // Pseudo-streaming transcription state
   let isLive = false;
   let liveRecorder = null;
   let liveQueue = [];
@@ -225,7 +225,7 @@
   let liveLastText = '';
   let liveStream = null;
 
-    // 加载项目列表
+    // Load project list
     async function loadProjects() {
       const listEl = document.getElementById('project-list');
   listEl.innerHTML = '<li class="muted">Loading…</li>';
@@ -281,18 +281,18 @@
       }
     }
 
-    // 创建项目
+    // Create project
     async function createProject() {
       const title = document.getElementById('p-title').value.trim();
       const owner = document.getElementById('p-owner').value.trim();
   if (!title) { alert('Please enter a title'); return; }
       try {
         const data = await apiJson('/api/memoir/projects', { method: 'POST', body: JSON.stringify({ title, owner }) });
-        // 兼容返回结构 {projectId: n}
+        // Compatible return structure {projectId: n}
         if (data && (data.projectId || data.id)) {
           await loadProjects();
           document.getElementById('p-title').value = '';
-          // 自动进入该项目 / auto open
+          // Auto enter this project / auto open
           openProject({ id: data.projectId || data.id, title, owner });
         } else {
           alert('Created, but response shape is unexpected');
@@ -303,7 +303,7 @@
       }
     }
 
-    // 打开项目
+    // Open project
     async function openProject(p) {
       currentProject = p;
       document.getElementById('work-area').style.display = '';
@@ -312,7 +312,7 @@
       await loadSegments();
     }
 
-    // 加载分段
+    // Load segments
     async function loadSegments() {
       const listEl = document.getElementById('segment-list');
   listEl.innerHTML = '<li class="muted">Loading…</li>';
@@ -331,7 +331,7 @@
       }
     }
 
-    // 添加分段
+    // Add segment
     async function addSegment() {
       const chapter = document.getElementById('s-chapter').value.trim();
       const theme = document.getElementById('s-theme').value.trim();
@@ -349,7 +349,7 @@
       }
     }
 
-    // 导出
+    // Export
     async function exportMemoir(fmt) {
       if (!currentProject) return;
       const url = `/api/memoir/projects/${currentProject.id}/export?format=${fmt}`;
@@ -369,7 +369,7 @@
       }
     }
 
-    // ============= 语音转文字（STT）集成 =============
+    // ============= Speech to Text (STT) Integration =============
     async function sttUpload(file, languageCode) {
       const statusEl = document.getElementById('stt-status');
       const resultEl = document.getElementById('stt-result');
@@ -471,7 +471,7 @@
         liveBox.textContent = '';
         liveRecorder.ondataavailable = e => {
           if (e.data && e.data.size > 0) {
-            // 控制队列长度，避免积压
+            // Control queue length, avoid backlog
             if (liveQueue.length > 5) liveQueue = liveQueue.slice(-5);
             liveQueue.push(e.data);
             processLiveQueue();
@@ -484,7 +484,7 @@
           try { stream.getTracks().forEach(t => t.stop()); } catch {}
           statusEl.textContent = 'Live stopped.';
         };
-        // 关键：以时间片启动，产生小块音频
+        // Key: Start with time slices, generate small audio chunks
         liveRecorder.start(1000); // 1s chunks
         isLive = true;
         startBtn.disabled = true;
@@ -530,26 +530,26 @@
         if (resp.ok && data && data.success && data.text) {
           const t = String(data.text).trim();
           if (t && t !== liveLastText) {
-            // 简单双写去重：如果末尾已有该片段则不追加
+            // Simple deduplication: don't append if segment already exists at the end
             const liveBox = document.getElementById('live-result');
             if (!liveTranscript.endsWith(t)) {
               liveTranscript += (liveTranscript ? ' ' : '') + t;
               liveBox.textContent = liveTranscript;
-              // 滚到底部
+              // Scroll to bottom
               liveBox.scrollTop = liveBox.scrollHeight;
             }
             liveLastText = t;
           }
           statusEl.innerHTML = '<span class="dot"></span> Live…';
         } else {
-          // 允许安静块没有文本
+          // Allow quiet blocks to have no text
           statusEl.innerHTML = '<span class="dot"></span> Live…';
         }
       } catch (e) {
         statusEl.innerHTML = `<span class="danger">Live error: ${escapeHtml(e.message)}</span>`;
       } finally {
         liveProcessing = false;
-        // 继续处理后续队列
+        // Continue processing subsequent queue
         if (liveQueue.length) setTimeout(processLiveQueue, 0);
       }
     }
@@ -567,14 +567,14 @@
       document.getElementById('ai-notes').value = t;
     }
 
-    // 简单 HTML 转义
+    // Simple HTML escape
     function escapeHtml(s) {
       const div = document.createElement('div');
       div.textContent = s == null ? '' : String(s);
       return div.innerHTML;
     }
 
-    // 事件绑定
+    // Event binding
     document.getElementById('create-project').addEventListener('click', createProject);
     document.getElementById('refresh-projects').addEventListener('click', loadProjects);
   document.getElementById('project-prev').addEventListener('click', () => renderProjectsPage(projPage - 1));
@@ -650,12 +650,12 @@
           area.value = prefix;
           const full = data.text;
           lastDraftSpeechText = full || '';
-          // 立即朗读第一句，提升反馈速度
+          // Immediately read first sentence to improve feedback speed
           try {
             const firstSentence = (full.match(/[^.!?。！？]+[.!?。！？]/) || [full.slice(0, Math.min(120, full.length))])[0];
             if (firstSentence) speakText(firstSentence);
           } catch {}
-          // 打字机式逐步显示
+          // Typewriter-style gradual display
           await typeOutText(area, full, status, data.source);
         } else {
           status.textContent = 'No text returned.';
@@ -671,13 +671,13 @@
         let i = 0;
         statusEl.textContent = 'Streaming…';
         const tick = () => {
-          // 每次追加少量字符，感觉更流畅
+          // Append small amount of characters each time for smoother feel
           const step = 6;
           const slice = chars.slice(i, i + step).join('');
           textarea.value += slice;
           i += step;
           if (i < chars.length) {
-            // 适度节流
+            // Moderate throttling
             setTimeout(tick, 20);
           } else {
             statusEl.textContent = source ? `Source: ${source}` : 'Done';
@@ -698,7 +698,7 @@
     document.getElementById('ai-draft-btn').addEventListener('click', generateDraft);
     document.getElementById('ai-notes-use-stt').addEventListener('click', useTranscriptAsNotes);
 
-    // 初始化
+    // Initialize
     loadProjects();
 
     // ===== TTS: speak helpers =====
@@ -747,7 +747,7 @@
     function buildGentlePrompt() {
       const lang = document.getElementById('stt-lang').value || 'en-GB';
       if (lang.startsWith('zh')) {
-        return '我们可以一起回忆过去的一段时光。比如童年、家庭或家乡，您愿意从哪里开始分享呢？';
+        return 'Let us gently recall a time from the past. Perhaps childhood, family, or hometown—where would you like to start sharing?';
       }
       return "Let's gently start with a memory. Perhaps your childhood, your family, or your hometown—where would you like to begin?";
     }

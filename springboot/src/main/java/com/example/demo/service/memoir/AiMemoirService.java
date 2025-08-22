@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 /**
- * 回忆录AI服务（可Mock/可用Gemini）。
- * 说明：默认使用本地规则生成（mock），避免外部云依赖；当 app.ai.mock=false 时尝试调用 Gemini。
+ * Memoir AI service (supports Mock/Gemini).
+ * Description: Uses local rules generation (mock) by default to avoid external cloud dependencies; attempts to call Gemini when app.ai.mock=false.
  */
 @Service
 public class AiMemoirService {
@@ -30,7 +30,7 @@ public class AiMemoirService {
     }
 
     /**
-     * 生成项目大纲（章节+主题）。
+     * Generate project outline (chapters + themes).
      */
     public Map<String, Object> generateOutline(String locale, String hint) {
         if (!mock && "gemini".equalsIgnoreCase(provider)) {
@@ -40,7 +40,7 @@ public class AiMemoirService {
                         locale == null ? "en-US" : locale, hint == null ? "" : hint);
                 String text = gemini.generateText(geminiModel, sys, prompt, 0.3, 0.9, 800);
                 if (text != null && text.trim().startsWith("{")) {
-                    // 使用 Jackson 严格解析 JSON，提取 chapters -> [{chapter, themes[]}]
+                    // Use Jackson to strictly parse JSON, extract chapters -> [{chapter, themes[]}]
                     ObjectMapper om = new ObjectMapper();
                     JsonNode root = om.readTree(text);
                     JsonNode chaptersNode = root.get("chapters");
@@ -68,13 +68,13 @@ public class AiMemoirService {
                         }
                     }
                 }
-            } catch (Exception ignored) { /* 回退到mock */ }
+            } catch (Exception ignored) { /* Fallback to mock */ }
         }
         return mockOutline(locale, hint);
     }
 
     /**
-     * 根据提示与要点生成分段草稿。
+     * Generate segment draft based on hints and key points.
      */
     public Map<String, Object> draftSegment(String chapter, String theme, String notes, String locale) {
         if (!mock && "gemini".equalsIgnoreCase(provider)) {
@@ -92,7 +92,7 @@ public class AiMemoirService {
                     m.put("source", "gemini");
                     return m;
                 }
-            } catch (Exception ignored) { /* 回退到mock */ }
+            } catch (Exception ignored) { /* Fallback to mock */ }
         }
         return mockDraft(chapter, theme, notes, locale);
     }

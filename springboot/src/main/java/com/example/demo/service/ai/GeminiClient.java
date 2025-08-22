@@ -16,12 +16,12 @@ import java.nio.file.Paths;
 import java.util.*;
 
 /**
- * 轻量级 Gemini GenAI REST 客户端（无外部 SDK 依赖）。
- * 中文说明：从环境变量读取凭据，调用 v1beta generateContent 接口，返回首个候选文本。
+ * Lightweight Gemini GenAI REST client (no external SDK dependencies).
+ * Description: Reads credentials from environment variables, calls v1beta generateContent API, returns first candidate text.
  */
 @Service
 public class GeminiClient {
-    // 缺省模型，可被上层覆盖
+    // Default model, can be overridden by upper layer
     private static final String DEFAULT_MODEL = "gemini-1.5-flash";
     private static final String API_URL_FMT = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent";
 
@@ -32,7 +32,7 @@ public class GeminiClient {
     private String apiKeyEnvName;
 
     /**
-     * 生成文本（可选 systemInstruction，用于设定写作风格/输出格式）。
+     * Generate text (optional systemInstruction for setting writing style/output format).
      */
     public String generateText(String model,
                                String systemInstruction,
@@ -56,7 +56,7 @@ public class GeminiClient {
             headers.set("Content-Type", "application/json");
         }
 
-        // 请求体
+        // Request body
         Map<String, Object> requestBody = new HashMap<>();
 
         if (systemInstruction != null && !systemInstruction.isBlank()) {
@@ -106,7 +106,7 @@ public class GeminiClient {
             throw new IOException("Failed to call Gemini GenAI REST API: " + e.getMessage(), e);
         }
 
-        return ""; // 无结果返回空串
+        return ""; // Return empty string if no result
     }
 
     private String resolveApiKey() {
@@ -116,16 +116,16 @@ public class GeminiClient {
         String envName = (apiKeyEnvName == null || apiKeyEnvName.isBlank()) ? "GEMINI_API_KEY" : apiKeyEnvName.trim();
         String envVal = System.getenv(envName);
         if (envVal == null || envVal.isBlank()) {
-            // 回退到常见的默认环境变量名
+            // Fallback to common default environment variable name
             envVal = System.getenv("GEMINI_API_KEY");
         }
         return (envVal == null || envVal.isBlank()) ? null : envVal.trim();
     }
 
     /**
-     * 从环境变量加载凭据：
-     * - GOOGLE_CLOUD_CREDENTIALS（内联JSON）优先
-     * - GOOGLE_APPLICATION_CREDENTIALS（文件路径）其次
+     * Load credentials from environment variables:
+     * - GOOGLE_CLOUD_CREDENTIALS (inline JSON) takes priority
+     * - GOOGLE_APPLICATION_CREDENTIALS (file path) as fallback
      */
     private GoogleCredentials getGoogleCredentials() throws IOException {
         GoogleCredentials credentials;

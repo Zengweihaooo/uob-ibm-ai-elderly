@@ -12,8 +12,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * 集成测试：最小回忆录接口
- * 中文注释：创建项目、添加分段、查询
+ * Integration test: Minimal memoir interface
+ * Description: Create project, add segments, query
  */
 @SpringBootTest(classes = DemoApplication.class)
 @AutoConfigureMockMvc
@@ -24,7 +24,7 @@ public class MemoirControllerTest {
 
     @Test
     void createProject_thenList_andAddSegment() throws Exception {
-        // 1) 创建项目
+        // 1) Create project
         String createPayload = "{\"title\":\"Test Memoir\",\"owner\":\"elderly1\",\"locale\":\"en-US\"}";
         String createResp = mockMvc.perform(post("/api/memoir/projects")
                 .contentType(MediaType.APPLICATION_JSON)

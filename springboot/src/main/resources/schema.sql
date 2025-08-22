@@ -107,7 +107,7 @@ CREATE INDEX IF NOT EXISTS idx_important_dates_user ON important_dates(user_id);
 CREATE INDEX IF NOT EXISTS idx_important_dates_date ON important_dates(date);
 CREATE INDEX IF NOT EXISTS idx_important_dates_enabled ON important_dates(enabled);
 
--- Emotion Companion (一人一条当前情绪状态)
+-- Emotion Companion (one record per user for current emotional state)
 CREATE TABLE IF NOT EXISTS emotion_companion (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -142,78 +142,78 @@ CREATE TABLE IF NOT EXISTS emotion_companion (
     updated_at TEXT
 );
 
--- 索引
+-- Indexes
 CREATE UNIQUE INDEX IF NOT EXISTS ux_emotion_companion_user ON emotion_companion(user_id);
 
--- Pet Mood Table (宠物情绪表)
+-- Pet Mood Table
 CREATE TABLE IF NOT EXISTS pet_mood (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    mood_score INTEGER DEFAULT 0, -- 情绪分数 (-100 到 100)
-    happiness INTEGER DEFAULT 85, -- 快乐度 (0-100)
-    health INTEGER DEFAULT 92,    -- 健康度 (0-100)
-    energy INTEGER DEFAULT 78,    -- 精力值 (0-100)
-    mood_emoji TEXT DEFAULT '😊', -- 情绪表情
-    status TEXT DEFAULT 'Happy & Healthy', -- 状态描述
-    level INTEGER DEFAULT 1,      -- 宠物等级
-    experience INTEGER DEFAULT 0, -- 经验值
-    last_interaction TEXT,        -- 最后交互时间
+    mood_score INTEGER DEFAULT 0, -- Mood score (-100 to 100)
+    happiness INTEGER DEFAULT 85, -- Happiness level (0-100)
+    health INTEGER DEFAULT 92,    -- Health level (0-100)
+    energy INTEGER DEFAULT 78,    -- Energy level (0-100)
+    mood_emoji TEXT DEFAULT '😊', -- Mood emoji
+    status TEXT DEFAULT 'Happy & Healthy', -- Status description
+    level INTEGER DEFAULT 1,      -- Pet level
+    experience INTEGER DEFAULT 0, -- Experience points
+    last_interaction TEXT,        -- Last interaction time
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- 索引
+-- Indexes
 CREATE UNIQUE INDEX IF NOT EXISTS ux_pet_mood_user ON pet_mood(user_id);
 CREATE INDEX IF NOT EXISTS idx_pet_mood_score ON pet_mood(mood_score);
 CREATE INDEX IF NOT EXISTS idx_pet_mood_last_interaction ON pet_mood(last_interaction);
 
--- Pet Conversation History Table (宠物对话历史表)
+-- Pet Conversation History Table
 CREATE TABLE IF NOT EXISTS pet_conversation (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    sender_type TEXT NOT NULL, -- 'user' 或 'pet'
+    sender_type TEXT NOT NULL, -- 'user' or 'pet'
     message TEXT NOT NULL,
     message_type TEXT DEFAULT 'text', -- 'text', 'voice', 'emergency'
     timestamp TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- 索引
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_pet_conversation_user ON pet_conversation(user_id);
 CREATE INDEX IF NOT EXISTS idx_pet_conversation_timestamp ON pet_conversation(timestamp);
 CREATE INDEX IF NOT EXISTS idx_pet_conversation_sender ON pet_conversation(sender_type);
 
 -- Insert sample data for testing
 INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
-VALUES (1, '张小明', '儿子', '+86 138 0013 8000', 'xiaoming@example.com', 1);
+VALUES (1, 'Zhang Xiaoming', 'Son', '+86 138 0013 8000', 'xiaoming@example.com', 1);
 
 INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
-VALUES (1, '李小红', '女儿', '+86 139 0013 9000', 'xiaohong@example.com', 1);
+VALUES (1, 'Li Xiaohong', 'Daughter', '+86 139 0013 9000', 'xiaohong@example.com', 1);
 
 INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
-VALUES (1, '王医生', '医生', '+86 137 0013 7000', 'doctor.wang@hospital.com', 0);
+VALUES (1, 'Dr. Wang', 'Doctor', '+86 137 0013 7000', 'doctor.wang@hospital.com', 0);
 
 -- Insert sample users
 INSERT OR IGNORE INTO users (username, email, password_hash, name, status, role, is_verified) 
-VALUES ('admin', 'admin@example.com', 'hashed_password', '管理员', 'VERIFIED', 'ADMIN', 1);
+VALUES ('admin', 'admin@example.com', 'hashed_password', 'Administrator', 'VERIFIED', 'ADMIN', 1);
 
 INSERT OR IGNORE INTO users (username, email, password_hash, name, status, role, is_verified) 
-VALUES ('elderly1', 'elderly1@example.com', 'hashed_password', '张爷爷', 'VERIFIED', 'ELDERLY', 1);
+VALUES ('elderly1', 'elderly1@example.com', 'hashed_password', 'Grandpa Zhang', 'VERIFIED', 'ELDERLY', 1);
 
 INSERT OR IGNORE INTO users (username, email, password_hash, name, status, role, is_verified) 
-VALUES ('doctor1', 'doctor1@hospital.com', 'hashed_password', '王医生', 'VERIFIED', 'DOCTOR', 1);
+VALUES ('doctor1', 'doctor1@hospital.com', 'hashed_password', 'Dr. Wang', 'VERIFIED', 'DOCTOR', 1);
 
 INSERT OR IGNORE INTO users (username, email, password_hash, name, status, role, is_verified) 
-VALUES ('family1', 'family1@example.com', 'hashed_password', '张小明', 'VERIFIED', 'FAMILY', 1);
+VALUES ('family1', 'family1@example.com', 'hashed_password', 'Zhang Xiaoming', 'VERIFIED', 'FAMILY', 1);
 
--- UK Medical Terms Mapping Table (英国医疗术语映射表)
+-- UK Medical Terms Mapping Table
 CREATE TABLE IF NOT EXISTS uk_medical_terms (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    colloquial_term TEXT NOT NULL, -- 口语化表达
-    standard_term TEXT NOT NULL, -- 标准医疗术语
+    colloquial_term TEXT NOT NULL, -- Colloquial expression
+    standard_term TEXT NOT NULL, -- Standard medical term
     category TEXT, -- symptom, body_part, medication, location
     urgency_level TEXT, -- low, medium, high, emergency
-    region_specific BOOLEAN DEFAULT 0, -- 是否为地区特定表达
-    confidence_score REAL DEFAULT 1.0 -- 匹配置信度
+    region_specific BOOLEAN DEFAULT 0, -- Whether region-specific expression
+    confidence_score REAL DEFAULT 1.0 -- Match confidence score
 );
 
 -- Create index for UK medical terms
@@ -248,7 +248,7 @@ CREATE TABLE IF NOT EXISTS contacts (
     UNIQUE(user_id, email)
 );
 
--- Schema Version Table (数据库版本表)
+-- Schema Version Table
 CREATE TABLE IF NOT EXISTS schema_version (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     version VARCHAR(20) NOT NULL,
@@ -256,19 +256,19 @@ CREATE TABLE IF NOT EXISTS schema_version (
     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ); 
 
--- ===================== Memoir Module Tables (AI 回忆录模块) =====================
--- 回忆录项目表：存储回忆录项目的基础信息
+-- ===================== Memoir Module Tables (AI Memoir Module) =====================
+-- Memoir project table: stores basic information of memoir projects
 CREATE TABLE IF NOT EXISTS memoir_project (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     owner VARCHAR(100),
     locale VARCHAR(20) DEFAULT 'en-US',
-    pin_hash TEXT,                         -- 可选的项目访问PIN哈希
+    pin_hash TEXT,                         -- Optional project access PIN hash
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 回忆录分段表：每段对应一个主题的一次回答/整理文本
+-- Memoir segment table: each segment corresponds to one answer/organized text for a theme
 CREATE TABLE IF NOT EXISTS memoir_segment (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL,
@@ -276,8 +276,8 @@ CREATE TABLE IF NOT EXISTS memoir_segment (
     theme TEXT,
     prompt_id INTEGER,
     order_index INTEGER DEFAULT 0,
-    text TEXT,                             -- 转写或润色后的文本
-    audio_url TEXT,                        -- 原始录音的存储地址（可选）
+    text TEXT,                             -- Transcribed or polished text
+    audio_url TEXT,                        -- Storage address of original recording (optional)
     tags TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -287,7 +287,7 @@ CREATE TABLE IF NOT EXISTS memoir_segment (
 CREATE INDEX IF NOT EXISTS idx_memoir_segment_project ON memoir_segment(project_id);
 CREATE INDEX IF NOT EXISTS idx_memoir_segment_chapter ON memoir_segment(chapter);
 
--- 媒体表：项目相关的图片/音频等
+-- Media table: project-related images/audio etc.
 CREATE TABLE IF NOT EXISTS memoir_media (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL,
@@ -299,7 +299,7 @@ CREATE TABLE IF NOT EXISTS memoir_media (
     FOREIGN KEY(project_id) REFERENCES memoir_project(id)
 );
 
--- 导出记录表：记录导出历史与文件地址
+-- Export record table: records export history and file addresses
 CREATE TABLE IF NOT EXISTS memoir_export (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL,
@@ -309,7 +309,7 @@ CREATE TABLE IF NOT EXISTS memoir_export (
     FOREIGN KEY(project_id) REFERENCES memoir_project(id)
 );
 
--- 题库表：默认的人生阶段+主题+问题文本
+-- Question bank table: default life stages + themes + question text
 CREATE TABLE IF NOT EXISTS memoir_prompt_catalog (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     chapter TEXT NOT NULL,
@@ -320,7 +320,7 @@ CREATE TABLE IF NOT EXISTS memoir_prompt_catalog (
     difficulty INTEGER DEFAULT 1
 );
 
--- 分享令牌表：一次性或限时分享
+-- Share token table: one-time or time-limited sharing
 CREATE TABLE IF NOT EXISTS memoir_share_token (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL,
@@ -331,13 +331,13 @@ CREATE TABLE IF NOT EXISTS memoir_share_token (
     FOREIGN KEY(project_id) REFERENCES memoir_project(id)
 );
 
--- 分享守护表：扩展分享令牌的安全与配额（避免直接修改既有表）
+-- Share guard table: extends sharing token security and quota (avoids directly modifying existing tables)
 CREATE TABLE IF NOT EXISTS memoir_share_guard (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    share_id INTEGER UNIQUE NOT NULL,      -- 对应 memoir_share_token.id
-    pin_hash TEXT,                         -- 可选 PIN 哈希（SHA-256/hex）
-    max_downloads INTEGER,                 -- 最大下载次数（空=不限）
-    download_count INTEGER DEFAULT 0,      -- 已下载次数
+    share_id INTEGER UNIQUE NOT NULL,      -- Corresponds to memoir_share_token.id
+    pin_hash TEXT,                         -- Optional PIN hash (SHA-256/hex)
+    max_downloads INTEGER,                 -- Maximum download count (null=unlimited)
+    download_count INTEGER DEFAULT 0,      -- Downloaded count
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(share_id) REFERENCES memoir_share_token(id)
 );
