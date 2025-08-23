@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @version 1.0
  */
 @Repository("sqlitePetMoodRepository")
-@Profile("!aws") // 在非AWS环境下使用
+// @Profile("!aws") // 临时注释掉Profile限制，确保Bean可以被创建
 public class SQLitePetMoodRepository implements PetMoodRepository {
     
     @Autowired

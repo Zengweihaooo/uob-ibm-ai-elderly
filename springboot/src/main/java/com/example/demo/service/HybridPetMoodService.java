@@ -26,7 +26,7 @@ public class HybridPetMoodService {
     private static final Logger logger = Logger.getLogger(HybridPetMoodService.class.getName());
     
     @Autowired
-    @Qualifier("${app.database.repository:sqlitePetMoodRepository}")
+    @Qualifier("sqlitePetMoodRepository")
     private PetMoodRepository primaryRepository;
     
     @Autowired(required = false)
