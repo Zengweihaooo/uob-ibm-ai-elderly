@@ -117,6 +117,61 @@
         <artifactId>google-cloud-aiplatform</artifactId>
       </dependency>
       
+      <!-- AWS SDK Dependencies -->
+      <dependency>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>bom</artifactId>
+          <version>2.20.0</version>
+          <type>pom</type>
+          <scope>import</scope>
+      </dependency>
+      
+      <!-- AWS Core Services -->
+      <dependency>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>s3</artifactId>
+          <version>2.20.0</version>
+      </dependency>
+      
+      <dependency>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>dynamodb</artifactId>
+          <version>2.20.0</version>
+      </dependency>
+      
+      <dependency>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>sns</artifactId>
+          <version>2.20.0</version>
+      </dependency>
+      
+      <dependency>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>ses</artifactId>
+          <version>2.20.0</version>
+      </dependency>
+      
+      <!-- AWS RDS Support -->
+      <dependency>
+          <groupId>mysql</groupId>
+          <artifactId>mysql-connector-java</artifactId>
+          <version>8.0.33</version>
+      </dependency>
+      
+      <!-- AWS Lambda Support -->
+      <dependency>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>lambda</artifactId>
+          <version>2.20.0</version>
+      </dependency>
+      
+      <!-- AWS CloudWatch Support -->
+      <dependency>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>cloudwatch</artifactId>
+          <version>2.20.0</version>
+      </dependency>
+      
       <!-- We'll use REST API directly, no additional dependency needed -->
 
             <!-- Markdown & PDF 导出依赖：flexmark + openhtmltopdf -->
