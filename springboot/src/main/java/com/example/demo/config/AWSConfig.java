@@ -52,7 +52,7 @@ public class AWSConfig {
      */
     @Bean
     public S3Client s3Client() {
-        S3Client.Builder builder = S3Client.builder()
+        var builder = S3Client.builder()
                 .credentialsProvider(awsCredentialsProvider())
                 .region(Region.of(region));
 
@@ -68,7 +68,7 @@ public class AWSConfig {
      */
     @Bean
     public DynamoDbClient dynamoDbClient() {
-        DynamoDbClient.Builder builder = DynamoDbClient.builder()
+        var builder = DynamoDbClient.builder()
                 .credentialsProvider(awsCredentialsProvider())
                 .region(Region.of(region));
 
@@ -84,7 +84,7 @@ public class AWSConfig {
      */
     @Bean
     public SnsClient snsClient() {
-        SnsClient.Builder builder = SnsClient.builder()
+        var builder = SnsClient.builder()
                 .credentialsProvider(awsCredentialsProvider())
                 .region(Region.of(region));
 
@@ -100,7 +100,7 @@ public class AWSConfig {
      */
     @Bean
     public SesClient sesClient() {
-        SesClient.Builder builder = SesClient.builder()
+        var builder = SesClient.builder()
                 .credentialsProvider(awsCredentialsProvider())
                 .region(Region.of(region));
 
@@ -116,7 +116,7 @@ public class AWSConfig {
      */
     @Bean
     public LambdaClient lambdaClient() {
-        LambdaClient.Builder builder = LambdaClient.builder()
+        var builder = LambdaClient.builder()
                 .credentialsProvider(awsCredentialsProvider())
                 .region(Region.of(region));
 
@@ -132,7 +132,7 @@ public class AWSConfig {
      */
     @Bean
     public CloudWatchClient cloudWatchClient() {
-        CloudWatchClient.Builder builder = CloudWatchClient.builder()
+        var builder = CloudWatchClient.builder()
                 .credentialsProvider(awsCredentialsProvider())
                 .region(Region.of(region));
 
