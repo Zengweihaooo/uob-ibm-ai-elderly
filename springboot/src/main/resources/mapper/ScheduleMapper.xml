@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.mapper.ScheduleMapper">
+
+    <!-- Result Map for Schedule -->
+    <resultMap id="ScheduleResultMap" type="com.example.demo.pojo.Schedule">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="schedule_date" property="scheduleDate"/>
+        <result column="activity_time" property="activityTime"/>
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <result column="category" property="category"/>
+        <result column="completed" property="completed"/>
+        <result column="priority" property="priority"/>
+        <result column="emergency_contact" property="emergencyContact"/>
+        <result column="emergency_contact_name" property="emergencyContactName"/>
+        <result column="repeat_cycle" property="repeatCycle"/>
+        <result column="notification_time" property="notificationTime"/>
+        <result column="location_reminder" property="locationReminder"/>
+        <result column="location_name" property="locationName"/>
+        <result column="latitude" property="latitude"/>
+        <result column="longitude" property="longitude"/>
+        <result column="location_radius" property="locationRadius"/>
+        <result column="notes" property="notes"/>
+        <result column="is_all_day" property="allDay"/>
+        <result column="reminder_sent" property="reminderSent"/>
+        <result column="emergency_notification_sent" property="emergencyNotificationSent"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- Insert Schedule -->
+    <insert id="insert" parameterType="com.example.demo.pojo.Schedule" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schedules (
+            user_id, schedule_date, activity_time, title, description, category, completed,
+            priority, emergency_contact, emergency_contact_name, repeat_cycle, notification_time,
+            location_reminder, location_name, latitude, longitude, location_radius, notes,
+            is_all_day, reminder_sent, emergency_notification_sent, created_at, updated_at
+        ) VALUES (
+            #{userId}, #{scheduleDate}, #{activityTime}, #{title}, #{description}, #{category}, #{completed},
+            #{priority}, #{emergencyContact}, #{emergencyContactName}, #{repeatCycle}, #{notificationTime},
+            #{locationReminder}, #{locationName}, #{latitude}, #{longitude}, #{locationRadius}, #{notes},
+            #{allDay}, #{reminderSent}, #{emergencyNotificationSent}, #{createdAt}, #{updatedAt}
+        )
+    </insert>
+
+    <!-- Update Schedule -->
+    <update id="update" parameterType="com.example.demo.pojo.Schedule">
+        UPDATE schedules SET
+            schedule_date = #{scheduleDate},
+            activity_time = #{activityTime},
+            title = #{title},
+            description = #{description},
+            category = #{category},
+            completed = #{completed},
+            priority = #{priority},
+            emergency_contact = #{emergencyContact},
+            emergency_contact_name = #{emergencyContactName},
+            repeat_cycle = #{repeatCycle},
+            notification_time = #{notificationTime},
+            location_reminder = #{locationReminder},
+            location_name = #{locationName},
+            latitude = #{latitude},
+            longitude = #{longitude},
+            location_radius = #{locationRadius},
+            notes = #{notes},
+            is_all_day = #{allDay},
+            reminder_sent = #{reminderSent},
+            emergency_notification_sent = #{emergencyNotificationSent},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete Schedule by ID -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM schedules WHERE id = #{id}
+    </delete>
+
+    <!-- Find Schedule by ID -->
+    <select id="findById" parameterType="long" resultMap="ScheduleResultMap">
+        SELECT * FROM schedules WHERE id = #{id}
+    </select>
+
+    <!-- Find Schedules by User ID and Date -->
+    <select id="findByUserIdAndDate" resultMap="ScheduleResultMap">
+        SELECT * FROM schedules 
+        WHERE user_id = #{userId} AND schedule_date = #{scheduleDate}
+        ORDER BY activity_time ASC
+    </select>
+
+    <!-- Find Schedules by User ID -->
+    <select id="findByUserId" parameterType="long" resultMap="ScheduleResultMap">
+        SELECT * FROM schedules 
+        WHERE user_id = #{userId}
+        ORDER BY schedule_date ASC, activity_time ASC
+    </select>
+
+    <!-- Update Completion Status -->
+    <update id="updateCompletionStatus">
+        UPDATE schedules SET 
+            completed = #{completed},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <!-- Find Schedules by User ID and Date Range -->
+    <select id="findByUserIdAndDateRange" resultMap="ScheduleResultMap">
+        SELECT * FROM schedules 
+        WHERE user_id = #{userId} 
+        AND schedule_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY schedule_date ASC, activity_time ASC
+    </select>
+
+    <!-- Find Incomplete Schedules by User ID -->
+    <select id="findIncompleteByUserId" parameterType="long" resultMap="ScheduleResultMap">
+        SELECT * FROM schedules 
+        WHERE user_id = #{userId} AND completed = 0
+        ORDER BY schedule_date ASC, activity_time ASC
+    </select>
+
+    <!-- Count Schedules by User ID and Date -->
+    <select id="countByUserIdAndDate" resultType="int">
+        SELECT COUNT(*) FROM schedules 
+        WHERE user_id = #{userId} AND schedule_date = #{scheduleDate}
+    </select>
+
+</mapper>
