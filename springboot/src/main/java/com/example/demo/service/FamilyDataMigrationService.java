@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.mapper.FamilyContactMapper;
 import com.example.demo.pojo.FamilyContact;
+import com.example.demo.pojo.User;
 
 /**
  * Data migration service for family contacts
@@ -27,39 +28,31 @@ public class FamilyDataMigrationService implements CommandLineRunner {
     @Autowired
     private FamilyContactMapper familyContactMapper;
 
+    @Autowired
+    private UserService userService;
+
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("=== Family Data Migration Service Started ===");
-        
-        try {
-            // Check if database already has data
-            checkDatabaseStatus();
-            
-            // Initialize sample data if database is empty (for testing)
-            initializeSampleDataIfNeeded();
-            
-            System.out.println("=== Family Data Migration Service Completed ===");
-        } catch (Exception e) {
-            System.err.println("Error during family data migration: " + e.getMessage());
-            e.printStackTrace();
-        }
+        System.out.println("=== Family Contact Service Initialized ===");
+        System.out.println("Family contact management ready for multi-user usage");
+        System.out.println("Users can add contacts via /api/family/contacts endpoint");
     }
 
     /**
      * Check database status and print statistics
+     * 已弃用 - 不再需要检查特定用户的数据
      */
+    @Deprecated
     private void checkDatabaseStatus() {
         try {
-            // Count total contacts in database
-            List<FamilyContact> allContacts = familyContactMapper.findByUserId(1L);
-            System.out.println("Database check - Found " + allContacts.size() + " family contacts for user 1");
+            // 统计所有用户的联系人总数，而不是特定用户
+            List<User> allUsers = userService.getAllUsers();
+            System.out.println("Database check - Found " + allUsers.size() + " registered users");
             
-            if (allContacts.size() > 0) {
-                System.out.println("Existing family contacts in database:");
-                for (FamilyContact contact : allContacts) {
-                    System.out.println("  - " + contact.getName() + " (" + contact.getRelationship() + ")");
-                }
-            }
+            // 可以统计所有联系人总数，但不显示具体用户信息
+            // int totalContacts = familyContactMapper.countAllContacts();
+            // System.out.println("Total family contacts in database: " + totalContacts);
+            
         } catch (Exception e) {
             System.err.println("Error checking database status: " + e.getMessage());
         }
@@ -67,12 +60,12 @@ public class FamilyDataMigrationService implements CommandLineRunner {
 
     /**
      * Initialize sample data if database is empty
+     * 已弃用 - 改为手动创建联系人
      */
+    @Deprecated
     private void initializeSampleDataIfNeeded() {
-        // 移除自动创建测试数据的逻辑
-        // 用户现在可以通过UI手动添加联系人
-        System.out.println("Family Data Migration Service - Ready for manual contact creation");
-        System.out.println("Users can now add their own family contacts through the API");
+        // 不再自动创建测试数据
+        System.out.println("Automatic sample data creation disabled");
     }
     
     /**
