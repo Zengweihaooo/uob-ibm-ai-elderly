@@ -758,7 +758,8 @@
                     localStorage.setItem('userRole', result.user.role || 'ELDERLY');
                     localStorage.setItem('userId', result.user.id || '1');
                     localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('authToken', 'user-token-' + result.user.id + '-' + Date.now());
+                    // ✅ 使用后端返回的真正JWT token
+                    localStorage.setItem('authToken', result.token);
                     localStorage.removeItem('guestMode');
                     
                     // 重定向到schedule页面
