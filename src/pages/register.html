@@ -756,8 +756,9 @@
                     localStorage.setItem('userEmail', email);
                     localStorage.setItem('userName', result.user.name || 'User');
                     localStorage.setItem('userRole', result.user.role || 'ELDERLY');
+                    localStorage.setItem('userId', result.user.id || '1');
                     localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('authToken', 'user-token-' + Date.now());
+                    localStorage.setItem('authToken', 'user-token-' + result.user.id + '-' + Date.now());
                     localStorage.removeItem('guestMode');
                     
                     // 重定向到schedule页面

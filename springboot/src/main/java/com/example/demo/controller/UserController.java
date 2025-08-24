@@ -261,6 +261,7 @@ public class UserController {
                 response.put("success", true);
                 response.put("message", "Login successful! Welcome back.");
                 response.put("user", Map.of(
+                    "id", user.getId(),
                     "email", user.getEmail(),
                     "name", user.getName() != null ? user.getName() : user.getUsername(),
                     "role", user.getRole().toString()
