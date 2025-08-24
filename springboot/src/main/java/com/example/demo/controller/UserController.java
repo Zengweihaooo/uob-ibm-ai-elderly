@@ -8,6 +8,7 @@ import com.example.demo.service.UserService;
 import com.example.demo.service.EmailVerificationService;
 import com.example.demo.service.PermissionService;
 import com.example.demo.service.PasswordResetService;
+import com.example.demo.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -46,6 +47,9 @@ public class UserController {
     
     @Autowired
     private PasswordResetService passwordResetService;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
 
     /**
      * Display the user registration page
@@ -258,8 +262,13 @@ public class UserController {
             
             if (loginSuccess) {
                 User user = userService.getUserByEmail(email);
+                
+                // 生成JWT token
+                String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+                
                 response.put("success", true);
                 response.put("message", "Login successful! Welcome back.");
+                response.put("token", token);
                 response.put("user", Map.of(
                     "id", user.getId(),
                     "email", user.getEmail(),

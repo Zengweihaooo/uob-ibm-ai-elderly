@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.pojo.HealthRecord;
 import com.example.demo.service.HealthService;
+import com.example.demo.util.UserContextUtil;
 
 @RestController
 @RequestMapping("/api/health")
@@ -28,6 +29,9 @@ public class HealthController {
 
     @Autowired
     private HealthService healthService;
+    
+    @Autowired
+    private UserContextUtil userContextUtil;
 
     @PostMapping("/record")
     public ResponseEntity<Map<String, Object>> addHealthRecord(
@@ -43,8 +47,13 @@ public class HealthController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // 从JWT token中提取用户ID
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             String type = recordData.get("type"); // bloodPressure, bloodSugar, steps
             String value = recordData.get("value");
@@ -91,7 +100,12 @@ public class HealthController {
         }
 
         try {
-            Long userId = 1L;
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             List<HealthRecord> records = healthService.getTodayRecords(userId);
             response.put("success", true);
@@ -121,7 +135,12 @@ public class HealthController {
         }
 
         try {
-            Long userId = 1L;
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
             List<HealthRecord> todayRecords = healthService.getTodayRecords(userId);
             
             // Count abnormal records for today
@@ -162,8 +181,12 @@ public class HealthController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             Long recordId = Long.valueOf(shareData.get("recordId").toString());
             Long sharedWithUserId = Long.valueOf(shareData.get("sharedWithUserId").toString());
@@ -211,8 +234,12 @@ public class HealthController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             boolean success = healthService.unshareHealthRecord(recordId, userId);
             
@@ -249,8 +276,12 @@ public class HealthController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             List<HealthRecord> sharedRecords = healthService.getSharedRecordsForUser(userId);
             response.put("success", true);
@@ -281,8 +312,12 @@ public class HealthController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             List<HealthRecord> sharedRecords = healthService.getUserSharedRecords(userId);
             response.put("success", true);
@@ -313,8 +348,12 @@ public class HealthController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             List<Map<String, Object>> shareableUsers = healthService.getShareableUsers(userId);
             response.put("success", true);
