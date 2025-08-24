@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.pojo.FamilyContact;
 import com.example.demo.service.FamilyService;
+import com.example.demo.util.JwtUtil;
 
 /**
  * REST Controller for family contact management
@@ -36,6 +37,9 @@ public class FamilyController {
 
     @Autowired
     private FamilyService familyService;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
 
     /**
      * Add a new family contact
@@ -59,8 +63,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             // Extract contact data
             String name = (String) contactData.get("name");
@@ -126,8 +135,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             List<FamilyContact> contacts = familyService.getFamilyContacts(userId);
             
@@ -165,8 +179,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             FamilyContact contact = familyService.getFamilyContact(userId, contactId);
             
@@ -211,8 +230,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             FamilyContact updatedContact = familyService.updateFamilyContact(
                 userId, contactId, contactData
@@ -262,8 +286,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             boolean deleted = familyService.deleteFamilyContact(userId, contactId);
 
@@ -308,8 +337,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             String message = (String) messageData.get("message");
             String messageType = (String) messageData.getOrDefault("type", "general");
@@ -360,8 +394,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             List<FamilyContact> emergencyContacts = familyService.getEmergencyContacts(userId);
             
@@ -397,8 +436,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             Map<String, Object> stats = familyService.getFamilyStats(userId);
             
@@ -437,8 +481,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             String emergencyType = (String) emergencyData.get("emergencyType");
             String description = (String) emergencyData.get("description");
@@ -486,8 +535,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             String healthDataType = (String) healthAlertData.get("healthDataType");
             String abnormalValue = (String) healthAlertData.get("abnormalValue");

@@ -70,65 +70,79 @@ public class FamilyDataMigrationService implements CommandLineRunner {
      */
     private void initializeSampleDataIfNeeded() {
         try {
-            // Check if user 1 has any contacts
-            List<FamilyContact> existingContacts = familyContactMapper.findByUserId(1L);
+            // Initialize sample data for multiple users
+            Long[] userIds = {1L, 2L, 3L}; // Support multiple users
             
-            if (existingContacts == null || existingContacts.isEmpty()) {
-                System.out.println("No family contacts found for user 1. Initializing sample data...");
+            for (Long userId : userIds) {
+                List<FamilyContact> existingContacts = familyContactMapper.findByUserId(userId);
                 
-                // Create sample contacts for testing
-                FamilyContact contact1 = new FamilyContact();
-                contact1.setUserId(1L);
-                contact1.setName("张三");
-                contact1.setRelationship("儿子");
-                contact1.setPhone("+86 13800138001");
-                contact1.setEmail("zhangsan@example.com");
-                contact1.setAddress("北京市朝阳区");
-                contact1.setIsEmergencyContact(true);
-                contact1.setIsActive(true);
-                contact1.setCreatedAt(LocalDateTime.now());
-                contact1.setUpdatedAt(LocalDateTime.now());
-                
-                FamilyContact contact2 = new FamilyContact();
-                contact2.setUserId(1L);
-                contact2.setName("李四");
-                contact2.setRelationship("女儿");
-                contact2.setPhone("+86 13800138002");
-                contact2.setEmail("lisi@example.com");
-                contact2.setAddress("北京市海淀区");
-                contact2.setIsEmergencyContact(false);
-                contact2.setIsActive(true);
-                contact2.setCreatedAt(LocalDateTime.now());
-                contact2.setUpdatedAt(LocalDateTime.now());
-                
-                FamilyContact contact3 = new FamilyContact();
-                contact3.setUserId(1L);
-                contact3.setName("王医生");
-                contact3.setRelationship("家庭医生");
-                contact3.setPhone("+86 13800138003");
-                contact3.setEmail("doctor.wang@hospital.com");
-                contact3.setIsEmergencyContact(true);
-                contact3.setIsActive(true);
-                contact3.setCreatedAt(LocalDateTime.now());
-                contact3.setUpdatedAt(LocalDateTime.now());
-                
-                // Insert sample contacts
-                familyContactMapper.insert(contact1);
-                System.out.println("  Added sample contact: " + contact1.getName());
-                
-                familyContactMapper.insert(contact2);
-                System.out.println("  Added sample contact: " + contact2.getName());
-                
-                familyContactMapper.insert(contact3);
-                System.out.println("  Added sample contact: " + contact3.getName());
-                
-                System.out.println("Sample family contacts initialized successfully!");
-            } else {
-                System.out.println("Family contacts already exist in database. Skipping sample data initialization.");
+                if (existingContacts == null || existingContacts.isEmpty()) {
+                    System.out.println("No family contacts found for user " + userId + ". Initializing sample data...");
+                    createSampleContactsForUser(userId);
+                } else {
+                    System.out.println("User " + userId + " already has " + existingContacts.size() + " contacts. Skipping.");
+                }
             }
         } catch (Exception e) {
             System.err.println("Error initializing sample data: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Create sample contacts for a specific user
+     */
+    private void createSampleContactsForUser(Long userId) {
+        try {
+            // Create sample contacts for testing
+            FamilyContact contact1 = new FamilyContact();
+            contact1.setUserId(userId);
+            contact1.setName("张三");
+            contact1.setRelationship("儿子");
+            contact1.setPhone("+86 13800138001");
+            contact1.setEmail("zhangsan@example.com");
+            contact1.setAddress("北京市朝阳区");
+            contact1.setIsEmergencyContact(true);
+            contact1.setIsActive(true);
+            contact1.setCreatedAt(LocalDateTime.now());
+            contact1.setUpdatedAt(LocalDateTime.now());
+            
+            FamilyContact contact2 = new FamilyContact();
+            contact2.setUserId(userId);
+            contact2.setName("李四");
+            contact2.setRelationship("女儿");
+            contact2.setPhone("+86 13800138002");
+            contact2.setEmail("lisi@example.com");
+            contact2.setAddress("北京市海淀区");
+            contact2.setIsEmergencyContact(false);
+            contact2.setIsActive(true);
+            contact2.setCreatedAt(LocalDateTime.now());
+            contact2.setUpdatedAt(LocalDateTime.now());
+            
+            FamilyContact contact3 = new FamilyContact();
+            contact3.setUserId(userId);
+            contact3.setName("王医生");
+            contact3.setRelationship("家庭医生");
+            contact3.setPhone("+86 13800138003");
+            contact3.setEmail("doctor.wang@hospital.com");
+            contact3.setIsEmergencyContact(true);
+            contact3.setIsActive(true);
+            contact3.setCreatedAt(LocalDateTime.now());
+            contact3.setUpdatedAt(LocalDateTime.now());
+            
+            // Insert sample contacts
+            familyContactMapper.insert(contact1);
+            System.out.println("  Added sample contact: " + contact1.getName() + " for user " + userId);
+            
+            familyContactMapper.insert(contact2);
+            System.out.println("  Added sample contact: " + contact2.getName() + " for user " + userId);
+            
+            familyContactMapper.insert(contact3);
+            System.out.println("  Added sample contact: " + contact3.getName() + " for user " + userId);
+            
+            System.out.println("Sample family contacts initialized successfully for user " + userId + "!");
+        } catch (Exception e) {
+            System.err.println("Error creating sample contacts for user " + userId + ": " + e.getMessage());
         }
     }
 
