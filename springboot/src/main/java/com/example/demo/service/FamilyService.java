@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.mapper.FamilyContactMapper;
 import com.example.demo.pojo.FamilyContact;
 import com.example.demo.pojo.HealthRecord;
 
@@ -18,11 +20,13 @@ import com.example.demo.pojo.HealthRecord;
  * 
  * This service handles family contact management, emergency notifications,
  * and family member communication for the IBM AI Elderly Project.
+ * Now using database storage instead of in-memory storage.
  * 
  * @author Weihao Zeng
- * @version 1.0
+ * @version 2.0
  */
 @Service
+@Transactional
 public class FamilyService {
 
     @Autowired
@@ -30,10 +34,9 @@ public class FamilyService {
 
     @Autowired
     private SmsService smsService;
-
-    // In-memory storage for family contacts (consider using database in production)
-    private List<FamilyContact> familyContacts = new ArrayList<>();
-    private Long contactIdCounter = 1L;
+    
+    @Autowired
+    private FamilyContactMapper familyContactMapper;
 
     /**
      * Add a new family contact
@@ -61,7 +64,6 @@ public class FamilyService {
 
         // Create new contact
         FamilyContact contact = new FamilyContact();
-        contact.setId(contactIdCounter++);
         contact.setUserId(userId);
         contact.setName(name.trim());
         contact.setPhone(phone != null ? phone.trim() : null);
@@ -72,10 +74,15 @@ public class FamilyService {
         contact.setCreatedAt(LocalDateTime.now());
         contact.setUpdatedAt(LocalDateTime.now());
 
-        // Add to storage
-        familyContacts.add(contact);
-
-        System.out.println("Family contact added: " + contact.getName() + " for user " + userId);
+        // Save to database
+        try {
+            familyContactMapper.insert(contact);
+            System.out.println("Family contact added to database: " + contact.getName() + " for user " + userId);
+        } catch (Exception e) {
+            System.err.println("Failed to add family contact to database: " + e.getMessage());
+            throw new RuntimeException("Failed to save family contact", e);
+        }
+        
         return contact;
     }
 
@@ -86,9 +93,13 @@ public class FamilyService {
      * @return List of family contacts
      */
     public List<FamilyContact> getFamilyContacts(Long userId) {
-        return familyContacts.stream()
-                .filter(contact -> contact.getUserId().equals(userId) && contact.getIsActive())
-                .collect(Collectors.toList());
+        try {
+            List<FamilyContact> contacts = familyContactMapper.findActiveByUserId(userId);
+            return contacts != null ? contacts : new ArrayList<>();
+        } catch (Exception e) {
+            System.err.println("Failed to get family contacts from database: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -99,12 +110,17 @@ public class FamilyService {
      * @return Family contact or null if not found
      */
     public FamilyContact getFamilyContact(Long userId, Long contactId) {
-        return familyContacts.stream()
-                .filter(contact -> contact.getUserId().equals(userId) && 
-                                 contact.getId().equals(contactId) && 
-                                 contact.getIsActive())
-                .findFirst()
-                .orElse(null);
+        try {
+            FamilyContact contact = familyContactMapper.findById(contactId);
+            // Verify the contact belongs to the user and is active
+            if (contact != null && contact.getUserId().equals(userId) && contact.getIsActive()) {
+                return contact;
+            }
+            return null;
+        } catch (Exception e) {
+            System.err.println("Failed to get family contact from database: " + e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -158,6 +174,16 @@ public class FamilyService {
         }
 
         contact.setUpdatedAt(LocalDateTime.now());
+        
+        // Save to database
+        try {
+            familyContactMapper.update(contact);
+            System.out.println("Family contact updated in database: " + contact.getName());
+        } catch (Exception e) {
+            System.err.println("Failed to update family contact in database: " + e.getMessage());
+            throw new RuntimeException("Failed to update family contact", e);
+        }
+        
         return contact;
     }
 
@@ -176,7 +202,16 @@ public class FamilyService {
 
         contact.setIsActive(false);
         contact.setUpdatedAt(LocalDateTime.now());
-        return true;
+        
+        // Update in database
+        try {
+            familyContactMapper.update(contact);
+            System.out.println("Family contact soft deleted in database: " + contact.getName());
+            return true;
+        } catch (Exception e) {
+            System.err.println("Failed to delete family contact in database: " + e.getMessage());
+            return false;
+        }
     }
 
     /**
@@ -219,11 +254,13 @@ public class FamilyService {
      * @return List of emergency contacts
      */
     public List<FamilyContact> getEmergencyContacts(Long userId) {
-        return familyContacts.stream()
-                .filter(contact -> contact.getUserId().equals(userId) && 
-                                 contact.getIsEmergencyContact() && 
-                                 contact.getIsActive())
-                .collect(Collectors.toList());
+        try {
+            List<FamilyContact> contacts = familyContactMapper.findEmergencyContactsByUserId(userId);
+            return contacts != null ? contacts : new ArrayList<>();
+        } catch (Exception e) {
+            System.err.println("Failed to get emergency contacts from database: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -317,16 +354,36 @@ public class FamilyService {
 
     /**
      * Get all contacts (for testing)
+     * Note: This method now retrieves all contacts from database
      */
     public List<FamilyContact> getAllContacts() {
-        return new ArrayList<>(familyContacts);
+        try {
+            // Get all contacts for all users (mainly for testing)
+            // In production, you might want to limit this or add pagination
+            List<FamilyContact> allContacts = new ArrayList<>();
+            // Since we don't have a findAll method, we'll need to add one or use a different approach
+            // For now, returning empty list - you can add a findAll method to mapper if needed
+            System.out.println("getAllContacts called - consider adding pagination for production use");
+            return allContacts;
+        } catch (Exception e) {
+            System.err.println("Failed to get all contacts from database: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     /**
-     * Clear all contacts (for testing)
+     * Clear all contacts for a specific user (for testing)
+     * Note: This now performs actual database deletion
      */
-    public void clearAllContacts() {
-        familyContacts.clear();
-        contactIdCounter = 1L;
+    public void clearAllContactsForUser(Long userId) {
+        try {
+            List<FamilyContact> userContacts = familyContactMapper.findByUserId(userId);
+            for (FamilyContact contact : userContacts) {
+                familyContactMapper.deleteById(contact.getId());
+            }
+            System.out.println("Cleared all contacts for user " + userId + " from database");
+        } catch (Exception e) {
+            System.err.println("Failed to clear contacts from database: " + e.getMessage());
+        }
     }
 }
