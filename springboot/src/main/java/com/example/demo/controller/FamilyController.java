@@ -126,31 +126,52 @@ public class FamilyController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         Map<String, Object> response = new HashMap<>();
-
+        
+        // === Debug信息开始 ===
+        System.out.println("=== Family API Debug Info ===");
+        System.out.println("1. JwtUtil instance: " + jwtUtil);
+        System.out.println("2. JwtUtil class: " + (jwtUtil != null ? jwtUtil.getClass().getName() : "null"));
+        System.out.println("3. Auth header received: " + authHeader);
+        System.out.println("4. Auth header length: " + (authHeader != null ? authHeader.length() : "null"));
+        
         // Check authentication
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("5. Auth check failed: header is null or doesn't start with Bearer");
             response.put("success", false);
             response.put("message", "Authentication required");
             return ResponseEntity.status(401).body(response);
         }
+        
+        System.out.println("6. Auth header format OK, extracting token...");
 
         try {
             // Extract userId from JWT token
+            System.out.println("7. Calling jwtUtil.extractUserIdFromHeader...");
             Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            System.out.println("8. Extracted userId: " + userId);
+            
             if (userId == null) {
+                System.out.println("9. UserId is null, returning 401");
                 response.put("success", false);
                 response.put("message", "Invalid or expired token");
                 return ResponseEntity.status(401).body(response);
             }
-
+            
+            System.out.println("10. UserId OK, calling familyService...");
             List<FamilyContact> contacts = familyService.getFamilyContacts(userId);
+            System.out.println("11. Got " + contacts.size() + " contacts from service");
             
             response.put("success", true);
             response.put("contacts", contacts);
             response.put("totalCount", contacts.size());
+            System.out.println("12. Returning success response");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            System.out.println("13. Exception occurred: " + e.getClass().getName());
+            System.out.println("14. Exception message: " + e.getMessage());
+            e.printStackTrace(); // 打印完整的堆栈跟踪
+            
             response.put("success", false);
             response.put("message", "Error fetching family contacts: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);
