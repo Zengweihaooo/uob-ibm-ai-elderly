@@ -1,26 +1,35 @@
 package com.example.demo.controller;
 
-import com.example.demo.pojo.User;
-import com.example.demo.pojo.EmailVerificationResult;
-import com.example.demo.pojo.PermissionResult;
-import com.example.demo.pojo.RateLimitResult;
-import com.example.demo.service.UserService;
-import com.example.demo.service.EmailVerificationService;
-import com.example.demo.service.PermissionService;
-import com.example.demo.service.PasswordResetService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.example.demo.pojo.EmailVerificationResult;
+import com.example.demo.pojo.PermissionResult;
+import com.example.demo.pojo.RateLimitResult;
+import com.example.demo.pojo.User;
+import com.example.demo.service.EmailVerificationService;
+import com.example.demo.service.PasswordResetService;
+import com.example.demo.service.PermissionService;
+import com.example.demo.service.UserService;
+import com.example.demo.util.JwtUtil;
 
 /**
  * Controller for handling user registration and verification
@@ -46,6 +55,9 @@ public class UserController {
     
     @Autowired
     private PasswordResetService passwordResetService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     /**
      * Display the user registration page
@@ -258,8 +270,13 @@ public class UserController {
             
             if (loginSuccess) {
                 User user = userService.getUserByEmail(email);
+                
+                // 生成JWT token
+                String token = jwtUtil.generateToken(user.getEmail(), user.getId());
+                
                 response.put("success", true);
                 response.put("message", "Login successful! Welcome back.");
+                response.put("token", token);  // 添加JWT token
                 response.put("user", Map.of(
                     "id", user.getId(),
                     "email", user.getEmail(),
@@ -464,24 +481,35 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
         
-        // Extract token (remove "Bearer " prefix)
-        String token = authHeader.substring(7);
-        
-        // For demo purposes, accept any token that starts with "demo-token-"
-        // In a real application, you would validate the JWT token properly
-        if (token.startsWith("demo-token-")) {
-            response.put("success", true);
-            response.put("user", Map.of(
-                "name", "Demo User",
-                "email", "demo@example.com",
-                "id", 1
-            ));
-            return ResponseEntity.ok(response);
+        try {
+            // 使用JWT工具类验证token
+            Long userId = jwtUtil.extractUserIdFromHeader(authHeader);
+            String email = jwtUtil.extractUsername(jwtUtil.extractTokenFromHeader(authHeader));
+            
+            if (userId != null && email != null) {
+                // 从数据库获取用户信息
+                User user = userService.getUserByEmail(email);
+                if (user != null && user.getId().equals(userId)) {
+                    response.put("success", true);
+                    response.put("user", Map.of(
+                        "id", user.getId(),
+                        "email", user.getEmail(),
+                        "name", user.getName() != null ? user.getName() : user.getUsername(),
+                        "role", user.getRole().toString()
+                    ));
+                    return ResponseEntity.ok(response);
+                }
+            }
+            
+            response.put("success", false);
+            response.put("message", "Invalid token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Token verification failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
-        
-        response.put("success", false);
-        response.put("message", "Invalid token");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
     
     /**

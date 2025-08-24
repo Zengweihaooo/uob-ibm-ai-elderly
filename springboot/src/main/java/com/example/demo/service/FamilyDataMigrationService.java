@@ -69,24 +69,10 @@ public class FamilyDataMigrationService implements CommandLineRunner {
      * Initialize sample data if database is empty
      */
     private void initializeSampleDataIfNeeded() {
-        try {
-            // Initialize sample data for multiple users
-            Long[] userIds = {1L, 2L, 3L}; // Support multiple users
-            
-            for (Long userId : userIds) {
-                List<FamilyContact> existingContacts = familyContactMapper.findByUserId(userId);
-                
-                if (existingContacts == null || existingContacts.isEmpty()) {
-                    System.out.println("No family contacts found for user " + userId + ". Initializing sample data...");
-                    createSampleContactsForUser(userId);
-                } else {
-                    System.out.println("User " + userId + " already has " + existingContacts.size() + " contacts. Skipping.");
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Error initializing sample data: " + e.getMessage());
-            e.printStackTrace();
-        }
+        // 移除自动创建测试数据的逻辑
+        // 用户现在可以通过UI手动添加联系人
+        System.out.println("Family Data Migration Service - Ready for manual contact creation");
+        System.out.println("Users can now add their own family contacts through the API");
     }
     
     /**
