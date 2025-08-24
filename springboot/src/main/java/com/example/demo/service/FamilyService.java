@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.mapper.FamilyContactMapper;
 import com.example.demo.pojo.FamilyContact;
-import com.example.demo.pojo.HealthRecord;
 
 /**
  * Service class for managing family contacts and family-related operations
