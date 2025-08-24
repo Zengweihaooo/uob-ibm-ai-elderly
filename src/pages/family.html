@@ -1117,11 +1117,17 @@
                 }
                 
                 try {
+                    const authToken = localStorage.getItem('authToken');
+                    if (!authToken) {
+                        showMessageModalMessage('Please log in to send messages.', 'error');
+                        return;
+                    }
+                    
                     const response = await fetch(`${API_BASE}/contacts/${currentMessageContactId}/message`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer demo-token-' + Date.now()
+                            'Authorization': `Bearer ${authToken}`
                         },
                         body: JSON.stringify({
                             message: messageContent,
@@ -1313,9 +1319,15 @@
         // Load family contacts
         async function loadFamilyContacts() {
             try {
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) {
+                    showMessage('Please log in to view your family contacts.', 'error');
+                    return;
+                }
+                
                 const response = await fetch(`${API_BASE}/contacts`, {
                     headers: {
-                        'Authorization': 'Bearer demo-token-' + Date.now()
+                        'Authorization': `Bearer ${authToken}`
                     }
                 });
 
@@ -1433,9 +1445,14 @@
         // Load statistics
         async function loadStatistics() {
             try {
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) {
+                    return; // Silently fail if no auth token
+                }
+                
                 const response = await fetch(`${API_BASE}/stats`, {
                     headers: {
-                        'Authorization': 'Bearer demo-token-' + Date.now()
+                        'Authorization': `Bearer ${authToken}`
                     }
                 });
 
@@ -1476,9 +1493,15 @@
         // Edit contact
         async function editContact(contactId) {
             try {
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) {
+                    showMessage('Please log in to edit contacts.', 'error');
+                    return;
+                }
+                
                 const response = await fetch(`${API_BASE}/contacts/${contactId}`, {
                     headers: {
-                        'Authorization': 'Bearer demo-token-' + Date.now()
+                        'Authorization': `Bearer ${authToken}`
                     }
                 });
 
@@ -1528,10 +1551,17 @@
             if (!contactToDelete) return;
 
             try {
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) {
+                    showMessage('Please log in to delete contacts.', 'error');
+                    closeDeleteModal();
+                    return;
+                }
+                
                 const response = await fetch(`${API_BASE}/contacts/${contactToDelete}`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': 'Bearer demo-token-' + Date.now()
+                        'Authorization': `Bearer ${authToken}`
                     }
                 });
 
@@ -1608,11 +1638,17 @@
                 
                 const method = currentEditingContactId ? 'PUT' : 'POST';
 
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) {
+                    showMessage('Please log in to save contacts.', 'error');
+                    return;
+                }
+                
                 const response = await fetch(url, {
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer demo-token-' + Date.now()
+                        'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify(formData)
                 });
