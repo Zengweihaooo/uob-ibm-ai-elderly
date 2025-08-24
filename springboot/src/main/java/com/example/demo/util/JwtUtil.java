@@ -62,7 +62,7 @@ public class JwtUtil {
      * 解析token获取所有claims
      */
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
+        return Jwts.parser()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
