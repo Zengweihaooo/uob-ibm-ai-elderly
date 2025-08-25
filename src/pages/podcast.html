@@ -144,6 +144,40 @@
             color: #666;
         }
 
+        .playback-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .speed-select {
+            padding: 6px 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+            color: var(--podcast-dark);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 70px;
+        }
+
+        .speed-select:focus {
+            outline: none;
+            border-color: var(--podcast-primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .speed-select:hover {
+            border-color: var(--podcast-secondary);
+        }
+
         .volume-control {
             display: flex;
             align-items: center;
@@ -636,6 +670,32 @@
             transform: scale(0.95);
         }
 
+        /* 倍速提示样式 */
+        .speed-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--podcast-primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 3000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .speed-notification.show {
+            transform: translateX(0);
+        }
+
+        .speed-notification .speed-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
         /* Fixed bottom navigation bar */
         .bottom-navigation {
             position: fixed;
@@ -719,6 +779,35 @@
                 grid-template-columns: 1fr;
             }
 
+            .audio-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .playback-controls {
+                flex-direction: column;
+                gap: 15px;
+                width: 100%;
+            }
+
+            .speed-control {
+                justify-content: center;
+            }
+
+            .speed-select {
+                min-width: 80px;
+                font-size: 1rem;
+                padding: 8px 12px;
+            }
+
+            .volume-control {
+                justify-content: center;
+            }
+
+            .volume-slider {
+                width: 120px;
+            }
+
             .nav-tab {
                 min-width: 60px;
                 padding: 8px 10px;
@@ -788,10 +877,23 @@
                         <span id="totalTime">25:30</span>
                     </div>
                 </div>
-                <div class="volume-control">
-                    <span>🔊</span>
-                    <div class="volume-slider" id="volumeSlider">
-                        <div class="volume-fill" id="volumeFill"></div>
+                <div class="playback-controls">
+                    <div class="speed-control">
+                        <span>⚡</span>
+                        <select id="speedSelect" class="speed-select">
+                            <option value="0.5">0.5x</option>
+                            <option value="0.75">0.75x</option>
+                            <option value="1" selected>1x</option>
+                            <option value="1.25">1.25x</option>
+                            <option value="1.5">1.5x</option>
+                            <option value="2">2x</option>
+                        </select>
+                    </div>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <div class="volume-slider" id="volumeSlider">
+                            <div class="volume-fill" id="volumeFill"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -831,6 +933,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Speed notification -->
+    <div id="speedNotification" class="speed-notification">
+        <span>Playback Speed: <span class="speed-value">1x</span></span>
     </div>
 
     <!-- Fixed bottom navigation bar -->
@@ -1246,6 +1353,18 @@
                 updateProgress();
             });
 
+            // 倍速控制
+            document.getElementById('speedSelect').addEventListener('change', function(e) {
+                const speed = parseFloat(e.target.value);
+                if (audioPlayer) {
+                    audioPlayer.playbackRate = speed;
+                    console.log('Playback speed changed to:', speed + 'x');
+                    
+                    // 显示倍速变化提示
+                    showSpeedNotification(speed);
+                }
+            });
+
             // 音量控制
             document.getElementById('volumeSlider').addEventListener('click', function(e) {
                 const rect = this.getBoundingClientRect();
@@ -1264,6 +1383,9 @@
         // 初始化音频播放器
         function initializeAudioPlayer() {
             audioPlayer = new Audio();
+            
+            // 设置默认倍速
+            audioPlayer.playbackRate = 1.0;
             
             // 音频播放器事件监听
             audioPlayer.addEventListener('loadedmetadata', function() {
@@ -1334,18 +1456,38 @@
             if (podcast) {
                 console.log('Playing podcast:', podcast.title);
                 
+                // 确保音频播放器已初始化
+                if (!audioPlayer) {
+                    console.log('Audio player not initialized, initializing now...');
+                    initializeAudioPlayer();
+                }
+                
                 // 如果当前正在播放，先停止播放
                 if (isPlaying && audioPlayer) {
                     console.log('Stopping current playback before switching to new podcast');
                     audioPlayer.pause();
                     isPlaying = false;
                     const playBtn = document.getElementById('playBtn');
-                    playBtn.innerHTML = '▶️';
-                    playBtn.classList.remove('playing');
+                    if (playBtn) {
+                        playBtn.innerHTML = '▶️';
+                        playBtn.classList.remove('playing');
+                    }
                 }
                 
-                // 设置当前播客
-                currentPodcast = podcast;
+                // 设置当前播客 - 确保包含所有必要的图片字段
+                currentPodcast = {
+                    ...podcast,
+                    image: podcast.image || podcast.artwork,
+                    thumbnail: podcast.thumbnail || podcast.image || podcast.artwork
+                };
+                
+                console.log('Setting currentPodcast with images:', {
+                    title: currentPodcast.title,
+                    image: currentPodcast.image,
+                    thumbnail: currentPodcast.thumbnail,
+                    originalImage: podcast.image,
+                    originalArtwork: podcast.artwork
+                });
                 
                 // 更新界面显示选中的播客
                 updateCurrentEpisode();
@@ -1353,20 +1495,46 @@
                 // 加载播客的剧集
                 (async () => {
                     try {
+                        console.log('Loading episodes for podcast ID:', podcast.id);
                         await loadPodcastEpisodes(podcast.id);
+                        
                         // 剧集加载完成后再次更新界面
                         updateCurrentEpisode();
+                        
                         // 如果有剧集，自动开始播放
                         if (currentEpisode) {
                             console.log('Episode loaded, auto-playing:', currentEpisode.title);
-                            startPlayback();
+                            console.log('Episode data:', currentEpisode);
+                            
+                            // 确保音频播放器存在
+                            if (!audioPlayer) {
+                                console.error('Audio player is still null after initialization');
+                                alert('Audio player initialization failed. Please refresh the page and try again.');
+                                return;
+                            }
+                            
+                            // 保持当前倍速设置
+                            const speedSelect = document.getElementById('speedSelect');
+                            if (speedSelect) {
+                                const currentSpeed = parseFloat(speedSelect.value);
+                                audioPlayer.playbackRate = currentSpeed;
+                            }
+                            
+                            // 尝试开始播放
+                            try {
+                                await startPlayback();
+                                console.log('Playback started successfully');
+                            } catch (playbackError) {
+                                console.error('Playback failed:', playbackError);
+                                alert(`Playback failed: ${playbackError.message}`);
+                            }
                         } else {
                             console.log('No episodes available for this podcast');
                             alert('No episodes available for this podcast. Please try another podcast.');
                         }
                     } catch (error) {
                         console.error('Error loading episodes:', error);
-                        alert('Failed to load episodes for this podcast. Please try another podcast.');
+                        alert(`Failed to load episodes for this podcast: ${error.message}. Please try another podcast.`);
                     }
                 })();
             } else {
@@ -1393,8 +1561,15 @@
             if (podcast) {
                 console.log('Showing episodes modal for podcast:', podcast.title, 'from search:', isFromSearch, 'ID:', podcast.id);
                 
+                // 确保podcast对象包含完整的图片信息
+                const podcastWithImages = {
+                    ...podcast,
+                    image: podcast.image || podcast.artwork,
+                    thumbnail: podcast.thumbnail || podcast.image || podcast.artwork
+                };
+                
                 // 显示剧集选择模态框
-                showEpisodesModal(podcast.id, podcast.title, podcast.image || podcast.artwork, podcast);
+                showEpisodesModal(podcast.id, podcast.title, podcastWithImages.image, podcastWithImages);
             } else {
                 console.error('Podcast not found with id:', id, 'numeric ID:', numericId);
                 console.log('Available podcasts in searchResults:', searchResults.map(p => ({id: p.id, title: p.title, type: typeof p.id})));
@@ -1509,8 +1684,9 @@
             
             // 更新模态框标题和图片
             document.getElementById('modalPodcastTitle').textContent = podcastTitle;
+            document.getElementById('modalPodcastTitle').setAttribute('data-podcast-id', podcastId);
             document.getElementById('modalPodcastImage').src = podcastImage;
-                            document.getElementById('modalPodcastDescription').textContent = 'Select an episode to play';
+            document.getElementById('modalPodcastDescription').textContent = 'Select an episode to play';
             
             // 显示模态框
             document.getElementById('episodesModal').style.display = 'block';
@@ -1645,12 +1821,18 @@
                     // 获取第一个（也是唯一的）剧集
                     const episode = data.episodes[0];
                     
-                    // 设置当前播客和剧集信息
+                    // 设置当前播客和剧集信息 - 确保包含完整的图片字段
                     currentPodcast = podcastData || {
                         id: podcastId,
                         title: podcastTitle,
-                        image: podcastImage
+                        image: podcastImage,
+                        thumbnail: podcastImage
                     };
+                    
+                    // 如果podcastData存在，确保包含thumbnail字段
+                    if (podcastData && !podcastData.thumbnail) {
+                        currentPodcast.thumbnail = podcastData.image || podcastData.artwork;
+                    }
                     
                     currentEpisode = episode;
                     
@@ -1660,6 +1842,10 @@
                     // 开始播放
                     if (episode.audio && episode.audio.trim() !== '') {
                         console.log('Starting playback for single episode podcast:', podcastTitle);
+                        // 保持当前倍速设置
+                        const speedSelect = document.getElementById('speedSelect');
+                        const currentSpeed = parseFloat(speedSelect.value);
+                        audioPlayer.playbackRate = currentSpeed;
                         startPlayback();
                     } else {
                         console.error('No audio URL available for single episode podcast:', podcastTitle);
@@ -1695,6 +1881,13 @@
             // 设置当前剧集信息 - 使用完整的剧集数据
             if (episodeData) {
                 currentEpisode = episodeData;
+                // 始终更新currentPodcast，确保显示正确的播客封面
+                currentPodcast = {
+                    id: episodeData.podcastId || 'unknown',
+                    title: episodeData.podcastTitle || 'Unknown Podcast',
+                    image: episodeData.podcastImage || episodeData.image || episodeData.thumbnail || episodeData.artwork
+                };
+                console.log('Updated currentPodcast:', currentPodcast.title, 'with image:', currentPodcast.image);
             } else {
                 currentEpisode = {
                     id: episodeId,
@@ -1709,6 +1902,10 @@
             // 开始播放
             if (audioUrl && audioUrl.trim() !== '') {
                 console.log('Starting playback for episode:', episodeTitle);
+                // 保持当前倍速设置
+                const speedSelect = document.getElementById('speedSelect');
+                const currentSpeed = parseFloat(speedSelect.value);
+                audioPlayer.playbackRate = currentSpeed;
                 startPlayback();
             } else {
                 console.error('No audio URL available for episode:', episodeTitle);
@@ -1727,8 +1924,16 @@
                 const duration = formatDuration(episode.audioLength || episode.duration || 0);
                 const publishDate = episode.publishedDate ? new Date(episode.publishedDate).toLocaleDateString('en-US') : 'Unknown';
                 
+                // 确保剧集数据包含播客信息
+                const episodeWithPodcastInfo = {
+                    ...episode,
+                    podcastId: episode.podcastId || document.getElementById('modalPodcastTitle').getAttribute('data-podcast-id') || 'unknown',
+                    podcastTitle: episode.podcastTitle || document.getElementById('modalPodcastTitle').textContent || 'Unknown Podcast',
+                    podcastImage: episode.podcastImage || document.getElementById('modalPodcastImage').src || episode.image || episode.thumbnail
+                };
+                
                 return `
-                    <div class="episode-item" onclick="playEpisodeFromModal('${episode.id}', '${episode.title.replace(/'/g, "\\'")}', '${episode.audio || ''}', ${JSON.stringify(episode).replace(/"/g, '&quot;')})">
+                    <div class="episode-item" onclick="playEpisodeFromModal('${episode.id}', '${episode.title.replace(/'/g, "\\'")}', '${episode.audio || ''}', ${JSON.stringify(episodeWithPodcastInfo).replace(/"/g, '&quot;')})">
                         <img src="${episodeImage}" alt="${episode.title}" class="episode-thumbnail" onerror="this.src='${document.getElementById('modalPodcastImage').src}'">
                         <div class="episode-info">
                             <div class="episode-title">${episode.title}</div>
@@ -1743,7 +1948,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="play-episode-btn" onclick="event.stopPropagation(); playEpisodeFromModal('${episode.id}', '${episode.title.replace(/'/g, "\\'")}', '${episode.audio || ''}', ${JSON.stringify(episode).replace(/"/g, '&quot;')})">
+                        <button class="play-episode-btn" onclick="event.stopPropagation(); playEpisodeFromModal('${episode.id}', '${episode.title.replace(/'/g, "\\'")}', '${episode.audio || ''}', ${JSON.stringify(episodeWithPodcastInfo).replace(/"/g, '&quot;')})">
                             ▶️ Play
                         </button>
                     </div>
@@ -1832,6 +2037,22 @@
             `;
         }
 
+        // 显示倍速提示
+        function showSpeedNotification(speed) {
+            const notification = document.getElementById('speedNotification');
+            const speedValue = notification.querySelector('.speed-value');
+            
+            speedValue.textContent = speed + 'x';
+            
+            // 显示提示
+            notification.classList.add('show');
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
         function updateCurrentEpisode() {
             if (!currentPodcast) return;
             
@@ -1843,11 +2064,31 @@
             
             // 设置默认值，避免显示undefined
             titleElement.textContent = currentPodcast.title || 'No Title Available';
-            coverElement.src = currentPodcast.image || 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=120&h=120&fit=crop&crop=center';
+            const podcastImage = currentPodcast.image || currentPodcast.thumbnail || 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=120&h=120&fit=crop&crop=center';
+            coverElement.src = podcastImage;
+            console.log('Updated podcast cover to:', podcastImage);
             
             // 如果有剧集信息，更新剧集详情
             if (currentEpisode) {
                 titleElement.textContent = currentEpisode.title || 'No Episode Title';
+                
+                // 更新封面图片 - 优先使用剧集的图片，如果没有则使用播客的图片
+                let episodeImage = currentEpisode.image || currentEpisode.thumbnail;
+                
+                // 如果剧集没有图片，使用播客的图片
+                if (!episodeImage || episodeImage === '') {
+                    episodeImage = currentPodcast.image || currentPodcast.thumbnail || currentPodcast.artwork;
+                    console.log('Using podcast cover image for episode:', episodeImage);
+                }
+                
+                // 如果还是没有图片，使用默认图片
+                if (!episodeImage || episodeImage === '') {
+                    episodeImage = 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=120&h=120&fit=crop&crop=center';
+                    console.log('Using default cover image for episode');
+                }
+                
+                coverElement.src = episodeImage;
+                console.log('Updated episode cover to:', episodeImage);
                 
                 // 设置音频源
                 if (audioPlayer && (currentEpisode.audio || currentEpisode.enclosureUrl || currentEpisode.enclosure)) {
@@ -1885,51 +2126,53 @@
             highlightCurrentPodcast();
         }
 
-        function startPlayback() {
+        async function startPlayback() {
             console.log('startPlayback called - currentPodcast:', currentPodcast?.title, 'currentEpisode:', currentEpisode?.title);
             
             if (!audioPlayer) {
-                console.error('Audio player not initialized');
-                return;
+                const error = new Error('Audio player not initialized');
+                console.error(error.message);
+                throw error;
             }
             
             if (!currentPodcast) {
-                console.error('No podcast selected');
-                return;
+                const error = new Error('No podcast selected');
+                console.error(error.message);
+                throw error;
             }
             
             if (!currentEpisode) {
-                console.error('No episode available for playback');
-                alert('This podcast episode is not available for playback. Please try another podcast.');
-                return;
+                const error = new Error('This podcast episode is not available for playback. Please try another podcast.');
+                console.error(error.message);
+                throw error;
             }
             
             // 检查音频源
             const audioUrl = currentEpisode.audio || currentEpisode.enclosureUrl || currentEpisode.enclosure;
             if (!audioUrl) {
-                console.error('No audio URL available');
-                alert('No audio URL available for this episode. Please try another podcast.');
-                return;
+                const error = new Error('No audio URL available for this episode. Please try another podcast.');
+                console.error(error.message);
+                throw error;
             }
             
             console.log('Audio URL:', audioUrl);
             
-            // 检查URL类型 - 更精确的检查
+            // 检查URL类型 - 更宽松的检查
             const lowerUrl = audioUrl.toLowerCase();
             
-            // 检查是否是真正的RSS feed URL（以.xml结尾或包含明确的RSS路径）
-            if (lowerUrl.endsWith('.xml') || 
-                lowerUrl.includes('/rss') || 
-                lowerUrl.includes('/feed') ||
-                lowerUrl.includes('rss.xml') ||
-                lowerUrl.includes('feed.xml') ||
-                lowerUrl.includes('podcast.xml')) {
-                console.error('Audio URL is an RSS feed, not an audio file');
-                alert('This podcast only provides RSS feed links, not direct audio files. Please try another podcast.');
-                return;
+            // 检查是否是真正的RSS feed URL（更精确的判断）
+            if (lowerUrl.endsWith('.xml') && 
+                (lowerUrl.includes('/rss') || 
+                 lowerUrl.includes('/feed') ||
+                 lowerUrl.includes('rss.xml') ||
+                 lowerUrl.includes('feed.xml') ||
+                 lowerUrl.includes('podcast.xml'))) {
+                const error = new Error('This podcast only provides RSS feed links, not direct audio files. Please try another podcast.');
+                console.error(error.message);
+                throw error;
             }
             
-            // 检查是否是音频文件URL
+            // 检查是否是音频文件URL（更宽松的检测）
             const isAudioFile = lowerUrl.endsWith('.mp3') || 
                                lowerUrl.endsWith('.m4a') || 
                                lowerUrl.endsWith('.wav') || 
@@ -1938,28 +2181,44 @@
                                lowerUrl.includes('audio') ||
                                lowerUrl.includes('media') ||
                                lowerUrl.includes('download') ||
-                               lowerUrl.includes('play');
+                               lowerUrl.includes('play') ||
+                               lowerUrl.includes('stream') ||
+                               lowerUrl.includes('podcast') ||
+                               lowerUrl.includes('episode');
             
             if (!isAudioFile) {
                 console.warn('URL does not appear to be a direct audio file, but attempting playback anyway');
+                // 不要阻止播放，让浏览器尝试播放
             }
             
             // 检查HTTPS/Mixed Content
             if (window.location.protocol === 'https:' && audioUrl.startsWith('http:')) {
-                console.error('Mixed content error: HTTPS page trying to load HTTP audio');
-                alert('Mixed content error: Cannot load HTTP audio on HTTPS page. Please try another podcast.');
-                return;
+                const error = new Error('Mixed content error: Cannot load HTTP audio on HTTPS page. Please try another podcast.');
+                console.error(error.message);
+                throw error;
             }
             
-            // 开始播放
-            console.log('Starting playback of episode:', currentEpisode.title);
-            audioPlayer.play().then(() => {
+            // 设置当前选择的倍速
+            const speedSelect = document.getElementById('speedSelect');
+            if (speedSelect) {
+                const currentSpeed = parseFloat(speedSelect.value);
+                audioPlayer.playbackRate = currentSpeed;
+                console.log('Starting playback of episode:', currentEpisode.title, 'at speed:', currentSpeed + 'x');
+            } else {
+                console.log('Starting playback of episode:', currentEpisode.title);
+            }
+            
+            try {
+                // 开始播放
+                await audioPlayer.play();
                 console.log('Audio playback started successfully');
                 isPlaying = true;
                 const playBtn = document.getElementById('playBtn');
-                playBtn.innerHTML = '⏸️';
-                playBtn.classList.add('playing');
-            }).catch(error => {
+                if (playBtn) {
+                    playBtn.innerHTML = '⏸️';
+                    playBtn.classList.add('playing');
+                }
+            } catch (error) {
                 console.error('Error playing audio:', error);
                 
                 // 提供更详细的错误信息
@@ -1974,8 +2233,8 @@
                     errorMessage += 'Please try again.';
                 }
                 
-                alert(errorMessage);
-            });
+                throw new Error(errorMessage);
+            }
         }
 
         function togglePlay() {
