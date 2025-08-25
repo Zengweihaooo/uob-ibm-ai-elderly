@@ -29,6 +29,13 @@ public class UserContextUtil {
         
         try {
             String token = authHeader.substring(7); // 移除"Bearer "前缀
+            
+            // Handle demo tokens specially
+            if (token.startsWith("demo-token-")) {
+                return 1L; // Demo user ID
+            }
+            
+            // Handle real JWT tokens
             if (jwtUtil.isValidToken(token)) {
                 return jwtUtil.getUserIdFromToken(token);
             }
@@ -77,9 +84,49 @@ public class UserContextUtil {
         
         try {
             String token = authHeader.substring(7);
+            
+            // Handle demo tokens specially
+            if (token.startsWith("demo-token-")) {
+                return true; // Demo tokens are always valid
+            }
+            
+            // Handle real JWT tokens
             return jwtUtil.isValidToken(token);
         } catch (Exception e) {
             return false;
+        }
+    }
+    
+    /**
+     * Debug method to log token extraction process
+     * 
+     * @param authHeader Authorization header
+     * @return Debug information
+     */
+    public String debugTokenExtraction(String authHeader) {
+        if (authHeader == null) {
+            return "Auth header is null";
+        }
+        
+        if (!authHeader.startsWith("Bearer ")) {
+            return "Auth header doesn't start with 'Bearer '";
+        }
+        
+        String token = authHeader.substring(7);
+        
+        if (token.startsWith("demo-token-")) {
+            return "Demo token detected: " + token + " -> User ID: 1";
+        }
+        
+        try {
+            if (jwtUtil.isValidToken(token)) {
+                Long userId = jwtUtil.getUserIdFromToken(token);
+                return "Valid JWT token: " + token + " -> User ID: " + userId;
+            } else {
+                return "Invalid JWT token: " + token;
+            }
+        } catch (Exception e) {
+            return "Error processing JWT token: " + e.getMessage();
         }
     }
 }

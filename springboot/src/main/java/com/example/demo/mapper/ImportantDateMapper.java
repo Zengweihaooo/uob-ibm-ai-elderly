@@ -3,6 +3,7 @@ package com.example.demo.mapper;
 import com.example.demo.pojo.ImportantDate;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,6 +32,20 @@ public interface ImportantDateMapper {
 								  @Param("title") String title,
 								  @Param("date") java.time.LocalDate date,
 								  @Param("type") String type);
+	
+	/**
+	 * Find all important dates
+	 * @return List of all important dates
+	 */
+	@Select("SELECT * FROM important_dates")
+	List<ImportantDate> findAll();
+	
+	/**
+	 * Count total number of important dates
+	 * @return Total number of important dates
+	 */
+	@Select("SELECT COUNT(*) FROM important_dates")
+	long count();
 }
 
 

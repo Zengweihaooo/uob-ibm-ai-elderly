@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.service.FamilyService;
+import com.example.demo.util.UserContextUtil;
 
 /**
  * REST Controller for family contacts (alternative path)
@@ -31,6 +32,9 @@ public class FamilyContactsController {
 
     @Autowired
     private FamilyService familyService;
+    
+    @Autowired
+    private UserContextUtil userContextUtil;
 
     /**
      * Send message to family contact (alternative path)
@@ -48,10 +52,21 @@ public class FamilyContactsController {
 
         Map<String, Object> response = new HashMap<>();
 
+        // Check authentication
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
         try {
-            // For demo purposes, assume user ID is 1
-            // In production, extract from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             String message = (String) messageData.get("message");
             String messageType = (String) messageData.getOrDefault("type", "general");

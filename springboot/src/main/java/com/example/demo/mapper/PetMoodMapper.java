@@ -2,6 +2,7 @@ package com.example.demo.mapper;
 
 import com.example.demo.pojo.PetMood;
 import org.apache.ibatis.annotations.*;
+import java.util.List;
 
 /**
  * 宠物情绪数据访问接口
@@ -82,4 +83,33 @@ public interface PetMoodMapper {
      */
     @Select("SELECT COUNT(*) FROM pet_mood WHERE user_id = #{userId}")
     int countByUserId(Long userId);
+    
+    /**
+     * 获取所有宠物情绪记录
+     * @return 所有宠物情绪记录列表
+     */
+    @Select("SELECT * FROM pet_mood")
+    @Results({
+        @Result(property = "id", column = "id"),
+        @Result(property = "userId", column = "user_id"),
+        @Result(property = "moodScore", column = "mood_score"),
+        @Result(property = "happiness", column = "happiness"),
+        @Result(property = "health", column = "health"),
+        @Result(property = "energy", column = "energy"),
+        @Result(property = "moodEmoji", column = "mood_emoji"),
+        @Result(property = "status", column = "status"),
+        @Result(property = "level", column = "level"),
+        @Result(property = "experience", column = "experience"),
+        @Result(property = "lastInteraction", column = "last_interaction"),
+        @Result(property = "createdAt", column = "created_at"),
+        @Result(property = "updatedAt", column = "updated_at")
+    })
+    List<PetMood> findAll();
+    
+    /**
+     * 获取总记录数
+     * @return 总记录数
+     */
+    @Select("SELECT COUNT(*) FROM pet_mood")
+    long count();
 }

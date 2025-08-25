@@ -3,6 +3,7 @@ package com.example.demo.mapper;
 import com.example.demo.pojo.Schedule;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -102,4 +103,20 @@ public interface ScheduleMapper {
      * @return Number of schedules
      */
     int countByUserIdAndDate(@Param("userId") Long userId, @Param("scheduleDate") LocalDate scheduleDate);
+    
+    /**
+     * Find all schedules
+     * 
+     * @return List of all schedules
+     */
+    @Select("SELECT * FROM schedules")
+    List<Schedule> findAll();
+    
+    /**
+     * Count total number of schedules
+     * 
+     * @return Total number of schedules
+     */
+    @Select("SELECT COUNT(*) FROM schedules")
+    long count();
 }
