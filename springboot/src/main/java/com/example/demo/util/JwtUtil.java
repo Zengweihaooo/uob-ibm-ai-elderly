@@ -68,6 +68,9 @@ public class JwtUtil {
      */
     public Long getUserIdFromToken(String token) {
         Claims claims = getAllClaimsFromToken(token);
+        if (claims == null) {
+            return null;
+        }
         return claims.get("userId", Long.class);
     }
 
@@ -96,6 +99,9 @@ public class JwtUtil {
      */
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = getAllClaimsFromToken(token);
+        if (claims == null) {
+            return null;
+        }
         return claimsResolver.apply(claims);
     }
 
@@ -103,12 +109,18 @@ public class JwtUtil {
      * 从token中提取所有claims
      */
     private Claims getAllClaimsFromToken(String token) {
-        // 临时禁用JWT解析功能
-        throw new UnsupportedOperationException("JWT parsing temporarily disabled");
-        // return Jwts.parser()
-        //         .setSigningKey(getSigningKey())
-        //         .parseClaimsJws(token)
-        //         .getBody();
+        try {
+            // 尝试使用不同的JWT解析方法
+            return Jwts.parser()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            // 如果JWT解析失败，返回null
+            System.err.println("JWT parsing error: " + e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -119,6 +131,9 @@ public class JwtUtil {
      */
     public Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
+        if (expiration == null) {
+            return true; // 如果无法获取过期时间，认为已过期
+        }
         return expiration.before(new Date());
     }
 
@@ -147,6 +162,9 @@ public class JwtUtil {
             }
             
             Claims claims = getAllClaimsFromToken(token);
+            if (claims == null) {
+                return false;
+            }
             return !isTokenExpired(token) && claims.get("userId") != null;
         } catch (Exception e) {
             return false;
