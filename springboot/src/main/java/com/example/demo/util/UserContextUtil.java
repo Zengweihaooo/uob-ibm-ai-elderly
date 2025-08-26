@@ -30,12 +30,7 @@ public class UserContextUtil {
         try {
             String token = authHeader.substring(7); // 移除"Bearer "前缀
             
-            // Handle demo tokens specially
-            if (token.startsWith("demo-token-")) {
-                return 1L; // Demo user ID
-            }
-            
-            // Handle real JWT tokens
+            // 只处理JWT token
             if (jwtUtil.isValidToken(token)) {
                 return jwtUtil.getUserIdFromToken(token);
             }
@@ -85,12 +80,7 @@ public class UserContextUtil {
         try {
             String token = authHeader.substring(7);
             
-            // Handle demo tokens specially
-            if (token.startsWith("demo-token-")) {
-                return true; // Demo tokens are always valid
-            }
-            
-            // Handle real JWT tokens
+            // 只验证JWT token
             return jwtUtil.isValidToken(token);
         } catch (Exception e) {
             return false;
@@ -113,10 +103,6 @@ public class UserContextUtil {
         }
         
         String token = authHeader.substring(7);
-        
-        if (token.startsWith("demo-token-")) {
-            return "Demo token detected: " + token + " -> User ID: 1";
-        }
         
         try {
             if (jwtUtil.isValidToken(token)) {

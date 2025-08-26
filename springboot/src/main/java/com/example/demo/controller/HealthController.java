@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.pojo.HealthRecord;
 import com.example.demo.service.HealthService;
 import com.example.demo.util.UserContextUtil;
+import com.example.demo.util.JwtUtil;
 
 @RestController
 @RequestMapping("/api/health")
@@ -32,6 +33,9 @@ public class HealthController {
     
     @Autowired
     private UserContextUtil userContextUtil;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @PostMapping("/record")
     public ResponseEntity<Map<String, Object>> addHealthRecord(
@@ -566,43 +570,42 @@ public class HealthController {
         }
     }
     
-    /**
-     * 生成测试JWT token
-     */
-    @PostMapping("/generate-test-token")
-    public ResponseEntity<Map<String, Object>> generateTestToken(
-            @RequestBody Map<String, Object> request) {
-        
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            Long userId = Long.valueOf(request.get("userId").toString());
-            String email = (String) request.get("email");
-            
-            if (userId == null || email == null) {
-                response.put("success", false);
-                response.put("message", "userId and email are required");
-                return ResponseEntity.badRequest().body(response);
-            }
-            
-            // 这里需要注入JwtUtil
-            // 暂时返回一个模拟的token
-            String testToken = "test-jwt-token-" + userId + "-" + System.currentTimeMillis();
-            
-            response.put("success", true);
-            response.put("token", testToken);
-            response.put("userId", userId);
-            response.put("email", email);
-            response.put("message", "Test token generated (not a real JWT)");
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "Error generating test token: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
-        }
-    }
+               /**
+            * 生成真实的JWT token
+            */
+           @PostMapping("/generate-test-token")
+           public ResponseEntity<Map<String, Object>> generateTestToken(
+                   @RequestBody Map<String, Object> request) {
+               
+               Map<String, Object> response = new HashMap<>();
+               
+               try {
+                   Long userId = Long.valueOf(request.get("userId").toString());
+                   String email = (String) request.get("email");
+                   
+                   if (userId == null || email == null) {
+                       response.put("success", false);
+                       response.put("message", "userId and email are required");
+                       return ResponseEntity.badRequest().body(response);
+                   }
+                   
+                   // 生成真实的JWT token
+                   String jwtToken = jwtUtil.generateToken(userId, email);
+                   
+                   response.put("success", true);
+                   response.put("token", jwtToken);
+                   response.put("userId", userId);
+                   response.put("email", email);
+                   response.put("message", "Real JWT token generated successfully");
+                   
+                   return ResponseEntity.ok(response);
+                   
+               } catch (Exception e) {
+                   response.put("success", false);
+                   response.put("message", "Error generating JWT token: " + e.getMessage());
+                   return ResponseEntity.internalServerError().body(response);
+               }
+           }
     
     // ========== JWT测试相关接口结束 ==========
 }
