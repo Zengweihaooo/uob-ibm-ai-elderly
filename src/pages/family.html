@@ -1199,6 +1199,38 @@
             }
         }
 
+        // 验证JWT token格式
+        function isValidJWTFormat(token) {
+            if (!token || typeof token !== 'string') {
+                console.error('Token不是有效字符串:', token, typeof token);
+                return false;
+            }
+            
+            // JWT token应该包含两个点号，格式为: header.payload.signature
+            const parts = token.split('.');
+            console.log('Token分割结果:', parts, '长度:', parts.length);
+            
+            if (parts.length !== 3) {
+                console.error('Token格式错误: 应该有3个部分，实际有', parts.length, '个部分');
+                return false;
+            }
+            
+            // 每个部分都不应该为空
+            if (parts[0] === '' || parts[1] === '' || parts[2] === '') {
+                console.error('Token包含空部分:', parts);
+                return false;
+            }
+            
+            // 检查每个部分的长度（JWT的每个部分都应该有合理长度）
+            if (parts[0].length < 10 || parts[1].length < 10 || parts[2].length < 10) {
+                console.error('Token部分长度异常:', parts.map(p => p.length));
+                return false;
+            }
+            
+            console.log('Token格式验证通过');
+            return true;
+        }
+
         async function attemptAutoLogin() {
             try {
                 // 检查是否有用户凭据
@@ -1226,6 +1258,8 @@
         async function loginUser(email, password) {
             try {
                 console.log('尝试登录用户:', email);
+                console.log('发送登录请求到:', `${AUTH_API_BASE}/api/login`);
+                
                 const response = await fetch(`${AUTH_API_BASE}/api/login`, {
                     method: 'POST',
                     headers: {
@@ -1237,11 +1271,18 @@
                     })
                 });
 
+                console.log('登录响应状态:', response.status, response.statusText);
+                console.log('响应头:', Object.fromEntries(response.headers.entries()));
+                
                 const data = await response.json();
-                console.log('登录响应:', data);
+                console.log('登录响应数据:', data);
+                console.log('响应数据类型:', typeof data);
+                console.log('Token字段类型:', typeof data.token);
+                console.log('Token值:', data.token);
                 
                 if (data.success && data.token) {
                     // 验证返回的token格式
+                    console.log('开始验证token格式...');
                     if (!isValidJWTFormat(data.token)) {
                         console.error('服务器返回的token格式无效:', data.token);
                         return { success: false, message: '服务器返回的token格式无效' };
