@@ -756,8 +756,9 @@
                     localStorage.setItem('userEmail', email);
                     localStorage.setItem('userName', result.user.name || 'User');
                     localStorage.setItem('userRole', result.user.role || 'ELDERLY');
+                    localStorage.setItem('userId', result.user.id || '1');
                     localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('authToken', 'user-token-' + Date.now());
+                    localStorage.setItem('authToken', 'user-token-' + result.user.id + '-' + Date.now());
                     localStorage.removeItem('guestMode');
                     
                     // 重定向到schedule页面
@@ -778,10 +779,18 @@
         // 邮箱注册处理
         document.getElementById('emailForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            e.stopPropagation(); // 防止事件冒泡
             const emailBtn = document.getElementById('emailBtn');
             
             const formData = new FormData(e.target);
             const email = formData.get('email');
+            
+            // 验证邮箱格式
+            if (!email || !email.includes('@')) {
+                showMessage('Please enter a valid email address.', 'error');
+                return;
+            }
+            
             currentEmail = email;
 
             setButtonLoading(emailBtn, true);
@@ -833,6 +842,7 @@
         // 验证码验证处理
         document.getElementById('verificationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            e.stopPropagation(); // 防止事件冒泡
             const verifyBtn = document.getElementById('verifyBtn');
             
             const code = Array.from(codeInputs).map(input => input.value).join('');
@@ -910,6 +920,7 @@
         // 完成注册处理
         document.getElementById('completeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            e.stopPropagation(); // 防止事件冒泡
             const completeBtn = document.getElementById('completeBtn');
             
             const formData = new FormData(e.target);
@@ -1140,6 +1151,19 @@
         //         window.location.href = '../../index.html';
         //     }
         // });
+
+        // 添加调试信息
+        console.log('Register page loaded successfully');
+        
+        // 监听页面卸载事件，帮助调试
+        window.addEventListener('beforeunload', (e) => {
+            console.log('Page is about to unload');
+        });
+        
+        // 监听页面可见性变化
+        document.addEventListener('visibilitychange', () => {
+            console.log('Page visibility changed:', document.visibilityState);
+        });
     </script>
 </body>
 </html>

@@ -3,6 +3,7 @@ package com.example.demo.mapper;
 import com.example.demo.pojo.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -155,4 +156,12 @@ public interface UserMapper {
      */
     List<User> findByCreatedDateRange(@Param("startDate") LocalDateTime startDate,
                                      @Param("endDate") LocalDateTime endDate);
+    
+    /**
+     * Count total number of users
+     * 
+     * @return Total number of users
+     */
+    @Select("SELECT COUNT(*) FROM users")
+    long count();
 } 

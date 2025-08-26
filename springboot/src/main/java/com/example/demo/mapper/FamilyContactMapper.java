@@ -3,6 +3,7 @@ package com.example.demo.mapper;
 import com.example.demo.pojo.FamilyContact;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -106,4 +107,20 @@ public interface FamilyContactMapper {
      * @return List of family contacts with the specified email
      */
     List<FamilyContact> findByEmail(String email);
+    
+    /**
+     * Find all family contacts
+     * 
+     * @return List of all family contacts
+     */
+    @Select("SELECT * FROM family_contacts")
+    List<FamilyContact> findAll();
+    
+    /**
+     * Count total number of family contacts
+     * 
+     * @return Total number of family contacts
+     */
+    @Select("SELECT COUNT(*) FROM family_contacts")
+    long count();
 } 

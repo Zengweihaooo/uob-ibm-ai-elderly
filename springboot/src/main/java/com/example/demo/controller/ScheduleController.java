@@ -46,9 +46,23 @@ public class ScheduleController {
             
             // Check if user is authenticated
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                // TODO: Implement JWT token validation
-                // For now, simulate authenticated user with ID 1
-                Long userId = 1L;
+                // Extract user ID from token
+                // Token format: "user-token-{userId}-{timestamp}"
+                String token = authHeader.substring(7); // Remove "Bearer " prefix
+                Long userId = 1L; // Default user ID
+                
+                if (token.startsWith("user-token-")) {
+                    String[] parts = token.split("-");
+                    if (parts.length >= 3) {
+                        try {
+                            userId = Long.parseLong(parts[2]);
+                        } catch (NumberFormatException e) {
+                            // If parsing fails, use default user ID
+                            userId = 1L;
+                        }
+                    }
+                }
+                
                 Map<String, List<Schedule>> userSchedule = scheduleService.getSchedulesByUserAndDate(userId, targetDate);
                 response.put("success", true);
                 response.put("schedule", userSchedule);
@@ -94,9 +108,22 @@ public class ScheduleController {
         }
         
         try {
-            // TODO: Extract user ID from JWT token
-            // For now, simulate authenticated user with ID 1
-            Long userId = 1L;
+            // Extract user ID from token
+            // Token format: "user-token-{userId}-{timestamp}"
+            String token = authHeader.substring(7); // Remove "Bearer " prefix
+            Long userId = 1L; // Default user ID
+            
+            if (token.startsWith("user-token-")) {
+                String[] parts = token.split("-");
+                if (parts.length >= 3) {
+                    try {
+                        userId = Long.parseLong(parts[2]);
+                    } catch (NumberFormatException e) {
+                        // If parsing fails, use default user ID
+                        userId = 1L;
+                    }
+                }
+            }
             
             // Parse and validate input data
             LocalDate scheduleDate = LocalDate.parse((String) activityData.get("date"));

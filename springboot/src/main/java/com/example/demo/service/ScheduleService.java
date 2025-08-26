@@ -2,14 +2,13 @@ package com.example.demo.service;
 
 import com.example.demo.pojo.Schedule;
 import com.example.demo.pojo.User;
+import com.example.demo.mapper.ScheduleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 
@@ -22,9 +21,8 @@ import java.time.LocalDateTime;
 @Service
 public class ScheduleService {
     
-    // In-memory storage for schedules (replace with database in production)
-    private final Map<Long, Schedule> schedules = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    @Autowired
+    private ScheduleMapper scheduleMapper;
 
     @Autowired
     private UserService userService;
@@ -37,11 +35,7 @@ public class ScheduleService {
      * @return Map of categorized schedules
      */
     public Map<String, List<Schedule>> getSchedulesByUserAndDate(Long userId, LocalDate date) {
-        List<Schedule> userSchedules = schedules.values().stream()
-                .filter(schedule -> schedule.getUserId().equals(userId))
-                .filter(schedule -> schedule.getScheduleDate().equals(date))
-                .sorted(Comparator.comparing(Schedule::getActivityTime))
-                .collect(Collectors.toList());
+        List<Schedule> userSchedules = scheduleMapper.findByUserIdAndDate(userId, date);
 
         // Group by category
         Map<String, List<Schedule>> categorizedSchedules = new HashMap<>();
@@ -67,11 +61,9 @@ public class ScheduleService {
      * @return Created schedule with ID
      */
     public Schedule addSchedule(Schedule schedule) {
-        Long id = idGenerator.getAndIncrement();
-        schedule.setId(id);
-        schedule.setCreatedAt(java.time.LocalDateTime.now());
-        schedule.setUpdatedAt(java.time.LocalDateTime.now());
-        schedules.put(id, schedule);
+        schedule.setCreatedAt(LocalDateTime.now());
+        schedule.setUpdatedAt(LocalDateTime.now());
+        scheduleMapper.insert(schedule);
         return schedule;
     }
 
@@ -83,7 +75,7 @@ public class ScheduleService {
      * @return Updated schedule or null if not found
      */
     public Schedule updateSchedule(Long id, Schedule updatedSchedule) {
-        Schedule existingSchedule = schedules.get(id);
+        Schedule existingSchedule = scheduleMapper.findById(id);
         if (existingSchedule == null) {
             return null;
         }
@@ -93,8 +85,9 @@ public class ScheduleService {
         existingSchedule.setActivityTime(updatedSchedule.getActivityTime());
         existingSchedule.setCategory(updatedSchedule.getCategory());
         existingSchedule.setCompleted(updatedSchedule.isCompleted());
-        existingSchedule.setUpdatedAt(java.time.LocalDateTime.now());
+        existingSchedule.setUpdatedAt(LocalDateTime.now());
 
+        scheduleMapper.update(existingSchedule);
         return existingSchedule;
     }
 
@@ -106,13 +99,15 @@ public class ScheduleService {
      * @return Updated schedule or null if not found/unauthorized
      */
     public Schedule toggleCompletion(Long id, Long userId) {
-        Schedule schedule = schedules.get(id);
+        Schedule schedule = scheduleMapper.findById(id);
         if (schedule == null || !schedule.getUserId().equals(userId)) {
             return null;
         }
 
-        schedule.setCompleted(!schedule.isCompleted());
-        schedule.setUpdatedAt(java.time.LocalDateTime.now());
+        boolean newStatus = !schedule.isCompleted();
+        scheduleMapper.updateCompletionStatus(id, newStatus);
+        schedule.setCompleted(newStatus);
+        schedule.setUpdatedAt(LocalDateTime.now());
         return schedule;
     }
 
@@ -124,13 +119,13 @@ public class ScheduleService {
      * @return true if deleted, false if not found/unauthorized
      */
     public boolean deleteSchedule(Long id, Long userId) {
-        Schedule schedule = schedules.get(id);
+        Schedule schedule = scheduleMapper.findById(id);
         if (schedule == null || !schedule.getUserId().equals(userId)) {
             return false;
         }
 
-        schedules.remove(id);
-        return true;
+        int deletedRows = scheduleMapper.deleteById(id);
+        return deletedRows > 0;
     }
 
     /**
@@ -278,7 +273,7 @@ public class ScheduleService {
      * @return true if confirmed successfully, false otherwise
      */
     public boolean confirmReminder(Long reminderId, Long userId) {
-        Schedule schedule = schedules.get(reminderId);
+        Schedule schedule = scheduleMapper.findById(reminderId);
         if (schedule == null || !schedule.getUserId().equals(userId)) {
             return false;
         }
@@ -286,7 +281,9 @@ public class ScheduleService {
         // Mark as completed and set confirmation timestamp
         schedule.setCompleted(true);
         schedule.setReminderSent(LocalDateTime.now());
+        schedule.setUpdatedAt(LocalDateTime.now());
         
+        scheduleMapper.update(schedule);
         return true;
     }
     
@@ -297,7 +294,7 @@ public class ScheduleService {
      * @param userId User ID
      */
     public void repeatReminder(Long reminderId, Long userId) {
-        Schedule schedule = schedules.get(reminderId);
+        Schedule schedule = scheduleMapper.findById(reminderId);
         if (schedule == null || !schedule.getUserId().equals(userId)) {
             return;
         }
@@ -367,11 +364,7 @@ public class ScheduleService {
      */
     public List<Schedule> getTodaySchedule(Long userId) {
         LocalDate today = LocalDate.now();
-        return schedules.values().stream()
-                .filter(schedule -> schedule.getUserId().equals(userId))
-                .filter(schedule -> schedule.getScheduleDate().equals(today))
-                .sorted(Comparator.comparing(Schedule::getActivityTime))
-                .collect(Collectors.toList());
+        return scheduleMapper.findByUserIdAndDate(userId, today);
     }
 
     /**
@@ -382,11 +375,8 @@ public class ScheduleService {
      */
     public boolean hasMorningGreeting(Long userId) {
         LocalDate today = LocalDate.now();
-        return schedules.values().stream()
-                .anyMatch(schedule -> 
-                    schedule.getUserId().equals(userId) &&
-                    schedule.getScheduleDate().equals(today) &&
-                    schedule.getTitle().equals("早安问候")
-                );
+        List<Schedule> todaySchedules = scheduleMapper.findByUserIdAndDate(userId, today);
+        return todaySchedules.stream()
+                .anyMatch(schedule -> schedule.getTitle().equals("早安问候"));
     }
 } 
