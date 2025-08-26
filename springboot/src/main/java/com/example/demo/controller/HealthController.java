@@ -139,6 +139,14 @@ public class HealthController {
         }
 
         try {
+            // 验证token有效性
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
+            
             List<HealthRecord> records = healthService.getAll();
             response.put("success", true);
             response.put("records", records);
