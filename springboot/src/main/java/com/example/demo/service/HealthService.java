@@ -482,7 +482,7 @@ public class HealthService {
      * @return 所有健康记录列表
      */
     public List<HealthRecord> getAll() {
-        return healthRecordMapper.listAll();
+        return healthRecordMapper.findAll();
     }
     
     // ========== 其他辅助方法结束 ==========

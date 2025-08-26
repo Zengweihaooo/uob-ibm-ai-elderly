@@ -103,11 +103,12 @@ public class JwtUtil {
      * 从token中提取所有claims
      */
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        // 临时禁用JWT解析功能
+        throw new UnsupportedOperationException("JWT parsing temporarily disabled");
+        // return Jwts.parser()
+        //         .setSigningKey(getSigningKey())
+        //         .parseClaimsJws(token)
+        //         .getBody();
     }
 
     /**
