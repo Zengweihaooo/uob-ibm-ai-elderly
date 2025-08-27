@@ -1,11 +1,11 @@
 package com.example.demo.mapper;
 
-import com.example.demo.pojo.FamilyContact;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
-import java.util.List;
+import com.example.demo.pojo.FamilyContact;
 
 /**
  * MyBatis Mapper interface for FamilyContact entity
@@ -113,7 +113,6 @@ public interface FamilyContactMapper {
      * 
      * @return List of all family contacts
      */
-    @Select("SELECT * FROM family_contacts")
     List<FamilyContact> findAll();
     
     /**
@@ -121,6 +120,5 @@ public interface FamilyContactMapper {
      * 
      * @return Total number of family contacts
      */
-    @Select("SELECT COUNT(*) FROM family_contacts")
     long count();
 } 
