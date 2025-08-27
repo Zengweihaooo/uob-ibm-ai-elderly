@@ -1,11 +1,11 @@
-# 📄 Documentation
+# 💻 Development
 
-This directory contains core project documentation and overview files.
+This directory contains development guidelines and practices.
 
 ## Purpose
 
-Core documentation provides essential information about the project, its purpose, and how to get started.
+Development documentation provides guidelines for coding and development practices.
 
 ## Files
 
-This directory contains README files and other core documentation.
+This directory contains development guidelines and best practices.
