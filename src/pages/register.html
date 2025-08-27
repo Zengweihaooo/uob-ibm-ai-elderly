@@ -758,7 +758,20 @@
                     localStorage.setItem('userRole', result.user.role || 'ELDERLY');
                     localStorage.setItem('userId', result.user.id || '1');
                     localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('authToken', 'user-token-' + result.user.id + '-' + Date.now());
+                    
+                    // 存储真正的JWT token
+                    if (result.token) {
+                        localStorage.setItem('authToken', result.token);
+                        // 设置token过期时间（JWT通常24小时过期，这里设置23小时确保安全）
+                        const tokenExpiry = Date.now() + (23 * 60 * 60 * 1000);
+                        localStorage.setItem('tokenExpiry', tokenExpiry.toString());
+                        console.log('JWT token已保存:', result.token);
+                    } else {
+                        console.error('登录响应中没有JWT token');
+                        showMessage('登录成功但token获取失败，请重试', 'warning');
+                        return;
+                    }
+                    
                     localStorage.removeItem('guestMode');
                     
                     // 重定向到schedule页面

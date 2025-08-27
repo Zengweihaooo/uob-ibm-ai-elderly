@@ -1181,17 +1181,37 @@
                         // Token仍然有效
                         authToken = storedToken;
                         tokenExpiry = expiryTime;
-                        console.log('使用存储的有效token');
-                        return;
+                        console.log('使用存储的有效JWT token');
+                        
+                        // 验证token格式
+                        if (isValidJWTFormat(storedToken)) {
+                            console.log('JWT token格式验证通过');
+                            return;
+                        } else {
+                            console.error('存储的token格式无效，清除并提示重新登录');
+                            localStorage.removeItem('authToken');
+                            localStorage.removeItem('tokenExpiry');
+                        }
                     } else {
-                        console.log('存储的token已过期，尝试刷新');
+                        console.log('存储的token已过期');
                         localStorage.removeItem('authToken');
                         localStorage.removeItem('tokenExpiry');
                     }
                 }
                 
-                // 如果没有有效token，尝试自动登录或提示用户登录
-                await attemptAutoLogin();
+                // 如果没有有效token，检查是否有其他认证信息
+                const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+                const userEmail = localStorage.getItem('userEmail');
+                
+                if (isLoggedIn && userEmail) {
+                    console.log('检测到登录状态，但token无效，提示重新登录');
+                    showMessage('您的登录已过期，请重新登录', 'warning');
+                } else {
+                    console.log('未检测到登录状态');
+                }
+                
+                // 显示登录提示
+                showLoginPrompt();
                 
             } catch (error) {
                 console.error('初始化认证失败:', error);
@@ -1231,78 +1251,46 @@
             return true;
         }
 
-        async function attemptAutoLogin() {
-            try {
-                // 检查是否有用户凭据
-                const userEmail = localStorage.getItem('userEmail');
-                const userPassword = localStorage.getItem('userPassword');
-                
-                if (userEmail && userPassword) {
-                    console.log('尝试自动登录...');
-                    const loginResult = await loginUser(userEmail, userPassword);
-                    if (loginResult.success) {
-                        console.log('自动登录成功');
-                        return;
-                    }
-                }
-                
-                // 如果没有凭据或自动登录失败，显示登录提示
-                showLoginPrompt();
-                
-            } catch (error) {
-                console.error('自动登录失败:', error);
-                showLoginPrompt();
-            }
-        }
-
+        // 简化的登录函数，用于模态框登录
         async function loginUser(email, password) {
             try {
                 console.log('尝试登录用户:', email);
-                console.log('发送登录请求到:', `${AUTH_API_BASE}/api/login`);
                 
-                const response = await fetch(`${AUTH_API_BASE}/api/login`, {
+                const response = await fetch(`${AUTH_API_BASE}/login`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password
-                    })
+                    body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
                 });
 
-                console.log('登录响应状态:', response.status, response.statusText);
-                console.log('响应头:', Object.fromEntries(response.headers.entries()));
-                
                 const data = await response.json();
-                console.log('登录响应数据:', data);
-                console.log('响应数据类型:', typeof data);
-                console.log('Token字段类型:', typeof data.token);
-                console.log('Token值:', data.token);
+                console.log('登录响应:', data);
                 
                 if (data.success && data.token) {
                     // 验证返回的token格式
-                    console.log('开始验证token格式...');
                     if (!isValidJWTFormat(data.token)) {
-                        console.error('服务器返回的token格式无效:', data.token);
+                        console.error('服务器返回的token格式无效');
                         return { success: false, message: '服务器返回的token格式无效' };
                     }
                     
                     // 保存token和过期时间
                     authToken = data.token;
-                    // JWT token通常24小时过期，这里设置23小时确保安全
                     tokenExpiry = Date.now() + (23 * 60 * 60 * 1000);
                     
                     localStorage.setItem('authToken', authToken);
                     localStorage.setItem('tokenExpiry', tokenExpiry.toString());
                     localStorage.setItem('userEmail', email);
-                    localStorage.setItem('userPassword', password);
+                    localStorage.setItem('isLoggedIn', 'true');
                     
-                    console.log('登录成功，token已保存，格式验证通过');
+                    console.log('登录成功，JWT token已保存');
+                    
+                    // 刷新页面以加载功能
+                    window.location.reload();
+                    
                     return { success: true };
                 } else {
-                    console.error('登录失败:', data.message);
-                    return { success: false, message: data.message };
+                    return { success: false, message: data.message || '登录失败' };
                 }
             } catch (error) {
                 console.error('登录请求失败:', error);
