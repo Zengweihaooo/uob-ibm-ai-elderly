@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.mapper.FamilyContactMapper;
 import com.example.demo.pojo.FamilyContact;
 
 /**
@@ -19,7 +20,7 @@ import com.example.demo.pojo.FamilyContact;
  * and family member communication for the IBM AI Elderly Project.
  * 
  * @author Weihao Zeng
- * @version 1.0
+ * @version 2.0 - 已实现数据持久化和用户数据隔离
  */
 @Service
 public class FamilyService {
@@ -30,9 +31,8 @@ public class FamilyService {
     @Autowired
     private SmsService smsService;
 
-    // In-memory storage for family contacts (consider using database in production)
-    private List<FamilyContact> familyContacts = new ArrayList<>();
-    private Long contactIdCounter = 1L;
+    @Autowired
+    private FamilyContactMapper familyContactMapper;
 
     // 调试信息开关
     private static final boolean DEBUG_ENABLED = true;
@@ -59,7 +59,6 @@ public class FamilyService {
             System.out.println("邮箱地址: " + email);
             System.out.println("关系: " + relationship);
             System.out.println("是否紧急联系人: " + isEmergencyContact);
-            System.out.println("当前存储的联系人总数: " + familyContacts.size());
             System.out.println("该用户现有联系人数量: " + getFamilyContacts(userId).size());
         }
         
@@ -81,7 +80,6 @@ public class FamilyService {
 
         // Create new contact
         FamilyContact contact = new FamilyContact();
-        contact.setId(contactIdCounter++);
         contact.setUserId(userId);
         contact.setName(name.trim());
         contact.setPhone(phone != null ? phone.trim() : null);
@@ -92,14 +90,34 @@ public class FamilyService {
         contact.setCreatedAt(LocalDateTime.now());
         contact.setUpdatedAt(LocalDateTime.now());
 
-        // Add to storage
-        familyContacts.add(contact);
+        // Save to database
+        try {
+            int result = familyContactMapper.insert(contact);
+            if (result > 0) {
+                if (DEBUG_ENABLED) {
+                    System.out.println("DEBUG: 联系人保存到数据库成功");
+                    System.out.println("数据库返回结果: " + result);
+                }
+            } else {
+                if (DEBUG_ENABLED) {
+                    System.err.println("DEBUG: 数据库插入失败");
+                }
+                throw new RuntimeException("Failed to save contact to database");
+            }
+        } catch (Exception e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 数据库操作异常");
+                System.err.println("异常信息: " + e.getMessage());
+                e.printStackTrace();
+            }
+            throw new RuntimeException("Database operation failed: " + e.getMessage());
+        }
 
         if (DEBUG_ENABLED) {
             System.out.println("DEBUG: 联系人创建成功");
             System.out.println("分配的联系人ID: " + contact.getId());
             System.out.println("联系人创建时间: " + contact.getCreatedAt());
-            System.out.println("当前存储的联系人总数: " + familyContacts.size());
+            System.out.println("该用户当前联系人总数: " + getFamilyContacts(userId).size());
             System.out.println("============================================");
         }
 
@@ -117,25 +135,32 @@ public class FamilyService {
         if (DEBUG_ENABLED) {
             System.out.println("==== FamilyService.getFamilyContacts DEBUG ====");
             System.out.println("查询用户ID: " + userId);
-            System.out.println("存储中总联系人数量: " + familyContacts.size());
         }
         
-        List<FamilyContact> userContacts = familyContacts.stream()
-                .filter(contact -> contact.getUserId().equals(userId) && contact.getIsActive())
-                .collect(Collectors.toList());
-        
-        if (DEBUG_ENABLED) {
-            System.out.println("该用户的联系人数量: " + userContacts.size());
-            System.out.println("联系人详情:");
-            for (FamilyContact contact : userContacts) {
-                System.out.println("  - ID: " + contact.getId() + ", 姓名: " + contact.getName() + 
-                                 ", 关系: " + contact.getRelationship() + 
-                                 ", 紧急联系人: " + contact.getIsEmergencyContact());
+        try {
+            List<FamilyContact> userContacts = familyContactMapper.findActiveByUserId(userId);
+            
+            if (DEBUG_ENABLED) {
+                System.out.println("该用户的联系人数量: " + userContacts.size());
+                System.out.println("联系人详情:");
+                for (FamilyContact contact : userContacts) {
+                    System.out.println("  - ID: " + contact.getId() + ", 姓名: " + contact.getName() + 
+                                     ", 关系: " + contact.getRelationship() + 
+                                     ", 紧急联系人: " + contact.getIsEmergencyContact());
+                }
+                System.out.println("==============================================");
             }
-            System.out.println("==============================================");
+            
+            return userContacts;
+        } catch (Exception e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 数据库查询异常");
+                System.err.println("异常信息: " + e.getMessage());
+                e.printStackTrace();
+            }
+            // 返回空列表而不是抛出异常，保证系统稳定性
+            return new ArrayList<>();
         }
-        
-        return userContacts;
     }
 
     /**
@@ -152,23 +177,35 @@ public class FamilyService {
             System.out.println("查询联系人ID: " + contactId);
         }
         
-        FamilyContact contact = familyContacts.stream()
-                .filter(c -> c.getUserId().equals(userId) && 
-                           c.getId().equals(contactId) && 
-                           c.getIsActive())
-                .findFirst()
-                .orElse(null);
-        
-        if (DEBUG_ENABLED) {
-            if (contact != null) {
-                System.out.println("找到联系人: " + contact.getName() + ", 关系: " + contact.getRelationship());
+        try {
+            FamilyContact contact = familyContactMapper.findById(contactId);
+            
+            // 验证数据隔离：确保用户只能访问自己的联系人
+            if (contact != null && contact.getUserId().equals(userId) && contact.getIsActive()) {
+                if (DEBUG_ENABLED) {
+                    System.out.println("找到联系人: " + contact.getName() + ", 关系: " + contact.getRelationship());
+                }
+                return contact;
             } else {
-                System.out.println("未找到匹配的联系人");
+                if (DEBUG_ENABLED) {
+                    if (contact == null) {
+                        System.out.println("未找到联系人");
+                    } else if (!contact.getUserId().equals(userId)) {
+                        System.out.println("数据隔离验证失败：用户ID不匹配");
+                    } else if (!contact.getIsActive()) {
+                        System.out.println("联系人已被删除");
+                    }
+                }
+                return null;
             }
-            System.out.println("============================================");
+        } catch (Exception e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 数据库查询异常");
+                System.err.println("异常信息: " + e.getMessage());
+                e.printStackTrace();
+            }
+            return null;
         }
-        
-        return contact;
     }
 
     /**
@@ -267,9 +304,31 @@ public class FamilyService {
 
         contact.setUpdatedAt(LocalDateTime.now());
         
+        // Save updates to database
+        try {
+            int result = familyContactMapper.update(contact);
+            if (result > 0) {
+                if (DEBUG_ENABLED) {
+                    System.out.println("DEBUG: 联系人更新成功");
+                    System.out.println("数据库更新结果: " + result);
+                    System.out.println("更新时间: " + contact.getUpdatedAt());
+                }
+            } else {
+                if (DEBUG_ENABLED) {
+                    System.err.println("DEBUG: 数据库更新失败");
+                }
+                throw new RuntimeException("Failed to update contact in database");
+            }
+        } catch (Exception e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 数据库更新异常");
+                System.err.println("异常信息: " + e.getMessage());
+                e.printStackTrace();
+            }
+            throw new RuntimeException("Database update failed: " + e.getMessage());
+        }
+        
         if (DEBUG_ENABLED) {
-            System.out.println("DEBUG: 联系人更新成功");
-            System.out.println("更新时间: " + contact.getUpdatedAt());
             System.out.println("==========================================");
         }
         
@@ -306,9 +365,31 @@ public class FamilyService {
         contact.setIsActive(false);
         contact.setUpdatedAt(LocalDateTime.now());
         
+        // Save deletion to database
+        try {
+            int result = familyContactMapper.update(contact);
+            if (result > 0) {
+                if (DEBUG_ENABLED) {
+                    System.out.println("DEBUG: 联系人软删除成功");
+                    System.out.println("数据库更新结果: " + result);
+                    System.out.println("删除时间: " + contact.getUpdatedAt());
+                }
+            } else {
+                if (DEBUG_ENABLED) {
+                    System.err.println("DEBUG: 数据库删除失败");
+                }
+                return false;
+            }
+        } catch (Exception e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 数据库删除异常");
+                System.err.println("异常信息: " + e.getMessage());
+                e.printStackTrace();
+            }
+            return false;
+        }
+        
         if (DEBUG_ENABLED) {
-            System.out.println("DEBUG: 联系人软删除成功");
-            System.out.println("删除时间: " + contact.getUpdatedAt());
             System.out.println("=========================================");
         }
         
@@ -412,10 +493,8 @@ public class FamilyService {
      * @return List of emergency contacts
      */
     public List<FamilyContact> getEmergencyContacts(Long userId) {
-        return familyContacts.stream()
-                .filter(contact -> contact.getUserId().equals(userId) && 
-                                 contact.getIsEmergencyContact() && 
-                                 contact.getIsActive())
+        return familyContactMapper.findActiveByUserId(userId).stream()
+                .filter(contact -> contact.getIsEmergencyContact())
                 .collect(Collectors.toList());
     }
 
@@ -512,15 +591,30 @@ public class FamilyService {
      * Get all contacts (for testing)
      */
     public List<FamilyContact> getAllContacts() {
-        return new ArrayList<>(familyContacts);
+        return familyContactMapper.findAll();
     }
 
     /**
      * Clear all contacts (for testing)
      */
     public void clearAllContacts() {
-        familyContacts.clear();
-        contactIdCounter = 1L;
+        // 注意：这个方法仅用于测试，生产环境应该谨慎使用
+        // 这里我们通过软删除所有联系人的方式来实现
+        try {
+            List<FamilyContact> allContacts = familyContactMapper.findAll();
+            for (FamilyContact contact : allContacts) {
+                contact.setIsActive(false);
+                contact.setUpdatedAt(LocalDateTime.now());
+                familyContactMapper.update(contact);
+            }
+            if (DEBUG_ENABLED) {
+                System.out.println("DEBUG: 已软删除所有联系人，数量: " + allContacts.size());
+            }
+        } catch (Exception e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 清空联系人失败: " + e.getMessage());
+            }
+        }
     }
 
     /**
@@ -577,7 +671,7 @@ public class FamilyService {
             testResult.put("user1CanAccessOwnData", isolationTest1 && isolationTest3);
             testResult.put("user2CanAccessOwnData", isolationTest2 && isolationTest4);
             testResult.put("crossUserAccessBlocked", isolationTest5 && isolationTest6);
-            testResult.put("totalContactsInSystem", familyContacts.size());
+            testResult.put("totalContactsInSystem", familyContactMapper.findAll().size());
             
             if (DEBUG_ENABLED) {
                 System.out.println("测试结果:");
@@ -585,7 +679,7 @@ public class FamilyService {
                 System.out.println("用户2联系人数量: " + user2Contacts.size());
                 System.out.println("数据隔离是否成功: " + allTestsPassed);
                 System.out.println("跨用户访问是否被阻止: " + (isolationTest5 && isolationTest6));
-                System.out.println("系统中总联系人数量: " + familyContacts.size());
+                System.out.println("系统中总联系人数量: " + familyContactMapper.findAll().size());
                 System.out.println("===============================================");
             }
             
