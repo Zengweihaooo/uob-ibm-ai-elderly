@@ -673,9 +673,9 @@
                     <button class="tool-btn" onclick="shareLocation()" title="Share Location">
                         📍 <span>Location</span>
                     </button>
-                    <button class="tool-btn" id="cloudVoiceBtn" title="Cloud STT (Google)" style="display: inline-flex !important; align-items: center; gap: 5px;">
-                        🎙️ <span>Cloud STT</span>
-                    </button>
+                                    <button class="tool-btn" id="cloudVoiceBtn" title="AI语音命令 (微服务)" style="display: inline-flex !important; align-items: center; gap: 5px;">
+                    🎙️ <span>AI语音命令</span>
+                </button>
                     <button class="tool-btn" onclick="clearChat()" title="Clear Chat History">
                         🗑️ <span>Clear</span>
                     </button>
@@ -755,7 +755,7 @@
                     cloudBtn.style.display = 'inline-flex';
                     cloudBtn.style.alignItems = 'center';
                     cloudBtn.style.gap = '5px';
-                    console.log('Cloud STT button initialized');
+                    console.log('AI语音命令按钮已初始化');
                 }
             }, 200);
         });
@@ -839,7 +839,7 @@
                         mediaRecorderLocal.stop();
                     }
                     cloudBtn.classList.remove('voice-recording');
-                    cloudBtn.innerHTML = '🎙️ <span>Cloud STT</span>';
+                    cloudBtn.innerHTML = '🎙️ <span>AI语音命令</span>';
                     if (recordingTimeout) {
                         clearTimeout(recordingTimeout);
                         recordingTimeout = null;
@@ -893,15 +893,17 @@
             showTypingIndicator();
             
             try {
-                // Send message to backend API
-                const response = await fetch('http://localhost:8080/api/gemini-new/chat', {
+                // 调用我们的微服务进行文本命令处理
+                const response = await fetch('http://localhost:8081/api/voice-command/text', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken') || 'guest'}`
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: message
+                        textCommand: message,
+                        languageCode: 'zh-CN',
+                        userId: 'guest',
+                        sessionId: 'session_' + Date.now()
                     })
                 });
 
@@ -910,18 +912,27 @@
                 // Remove AI typing indicator
                 hideTypingIndicator();
                 
-                if (result.status === 'success' && result.response) {
-                    addMessage('assistant', result.response);
-                } else if (result.response) {
-                    // Fallback response from controller
-                    addMessage('assistant', result.response);
+                if (result && result.success) {
+                    // 显示AI分析结果
+                    if (result.intent && result.intent.functionName !== 'unknown') {
+                        addMessage('assistant', `我识别到您想要执行：${result.intent.functionName} 功能`);
+                        
+                        // 显示执行结果
+                        if (result.execution && result.execution.success) {
+                            addMessage('assistant', result.feedbackText || '命令执行成功！');
+                        } else {
+                            addMessage('assistant', result.errorMessage || '命令执行失败');
+                        }
+                    } else {
+                        addMessage('assistant', result.feedbackText || '抱歉，我无法理解您的命令，请重试。');
+                    }
                 } else {
-                    addMessage('assistant', 'Sorry, I couldn\'t process your message. Please try again.');
+                    addMessage('assistant', result.errorMessage || '处理命令时出现错误，请重试。');
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
                 hideTypingIndicator();
-                addMessage('assistant', 'I\'m having trouble connecting right now. Please check your internet connection and try again.');
+                addMessage('assistant', '连接微服务失败，请检查服务状态。');
             }
         }
 
@@ -966,18 +977,31 @@
                 const formData = new FormData();
                 formData.append('audio', audioBlob, 'recording.webm');
                 formData.append('languageCode', 'en-US');
-                const res = await fetch('http://localhost:8080/api/voice/stt', { method: 'POST', body: formData });
+                formData.append('userId', 'guest');
+                formData.append('sessionId', 'session_' + Date.now());
+                
+                // 调用我们的微服务进行语音命令处理
+                const res = await fetch('http://localhost:8081/api/voice-command/process', { 
+                    method: 'POST', 
+                    body: formData 
+                });
+                
                 const data = await res.json();
-                if (data && data.success && data.text) {
-                    const chatInput = document.getElementById('chatInput');
-                    chatInput.value = data.text;
-                    chatInput.focus();
+                if (data && data.success && data.transcribedText) {
+                    // 显示转录的文本
+                    addMessage('user', data.transcribedText);
+                    
+                    // 如果AI分析成功，显示执行结果
+                    if (data.intent && data.execution) {
+                        const feedback = data.feedbackText || '命令执行完成';
+                        addMessage('assistant', feedback);
+                    }
                 } else {
-                    addMessage('assistant', 'Could not transcribe the audio using Cloud STT.');
+                    addMessage('assistant', '语音识别失败，请重试。错误：' + (data.errorMessage || '未知错误'));
                 }
             } catch (e) {
-                console.error('Cloud STT error:', e);
-                addMessage('assistant', 'Cloud STT failed.');
+                console.error('语音命令处理错误:', e);
+                addMessage('assistant', '语音处理失败，请检查网络连接或重试。');
             }
         }
 

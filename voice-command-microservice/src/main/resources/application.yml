@@ -1,0 +1,88 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: voice-command-service
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 10000
+            readTimeout: 30000
+main-project:
+  service:
+    url: http://localhost:8080
+    timeout: 30000
+email:
+  service:
+    url: http://localhost:8080
+    timeout: 30000
+ai:
+  service:
+    url: http://localhost:8080
+    gemini:
+      enabled: true
+      model: gemini-pro
+    voice:
+      enabled: true
+      language: zh-CN
+openai:
+  api-key: ${OPENAI_API_KEY:your-openai-api-key}
+  model: gpt-3.5-turbo
+  max-tokens: 1000
+  temperature: 0.7
+google:
+  cloud:
+    project-id: ${GOOGLE_CLOUD_PROJECT_ID:organic-totem-467918-a5}
+    # 主密钥文件 - 用于AI服务 (Gemini, TTS, STT)
+    credentials-file: ${GOOGLE_APPLICATION_CREDENTIALS:../docs/keys/organic-totem-467918-a5-d17504cd5eba.json}
+    # 备用密钥文件 - 用于计算引擎和其他服务
+    backup-credentials-file: ${GOOGLE_BACKUP_CREDENTIALS:../docs/keys/organic-totem-467918-a5-6497b0d6925f.json}
+    # AI服务配置
+    ai:
+      enabled: true
+      credentials-file: ${GOOGLE_AI_CREDENTIALS:../docs/keys/organic-totem-467918-a5-d17504cd5eba.json}
+    # 语音服务配置
+    speech:
+      enabled: true
+      language: zh-CN
+      credentials-file: ${GOOGLE_SPEECH_CREDENTIALS:../docs/keys/organic-totem-467918-a5-d17504cd5eba.json}
+    # TTS服务配置
+    tts:
+      enabled: true
+      language: zh-CN
+      credentials-file: ${GOOGLE_TTS_CREDENTIALS:../docs/keys/organic-totem-467918-a5-d17504cd5eba.json}
+    # 计算引擎配置
+    compute:
+      enabled: true
+      credentials-file: ${GOOGLE_COMPUTE_CREDENTIALS:../docs/keys/organic-totem-467918-a5-6497b0d6925f.json}
+function:
+  routing:
+    email:
+      enabled: true
+      priority: 1
+      service-url: http://localhost:8080
+      controller: EmailComposeController
+    schedule:
+      enabled: false
+      priority: 2
+      service-url: http://localhost:8080
+      controller: ScheduleController
+    health:
+      enabled: false
+      priority: 3
+      service-url: http://localhost:8080
+      controller: HealthController
+    pet:
+      enabled: false
+      priority: 4
+      service-url: http://localhost:8080
+      controller: PetController
+logging:
+  level:
+    com.voicecommand: DEBUG
+    org.springframework.cloud.openfeign: DEBUG
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
