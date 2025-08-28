@@ -71,12 +71,12 @@ else
     echo "❌ Backend failed to start"
 fi
 
-# 测试微服务
-if curl -s http://localhost:8081/api/voice-command/health > /dev/null 2>&1; then
-    echo "✅ Microservice is running on http://localhost:8081"
-else
-    echo "❌ Microservice failed to start"
-fi
+     # 测试微服务
+     if curl -s http://localhost:8090/api/voice-command/health > /dev/null 2>&1; then
+         echo "✅ Microservice is running on http://localhost:8090"
+     else
+         echo "❌ Microservice failed to start"
+     fi
 
 # 测试前端
 if curl -s http://localhost:3000 > /dev/null 2>&1; then
@@ -89,7 +89,7 @@ echo ""
 echo "🎉 Services started with Google Cloud credentials!"
 echo "📱 Frontend: http://localhost:3000"
 echo "🔧 Backend: http://localhost:8080"
-echo "🎤 Microservice: http://localhost:8081"
+     echo "🎤 Microservice: http://localhost:8090"
 echo "🧪 Voice Test: http://localhost:3000/voice-test.html"
 echo "🤖 AI Assistant: http://localhost:3000/src/pages/ai-assistant.html"
 echo ""
