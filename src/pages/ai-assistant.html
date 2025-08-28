@@ -894,7 +894,7 @@
             
             try {
                 // 调用我们的微服务进行文本命令处理
-                const response = await fetch('http://localhost:8081/api/voice-command/text', {
+                const response = await fetch('http://localhost:8090/api/voice-command/text', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -981,7 +981,7 @@
                 formData.append('sessionId', 'session_' + Date.now());
                 
                 // 调用我们的微服务进行语音命令处理
-                const res = await fetch('http://localhost:8081/api/voice-command/process', { 
+                const res = await fetch('http://localhost:8090/api/voice-command/process', { 
                     method: 'POST', 
                     body: formData 
                 });

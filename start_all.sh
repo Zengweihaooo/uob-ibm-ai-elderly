@@ -60,8 +60,8 @@ else
 fi
 
 # Test microservice
-if curl -s http://localhost:8081/api/voice-command/health > /dev/null 2>&1; then
-    echo "✅ Microservice is running on http://localhost:8081"
+if curl -s http://localhost:8090/api/voice-command/health > /dev/null 2>&1; then
+    echo "✅ Microservice is running on http://localhost:8090"
 else
     echo "❌ Microservice failed to start - check microservice.log"
 fi

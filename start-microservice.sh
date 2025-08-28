@@ -29,8 +29,8 @@ sleep 15
 
 # Test microservice
 echo "🧪 Testing microservice..."
-if curl -s http://localhost:8081/api/voice-command/health > /dev/null 2>&1; then
-    echo "✅ Microservice is running on http://localhost:8081"
+if curl -s http://localhost:8090/api/voice-command/health > /dev/null 2>&1; then
+    echo "✅ Microservice is running on http://localhost:8090"
     echo "🎉 Microservice started successfully!"
     echo "📋 Process ID: $MICROSERVICE_PID"
     echo "📄 Log: tail -f microservice.log"
