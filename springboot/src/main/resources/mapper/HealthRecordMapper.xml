@@ -73,5 +73,11 @@
         DELETE FROM health_records WHERE id = #{id}
     </delete>
     
+    <!-- 获取所有健康记录 -->
+    <select id="listAll" resultMap="HealthRecordResultMap">
+        SELECT * FROM health_records 
+        ORDER BY record_time DESC, id DESC
+    </select>
+    
 </mapper>
 

@@ -26,6 +26,7 @@ import com.example.demo.mapper.ImportantDateMapper;
 import com.example.demo.mapper.MemoMapper;
 import com.example.demo.mapper.PodcastMapper;
 import com.example.demo.mapper.EmotionCompanionMapper;
+import com.example.demo.mapper.PetMoodMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -74,6 +75,9 @@ public class DataMigrationService {
     
     @Autowired
     private EmotionCompanionMapper emotionCompanionMapper;
+    
+    @Autowired
+    private PetMoodMapper petMoodMapper;
     
     // 云端数据源 (DynamoDB)
     @Autowired
@@ -207,8 +211,8 @@ public class DataMigrationService {
         try {
             logger.info("Migrating PetMood data...");
             
-            // 这里需要从SQLite获取数据，暂时使用空列表
-            List<PetMood> sourceData = new ArrayList<>();
+            // 从SQLite获取宠物情绪数据
+            List<PetMood> sourceData = petMoodMapper.findAll();
             result.totalItems = sourceData.size();
             
             logger.info("Found " + sourceData.size() + " PetMood records to migrate");

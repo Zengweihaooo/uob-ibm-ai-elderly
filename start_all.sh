@@ -30,7 +30,7 @@ fi
 # Start backend
 echo "🔧 Starting backend (Spring Boot)..."
 cd "$PROJECT_DIR/springboot"
-nohup mvn -DskipTests spring-boot:run > "$PROJECT_DIR/backend.log" 2>&1 &
+nohup ./mvnw -DskipTests spring-boot:run > "$PROJECT_DIR/backend.log" 2>&1 &
 BACKEND_PID=$!
 cd "$PROJECT_DIR"
 

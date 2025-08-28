@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.pojo.FamilyContact;
 import com.example.demo.service.FamilyService;
+import com.example.demo.util.UserContextUtil;
 
 /**
  * REST Controller for family contact management
@@ -36,6 +38,12 @@ public class FamilyController {
 
     @Autowired
     private FamilyService familyService;
+    
+    @Autowired
+    private UserContextUtil userContextUtil;
+    
+    // 调试信息开关
+    private static final boolean DEBUG_ENABLED = true;
 
     /**
      * Add a new family contact
@@ -50,26 +58,53 @@ public class FamilyController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         Map<String, Object> response = new HashMap<>();
+        
+        if (DEBUG_ENABLED) {
+            System.out.println("==== FamilyController.addFamilyContact DEBUG ====");
+            System.out.println("请求时间: " + java.time.LocalDateTime.now());
+            System.out.println("Authorization Header: " + (authHeader != null ? authHeader.substring(0, Math.min(authHeader.length(), 20)) + "..." : "null"));
+            System.out.println("请求数据: " + contactData);
+        }
 
         // Check authentication
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 认证失败 - Authorization header无效");
+                System.out.println("============================================");
+            }
             response.put("success", false);
             response.put("message", "Authentication required");
             return ResponseEntity.status(401).body(response);
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            if (DEBUG_ENABLED) {
+                String debugInfo = userContextUtil.debugTokenExtraction(authHeader);
+                System.out.println("JWT解析调试信息: " + debugInfo);
+            }
+            
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                if (DEBUG_ENABLED) {
+                    System.err.println("DEBUG: JWT解析失败 - 无法获取用户ID");
+                    System.out.println("==========================================");
+                }
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
+            
+            if (DEBUG_ENABLED) {
+                System.out.println("从JWT获取的用户ID: " + userId);
+            }
 
             // Extract contact data
             String name = (String) contactData.get("name");
             String phoneNumber = (String) contactData.get("phoneNumber");
             String email = (String) contactData.get("email");
             String relationship = (String) contactData.get("relationship");
-            String notificationPreference = (String) contactData.getOrDefault("notificationPreference", "ALL");
             Boolean isEmergencyContact = (Boolean) contactData.getOrDefault("isEmergencyContact", false);
-            String notes = (String) contactData.get("notes");
 
             // Validate required fields
             if (name == null || name.trim().isEmpty()) {
@@ -90,16 +125,34 @@ public class FamilyController {
                 userId, name, phoneNumber, email, relationship, isEmergencyContact
             );
 
+            if (DEBUG_ENABLED) {
+                System.out.println("DEBUG: 联系人创建成功，ID: " + contact.getId());
+                System.out.println("联系人姓名: " + contact.getName());
+                System.out.println("所属用户ID: " + contact.getUserId());
+                System.out.println("==========================================");
+            }
+
             response.put("success", true);
             response.put("message", "Family contact added successfully");
             response.put("contact", contact);
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 参数验证异常");
+                System.err.println("异常信息: " + e.getMessage());
+                System.out.println("=======================================");
+            }
             response.put("success", false);
             response.put("message", "Invalid data: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 系统异常");
+                System.err.println("异常信息: " + e.getMessage());
+                e.printStackTrace();
+                System.out.println("=================================");
+            }
             response.put("success", false);
             response.put("message", "Failed to add family contact: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);
@@ -117,26 +170,66 @@ public class FamilyController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         Map<String, Object> response = new HashMap<>();
+        
+        if (DEBUG_ENABLED) {
+            System.out.println("==== FamilyController.getFamilyContacts DEBUG ====");
+            System.out.println("请求时间: " + java.time.LocalDateTime.now());
+            System.out.println("Authorization Header: " + (authHeader != null ? authHeader.substring(0, Math.min(authHeader.length(), 20)) + "..." : "null"));
+        }
 
         // Check authentication
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 认证失败 - Authorization header无效");
+                System.out.println("============================================");
+            }
             response.put("success", false);
             response.put("message", "Authentication required");
             return ResponseEntity.status(401).body(response);
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            if (DEBUG_ENABLED) {
+                String debugInfo = userContextUtil.debugTokenExtraction(authHeader);
+                System.out.println("JWT解析调试信息: " + debugInfo);
+            }
+            
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                if (DEBUG_ENABLED) {
+                    System.err.println("DEBUG: JWT解析失败 - 无法获取用户ID");
+                    System.out.println("==========================================");
+                }
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            if (DEBUG_ENABLED) {
+                System.out.println("从JWT获取的用户ID: " + userId);
+            }
 
             List<FamilyContact> contacts = familyService.getFamilyContacts(userId);
+            
+            if (DEBUG_ENABLED) {
+                System.out.println("DEBUG: 查询到 " + contacts.size() + " 个联系人");
+                System.out.println("============================================");
+            }
             
             response.put("success", true);
             response.put("contacts", contacts);
             response.put("totalCount", contacts.size());
+            response.put("userId", userId);  // 添加用户ID用于调试
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 查询联系人异常");
+                System.err.println("异常信息: " + e.getMessage());
+                e.printStackTrace();
+                System.out.println("====================================");
+            }
             response.put("success", false);
             response.put("message", "Error fetching family contacts: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);
@@ -165,8 +258,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             FamilyContact contact = familyService.getFamilyContact(userId, contactId);
             
@@ -211,8 +309,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             FamilyContact updatedContact = familyService.updateFamilyContact(
                 userId, contactId, contactData
@@ -262,8 +365,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             boolean deleted = familyService.deleteFamilyContact(userId, contactId);
 
@@ -308,8 +416,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             String message = (String) messageData.get("message");
             String messageType = (String) messageData.getOrDefault("type", "general");
@@ -360,8 +473,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             List<FamilyContact> emergencyContacts = familyService.getEmergencyContacts(userId);
             
@@ -397,8 +515,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             Map<String, Object> stats = familyService.getFamilyStats(userId);
             
@@ -437,8 +560,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             String emergencyType = (String) emergencyData.get("emergencyType");
             String description = (String) emergencyData.get("description");
@@ -486,8 +614,13 @@ public class FamilyController {
         }
 
         try {
-            // TODO: Extract userId from JWT token
-            Long userId = 1L;
+            // Extract userId from JWT token
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
 
             String healthDataType = (String) healthAlertData.get("healthDataType");
             String abnormalValue = (String) healthAlertData.get("abnormalValue");
@@ -596,4 +729,151 @@ public class FamilyController {
     }
     
     // ========== 新增异常通知功能结束 ==========
+    
+    /**
+     * 测试JWT集成后的多用户数据隔离功能
+     * 仅用于开发和测试环境
+     * 
+     * @param authHeader Authorization header (管理员权限)
+     * @return 测试结果
+     */
+    @PostMapping("/test/data-isolation")
+    public ResponseEntity<Map<String, Object>> testDataIsolation(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+        
+        if (DEBUG_ENABLED) {
+            System.out.println("==== FamilyController.testDataIsolation DEBUG ====");
+            System.out.println("请求时间: " + java.time.LocalDateTime.now());
+            System.out.println("测试多用户数据隔离功能");
+        }
+
+        // 基本权限检查（可以放宽用于测试）
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 认证失败 - Authorization header无效");
+                System.out.println("===========================================");
+            }
+            response.put("success", false);
+            response.put("message", "Authentication required for testing");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            // 执行数据隔离测试
+            Map<String, Object> testResult = familyService.testUserDataIsolation();
+            
+            if (DEBUG_ENABLED) {
+                System.out.println("DEBUG: 数据隔离测试完成");
+                System.out.println("测试结果: " + testResult);
+                System.out.println("========================================");
+            }
+            
+            response.put("success", true);
+            response.put("message", "Data isolation test completed");
+            response.put("testResult", testResult);
+            response.put("timestamp", java.time.LocalDateTime.now().toString());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 数据隔离测试异常");
+                System.err.println("异常信息: " + e.getMessage());
+                e.printStackTrace();
+                System.out.println("================================");
+            }
+            response.put("success", false);
+            response.put("message", "Data isolation test failed: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 获取系统状态和调试信息
+     * 
+     * @param authHeader Authorization header
+     * @return 系统状态信息
+     */
+    @GetMapping("/debug/system-status")
+    public ResponseEntity<Map<String, Object>> getSystemStatus(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+        
+        if (DEBUG_ENABLED) {
+            System.out.println("==== FamilyController.getSystemStatus DEBUG ====");
+            System.out.println("请求时间: " + java.time.LocalDateTime.now());
+        }
+
+        // 基本权限检查
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 认证失败 - Authorization header无效");
+                System.out.println("=========================================");
+            }
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            // 获取当前用户ID
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            
+            if (userId == null) {
+                if (DEBUG_ENABLED) {
+                    System.err.println("DEBUG: 无法获取用户ID");
+                    System.out.println("==============================");
+                }
+                response.put("success", false);
+                response.put("message", "Invalid token");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            // 收集系统状态信息
+            List<FamilyContact> allContacts = familyService.getAllContacts();
+            List<FamilyContact> userContacts = familyService.getFamilyContacts(userId);
+            List<FamilyContact> emergencyContacts = familyService.getEmergencyContacts(userId);
+            
+            Map<String, Object> systemStatus = new HashMap<>();
+            systemStatus.put("currentUserId", userId);
+            systemStatus.put("totalContactsInSystem", allContacts.size());
+            systemStatus.put("userContactCount", userContacts.size());
+            systemStatus.put("userEmergencyContactCount", emergencyContacts.size());
+            systemStatus.put("debugEnabled", DEBUG_ENABLED);
+            systemStatus.put("jwtIntegrationActive", true);
+            systemStatus.put("userDataIsolationActive", true);
+            
+            // 添加用户数据分布统计
+            Map<Long, Long> userDistribution = allContacts.stream()
+                .collect(Collectors.groupingBy(FamilyContact::getUserId, Collectors.counting()));
+            systemStatus.put("userDataDistribution", userDistribution);
+            
+            if (DEBUG_ENABLED) {
+                System.out.println("DEBUG: 系统状态信息收集完成");
+                System.out.println("当前用户ID: " + userId);
+                System.out.println("用户联系人数量: " + userContacts.size());
+                System.out.println("系统总联系人数量: " + allContacts.size());
+                System.out.println("用户数据分布: " + userDistribution);
+                System.out.println("=======================================");
+            }
+            
+            response.put("success", true);
+            response.put("systemStatus", systemStatus);
+            response.put("timestamp", java.time.LocalDateTime.now().toString());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 获取系统状态异常");
+                System.err.println("异常信息: " + e.getMessage());
+                e.printStackTrace();
+                System.out.println("==============================");
+            }
+            response.put("success", false);
+            response.put("message", "Failed to get system status: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
 }

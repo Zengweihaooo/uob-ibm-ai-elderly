@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.pojo.HealthRecord;
 import com.example.demo.service.HealthService;
 import com.example.demo.util.UserContextUtil;
+import com.example.demo.util.JwtUtil;
 
 @RestController
 @RequestMapping("/api/health")
@@ -32,6 +33,9 @@ public class HealthController {
     
     @Autowired
     private UserContextUtil userContextUtil;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @PostMapping("/record")
     public ResponseEntity<Map<String, Object>> addHealthRecord(
@@ -115,6 +119,43 @@ public class HealthController {
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Error fetching today's health data");
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * 获取所有健康记录
+     */
+    @GetMapping("/records")
+    public ResponseEntity<Map<String, Object>> getAllHealthRecords(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            // 验证token有效性
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
+            
+            List<HealthRecord> records = healthService.getAll();
+            response.put("success", true);
+            response.put("records", records);
+            response.put("count", records.size());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error fetching all health records: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -486,4 +527,93 @@ public class HealthController {
     }
     
     // ========== 数据库操作相关接口结束 ==========
+    
+    // ========== JWT测试相关接口 ==========
+    
+    /**
+     * JWT测试端点 - 验证JWT token
+     */
+    @GetMapping("/jwt-test")
+    public ResponseEntity<Map<String, Object>> testJwt(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authorization header required");
+            response.put("debug", "No Authorization header or invalid format");
+            return ResponseEntity.status(401).body(response);
+        }
+        
+        try {
+            String token = authHeader.substring(7);
+            
+            // 调试信息
+            String debugInfo = userContextUtil.debugTokenExtraction(authHeader);
+            
+            // 验证token
+            if (userContextUtil.isValidAuthHeader(authHeader)) {
+                Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+                String email = userContextUtil.getEmailFromAuthHeader(authHeader);
+                
+                response.put("success", true);
+                response.put("message", "JWT token is valid");
+                response.put("userId", userId);
+                response.put("email", email);
+                response.put("debug", debugInfo);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Invalid JWT token");
+                response.put("debug", debugInfo);
+                return ResponseEntity.status(401).body(response);
+            }
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error processing JWT token");
+            response.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+               /**
+            * 生成真实的JWT token
+            */
+           @PostMapping("/generate-test-token")
+           public ResponseEntity<Map<String, Object>> generateTestToken(
+                   @RequestBody Map<String, Object> request) {
+               
+               Map<String, Object> response = new HashMap<>();
+               
+               try {
+                   Long userId = Long.valueOf(request.get("userId").toString());
+                   String email = (String) request.get("email");
+                   
+                   if (userId == null || email == null) {
+                       response.put("success", false);
+                       response.put("message", "userId and email are required");
+                       return ResponseEntity.badRequest().body(response);
+                   }
+                   
+                   // 生成真实的JWT token
+                   String jwtToken = jwtUtil.generateToken(userId, email);
+                   
+                   response.put("success", true);
+                   response.put("token", jwtToken);
+                   response.put("userId", userId);
+                   response.put("email", email);
+                   response.put("message", "Real JWT token generated successfully");
+                   
+                   return ResponseEntity.ok(response);
+                   
+               } catch (Exception e) {
+                   response.put("success", false);
+                   response.put("message", "Error generating JWT token: " + e.getMessage());
+                   return ResponseEntity.internalServerError().body(response);
+               }
+           }
+    
+    // ========== JWT测试相关接口结束 ==========
 }

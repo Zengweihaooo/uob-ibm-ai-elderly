@@ -477,5 +477,13 @@ public class HealthService {
         return healthRecordMapper.listByUserAndType(userId, type, startIso, endIso);
     }
     
+    /**
+     * 获取所有健康记录
+     * @return 所有健康记录列表
+     */
+    public List<HealthRecord> getAll() {
+        return healthRecordMapper.findAll();
+    }
+    
     // ========== 其他辅助方法结束 ==========
 } 

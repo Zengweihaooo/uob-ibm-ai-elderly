@@ -3,6 +3,7 @@ package com.example.demo.mapper;
 import com.example.demo.pojo.HealthRecord;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -69,5 +70,19 @@ public interface HealthRecordMapper {
      * @return 影响的行数
      */
     int deleteById(@Param("id") Long id);
+    
+    /**
+     * 获取所有健康记录
+     * @return 所有健康记录列表
+     */
+    @Select("SELECT * FROM health_records")
+    List<HealthRecord> findAll();
+    
+    /**
+     * 获取总记录数
+     * @return 总记录数
+     */
+    @Select("SELECT COUNT(*) FROM health_records")
+    long count();
 }
 

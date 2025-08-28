@@ -116,4 +116,17 @@
         ORDER BY created_at DESC
     </select>
 
+    <!-- Find All Contacts -->
+    <select id="findAll" resultMap="FamilyContactResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM family_contacts
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Count All Contacts -->
+    <select id="count" resultType="long">
+        SELECT COUNT(*)
+        FROM family_contacts
+    </select>
+
 </mapper> 
