@@ -40,12 +40,13 @@ public class MemoirShareService {
         if (StringUtils.hasText(pin)) gd.setPinHash(sha256(pin));
         mapper.insertShareGuard(gd);
 
-        return Map.of(
-                "token", token,
-                "expiresAt", st.getExpiresAt(),
-                "scope", st.getScope(),
-                "maxDownloads", maxDownloads
-        );
+    // 返回最小信息，由控制器根据请求动态拼接 shareUrl，避免硬编码 host
+    Map<String, Object> result = new java.util.HashMap<>();
+    result.put("token", token);
+    result.put("expiresAt", st.getExpiresAt());
+    result.put("scope", st.getScope());
+    result.put("maxDownloads", maxDownloads);
+    return result;
     }
 
     public boolean verifyPin(Integer shareId, String pin) {

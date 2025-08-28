@@ -19,6 +19,7 @@ public interface MemoirMapper {
     int insertProject(MemoirProject project);
     MemoirProject findProjectById(@Param("id") Integer id);
     List<MemoirProject> listProjectsByOwner(@Param("owner") String owner);
+    MemoirProject findProjectByTitleAndOwner(@Param("title") String title, @Param("owner") String owner);
 
     // ==== Segment ====
     int insertSegment(MemoirSegment segment);
