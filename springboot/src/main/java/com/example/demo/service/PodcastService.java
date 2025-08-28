@@ -639,10 +639,29 @@ public class PodcastService {
                 }
             }
             
-            // 获取图片
+            // 获取图片 - 增强图片提取逻辑
             String image = getElementText(item, "image");
             if (image == null) {
                 image = getElementText(item, "itunes:image");
+            }
+            if (image == null) {
+                org.w3c.dom.NodeList mediaContents = item.getElementsByTagName("media:content");
+                for (int i = 0; i < mediaContents.getLength(); i++) {
+                    org.w3c.dom.Element mediaContent = (org.w3c.dom.Element) mediaContents.item(i);
+                    String medium = mediaContent.getAttribute("medium");
+                    String url = mediaContent.getAttribute("url");
+                    if ("image".equalsIgnoreCase(medium) && url != null && !url.isEmpty()) {
+                        image = url;
+                        break;
+                    }
+                }
+            }
+            if (image == null) {
+                org.w3c.dom.NodeList mediaThumbnails = item.getElementsByTagName("media:thumbnail");
+                if (mediaThumbnails.getLength() > 0) {
+                    org.w3c.dom.Element mediaThumbnail = (org.w3c.dom.Element) mediaThumbnails.item(0);
+                    image = mediaThumbnail.getAttribute("url");
+                }
             }
             if (image == null) {
                 org.w3c.dom.NodeList imageNodes = item.getElementsByTagName("image");
@@ -650,6 +669,10 @@ public class PodcastService {
                     org.w3c.dom.Element imageElement = (org.w3c.dom.Element) imageNodes.item(0);
                     image = getElementText(imageElement, "url");
                 }
+            }
+            // 尝试从description中提取图片URL
+            if (image == null && description != null && !description.isEmpty()) {
+                image = extractImageUrlFromText(description);
             }
             episode.setImage(image);
             episode.setThumbnail(image);
@@ -1117,5 +1140,27 @@ public class PodcastService {
             System.err.println("Error parsing episode from API JSON: " + e.getMessage());
             return null;
         }
+    }
+    
+    /**
+     * 从文本中提取图片URL
+     * @param text 包含图片URL的文本
+     * @return 图片URL，如果没有找到则返回null
+     */
+    private String extractImageUrlFromText(String text) {
+        if (text == null || text.isEmpty()) {
+            return null;
+        }
+        
+        // 使用正则表达式匹配图片URL
+        String imageUrlPattern = "https?://[^\\s<>\"']+\\.(jpg|jpeg|png|gif|webp|svg)";
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(imageUrlPattern, java.util.regex.Pattern.CASE_INSENSITIVE);
+        java.util.regex.Matcher matcher = pattern.matcher(text);
+        
+        if (matcher.find()) {
+            return matcher.group();
+        }
+        
+        return null;
     }
 } 

@@ -53,12 +53,24 @@ public class MemoirShareController {
     /** 创建分享链接 */
     @PostMapping("/api/memoir/projects/{id}/share")
     public ResponseEntity<?> createShare(@PathVariable("id") Integer projectId,
-                                         @RequestBody Map<String, Object> payload) {
+                                         @RequestBody Map<String, Object> payload,
+                                         javax.servlet.http.HttpServletRequest request) {
         String pin = (String) payload.get("pin");
         Integer days = payload.get("days") instanceof Number ? ((Number) payload.get("days")).intValue() : null;
         Integer max = payload.get("maxDownloads") instanceof Number ? ((Number) payload.get("maxDownloads")).intValue() : null;
         String scope = (String) payload.getOrDefault("scope", "view");
         Map<String, Object> res = shareService.createShare(projectId, pin, days, max, scope);
+        // 动态构建 shareUrl（支持反向代理）
+        String scheme = request.getHeader("X-Forwarded-Proto");
+        if (scheme == null || scheme.isBlank()) scheme = request.getScheme();
+        String host = request.getHeader("X-Forwarded-Host");
+        if (host == null || host.isBlank()) host = request.getHeader("Host");
+        if (host == null || host.isBlank()) host = request.getServerName() + (request.getServerPort() == 80 || request.getServerPort() == 443 ? "" : (":" + request.getServerPort()));
+        String base = scheme + "://" + host;
+        Object token = res.get("token");
+        if (token != null) {
+            res.put("shareUrl", base + "/s/" + token);
+        }
         return ResponseEntity.ok(res);
     }
 
