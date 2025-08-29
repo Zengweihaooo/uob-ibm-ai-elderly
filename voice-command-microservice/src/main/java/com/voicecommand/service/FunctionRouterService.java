@@ -107,6 +107,19 @@ public class FunctionRouterService {
             String fromEmail = "system@elderly-companion.com";
             String senderName = "智能助手";
             
+            // 获取用户信息，用于邮件个性化
+            String userId = extractEmailParameter(params, "userId", intent.getOriginalText());
+            String userName = extractEmailParameter(params, "userName", intent.getOriginalText());
+            
+            // 如果参数中没有用户信息，尝试从context中获取
+            if (userName == null || userName.trim().isEmpty()) {
+                userName = "用户"; // 默认用户名
+            }
+            
+            // 个性化邮件内容，保持原标题
+            String personalizedContent = String.format("您好！\n\n%s\n\n此邮件由%s通过AI智能助手发送。\n\n祝好！", 
+                content, userName);
+            
             // 验证必要参数
             if (toEmail == null || subject == null || content == null) {
                 return FunctionExecutionResult.builder()
@@ -119,7 +132,7 @@ public class FunctionRouterService {
             
             // 调用主项目邮件服务
             com.voicecommand.model.EmailResponse emailResponse = emailServiceClient.sendEmail(
-                fromEmail, toEmail, subject, content, senderName);
+                fromEmail, toEmail, subject, personalizedContent, userName);
             
             if (emailResponse.isSuccess()) {
                 // 构建成功反馈
