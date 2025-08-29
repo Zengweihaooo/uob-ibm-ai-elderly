@@ -23,10 +23,10 @@ import java.io.File;
 @Configuration
 public class DatabaseConfig {
 
-    @Value("${app.database.path:data/elderly_companion.db}")
+    @Value("${app.database.path:springboot/data/elderly_companion.db}")
     private String databasePath;
 
-    @Value("${app.database.backup.path:data/backups/}")
+    @Value("${app.database.backup.path:springboot/data/backups/}")
     private String backupPath;
 
     @Value("${app.database.init-schema:true}")
@@ -39,7 +39,7 @@ public class DatabaseConfig {
     @Bean
     public String ensureDatabaseDirectoryExists() {
         // 创建数据库文件目录
-        File dataDir = new File("data");
+        File dataDir = new File("springboot/data");
         if (!dataDir.exists()) {
             boolean created = dataDir.mkdirs();
             if (created) {
