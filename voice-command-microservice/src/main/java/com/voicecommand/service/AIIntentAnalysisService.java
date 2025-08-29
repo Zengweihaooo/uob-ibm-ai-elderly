@@ -1,6 +1,7 @@
 package com.voicecommand.service;
 
 import com.voicecommand.model.IntentAnalysisResult;
+import com.voicecommand.model.FunctionInfo;
 import com.voicecommand.client.AIServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,12 @@ public class AIIntentAnalysisService {
     
     @Autowired
     private AIServiceClient aiServiceClient;
+    
+    @Autowired
+    private FunctionKnowledgeService functionKnowledgeService;
+    
+    @Autowired
+    private ContactLookupService contactLookupService;
     
     /**
      * 分析用户意图
@@ -73,20 +80,6 @@ public class AIIntentAnalysisService {
             
             Map<String, Object> params = new HashMap<>();
             
-            // 智能提取邮箱地址
-            String recipient = extractEmailAddress(userText);
-            if (recipient == null || recipient.isEmpty()) {
-                log.warn("无法提取有效的邮箱地址");
-                return IntentAnalysisResult.builder()
-                    .functionName("unknown")
-                    .confidence(0.0)
-                    .reasoning("无法识别有效的邮箱地址")
-                    .originalText(userText)
-                    .analysisTimestamp(System.currentTimeMillis())
-                    .aiModel("local-fallback")
-                    .build();
-            }
-            
             // 智能提取邮件内容
             String content = extractEmailContent(userText);
             if (content == null || content.isEmpty()) {
@@ -94,29 +87,85 @@ public class AIIntentAnalysisService {
                 return IntentAnalysisResult.builder()
                     .functionName("unknown")
                     .confidence(0.0)
-                    .reasoning("无法识别有效的邮件内容")
+                    .reasoning("本地分析：无法识别有效的邮件内容")
                     .originalText(userText)
                     .analysisTimestamp(System.currentTimeMillis())
                     .aiModel("local-fallback")
                     .build();
             }
             
-            params.put("toEmail", recipient);
-            params.put("content", content);
-            params.put("subject", "来自AI助手的消息");
+            // 智能提取收件人信息（姓名或邮箱）
+            String recipient = extractRecipient(userText);
+            String email = extractEmailAddress(userText);
             
-            log.info("本地分析结果 - 功能: send_email, 收件人: {}, 内容: {}", recipient, content);
-            
-            return IntentAnalysisResult.builder()
-                .functionName("send_email")
-                .confidence(0.9)
-                .parameters(params)
-                .reasoning("基于关键词'邮件'、'发送'等识别为邮件发送意图")
-                .knowledgeUsed("本地关键词匹配分析")
-                .originalText(userText)
-                .analysisTimestamp(System.currentTimeMillis())
-                .aiModel("local-fallback")
-                .build();
+            if (email != null && !email.isEmpty()) {
+                // 有邮箱地址，直接使用
+                params.put("toEmail", email);
+                params.put("content", content);
+                params.put("subject", "来自AI助手的消息");
+                
+                log.info("本地分析结果 - 功能: send_email, 收件人邮箱: {}, 内容: {}", email, content);
+                
+                return IntentAnalysisResult.builder()
+                    .functionName("send_email")
+                    .confidence(0.9)
+                    .parameters(params)
+                    .reasoning("基于关键词'邮件'、'发送'等识别为邮件发送意图，包含邮箱地址和内容")
+                    .knowledgeUsed("本地关键词匹配分析")
+                    .originalText(userText)
+                    .analysisTimestamp(System.currentTimeMillis())
+                    .aiModel("local-fallback")
+                    .build();
+            } else {
+                // 没有邮箱地址，但有收件人姓名和内容，尝试从数据库查询
+                log.info("尝试从数据库查询联系人邮箱: {}", recipient);
+                
+                // 尝试查询联系人邮箱地址
+                String emailFromDB = contactLookupService.lookupEmailByName(recipient, null);
+                
+                if (emailFromDB != null && !emailFromDB.isEmpty()) {
+                    // 从数据库找到了邮箱地址
+                    params.put("toEmail", emailFromDB);
+                    params.put("content", content);
+                    params.put("subject", "来自AI助手的消息");
+                    params.put("recipientName", recipient);
+                    params.put("source", "database");
+                    
+                    log.info("从数据库找到联系人邮箱: {} -> {}", recipient, emailFromDB);
+                    
+                    return IntentAnalysisResult.builder()
+                        .functionName("send_email")
+                        .confidence(0.95)
+                        .parameters(params)
+                        .reasoning("基于关键词'邮件'、'发送'等识别为邮件发送意图，包含收件人姓名和内容，并从数据库自动查询到邮箱地址")
+                        .knowledgeUsed("本地关键词匹配分析 + 数据库联系人查询")
+                        .originalText(userText)
+                        .analysisTimestamp(System.currentTimeMillis())
+                        .aiModel("local-fallback")
+                        .build();
+                } else {
+                    // 数据库中没有找到邮箱地址，生成提示
+                    params.put("recipientName", recipient);
+                    params.put("content", content);
+                    params.put("subject", "来自AI助手的消息");
+                    params.put("needsEmail", true);
+                    params.put("message", "识别到邮件发送意图，但需要提供收件人邮箱地址");
+                    params.put("searchedDatabase", true);
+                    
+                    log.info("本地分析结果 - 功能: send_email, 收件人姓名: {}, 内容: {}, 数据库查询无结果", recipient, content);
+                    
+                    return IntentAnalysisResult.builder()
+                        .functionName("send_email")
+                        .confidence(0.8)
+                        .parameters(params)
+                        .reasoning("基于关键词'邮件'、'发送'等识别为邮件发送意图，包含收件人姓名和内容，已尝试数据库查询但未找到邮箱地址")
+                        .knowledgeUsed("本地关键词匹配分析 + 数据库联系人查询")
+                        .originalText(userText)
+                        .analysisTimestamp(System.currentTimeMillis())
+                        .aiModel("local-fallback")
+                        .build();
+                }
+            }
         }
         
         // 其他意图可以在这里添加...
@@ -271,18 +320,44 @@ public class AIIntentAnalysisService {
         prompt.append("以下是你可以调用的功能知识库：\n");
         prompt.append("请仔细阅读每个功能的描述、参数要求和示例，然后分析用户意图。\n\n");
         
-        // 邮件功能知识库
-        prompt.append("功能名称：send_email\n");
-        prompt.append("功能描述：发送电子邮件功能\n");
-        prompt.append("参数要求：\n");
-        prompt.append("- toEmail: 收件人邮箱地址（必需）\n");
-        prompt.append("- subject: 邮件主题（必需）\n");
-        prompt.append("- content: 邮件内容（必需）\n");
-        prompt.append("- fromEmail: 发件人邮箱（可选，默认使用系统邮箱）\n");
-        prompt.append("使用示例：\n");
-        prompt.append("- 发送邮件给张三，主题是会议提醒，内容是明天下午3点开会\n");
-        prompt.append("- 给李四发邮件，告诉他明天开会\n");
-        prompt.append("- 写邮件给王五，内容是关于项目进度\n\n");
+        // 使用功能知识库服务获取功能信息
+        if (functionKnowledgeService.isKnowledgeBaseLoaded()) {
+            List<FunctionInfo> functions = functionKnowledgeService.getAllFunctions();
+            for (FunctionInfo function : functions) {
+                prompt.append("功能名称：").append(function.getName()).append("\n");
+                prompt.append("功能描述：").append(function.getDescription()).append("\n");
+                prompt.append("参数要求：\n");
+                
+                function.getParameters().forEach((paramName, paramInfo) -> {
+                    prompt.append("- ").append(paramName).append(": ").append(paramInfo.getDescription());
+                    if (paramInfo.isRequired()) {
+                        prompt.append("（必需）");
+                    } else {
+                        prompt.append("（可选）");
+                    }
+                    prompt.append("\n");
+                });
+                
+                prompt.append("使用示例：\n");
+                for (String example : function.getExamples()) {
+                    prompt.append("- ").append(example).append("\n");
+                }
+                prompt.append("\n");
+            }
+        } else {
+            // 如果知识库未加载，使用硬编码的邮件功能信息作为fallback
+            prompt.append("功能名称：send_email\n");
+            prompt.append("功能描述：发送电子邮件功能\n");
+            prompt.append("参数要求：\n");
+            prompt.append("- toEmail: 收件人邮箱地址（必需）\n");
+            prompt.append("- subject: 邮件主题（必需）\n");
+            prompt.append("- content: 邮件内容（必需）\n");
+            prompt.append("- fromEmail: 发件人邮箱（可选，默认使用系统邮箱）\n");
+            prompt.append("使用示例：\n");
+            prompt.append("- 发送邮件给张三，主题是会议提醒，内容是明天下午3点开会\n");
+            prompt.append("- 给李四发邮件，告诉他明天开会\n");
+            prompt.append("- 写邮件给王五，内容是关于项目进度\n\n");
+        }
         
         prompt.append("请基于以上知识库，分析用户意图并返回JSON格式：\n");
         prompt.append("{\n");
@@ -659,5 +734,70 @@ public class AIIntentAnalysisService {
         }
         
         return null;
+    }
+    
+    /**
+     * 智能提取收件人信息（姓名或邮箱）
+     */
+    private String extractRecipient(String text) {
+        log.info("开始提取收件人信息，输入文本: {}", text);
+        
+        // 首先尝试提取邮箱地址
+        String email = extractEmailAddress(text);
+        if (email != null && !email.isEmpty()) {
+            return email;
+        }
+        
+        // 如果没有邮箱地址，尝试提取姓名
+        // 模式1: "给[姓名]发送邮件"
+        if (text.contains("给")) {
+            int start = text.indexOf("给") + 1;
+            if (start < text.length()) {
+                String afterGiving = text.substring(start);
+                // 找到下一个关键词的位置
+                int end = afterGiving.length();
+                if (afterGiving.contains("发送")) {
+                    end = afterGiving.indexOf("发送");
+                } else if (afterGiving.contains("发邮件")) {
+                    end = afterGiving.indexOf("发邮件");
+                } else if (afterGiving.contains("邮件")) {
+                    end = afterGiving.indexOf("邮件");
+                }
+                
+                if (end < afterGiving.length()) {
+                    String name = afterGiving.substring(0, end).trim();
+                    if (!name.isEmpty()) {
+                        log.info("模式1提取收件人姓名: {}", name);
+                        return name;
+                    }
+                }
+            }
+        }
+        
+        // 模式2: "发送邮件给[姓名]"
+        if (text.contains("发送邮件给")) {
+            int start = text.indexOf("发送邮件给") + 6;
+            if (start < text.length()) {
+                String afterTo = text.substring(start);
+                // 找到下一个关键词的位置
+                int end = afterTo.length();
+                if (afterTo.contains("，")) {
+                    end = afterTo.indexOf("，");
+                } else if (afterTo.contains("，")) {
+                    end = afterTo.indexOf("，");
+                }
+                
+                if (end < afterTo.length()) {
+                    String name = afterTo.substring(0, end).trim();
+                    if (!name.isEmpty()) {
+                        log.info("模式2提取收件人姓名: {}", name);
+                        return name;
+                    }
+                }
+            }
+        }
+        
+        log.info("未找到有效的收件人信息");
+        return "未知收件人";
     }
 }

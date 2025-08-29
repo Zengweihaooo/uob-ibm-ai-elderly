@@ -876,4 +876,80 @@ public class FamilyController {
             return ResponseEntity.internalServerError().body(response);
         }
     }
+    
+    /**
+     * 根据姓名搜索联系人（用于AI语音命令）
+     * 
+     * @param searchRequest 搜索请求，包含姓名和可选的用户ID
+     * @return 匹配的联系人列表
+     */
+    @PostMapping("/contacts/search")
+    public ResponseEntity<Map<String, Object>> searchContactsByName(
+            @RequestBody Map<String, Object> searchRequest) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        if (DEBUG_ENABLED) {
+            System.out.println("==== FamilyController.searchContactsByName DEBUG ====");
+            System.out.println("搜索请求: " + searchRequest);
+        }
+        
+        try {
+            String name = (String) searchRequest.get("name");
+            Long userId = null;
+            
+            if (searchRequest.containsKey("userId") && searchRequest.get("userId") != null) {
+                if (searchRequest.get("userId") instanceof String) {
+                    userId = Long.parseLong((String) searchRequest.get("userId"));
+                } else if (searchRequest.get("userId") instanceof Number) {
+                    userId = ((Number) searchRequest.get("userId")).longValue();
+                }
+            }
+            
+            if (name == null || name.trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "联系人姓名不能为空");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            List<FamilyContact> contacts;
+            if (userId != null) {
+                // 如果指定了用户ID，只搜索该用户的联系人
+                contacts = familyService.getFamilyContacts(userId).stream()
+                    .filter(contact -> contact.getName().toLowerCase().contains(name.toLowerCase()))
+                    .collect(Collectors.toList());
+            } else {
+                // 如果没有指定用户ID，搜索所有联系人（用于AI语音命令）
+                contacts = familyService.getAllContacts().stream()
+                    .filter(contact -> contact.getName().toLowerCase().contains(name.toLowerCase()))
+                    .collect(Collectors.toList());
+            }
+            
+            if (DEBUG_ENABLED) {
+                System.out.println("搜索条件: name=" + name + ", userId=" + userId);
+                System.out.println("找到联系人数量: " + contacts.size());
+                System.out.println("=============================================");
+            }
+            
+            response.put("success", true);
+            response.put("contacts", contacts);
+            response.put("totalCount", contacts.size());
+            response.put("searchTerm", name);
+            response.put("timestamp", java.time.LocalDateTime.now().toString());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            if (DEBUG_ENABLED) {
+                System.err.println("DEBUG: 搜索联系人异常");
+                System.err.println("异常信息: " + e.getMessage());
+                e.printStackTrace();
+                System.out.println("==============================");
+            }
+            
+            response.put("success", false);
+            response.put("message", "搜索联系人失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
 }
