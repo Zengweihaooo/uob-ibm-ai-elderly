@@ -80,8 +80,10 @@ public class AIIntentAnalysisService {
             
             Map<String, Object> params = new HashMap<>();
             
-            // 智能提取邮件内容
+            // 智能提取邮件主题和内容
+            String subject = extractEmailSubject(userText);
             String content = extractEmailContent(userText);
+            
             if (content == null || content.isEmpty()) {
                 log.warn("无法提取有效的邮件内容");
                 return IntentAnalysisResult.builder()
@@ -102,15 +104,20 @@ public class AIIntentAnalysisService {
                 // 有邮箱地址，直接使用
                 params.put("toEmail", email);
                 params.put("content", content);
-                params.put("subject", "来自AI助手的消息");
+                params.put("subject", subject);
                 
-                log.info("本地分析结果 - 功能: send_email, 收件人邮箱: {}, 内容: {}", email, content);
+                // 添加用户信息用于邮件个性化
+                String userName = extractUserNameFromContext(context);
+                params.put("userName", userName);
+                params.put("userId", extractUserIdFromContext(context));
+                
+                log.info("本地分析结果 - 功能: send_email, 收件人邮箱: {}, 内容: {}, 主题: {}, 用户名: {}", email, content, subject, userName);
                 
                 return IntentAnalysisResult.builder()
                     .functionName("send_email")
                     .confidence(0.9)
                     .parameters(params)
-                    .reasoning("基于关键词'邮件'、'发送'等识别为邮件发送意图，包含邮箱地址和内容")
+                    .reasoning("基于关键词'邮件'、'发送'等识别为邮件发送意图，包含邮箱地址、主题和内容")
                     .knowledgeUsed("本地关键词匹配分析")
                     .originalText(userText)
                     .analysisTimestamp(System.currentTimeMillis())
@@ -127,17 +134,22 @@ public class AIIntentAnalysisService {
                     // 从数据库找到了邮箱地址
                     params.put("toEmail", emailFromDB);
                     params.put("content", content);
-                    params.put("subject", "来自AI助手的消息");
+                    params.put("subject", subject);
                     params.put("recipientName", recipient);
                     params.put("source", "database");
                     
-                    log.info("从数据库找到联系人邮箱: {} -> {}", recipient, emailFromDB);
+                    // 添加用户信息用于邮件个性化
+                    String userName = extractUserNameFromContext(context);
+                    params.put("userName", userName);
+                    params.put("userId", extractUserIdFromContext(context));
+                    
+                    log.info("从数据库找到联系人邮箱: {} -> {}, 用户名: {}, 主题: {}", recipient, emailFromDB, userName, subject);
                     
                     return IntentAnalysisResult.builder()
                         .functionName("send_email")
                         .confidence(0.95)
                         .parameters(params)
-                        .reasoning("基于关键词'邮件'、'发送'等识别为邮件发送意图，包含收件人姓名和内容，并从数据库自动查询到邮箱地址")
+                        .reasoning("基于关键词'邮件'、'发送'等识别为邮件发送意图，包含收件人姓名、主题和内容，并从数据库自动查询到邮箱地址")
                         .knowledgeUsed("本地关键词匹配分析 + 数据库联系人查询")
                         .originalText(userText)
                         .analysisTimestamp(System.currentTimeMillis())
@@ -147,18 +159,23 @@ public class AIIntentAnalysisService {
                     // 数据库中没有找到邮箱地址，生成提示
                     params.put("recipientName", recipient);
                     params.put("content", content);
-                    params.put("subject", "来自AI助手的消息");
+                    params.put("subject", subject);
                     params.put("needsEmail", true);
                     params.put("message", "识别到邮件发送意图，但需要提供收件人邮箱地址");
                     params.put("searchedDatabase", true);
                     
-                    log.info("本地分析结果 - 功能: send_email, 收件人姓名: {}, 内容: {}, 数据库查询无结果", recipient, content);
+                    // 添加用户信息用于邮件个性化
+                    String userName = extractUserNameFromContext(context);
+                    params.put("userName", userName);
+                    params.put("userId", extractUserIdFromContext(context));
+                    
+                    log.info("本地分析结果 - 功能: send_email, 收件人姓名: {}, 内容: {}, 主题: {}, 用户名: {}, 数据库查询无结果", recipient, content, subject, userName);
                     
                     return IntentAnalysisResult.builder()
                         .functionName("send_email")
                         .confidence(0.8)
                         .parameters(params)
-                        .reasoning("基于关键词'邮件'、'发送'等识别为邮件发送意图，包含收件人姓名和内容，已尝试数据库查询但未找到邮箱地址")
+                        .reasoning("基于关键词'邮件'、'发送'等识别为邮件发送意图，包含收件人姓名、主题和内容，已尝试数据库查询但未找到邮箱地址")
                         .knowledgeUsed("本地关键词匹配分析 + 数据库联系人查询")
                         .originalText(userText)
                         .analysisTimestamp(System.currentTimeMillis())
@@ -227,9 +244,9 @@ public class AIIntentAnalysisService {
         // 尝试多种模式提取内容
         String content = null;
         
-        // 模式1: "发送[内容]"
-        if (lowerText.contains("发送")) {
-            int start = lowerText.indexOf("发送") + 2;
+        // 模式1: "内容是[内容]"
+        if (lowerText.contains("内容是")) {
+            int start = lowerText.indexOf("内容是") + 4;
             if (start < text.length()) {
                 content = text.substring(start).trim();
                 // 移除邮箱地址部分
@@ -241,11 +258,12 @@ public class AIIntentAnalysisService {
             }
         }
         
-        // 模式2: "说[内容]"
-        if (lowerText.contains("说")) {
-            int start = lowerText.indexOf("说") + 1;
+        // 模式2: "发送[内容]"
+        if (lowerText.contains("发送")) {
+            int start = lowerText.indexOf("发送") + 2;
             if (start < text.length()) {
                 content = text.substring(start).trim();
+                // 移除邮箱地址部分
                 content = removeEmailFromContent(content);
                 if (!content.isEmpty()) {
                     log.info("模式2提取内容: {}", content);
@@ -254,7 +272,20 @@ public class AIIntentAnalysisService {
             }
         }
         
-        // 模式3: 提取邮箱后的所有内容
+        // 模式3: "说[内容]"
+        if (lowerText.contains("说")) {
+            int start = lowerText.indexOf("说") + 1;
+            if (start < text.length()) {
+                content = text.substring(start).trim();
+                content = removeEmailFromContent(content);
+                if (!content.isEmpty()) {
+                    log.info("模式3提取内容: {}", content);
+                    return content;
+                }
+            }
+        }
+        
+        // 模式4: 提取邮箱后的所有内容
         String emailPattern = "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b";
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(emailPattern);
         java.util.regex.Matcher matcher = pattern.matcher(text);
@@ -266,7 +297,7 @@ public class AIIntentAnalysisService {
                 // 移除"发送"等关键词
                 content = content.replaceAll("发送", "").replaceAll("发邮件", "").trim();
                 if (!content.isEmpty()) {
-                    log.info("模式3提取内容: {}", content);
+                    log.info("模式4提取内容: {}", content);
                     return content;
                 }
             }
@@ -274,6 +305,42 @@ public class AIIntentAnalysisService {
         
         log.warn("无法提取有效的邮件内容");
         return null;
+    }
+    
+    // 智能提取邮件主题
+    private String extractEmailSubject(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // 尝试提取主题
+        String subject = null;
+        
+        // 模式1: "主题是[主题]"
+        if (lowerText.contains("主题是")) {
+            int start = lowerText.indexOf("主题是") + 4;
+            if (start < text.length()) {
+                // 找到下一个关键词的位置
+                int end = text.length();
+                if (lowerText.contains("内容是")) {
+                    end = lowerText.indexOf("内容是");
+                } else if (lowerText.contains("内容")) {
+                    end = lowerText.indexOf("内容");
+                }
+                
+                if (start < end) {
+                    subject = text.substring(start, end).trim();
+                    // 清理主题内容
+                    subject = subject.replaceAll("[,，。.]+$", "").trim();
+                    if (!subject.isEmpty()) {
+                        log.info("模式1提取主题: {}", subject);
+                        return subject;
+                    }
+                }
+            }
+        }
+        
+        // 如果没有找到主题，返回默认主题
+        log.info("未找到明确的主题，使用默认主题");
+        return "来自AI助手的消息";
     }
     
     // 从内容中移除邮箱地址和无关关键词
@@ -289,6 +356,10 @@ public class AIIntentAnalysisService {
         content = content.replaceAll("发送", "");
         content = content.replaceAll("发邮件", "");
         content = content.replaceAll("给", "");
+        
+        // 不要移除"主题是"和"内容是"，因为我们需要这些信息
+        // content = content.replaceAll("主题是", "");
+        // content = content.replaceAll("内容是", "");
         
         // 智能移除"到"，但保留有意义的"到"
         // 例如："我快到了" -> 保留；"到邮箱" -> 移除
@@ -799,5 +870,46 @@ public class AIIntentAnalysisService {
         
         log.info("未找到有效的收件人信息");
         return "未知收件人";
+    }
+    
+    /**
+     * 从上下文中提取用户名
+     */
+    private String extractUserNameFromContext(Map<String, Object> context) {
+        if (context == null) {
+            return "用户";
+        }
+        
+        // 尝试从不同字段获取用户名
+        String userName = null;
+        
+        if (context.containsKey("userName")) {
+            userName = (String) context.get("userName");
+        } else if (context.containsKey("name")) {
+            userName = (String) context.get("name");
+        } else if (context.containsKey("displayName")) {
+            userName = (String) context.get("displayName");
+        } else if (context.containsKey("userId")) {
+            // 如果只有用户ID，可以尝试查询用户信息
+            String userId = String.valueOf(context.get("userId"));
+            userName = "用户" + userId;
+        }
+        
+        return userName != null && !userName.trim().isEmpty() ? userName.trim() : "用户";
+    }
+    
+    /**
+     * 从上下文中提取用户ID
+     */
+    private String extractUserIdFromContext(Map<String, Object> context) {
+        if (context == null) {
+            return null;
+        }
+        
+        if (context.containsKey("userId")) {
+            return String.valueOf(context.get("userId"));
+        }
+        
+        return null;
     }
 }
