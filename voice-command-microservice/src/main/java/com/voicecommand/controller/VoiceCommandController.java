@@ -1,9 +1,11 @@
 package com.voicecommand.controller;
 
 import com.voicecommand.service.VoiceCommandService;
+import com.voicecommand.service.FunctionKnowledgeService;
 import com.voicecommand.model.VoiceCommandResponse;
 import com.voicecommand.model.VoiceCommandRequest;
 import com.voicecommand.model.CommandExecutionStatus;
+import com.voicecommand.model.FunctionInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,6 +34,9 @@ public class VoiceCommandController {
     
     @Autowired
     private VoiceCommandService voiceCommandService;
+    
+    @Autowired
+    private FunctionKnowledgeService functionKnowledgeService;
     
     /**
      * 处理语音命令
@@ -88,6 +94,27 @@ public class VoiceCommandController {
         log.info("收到文本命令请求: text={}, userId={}, sessionId={}", 
                 request.getTextCommand(), request.getUserId(), request.getSessionId());
         
+        // 检查textCommand是否为空，如果为空则尝试从text字段获取
+        String textCommand = request.getTextCommand();
+        if (textCommand == null || textCommand.trim().isEmpty()) {
+            // 尝试从context中获取text字段
+            if (request.getContext() != null && request.getContext().containsKey("text")) {
+                textCommand = (String) request.getContext().get("text");
+                log.info("从context中获取到text字段: {}", textCommand);
+            }
+        }
+        
+        if (textCommand == null || textCommand.trim().isEmpty()) {
+            log.error("文本命令为空，无法处理");
+            VoiceCommandResponse errorResponse = VoiceCommandResponse.builder()
+                .success(false)
+                .errorMessage("文本命令不能为空")
+                .timestamp(System.currentTimeMillis())
+                .statusCode(400)
+                .build();
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+        
         try {
             // 设置默认值
             if (request.getLanguageCode() == null) request.setLanguageCode("zh-CN");
@@ -95,7 +122,7 @@ public class VoiceCommandController {
             if (request.getSessionId() == null) request.setSessionId("session_" + System.currentTimeMillis());
             
             VoiceCommandResponse response = voiceCommandService.processTextCommand(
-                request.getTextCommand(), request.getLanguageCode(), 
+                textCommand, request.getLanguageCode(), 
                 request.getUserId(), request.getSessionId());
             
             return ResponseEntity.ok(response);
@@ -178,6 +205,47 @@ public class VoiceCommandController {
     }
     
     /**
+     * 获取功能知识库
+     * 
+     * @return 功能知识库信息
+     */
+    @GetMapping("/knowledge-base")
+    public ResponseEntity<Map<String, Object>> getKnowledgeBase() {
+        log.info("获取功能知识库");
+        
+        try {
+            if (functionKnowledgeService.isKnowledgeBaseLoaded()) {
+                List<FunctionInfo> functions = functionKnowledgeService.getAllFunctions();
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("totalFunctions", functions.size());
+                response.put("functions", functions);
+                response.put("timestamp", System.currentTimeMillis());
+                
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("errorMessage", "功能知识库未加载");
+                errorResponse.put("timestamp", System.currentTimeMillis());
+                
+                return ResponseEntity.status(500).body(errorResponse);
+            }
+            
+        } catch (Exception e) {
+            log.error("获取功能知识库失败", e);
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("errorMessage", "获取功能知识库失败：" + e.getMessage());
+            errorResponse.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.status(500).body(errorResponse);
+        }
+    }
+    
+    /**
      * 健康检查
      * 
      * @return 服务状态
@@ -187,8 +255,8 @@ public class VoiceCommandController {
         Map<String, Object> health = new HashMap<>();
         health.put("status", "UP");
         health.put("service", "Voice Command Microservice");
-        health.put("timestamp", System.currentTimeMillis());
         health.put("version", "1.0.0");
+        health.put("timestamp", System.currentTimeMillis());
         
         return ResponseEntity.ok(health);
     }
