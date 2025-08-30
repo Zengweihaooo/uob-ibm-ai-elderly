@@ -920,6 +920,11 @@
                         // 显示执行结果
                         if (result.execution && result.execution.success) {
                             addMessage('assistant', result.feedbackText || '命令执行成功！');
+                            
+                            // 如果是日程添加功能，发送页面间通信消息
+                            if (result.intent.functionName === 'add_schedule') {
+                                sendScheduleAddedMessage(result);
+                            }
                         } else {
                             addMessage('assistant', result.errorMessage || '命令执行失败');
                         }
@@ -1319,6 +1324,33 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadHealthRecords();
         });
+
+        // 页面间通信：发送日程添加成功消息
+        function sendScheduleAddedMessage(result) {
+            try {
+                // 发送消息给其他页面
+                window.postMessage({
+                    type: 'scheduleAdded',
+                    data: {
+                        success: true,
+                        scheduleId: result.execution?.resultData?.scheduleId,
+                        message: result.feedbackText,
+                        timestamp: new Date().toISOString()
+                    }
+                }, '*');
+                
+                console.log('已发送日程添加成功消息:', {
+                    type: 'scheduleAdded',
+                    data: result.execution?.resultData
+                });
+                
+                // 显示提示信息
+                addMessage('assistant', '📅 日程已成功添加！如果您正在查看日程页面，页面将自动刷新显示新日程。');
+                
+            } catch (error) {
+                console.error('发送页面间通信消息失败:', error);
+            }
+        }
     </script>
 </body>
 </html> 

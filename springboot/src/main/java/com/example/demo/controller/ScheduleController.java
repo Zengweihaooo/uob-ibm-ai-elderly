@@ -68,11 +68,38 @@ public class ScheduleController {
                 response.put("schedule", userSchedule);
                 response.put("isGuest", false);
             } else {
-                // Guest mode - return sample data
-                Map<String, List<Map<String, Object>>> guestSchedule = scheduleService.getGuestSchedule(targetDate);
-                response.put("success", true);
-                response.put("schedule", guestSchedule);
-                response.put("isGuest", true);
+                // 即使没有认证，也尝试返回数据库中的真实数据
+                try {
+                    // 使用默认用户ID (1) 来获取数据
+                    Long defaultUserId = 1L;
+                    Map<String, List<Schedule>> realSchedule = scheduleService.getSchedulesByUserAndDate(defaultUserId, targetDate);
+                    
+                    // 检查是否有真实数据
+                    boolean hasRealData = realSchedule.values().stream()
+                            .anyMatch(list -> list != null && !list.isEmpty());
+                    
+                    if (hasRealData) {
+                        // 有真实数据，返回真实数据
+                        response.put("success", true);
+                        response.put("schedule", realSchedule);
+                        response.put("isGuest", false);
+                        response.put("message", "Real schedule data loaded");
+                    } else {
+                        // 没有真实数据，返回访客模式数据
+                        Map<String, List<Map<String, Object>>> guestSchedule = scheduleService.getGuestSchedule(targetDate);
+                        response.put("success", true);
+                        response.put("schedule", guestSchedule);
+                        response.put("isGuest", true);
+                        response.put("message", "Guest mode - no real data available");
+                    }
+                } catch (Exception e) {
+                    // 如果获取真实数据失败，回退到访客模式
+                    Map<String, List<Map<String, Object>>> guestSchedule = scheduleService.getGuestSchedule(targetDate);
+                    response.put("success", true);
+                    response.put("schedule", guestSchedule);
+                    response.put("isGuest", true);
+                    response.put("message", "Guest mode - error loading real data: " + e.getMessage());
+                }
             }
             
             return ResponseEntity.ok(response);
