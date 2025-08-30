@@ -116,8 +116,8 @@ public class FunctionRouterService {
                 userName = "用户"; // 默认用户名
             }
             
-            // 个性化邮件内容，保持原标题
-            String personalizedContent = String.format("您好！\n\n%s\n\n此邮件由%s通过AI智能助手发送。\n\n祝好！", 
+            // 个性化邮件内容，保持原标题 - 使用英文模板
+            String personalizedContent = String.format("Hello!\n\n%s\n\nThis email was sent by %s through AI Assistant.\n\nBest regards!", 
                 content, userName);
             
             // 验证必要参数
@@ -135,9 +135,9 @@ public class FunctionRouterService {
                 fromEmail, toEmail, subject, personalizedContent, userName);
             
             if (emailResponse.isSuccess()) {
-                // 构建成功反馈
+                // 构建成功反馈 - 使用英文
                 String feedbackText = String.format(
-                    "邮件发送成功！收件人：%s，主题：%s，内容：%s", 
+                    "Email sent successfully! Recipient: %s, Subject: %s, Content: %s", 
                     toEmail, subject, content);
                 
                 return FunctionExecutionResult.builder()

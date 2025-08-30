@@ -72,11 +72,13 @@ public class AIIntentAnalysisService {
         // 简单的关键词匹配逻辑
         String lowerText = userText.toLowerCase();
         
-        // 邮件发送意图检测
+        // 邮件发送意图检测 - 支持中英文关键词
         if (lowerText.contains("邮件") || lowerText.contains("email") || 
-            lowerText.contains("发送") || lowerText.contains("发邮件") ||
+            lowerText.contains("发送") || lowerText.contains("发邮件") || lowerText.contains("send") ||
+            lowerText.contains("mail") || lowerText.contains("message") ||
             (lowerText.contains("给") && (lowerText.contains("发") || lowerText.contains("发送"))) ||
-            lowerText.contains("使用发送邮件功能")) {
+            (lowerText.contains("to") && (lowerText.contains("send") || lowerText.contains("mail"))) ||
+            lowerText.contains("使用发送邮件功能") || lowerText.contains("send email")) {
             
             Map<String, Object> params = new HashMap<>();
             
@@ -161,7 +163,7 @@ public class AIIntentAnalysisService {
                     params.put("content", content);
                     params.put("subject", subject);
                     params.put("needsEmail", true);
-                    params.put("message", "识别到邮件发送意图，但需要提供收件人邮箱地址");
+                    params.put("message", "Email sending intent detected, but recipient email address is required");
                     params.put("searchedDatabase", true);
                     
                     // 添加用户信息用于邮件个性化
@@ -244,9 +246,15 @@ public class AIIntentAnalysisService {
         // 尝试多种模式提取内容
         String content = null;
         
-        // 模式1: "内容是[内容]"
-        if (lowerText.contains("内容是")) {
-            int start = lowerText.indexOf("内容是") + 4;
+        // 模式1: "内容是[内容]" 或 "content is [内容]"
+        if (lowerText.contains("内容是") || lowerText.contains("content is")) {
+            int start;
+            if (lowerText.contains("内容是")) {
+                start = text.indexOf("内容是") + 4;
+            } else {
+                start = text.indexOf("content is") + 12;
+            }
+            
             if (start < text.length()) {
                 content = text.substring(start).trim();
                 // 移除邮箱地址部分
@@ -258,9 +266,12 @@ public class AIIntentAnalysisService {
             }
         }
         
-        // 模式2: "发送[内容]"
-        if (lowerText.contains("发送")) {
-            int start = lowerText.indexOf("发送") + 2;
+        // 模式2: "发送[内容]" 或 "send [内容]"
+        if (lowerText.contains("发送") || lowerText.contains("send")) {
+            int start = lowerText.indexOf("发送");
+            if (start == -1) start = lowerText.indexOf("send");
+            start += (lowerText.contains("发送") ? 2 : 4);
+            
             if (start < text.length()) {
                 content = text.substring(start).trim();
                 // 移除邮箱地址部分
@@ -272,9 +283,12 @@ public class AIIntentAnalysisService {
             }
         }
         
-        // 模式3: "说[内容]"
-        if (lowerText.contains("说")) {
-            int start = lowerText.indexOf("说") + 1;
+        // 模式3: "说[内容]" 或 "say [内容]"
+        if (lowerText.contains("说") || lowerText.contains("say")) {
+            int start = lowerText.indexOf("说");
+            if (start == -1) start = lowerText.indexOf("say");
+            start += (lowerText.contains("说") ? 1 : 3);
+            
             if (start < text.length()) {
                 content = text.substring(start).trim();
                 content = removeEmailFromContent(content);
@@ -314,16 +328,24 @@ public class AIIntentAnalysisService {
         // 尝试提取主题
         String subject = null;
         
-        // 模式1: "主题是[主题]"
-        if (lowerText.contains("主题是")) {
-            int start = lowerText.indexOf("主题是") + 4;
+        // 模式1: "主题是[主题]" 或 "subject is [主题]"
+        if (lowerText.contains("主题是") || lowerText.contains("subject is")) {
+            int start;
+            if (lowerText.contains("主题是")) {
+                start = text.indexOf("主题是") + 4;
+            } else {
+                start = text.indexOf("subject is") + 12;
+            }
+            
             if (start < text.length()) {
                 // 找到下一个关键词的位置
                 int end = text.length();
-                if (lowerText.contains("内容是")) {
-                    end = lowerText.indexOf("内容是");
-                } else if (lowerText.contains("内容")) {
-                    end = lowerText.indexOf("内容");
+                if (lowerText.contains("内容是") || lowerText.contains("content is")) {
+                    end = text.indexOf("内容是");
+                    if (end == -1) end = text.indexOf("content is");
+                } else if (lowerText.contains("内容") || lowerText.contains("content")) {
+                    end = text.indexOf("内容");
+                    if (end == -1) end = text.indexOf("content");
                 }
                 
                 if (start < end) {
@@ -340,7 +362,7 @@ public class AIIntentAnalysisService {
         
         // 如果没有找到主题，返回默认主题
         log.info("未找到明确的主题，使用默认主题");
-        return "来自AI助手的消息";
+        return "Message from AI Assistant";
     }
     
     // 从内容中移除邮箱地址和无关关键词
@@ -820,19 +842,28 @@ public class AIIntentAnalysisService {
         }
         
         // 如果没有邮箱地址，尝试提取姓名
-        // 模式1: "给[姓名]发送邮件"
-        if (text.contains("给")) {
-            int start = text.indexOf("给") + 1;
+        // 模式1: "给[姓名]发送邮件" 或 "to [姓名] send email"
+        if (text.contains("给") || text.toLowerCase().contains("to")) {
+            int start = -1;
+            if (text.contains("给")) {
+                start = text.indexOf("给") + 1;
+            } else {
+                start = text.toLowerCase().indexOf("to") + 2;
+            }
+            
             if (start < text.length()) {
                 String afterGiving = text.substring(start);
                 // 找到下一个关键词的位置
                 int end = afterGiving.length();
-                if (afterGiving.contains("发送")) {
+                if (afterGiving.contains("发送") || afterGiving.toLowerCase().contains("send")) {
                     end = afterGiving.indexOf("发送");
-                } else if (afterGiving.contains("发邮件")) {
+                    if (end == -1) end = afterGiving.toLowerCase().indexOf("send");
+                } else if (afterGiving.contains("发邮件") || afterGiving.toLowerCase().contains("email")) {
                     end = afterGiving.indexOf("发邮件");
-                } else if (afterGiving.contains("邮件")) {
+                    if (end == -1) end = afterGiving.toLowerCase().indexOf("email");
+                } else if (afterGiving.contains("邮件") || afterGiving.toLowerCase().contains("mail")) {
                     end = afterGiving.indexOf("邮件");
+                    if (end == -1) end = afterGiving.toLowerCase().indexOf("mail");
                 }
                 
                 if (end < afterGiving.length()) {
