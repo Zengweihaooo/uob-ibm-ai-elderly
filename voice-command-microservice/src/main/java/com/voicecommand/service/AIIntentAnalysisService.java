@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.time.LocalDate;
 
 /**
  * AI意图分析服务
@@ -187,6 +188,66 @@ public class AIIntentAnalysisService {
             }
         }
         
+        // 重要日期管理意图检测 - 支持中英文关键词（优先级更高）
+        if (lowerText.contains("重要日期") || lowerText.contains("important date") || 
+            lowerText.contains("生日") || lowerText.contains("birthday") ||
+            lowerText.contains("纪念日") || lowerText.contains("anniversary") ||
+            lowerText.contains("节日") || lowerText.contains("holiday") ||
+            (lowerText.contains("添加") || lowerText.contains("add") || lowerText.contains("设置") || lowerText.contains("set")) &&
+            (lowerText.contains("生日") || lowerText.contains("birthday") || lowerText.contains("纪念日") || lowerText.contains("anniversary"))) {
+            
+            Map<String, Object> params = new HashMap<>();
+            
+            // 智能提取重要日期信息
+            String title = extractImportantDateTitle(userText);
+            String date = extractImportantDateDate(userText);
+            String type = extractImportantDateType(userText);
+            String description = extractImportantDateDescription(userText);
+            
+            if (title == null || title.isEmpty()) {
+                log.warn("无法提取有效的重要日期标题");
+                return IntentAnalysisResult.builder()
+                    .functionName("unknown")
+                    .confidence(0.0)
+                    .reasoning("本地分析：无法识别有效的重要日期标题")
+                    .originalText(userText)
+                    .analysisTimestamp(System.currentTimeMillis())
+                    .aiModel("local-fallback")
+                    .build();
+            }
+            
+            // 设置参数
+            params.put("title", title);
+            if (date != null && !date.isEmpty()) {
+                params.put("date", date);
+            }
+            if (type != null && !type.isEmpty()) {
+                params.put("type", type);
+            }
+            if (description != null && !description.isEmpty()) {
+                params.put("description", description);
+            }
+            
+            // 添加用户信息
+            String userName = extractUserNameFromContext(context);
+            params.put("userName", userName);
+            params.put("userId", extractUserIdFromContext(context));
+            
+            log.info("本地分析结果 - 功能: add_important_date, 标题: {}, 日期: {}, 类型: {}, 用户名: {}", 
+                title, date, type, userName);
+            
+            return IntentAnalysisResult.builder()
+                .functionName("add_important_date")
+                .confidence(0.9)
+                .parameters(params)
+                .reasoning("基于关键词'重要日期'、'生日'、'纪念日'等识别为重要日期管理意图，包含标题、日期、类型等信息")
+                .knowledgeUsed("本地关键词匹配分析")
+                .originalText(userText)
+                .analysisTimestamp(System.currentTimeMillis())
+                .aiModel("local-fallback")
+                .build();
+        }
+        
         // 日程管理意图检测 - 支持中英文关键词
         if (lowerText.contains("日程") || lowerText.contains("schedule") || 
             lowerText.contains("安排") || lowerText.contains("添加") || lowerText.contains("add") ||
@@ -254,6 +315,8 @@ public class AIIntentAnalysisService {
                 .aiModel("local-fallback")
                 .build();
         }
+        
+
         
         // 其他意图可以在这里添加...
         
@@ -1284,5 +1347,239 @@ public class AIIntentAnalysisService {
         // 默认优先级
         log.info("未找到明确的优先级，使用默认优先级: medium");
         return "medium";
+    }
+    
+    // ==================== 重要日期参数提取方法 ====================
+    
+    /**
+     * 智能提取重要日期标题
+     */
+    private String extractImportantDateTitle(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // 模式1: "添加[标题]的生日" 或 "add [title] birthday"
+        if (lowerText.contains("的生日") || lowerText.contains(" birthday")) {
+            int end;
+            if (lowerText.contains("的生日")) {
+                end = text.indexOf("的生日");
+            } else {
+                end = text.indexOf(" birthday");
+            }
+            
+            if (end > 0) {
+                // 向前查找标题开始位置
+                int start = 0;
+                if (lowerText.contains("添加")) {
+                    start = text.indexOf("添加") + 2;
+                } else if (lowerText.contains("add")) {
+                    start = text.indexOf("add") + 3;
+                } else if (lowerText.contains("设置")) {
+                    start = text.indexOf("设置") + 2;
+                } else if (lowerText.contains("set")) {
+                    start = text.indexOf("set") + 3;
+                }
+                
+                if (start < end) {
+                    String title = text.substring(start, end).trim();
+                    if (!title.isEmpty()) {
+                        log.info("模式1提取重要日期标题: {}", title);
+                        return title;
+                    }
+                }
+            }
+        }
+        
+        // 模式2: "添加[标题]纪念日" 或 "add [title] anniversary"
+        if (lowerText.contains("纪念日") || lowerText.contains(" anniversary")) {
+            int end;
+            if (lowerText.contains("纪念日")) {
+                end = text.indexOf("纪念日");
+            } else {
+                end = text.indexOf(" anniversary");
+            }
+            
+            if (end > 0) {
+                int start = 0;
+                if (lowerText.contains("添加")) {
+                    start = text.indexOf("添加") + 2;
+                } else if (lowerText.contains("add")) {
+                    start = text.indexOf("add") + 3;
+                }
+                
+                if (start < end) {
+                    String title = text.substring(start, end).trim();
+                    if (!title.isEmpty()) {
+                        log.info("模式2提取重要日期标题: {}", title);
+                        return title;
+                    }
+                }
+            }
+        }
+        
+        // 模式3: 直接提取标题（如果没有特定关键词）
+        String[] keywords = {"添加", "add", "设置", "set"};
+        for (String keyword : keywords) {
+            if (lowerText.contains(keyword)) {
+                int start = text.indexOf(keyword) + keyword.length();
+                if (start < text.length()) {
+                    String title = text.substring(start).trim();
+                    // 移除日期和时间部分
+                    if (title.contains("是") || title.contains("is")) {
+                        int dateIndex = title.indexOf("是");
+                        if (dateIndex > 0) {
+                            title = title.substring(0, dateIndex).trim();
+                        }
+                    }
+                    if (!title.isEmpty()) {
+                        log.info("模式3提取重要日期标题: {}", title);
+                        return title;
+                    }
+                }
+            }
+        }
+        
+        log.warn("无法提取重要日期标题");
+        return null;
+    }
+    
+    /**
+     * 智能提取重要日期日期
+     */
+    private String extractImportantDateDate(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // 模式1: "是[日期]" 或 "is [date]"
+        if (lowerText.contains("是") || lowerText.contains("is")) {
+            int start;
+            if (lowerText.contains("是")) {
+                start = text.indexOf("是") + 1;
+            } else {
+                start = text.indexOf("is") + 2;
+            }
+            
+            if (start < text.length()) {
+                String datePart = text.substring(start).trim();
+                
+                // 尝试解析日期
+                String date = parseDateFromText(datePart);
+                if (date != null) {
+                    log.info("模式1提取重要日期日期: {}", date);
+                    return date;
+                }
+            }
+        }
+        
+        // 模式2: 直接查找日期格式
+        String date = parseDateFromText(text);
+        if (date != null) {
+            log.info("模式2提取重要日期日期: {}", date);
+            return date;
+        }
+        
+        log.warn("无法提取重要日期日期");
+        return null;
+    }
+    
+    /**
+     * 智能提取重要日期类型
+     */
+    private String extractImportantDateType(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // 根据关键词判断类型
+        if (lowerText.contains("生日") || lowerText.contains("birthday")) {
+            return "birthday";
+        } else if (lowerText.contains("纪念日") || lowerText.contains("anniversary")) {
+            return "anniversary";
+        } else if (lowerText.contains("节日") || lowerText.contains("holiday")) {
+            return "holiday";
+        } else if (lowerText.contains("自定义") || lowerText.contains("custom")) {
+            return "custom";
+        }
+        
+        // 默认类型
+        log.info("未找到明确的类型，使用默认类型: custom");
+        return "custom";
+    }
+    
+    /**
+     * 智能提取重要日期描述
+     */
+    private String extractImportantDateDescription(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // 尝试提取描述
+        String description = null;
+        
+        // 模式1: "描述是[内容]" 或 "description is [内容]"
+        if (lowerText.contains("描述是") || lowerText.contains("description is")) {
+            int start;
+            if (lowerText.contains("描述是")) {
+                start = text.indexOf("描述是") + 4;
+            } else {
+                start = text.indexOf("description is") + 15;
+            }
+            
+            if (start < text.length()) {
+                description = text.substring(start).trim();
+                if (!description.isEmpty()) {
+                    log.info("模式1提取重要日期描述: {}", description);
+                    return description;
+                }
+            }
+        }
+        
+        // 如果没有找到描述，返回null
+        log.info("未找到明确的重要日期描述");
+        return null;
+    }
+    
+    /**
+     * 从文本中解析日期
+     */
+    private String parseDateFromText(String text) {
+        try {
+            // 移除多余的空格
+            text = text.trim();
+            
+            // 尝试解析各种日期格式
+            if (text.matches("\\d{1,2}月\\d{1,2}日")) {
+                // 中文格式：12月25日
+                String[] parts = text.split("[月日]");
+                if (parts.length >= 2) {
+                    int month = Integer.parseInt(parts[0]);
+                    int day = Integer.parseInt(parts[1]);
+                    // 假设是明年
+                    int year = LocalDate.now().getYear() + 1;
+                    return String.format("%d-%02d-%02d", year, month, day);
+                }
+            } else if (text.matches("\\d{1,2}/\\d{1,2}")) {
+                // 英文格式：12/25
+                String[] parts = text.split("/");
+                if (parts.length >= 2) {
+                    int month = Integer.parseInt(parts[0]);
+                    int day = Integer.parseInt(parts[1]);
+                    int year = LocalDate.now().getYear() + 1;
+                    return String.format("%d-%02d-%02d", year, month, day);
+                }
+            } else if (text.matches("\\d{4}-\\d{1,2}-\\d{1,2}")) {
+                // 标准格式：2025-12-25
+                return text;
+            }
+            
+            // 尝试解析相对日期
+            if (text.contains("明天")) {
+                return LocalDate.now().plusDays(1).toString();
+            } else if (text.contains("后天")) {
+                return LocalDate.now().plusDays(2).toString();
+            } else if (text.contains("下周")) {
+                return LocalDate.now().plusWeeks(1).toString();
+            }
+            
+        } catch (Exception e) {
+            log.error("解析日期失败: {}", e.getMessage());
+        }
+        
+        return null;
     }
 }

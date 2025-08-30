@@ -96,6 +96,40 @@
       "endpoint": "/api/schedule/activity"
     },
     {
+      "name": "add_important_date",
+      "description": "添加重要日期功能",
+      "parameters": {
+        "title": {
+          "type": "string",
+          "required": true,
+          "description": "重要日期标题"
+        },
+        "date": {
+          "type": "string",
+          "required": true,
+          "description": "重要日期（YYYY-MM-DD格式）"
+        },
+        "type": {
+          "type": "string",
+          "required": true,
+          "description": "重要日期类型（birthday, anniversary, holiday, custom）"
+        },
+        "description": {
+          "type": "string",
+          "required": false,
+          "description": "重要日期描述（可选）"
+        }
+      },
+      "examples": [
+        "添加张三的生日是12月25日",
+        "设置结婚纪念日是6月15日",
+        "添加春节是2月10日",
+        "设置妈妈生日是3月8日"
+      ],
+      "keywords": ["重要日期", "生日", "纪念日", "节日", "important date", "birthday", "anniversary", "holiday", "添加", "设置"],
+      "endpoint": "/api/important-dates/add"
+    },
+    {
       "name": "set_reminder",
       "description": "设置提醒功能",
       "parameters": {

@@ -28,6 +28,9 @@ public class FunctionRouterService {
     @Autowired
     private ScheduleManagementService scheduleManagementService;
     
+    @Autowired
+    private ImportantDateManagementService importantDateManagementService;
+    
     /**
      * 执行功能
      * 
@@ -51,6 +54,10 @@ public class FunctionRouterService {
                     
                 case "add_schedule":
                     result = executeAddSchedule(intent);
+                    break;
+                    
+                case "add_important_date":
+                    result = executeAddImportantDate(intent);
                     break;
                     
                 case "health_check":
@@ -422,5 +429,95 @@ public class FunctionRouterService {
             .errorMessage("宠物交互功能暂未实现")
             .status(FunctionExecutionResult.ExecutionStatus.FAILED)
             .build();
+    }
+    
+    /**
+     * 执行添加重要日期功能
+     */
+    private FunctionExecutionResult executeAddImportantDate(IntentAnalysisResult intent) {
+        log.info("开始执行添加重要日期功能，参数: {}", intent.getParameters());
+        
+        try {
+            Map<String, Object> params = intent.getParameters();
+            
+            // 提取重要日期参数
+            String title = extractScheduleParameter(params, "title", intent.getOriginalText());
+            String date = extractScheduleParameter(params, "date", intent.getOriginalText());
+            String type = extractScheduleParameter(params, "type", intent.getOriginalText());
+            String description = extractScheduleParameter(params, "description", intent.getOriginalText());
+            
+            // 验证必要参数
+            if (title == null || title.trim().isEmpty()) {
+                return FunctionExecutionResult.builder()
+                    .functionName("add_important_date")
+                    .success(false)
+                    .errorMessage("缺少必要参数：重要日期标题")
+                    .status(FunctionExecutionResult.ExecutionStatus.FAILED)
+                    .build();
+            }
+            
+            if (date == null || date.trim().isEmpty()) {
+                return FunctionExecutionResult.builder()
+                    .functionName("add_important_date")
+                    .success(false)
+                    .errorMessage("缺少必要参数：重要日期")
+                    .status(FunctionExecutionResult.ExecutionStatus.FAILED)
+                    .build();
+            }
+            
+            if (type == null || type.trim().isEmpty()) {
+                type = "custom"; // 默认类型
+            }
+            
+            // 构建重要日期数据
+            Map<String, Object> importantDateData = new HashMap<>();
+            importantDateData.put("title", title);
+            importantDateData.put("date", date);
+            importantDateData.put("type", type);
+            if (description != null && !description.trim().isEmpty()) {
+                importantDateData.put("description", description);
+            }
+            
+            // 调用重要日期管理服务
+            ImportantDateManagementService.ImportantDateResponse response = 
+                importantDateManagementService.addImportantDate(importantDateData);
+            
+            if (response.isSuccess()) {
+                log.info("重要日期添加成功: {}", response.getMessage());
+                
+                // 构建成功结果
+                Map<String, Object> resultData = new HashMap<>();
+                resultData.put("importantDateId", response.getImportantDateId());
+                resultData.put("title", title);
+                resultData.put("date", date);
+                resultData.put("type", type);
+                
+                return FunctionExecutionResult.builder()
+                    .functionName("add_important_date")
+                    .success(true)
+                    .feedbackText("重要日期添加成功！标题：" + title + "，日期：" + date + "，类型：" + type)
+                    .resultData(resultData)
+                    .status(FunctionExecutionResult.ExecutionStatus.COMPLETED)
+                    .build();
+                    
+            } else {
+                log.error("重要日期添加失败: {}", response.getMessage());
+                return FunctionExecutionResult.builder()
+                    .functionName("add_important_date")
+                    .success(false)
+                    .errorMessage("重要日期添加失败：" + response.getMessage())
+                    .status(FunctionExecutionResult.ExecutionStatus.FAILED)
+                    .build();
+                }
+                
+        } catch (Exception e) {
+            log.error("执行添加重要日期功能时发生异常: {}", e.getMessage(), e);
+            return FunctionExecutionResult.builder()
+                .functionName("add_important_date")
+                .success(false)
+                .errorMessage("重要日期添加失败：" + e.getMessage())
+                .status(FunctionExecutionResult.ExecutionStatus.FAILED)
+                .build();
+        }
     }
 }
