@@ -424,6 +424,347 @@ public class HealthService {
     
     // ========== 新增共享功能结束 ==========
     
+    // ========== 健康功能与Email集成优化 ==========
+    
+    /**
+     * 发送每日健康检查提醒邮件
+     * @param userId 用户ID
+     * @return 是否发送成功
+     */
+    public boolean sendDailyHealthCheckReminder(Long userId) {
+        try {
+            User user = userService.getUserById(userId);
+            if (user == null) {
+                System.err.println("用户不存在：" + userId);
+                return false;
+            }
+            
+            // 检查今天是否已有健康记录
+            List<HealthRecord> todayRecords = getTodayRecords(userId);
+            if (!todayRecords.isEmpty()) {
+                System.out.println("用户 " + userId + " 今天已有健康记录，跳过提醒");
+                return true;
+            }
+            
+            // 发送提醒邮件给用户
+            String subject = "每日健康检查提醒";
+            String message = buildDailyHealthCheckMessage(user);
+            emailService.sendDailyHealthCheckReminderEmail(user.getEmail(), subject, message);
+            
+            // 如果用户没有健康记录，也通知家庭成员
+            List<FamilyContact> emergencyContacts = familyService.getEmergencyContacts(userId);
+            for (FamilyContact contact : emergencyContacts) {
+                if (contact.getEmail() != null) {
+                    String familySubject = "健康检查提醒 - " + user.getName();
+                    String familyMessage = buildFamilyHealthCheckMessage(user, contact.getName());
+                    emailService.sendDailyHealthCheckReminderEmail(contact.getEmail(), familySubject, familyMessage);
+                }
+            }
+            
+            System.out.println("每日健康检查提醒已发送给用户 " + userId);
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("发送每日健康检查提醒失败：" + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * 发送健康数据汇总报告
+     * @param userId 用户ID
+     * @param reportType 报告类型（daily, weekly, monthly）
+     * @return 是否发送成功
+     */
+    public boolean sendHealthReport(Long userId, String reportType) {
+        try {
+            User user = userService.getUserById(userId);
+            if (user == null) {
+                return false;
+            }
+            
+            // 生成健康报告数据
+            Map<String, Object> reportData = generateHealthReport(userId, reportType);
+            
+            // 发送给用户
+            String subject = "健康数据报告 - " + getReportTypeDisplayName(reportType);
+            String message = buildHealthReportMessage(user, reportData, reportType);
+            emailService.sendCustomEmail(user.getEmail(), subject, message, "健康助手");
+            
+            // 发送给家庭成员（如果用户同意）
+            List<FamilyContact> familyContacts = familyService.getFamilyContacts(userId);
+            for (FamilyContact contact : familyContacts) {
+                if (contact.getEmail() != null && contact.getIsEmergencyContact()) {
+                    String familySubject = "健康报告 - " + user.getName() + " - " + getReportTypeDisplayName(reportType);
+                    String familyMessage = buildFamilyHealthReportMessage(user, reportData, reportType, contact.getName());
+                    emailService.sendCustomEmail(contact.getEmail(), familySubject, familyMessage, "健康助手");
+                }
+            }
+            
+            System.out.println("健康报告已发送给用户 " + userId);
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("发送健康报告失败：" + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * 发送健康趋势分析邮件
+     * @param userId 用户ID
+     * @param days 分析天数
+     * @return 是否发送成功
+     */
+    public boolean sendHealthTrendAnalysis(Long userId, int days) {
+        try {
+            User user = userService.getUserById(userId);
+            if (user == null) {
+                return false;
+            }
+            
+            // 获取历史数据
+            LocalDateTime endDate = LocalDateTime.now();
+            LocalDateTime startDate = endDate.minusDays(days);
+            String startIso = startDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            String endIso = endDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            
+            List<HealthRecord> records = healthRecordMapper.listByUserAndRange(userId, startIso, endIso);
+            
+            // 分析趋势
+            Map<String, Object> trendAnalysis = analyzeHealthTrends(records, days);
+            
+            // 发送分析报告
+            String subject = "健康趋势分析报告 - 最近" + days + "天";
+            String message = buildTrendAnalysisMessage(user, trendAnalysis, days);
+            emailService.sendCustomEmail(user.getEmail(), subject, message, "健康分析师");
+            
+            System.out.println("健康趋势分析已发送给用户 " + userId);
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("发送健康趋势分析失败：" + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * 构建每日健康检查提醒消息
+     */
+    private String buildDailyHealthCheckMessage(User user) {
+        StringBuilder message = new StringBuilder();
+        message.append("<html><body style='font-family: Arial, sans-serif; line-height: 1.6;'>");
+        message.append("<h2 style='color: #4CAF50;'>🏥 每日健康检查提醒</h2>");
+        message.append("<p>亲爱的 ").append(user.getName() != null ? user.getName() : "用户").append("，</p>");
+        message.append("<p>现在是您的每日健康检查时间！请记得记录以下健康数据：</p>");
+        message.append("<ul>");
+        message.append("<li>💓 血压测量</li>");
+        message.append("<li>🩸 血糖检测</li>");
+        message.append("<li>👟 今日步数</li>");
+        message.append("</ul>");
+        message.append("<p>及时记录健康数据有助于我们更好地关注您的健康状况。</p>");
+        message.append("<p>祝您健康快乐！</p>");
+        message.append("<p>IBM AI 健康助手</p>");
+        message.append("</body></html>");
+        return message.toString();
+    }
+    
+    /**
+     * 构建家庭成员健康检查提醒消息
+     */
+    private String buildFamilyHealthCheckMessage(User user, String contactName) {
+        StringBuilder message = new StringBuilder();
+        message.append("<html><body style='font-family: Arial, sans-serif; line-height: 1.6;'>");
+        message.append("<h2 style='color: #FF9800;'>👨‍👩‍👧‍👦 家庭成员健康提醒</h2>");
+        message.append("<p>亲爱的 ").append(contactName).append("，</p>");
+        message.append("<p>您的家人 ").append(user.getName() != null ? user.getName() : "用户").append(" 今天还没有记录健康数据。</p>");
+        message.append("<p>请提醒他们进行每日健康检查，包括：</p>");
+        message.append("<ul>");
+        message.append("<li>血压测量</li>");
+        message.append("<li>血糖检测</li>");
+        message.append("<li>步数记录</li>");
+        message.append("</ul>");
+        message.append("<p>您的关心是家人健康的重要保障！</p>");
+        message.append("<p>IBM AI 健康助手</p>");
+        message.append("</body></html>");
+        return message.toString();
+    }
+    
+    /**
+     * 生成健康报告数据
+     */
+    private Map<String, Object> generateHealthReport(Long userId, String reportType) {
+        Map<String, Object> report = new HashMap<>();
+        
+        LocalDateTime endDate = LocalDateTime.now();
+        LocalDateTime startDate;
+        
+        switch (reportType.toLowerCase()) {
+            case "daily":
+                startDate = endDate.minusDays(1);
+                break;
+            case "weekly":
+                startDate = endDate.minusWeeks(1);
+                break;
+            case "monthly":
+                startDate = endDate.minusMonths(1);
+                break;
+            default:
+                startDate = endDate.minusDays(7);
+        }
+        
+        String startIso = startDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        String endIso = endDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        
+        List<HealthRecord> records = healthRecordMapper.listByUserAndRange(userId, startIso, endIso);
+        
+        // 统计数据
+        long totalRecords = records.size();
+        long abnormalRecords = records.stream()
+            .filter(record -> isAbnormal(record.getType(), record.getValue()))
+            .count();
+        
+        // 按类型分组
+        Map<String, Long> typeCount = new HashMap<>();
+        Map<String, Long> abnormalTypeCount = new HashMap<>();
+        
+        for (HealthRecord record : records) {
+            typeCount.merge(record.getType(), 1L, Long::sum);
+            if (isAbnormal(record.getType(), record.getValue())) {
+                abnormalTypeCount.merge(record.getType(), 1L, Long::sum);
+            }
+        }
+        
+        report.put("totalRecords", totalRecords);
+        report.put("abnormalRecords", abnormalRecords);
+        report.put("normalRecords", totalRecords - abnormalRecords);
+        report.put("typeCount", typeCount);
+        report.put("abnormalTypeCount", abnormalTypeCount);
+        report.put("startDate", startDate);
+        report.put("endDate", endDate);
+        
+        return report;
+    }
+    
+    /**
+     * 构建健康报告消息
+     */
+    private String buildHealthReportMessage(User user, Map<String, Object> reportData, String reportType) {
+        StringBuilder message = new StringBuilder();
+        message.append("<html><body style='font-family: Arial, sans-serif; line-height: 1.6;'>");
+        message.append("<h2 style='color: #2196F3;'>📊 健康数据报告</h2>");
+        message.append("<p>亲爱的 ").append(user.getName() != null ? user.getName() : "用户").append("，</p>");
+        message.append("<p>以下是您的").append(getReportTypeDisplayName(reportType)).append("健康数据汇总：</p>");
+        
+        message.append("<div style='background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;'>");
+        message.append("<h3>📈 数据概览</h3>");
+        message.append("<p><strong>总记录数：</strong>").append(reportData.get("totalRecords")).append("</p>");
+        message.append("<p><strong>正常记录：</strong>").append(reportData.get("normalRecords")).append("</p>");
+        message.append("<p><strong>异常记录：</strong>").append(reportData.get("abnormalRecords")).append("</p>");
+        message.append("</div>");
+        
+        message.append("<p>请继续保持良好的健康习惯！</p>");
+        message.append("<p>IBM AI 健康助手</p>");
+        message.append("</body></html>");
+        return message.toString();
+    }
+    
+    /**
+     * 构建家庭成员健康报告消息
+     */
+    private String buildFamilyHealthReportMessage(User user, Map<String, Object> reportData, String reportType, String contactName) {
+        StringBuilder message = new StringBuilder();
+        message.append("<html><body style='font-family: Arial, sans-serif; line-height: 1.6;'>");
+        message.append("<h2 style='color: #FF9800;'>👨‍👩‍👧‍👦 家庭成员健康报告</h2>");
+        message.append("<p>亲爱的 ").append(contactName).append("，</p>");
+        message.append("<p>以下是您的家人 ").append(user.getName() != null ? user.getName() : "用户").append(" 的").append(getReportTypeDisplayName(reportType)).append("健康报告：</p>");
+        
+        message.append("<div style='background-color: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0;'>");
+        message.append("<h3>📊 健康数据概览</h3>");
+        message.append("<p><strong>总记录数：</strong>").append(reportData.get("totalRecords")).append("</p>");
+        message.append("<p><strong>正常记录：</strong>").append(reportData.get("normalRecords")).append("</p>");
+        message.append("<p><strong>异常记录：</strong>").append(reportData.get("abnormalRecords")).append("</p>");
+        message.append("</div>");
+        
+        message.append("<p>请继续关注家人的健康状况！</p>");
+        message.append("<p>IBM AI 健康助手</p>");
+        message.append("</body></html>");
+        return message.toString();
+    }
+    
+    /**
+     * 分析健康趋势
+     */
+    private Map<String, Object> analyzeHealthTrends(List<HealthRecord> records, int days) {
+        Map<String, Object> analysis = new HashMap<>();
+        
+        // 按类型分组分析
+        Map<String, List<HealthRecord>> recordsByType = new HashMap<>();
+        for (HealthRecord record : records) {
+            recordsByType.computeIfAbsent(record.getType(), k -> new ArrayList<>()).add(record);
+        }
+        
+        Map<String, Object> typeAnalysis = new HashMap<>();
+        for (Map.Entry<String, List<HealthRecord>> entry : recordsByType.entrySet()) {
+            String type = entry.getKey();
+            List<HealthRecord> typeRecords = entry.getValue();
+            
+            Map<String, Object> analysisData = new HashMap<>();
+            analysisData.put("totalRecords", typeRecords.size());
+            analysisData.put("abnormalCount", typeRecords.stream()
+                .filter(record -> isAbnormal(record.getType(), record.getValue()))
+                .count());
+            
+            typeAnalysis.put(type, analysisData);
+        }
+        
+        analysis.put("typeAnalysis", typeAnalysis);
+        analysis.put("totalDays", days);
+        analysis.put("totalRecords", records.size());
+        
+        return analysis;
+    }
+    
+    /**
+     * 构建趋势分析消息
+     */
+    private String buildTrendAnalysisMessage(User user, Map<String, Object> trendAnalysis, int days) {
+        StringBuilder message = new StringBuilder();
+        message.append("<html><body style='font-family: Arial, sans-serif; line-height: 1.6;'>");
+        message.append("<h2 style='color: #9C27B0;'>📈 健康趋势分析</h2>");
+        message.append("<p>亲爱的 ").append(user.getName() != null ? user.getName() : "用户").append("，</p>");
+        message.append("<p>以下是您最近").append(days).append("天的健康趋势分析：</p>");
+        
+        message.append("<div style='background-color: #f3e5f5; padding: 20px; border-radius: 8px; margin: 20px 0;'>");
+        message.append("<h3>📊 趋势概览</h3>");
+        message.append("<p><strong>分析天数：</strong>").append(days).append("天</p>");
+        message.append("<p><strong>总记录数：</strong>").append(trendAnalysis.get("totalRecords")).append("</p>");
+        message.append("</div>");
+        
+        message.append("<p>请根据分析结果调整您的健康管理计划！</p>");
+        message.append("<p>IBM AI 健康分析师</p>");
+        message.append("</body></html>");
+        return message.toString();
+    }
+    
+    /**
+     * 获取报告类型显示名称
+     */
+    private String getReportTypeDisplayName(String reportType) {
+        switch (reportType.toLowerCase()) {
+            case "daily":
+                return "每日";
+            case "weekly":
+                return "每周";
+            case "monthly":
+                return "每月";
+            default:
+                return "定期";
+        }
+    }
+    
+    // ========== 健康功能与Email集成优化结束 ==========
+    
     // ========== 其他辅助方法 ==========
     
     /**

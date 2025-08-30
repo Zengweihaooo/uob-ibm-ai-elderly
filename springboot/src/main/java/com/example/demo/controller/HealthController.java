@@ -1,5 +1,8 @@
 package com.example.demo.controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -616,4 +619,307 @@ public class HealthController {
            }
     
     // ========== JWT测试相关接口结束 ==========
+    
+    // ========== 健康功能与Email集成API ==========
+    
+    /**
+     * 发送每日健康检查提醒
+     */
+    @PostMapping("/reminder/daily")
+    public ResponseEntity<Map<String, Object>> sendDailyHealthReminder(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            boolean success = healthService.sendDailyHealthCheckReminder(userId);
+            
+            if (success) {
+                response.put("success", true);
+                response.put("message", "Daily health check reminder sent successfully");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Failed to send daily health check reminder");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error sending daily health check reminder: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 发送健康数据报告
+     */
+    @PostMapping("/report")
+    public ResponseEntity<Map<String, Object>> sendHealthReport(
+            @RequestBody Map<String, String> reportRequest,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            String reportType = reportRequest.get("reportType"); // daily, weekly, monthly
+            if (reportType == null) {
+                response.put("success", false);
+                response.put("message", "Report type is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            boolean success = healthService.sendHealthReport(userId, reportType);
+            
+            if (success) {
+                response.put("success", true);
+                response.put("message", "Health report sent successfully");
+                response.put("reportType", reportType);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Failed to send health report");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error sending health report: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 发送健康趋势分析
+     */
+    @PostMapping("/trend-analysis")
+    public ResponseEntity<Map<String, Object>> sendHealthTrendAnalysis(
+            @RequestBody Map<String, Object> analysisRequest,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            Integer days = (Integer) analysisRequest.get("days");
+            if (days == null || days <= 0) {
+                days = 7; // 默认7天
+            }
+
+            boolean success = healthService.sendHealthTrendAnalysis(userId, days);
+            
+            if (success) {
+                response.put("success", true);
+                response.put("message", "Health trend analysis sent successfully");
+                response.put("analysisDays", days);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Failed to send health trend analysis");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error sending health trend analysis: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 获取健康数据统计信息（增强版）
+     */
+    @GetMapping("/statistics")
+    public ResponseEntity<Map<String, Object>> getHealthStatistics(
+            @RequestParam(required = false) String period, // today, week, month
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            // 根据时间段获取数据
+            List<HealthRecord> records;
+            if ("week".equals(period)) {
+                LocalDateTime startDate = LocalDateTime.now().minusWeeks(1);
+                String startIso = startDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                String endIso = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                records = healthService.history(userId, startIso, endIso);
+            } else if ("month".equals(period)) {
+                LocalDateTime startDate = LocalDateTime.now().minusMonths(1);
+                String startIso = startDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                String endIso = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                records = healthService.history(userId, startIso, endIso);
+            } else {
+                // 默认今天 - 修复时间范围计算
+                LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+                LocalDateTime endOfDay = LocalDateTime.now().toLocalDate().atTime(23, 59, 59, 999999999);
+                String startIso = startOfDay.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                String endIso = endOfDay.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                records = healthService.history(userId, startIso, endIso);
+            }
+            
+            // 计算统计信息
+            long totalRecords = records.size();
+            long abnormalRecords = records.stream()
+                .filter(record -> healthService.isAbnormal(record.getType(), record.getValue()))
+                .count();
+            
+            // 按类型分组统计
+            Map<String, Long> typeCount = new HashMap<>();
+            Map<String, Long> abnormalTypeCount = new HashMap<>();
+            
+            for (HealthRecord record : records) {
+                typeCount.merge(record.getType(), 1L, Long::sum);
+                if (healthService.isAbnormal(record.getType(), record.getValue())) {
+                    abnormalTypeCount.merge(record.getType(), 1L, Long::sum);
+                }
+            }
+            
+            response.put("success", true);
+            response.put("period", period != null ? period : "today");
+            response.put("totalRecords", totalRecords);
+            response.put("abnormalRecords", abnormalRecords);
+            response.put("normalRecords", totalRecords - abnormalRecords);
+            response.put("typeCount", typeCount);
+            response.put("abnormalTypeCount", abnormalTypeCount);
+            response.put("abnormalRate", totalRecords > 0 ? (double) abnormalRecords / totalRecords : 0.0);
+            
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error fetching health statistics: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 获取健康趋势数据
+     */
+    @GetMapping("/trends")
+    public ResponseEntity<Map<String, Object>> getHealthTrends(
+            @RequestParam(defaultValue = "7") int days,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            // 获取指定天数的数据
+            LocalDateTime endDate = LocalDateTime.now();
+            LocalDateTime startDate = endDate.minusDays(days);
+            String startIso = startDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            String endIso = endDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            
+            List<HealthRecord> records = healthService.history(userId, startIso, endIso);
+            
+            // 按日期分组
+            Map<String, List<HealthRecord>> recordsByDate = new HashMap<>();
+            for (HealthRecord record : records) {
+                String dateKey = record.getRecordTime().toLocalDate().toString();
+                recordsByDate.computeIfAbsent(dateKey, k -> new ArrayList<>()).add(record);
+            }
+            
+            // 生成趋势数据
+            List<Map<String, Object>> trendData = new ArrayList<>();
+            for (int i = days - 1; i >= 0; i--) {
+                LocalDateTime date = endDate.minusDays(i);
+                String dateKey = date.toLocalDate().toString();
+                List<HealthRecord> dayRecords = recordsByDate.getOrDefault(dateKey, new ArrayList<>());
+                
+                Map<String, Object> dayData = new HashMap<>();
+                dayData.put("date", dateKey);
+                dayData.put("totalRecords", dayRecords.size());
+                dayData.put("abnormalRecords", dayRecords.stream()
+                    .filter(record -> healthService.isAbnormal(record.getType(), record.getValue()))
+                    .count());
+                
+                // 按类型统计
+                Map<String, Long> typeCount = new HashMap<>();
+                for (HealthRecord record : dayRecords) {
+                    typeCount.merge(record.getType(), 1L, Long::sum);
+                }
+                dayData.put("typeCount", typeCount);
+                
+                trendData.add(dayData);
+            }
+            
+            response.put("success", true);
+            response.put("days", days);
+            response.put("trendData", trendData);
+            response.put("totalRecords", records.size());
+            
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error fetching health trends: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    // ========== 健康功能与Email集成API结束 ==========
 }
