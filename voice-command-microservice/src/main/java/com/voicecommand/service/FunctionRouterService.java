@@ -25,9 +25,8 @@ public class FunctionRouterService {
     @Autowired
     private EmailServiceClient emailServiceClient;
     
-    // 其他功能服务可以在这里注入
-    // @Autowired
-    // private ScheduleService scheduleService;
+    @Autowired
+    private ScheduleManagementService scheduleManagementService;
     
     /**
      * 执行功能
@@ -229,15 +228,176 @@ public class FunctionRouterService {
     }
     
     /**
-     * 执行添加日程功能（待实现）
+     * 从参数或原始文本中提取日程参数
+     */
+    private String extractScheduleParameter(Map<String, Object> params, String paramName, String originalText) {
+        // 首先尝试从AI解析的参数中获取
+        if (params != null && params.containsKey(paramName)) {
+            return (String) params.get(paramName);
+        }
+        
+        // 如果参数中没有，尝试从原始文本中智能提取
+        return extractScheduleParameterFromText(originalText, paramName);
+    }
+    
+    /**
+     * 从原始文本中智能提取日程参数
+     */
+    private String extractScheduleParameterFromText(String text, String paramName) {
+        switch (paramName) {
+            case "title":
+                // 提取标题（简化处理）
+                if (text.contains("添加") || text.contains("add")) {
+                    int start = text.indexOf("添加");
+                    if (start == -1) start = text.indexOf("add");
+                    start += (text.contains("添加") ? 2 : 3);
+                    
+                    int end = text.length();
+                    if (text.contains("日程") || text.contains("schedule")) {
+                        end = text.indexOf("日程");
+                        if (end == -1) end = text.indexOf("schedule");
+                    }
+                    
+                    if (start < end) {
+                        return text.substring(start, end).trim();
+                    }
+                }
+                break;
+                
+            case "date":
+                // 提取日期（简化处理）
+                if (text.contains("明天")) {
+                    return java.time.LocalDate.now().plusDays(1).toString();
+                } else if (text.contains("后天")) {
+                    return java.time.LocalDate.now().plusDays(2).toString();
+                } else if (text.contains("下周")) {
+                    return java.time.LocalDate.now().plusDays(7).toString();
+                }
+                break;
+                
+            case "time":
+                // 提取时间（简化处理）
+                if (text.contains("下午") || text.contains("pm")) {
+                    if (text.contains("下午")) {
+                        int start = text.indexOf("下午") + 2;
+                        if (start < text.length()) {
+                            String afterAfternoon = text.substring(start);
+                            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)");
+                            java.util.regex.Matcher matcher = pattern.matcher(afterAfternoon);
+                            if (matcher.find()) {
+                                int hour = Integer.parseInt(matcher.group(1));
+                                return String.format("%02d:00", hour + 12);
+                            }
+                        }
+                    }
+                } else if (text.contains("早上") || text.contains("am")) {
+                    if (text.contains("早上")) {
+                        int start = text.indexOf("早上") + 2;
+                        if (start < text.length()) {
+                            String afterMorning = text.substring(start);
+                            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)");
+                            java.util.regex.Matcher matcher = pattern.matcher(afterMorning);
+                            if (matcher.find()) {
+                                int hour = Integer.parseInt(matcher.group(1));
+                                return String.format("%02d:00", hour);
+                            }
+                        }
+                    }
+                }
+                break;
+                
+            case "category":
+                // 提取类别
+                if (text.contains("早上") || text.contains("morning")) {
+                    return "morning";
+                } else if (text.contains("下午") || text.contains("afternoon")) {
+                    return "afternoon";
+                } else if (text.contains("晚上") || text.contains("evening")) {
+                    return "evening";
+                } else if (text.contains("吃药") || text.contains("medication")) {
+                    return "medication";
+                }
+                break;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * 执行添加日程功能
      */
     private FunctionExecutionResult executeAddSchedule(IntentAnalysisResult intent) {
-        return FunctionExecutionResult.builder()
-            .functionName("add_schedule")
-            .success(false)
-            .errorMessage("日程功能暂未实现")
-            .status(FunctionExecutionResult.ExecutionStatus.FAILED)
-            .build();
+        log.info("执行添加日程功能");
+        
+        try {
+            Map<String, Object> params = intent.getParameters();
+            
+            // 提取日程参数
+            String title = extractScheduleParameter(params, "title", intent.getOriginalText());
+            String date = extractScheduleParameter(params, "date", intent.getOriginalText());
+            String time = extractScheduleParameter(params, "time", intent.getOriginalText());
+            String category = extractScheduleParameter(params, "category", intent.getOriginalText());
+            String description = extractScheduleParameter(params, "description", intent.getOriginalText());
+            String priority = extractScheduleParameter(params, "priority", intent.getOriginalText());
+            String userId = extractScheduleParameter(params, "userId", intent.getOriginalText());
+            
+            // 验证必要参数
+            if (title == null || title.trim().isEmpty()) {
+                return FunctionExecutionResult.builder()
+                    .functionName("add_schedule")
+                    .success(false)
+                    .errorMessage("缺少必要参数：日程标题")
+                    .status(FunctionExecutionResult.ExecutionStatus.FAILED)
+                    .build();
+            }
+            
+            // 构建日程数据
+            Map<String, Object> scheduleData = new HashMap<>();
+            scheduleData.put("title", title);
+            scheduleData.put("date", date != null ? date : java.time.LocalDate.now().toString());
+            scheduleData.put("time", time != null ? time : "09:00");
+            scheduleData.put("category", category != null ? category : "afternoon");
+            if (description != null && !description.trim().isEmpty()) {
+                scheduleData.put("description", description);
+            }
+            scheduleData.put("priority", priority != null ? priority : "medium");
+            
+            // 调用日程管理服务
+            ScheduleManagementService.ScheduleResponse scheduleResponse = 
+                scheduleManagementService.addSchedule(scheduleData, userId != null ? userId : "1");
+            
+            if (scheduleResponse.isSuccess()) {
+                // 构建成功反馈
+                String feedbackText = String.format(
+                    "日程添加成功！标题：%s，日期：%s，时间：%s，类别：%s", 
+                    title, date, time, category);
+                
+                return FunctionExecutionResult.builder()
+                    .functionName("add_schedule")
+                    .success(true)
+                    .resultData(scheduleResponse)
+                    .feedbackText(feedbackText)
+                    .status(FunctionExecutionResult.ExecutionStatus.COMPLETED)
+                    .build();
+                    
+            } else {
+                return FunctionExecutionResult.builder()
+                    .functionName("add_schedule")
+                    .success(false)
+                    .errorMessage("日程添加失败：" + scheduleResponse.getErrorMessage())
+                    .status(FunctionExecutionResult.ExecutionStatus.FAILED)
+                    .build();
+            }
+            
+        } catch (Exception e) {
+            log.error("日程添加功能执行失败", e);
+            return FunctionExecutionResult.builder()
+                .functionName("add_schedule")
+                .success(false)
+                .errorMessage("日程添加功能执行失败：" + e.getMessage())
+                .status(FunctionExecutionResult.ExecutionStatus.FAILED)
+                .build();
+        }
     }
     
     /**

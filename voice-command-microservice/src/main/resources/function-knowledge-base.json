@@ -52,6 +52,50 @@
       "endpoint": "/api/health/check"
     },
     {
+      "name": "add_schedule",
+      "description": "添加日程安排功能",
+      "parameters": {
+        "title": {
+          "type": "string",
+          "required": true,
+          "description": "日程标题"
+        },
+        "date": {
+          "type": "string",
+          "required": true,
+          "description": "日程日期（YYYY-MM-DD格式）"
+        },
+        "time": {
+          "type": "string",
+          "required": true,
+          "description": "日程时间（HH:MM格式）"
+        },
+        "category": {
+          "type": "string",
+          "required": true,
+          "description": "日程类别（morning, afternoon, evening, medication）"
+        },
+        "description": {
+          "type": "string",
+          "required": false,
+          "description": "日程描述（可选）"
+        },
+        "priority": {
+          "type": "string",
+          "required": false,
+          "description": "优先级（high, medium, low，默认medium）"
+        }
+      },
+      "examples": [
+        "添加明天下午3点的会议日程",
+        "设置明天早上8点吃药提醒",
+        "安排后天晚上7点看电影",
+        "添加下周一上午9点的医生预约"
+      ],
+      "keywords": ["日程", "安排", "添加", "设置", "schedule", "add", "安排", "预约"],
+      "endpoint": "/api/schedule/activity"
+    },
+    {
       "name": "set_reminder",
       "description": "设置提醒功能",
       "parameters": {

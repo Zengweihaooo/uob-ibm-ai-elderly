@@ -187,6 +187,74 @@ public class AIIntentAnalysisService {
             }
         }
         
+        // 日程管理意图检测 - 支持中英文关键词
+        if (lowerText.contains("日程") || lowerText.contains("schedule") || 
+            lowerText.contains("安排") || lowerText.contains("添加") || lowerText.contains("add") ||
+            lowerText.contains("设置") || lowerText.contains("set") || lowerText.contains("预约") ||
+            lowerText.contains("提醒") || lowerText.contains("reminder") ||
+            (lowerText.contains("明天") || lowerText.contains("后天") || lowerText.contains("下周")) ||
+            (lowerText.contains("tomorrow") || lowerText.contains("next") || lowerText.contains("schedule"))) {
+            
+            Map<String, Object> params = new HashMap<>();
+            
+            // 智能提取日程信息
+            String title = extractScheduleTitle(userText);
+            String date = extractScheduleDate(userText);
+            String time = extractScheduleTime(userText);
+            String category = extractScheduleCategory(userText);
+            String description = extractScheduleDescription(userText);
+            String priority = extractSchedulePriority(userText);
+            
+            if (title == null || title.isEmpty()) {
+                log.warn("无法提取有效的日程标题");
+                return IntentAnalysisResult.builder()
+                    .functionName("unknown")
+                    .confidence(0.0)
+                    .reasoning("本地分析：无法识别有效的日程标题")
+                    .originalText(userText)
+                    .analysisTimestamp(System.currentTimeMillis())
+                    .aiModel("local-fallback")
+                    .build();
+            }
+            
+            // 设置参数
+            params.put("title", title);
+            if (date != null && !date.isEmpty()) {
+                params.put("date", date);
+            }
+            if (time != null && !time.isEmpty()) {
+                params.put("time", time);
+            }
+            if (category != null && !category.isEmpty()) {
+                params.put("category", category);
+            }
+            if (description != null && !description.isEmpty()) {
+                params.put("description", description);
+            }
+            if (priority != null && !priority.isEmpty()) {
+                params.put("priority", priority);
+            }
+            
+            // 添加用户信息
+            String userName = extractUserNameFromContext(context);
+            params.put("userName", userName);
+            params.put("userId", extractUserIdFromContext(context));
+            
+            log.info("本地分析结果 - 功能: add_schedule, 标题: {}, 日期: {}, 时间: {}, 类别: {}, 用户名: {}", 
+                title, date, time, category, userName);
+            
+            return IntentAnalysisResult.builder()
+                .functionName("add_schedule")
+                .confidence(0.9)
+                .parameters(params)
+                .reasoning("基于关键词'日程'、'安排'、'添加'等识别为日程管理意图，包含标题、日期、时间等信息")
+                .knowledgeUsed("本地关键词匹配分析")
+                .originalText(userText)
+                .analysisTimestamp(System.currentTimeMillis())
+                .aiModel("local-fallback")
+                .build();
+        }
+        
         // 其他意图可以在这里添加...
         
         return IntentAnalysisResult.builder()
@@ -942,5 +1010,279 @@ public class AIIntentAnalysisService {
         }
         
         return null;
+    }
+    
+    // ==================== 日程管理相关方法 ====================
+    
+    /**
+     * 智能提取日程标题
+     */
+    private String extractScheduleTitle(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // 尝试多种模式提取标题
+        String title = null;
+        
+        // 模式1: "添加[标题]日程" 或 "add [标题] schedule"
+        if (lowerText.contains("添加") || lowerText.contains("add")) {
+            int start;
+            if (lowerText.contains("添加")) {
+                start = lowerText.indexOf("添加") + 2;
+            } else {
+                start = lowerText.indexOf("add") + 3;
+            }
+            
+            if (start < text.length()) {
+                // 找到下一个关键词的位置
+                int end = text.length();
+                if (lowerText.contains("日程") || lowerText.contains("schedule")) {
+                    end = lowerText.indexOf("日程");
+                    if (end == -1) end = lowerText.indexOf("schedule");
+                } else if (lowerText.contains("安排") || lowerText.contains("安排")) {
+                    end = lowerText.indexOf("安排");
+                } else if (lowerText.contains("明天") || lowerText.contains("tomorrow")) {
+                    end = lowerText.indexOf("明天");
+                    if (end == -1) end = lowerText.indexOf("tomorrow");
+                } else if (lowerText.contains("后天") || lowerText.contains("next")) {
+                    end = lowerText.indexOf("后天");
+                    if (end == -1) end = lowerText.indexOf("next");
+                }
+                
+                if (start < end) {
+                    title = text.substring(start, end).trim();
+                    if (!title.isEmpty()) {
+                        log.info("模式1提取日程标题: {}", title);
+                        return title;
+                    }
+                }
+            }
+        }
+        
+        // 模式2: "安排[标题]" 或 "schedule [标题]"
+        if (lowerText.contains("安排") || lowerText.contains("schedule")) {
+            int start;
+            if (lowerText.contains("安排")) {
+                start = lowerText.indexOf("安排") + 2;
+            } else {
+                start = lowerText.indexOf("schedule") + 8;
+            }
+            
+            if (start < text.length()) {
+                title = text.substring(start).trim();
+                if (!title.isEmpty()) {
+                    log.info("模式2提取日程标题: {}", title);
+                    return title;
+                }
+            }
+        }
+        
+        log.warn("无法提取有效的日程标题");
+        return null;
+    }
+    
+    /**
+     * 智能提取日程日期
+     */
+    private String extractScheduleDate(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // 获取当前日期
+        java.time.LocalDate today = java.time.LocalDate.now();
+        
+        // 尝试提取相对日期
+        if (lowerText.contains("明天") || lowerText.contains("tomorrow")) {
+            String date = today.plusDays(1).toString();
+            log.info("提取到相对日期: 明天 -> {}", date);
+            return date;
+        } else if (lowerText.contains("后天") || lowerText.contains("next day")) {
+            String date = today.plusDays(2).toString();
+            log.info("提取到相对日期: 后天 -> {}", date);
+            return date;
+        } else if (lowerText.contains("下周") || lowerText.contains("next week")) {
+            // 下周对应的是7天后
+            String date = today.plusDays(7).toString();
+            log.info("提取到相对日期: 下周 -> {}", date);
+            return date;
+        } else if (lowerText.contains("下周") || lowerText.contains("next week")) {
+            // 下周对应的是7天后
+            String date = today.plusDays(7).toString();
+            log.info("提取到相对日期: 下周 -> {}", date);
+            return date;
+        }
+        
+        // 如果没有找到相对日期，返回今天的日期
+        log.info("未找到明确的日期，使用今天: {}", today.toString());
+        return today.toString();
+    }
+    
+    /**
+     * 智能提取日程时间
+     */
+    private String extractScheduleTime(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // 尝试提取时间
+        String time = null;
+        
+        // 模式1: "下午3点" 或 "3pm"
+        if (lowerText.contains("下午") || lowerText.contains("pm")) {
+            if (lowerText.contains("下午")) {
+                int start = lowerText.indexOf("下午") + 2;
+                if (start < text.length()) {
+                    String afterAfternoon = text.substring(start);
+                    // 提取数字
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)");
+                    java.util.regex.Matcher matcher = pattern.matcher(afterAfternoon);
+                    if (matcher.find()) {
+                        int hour = Integer.parseInt(matcher.group(1));
+                        if (hour >= 1 && hour <= 12) {
+                            time = String.format("%02d:00", hour + 12);
+                            log.info("模式1提取时间: 下午{}点 -> {}", hour, time);
+                            return time;
+                        }
+                    }
+                }
+            } else if (lowerText.contains("pm")) {
+                int start = lowerText.indexOf("pm") - 1;
+                if (start >= 0) {
+                    // 向前查找数字
+                    String beforePm = text.substring(0, start + 1);
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)\\s*pm");
+                    java.util.regex.Matcher matcher = pattern.matcher(beforePm);
+                    if (matcher.find()) {
+                        int hour = Integer.parseInt(matcher.group(1));
+                        if (hour >= 1 && hour <= 12) {
+                            time = String.format("%02d:00", hour + 12);
+                            log.info("模式1提取时间: {}pm -> {}", hour, time);
+                            return time;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 模式2: "早上8点" 或 "8am"
+        if (lowerText.contains("早上") || lowerText.contains("am")) {
+            if (lowerText.contains("早上")) {
+                int start = lowerText.indexOf("早上") + 2;
+                if (start < text.length()) {
+                    String afterMorning = text.substring(start);
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)");
+                    java.util.regex.Matcher matcher = pattern.matcher(afterMorning);
+                    if (matcher.find()) {
+                        int hour = Integer.parseInt(matcher.group(1));
+                        if (hour >= 1 && hour <= 12) {
+                            time = String.format("%02d:00", hour);
+                            log.info("模式2提取时间: 早上{}点 -> {}", hour, time);
+                            return time;
+                        }
+                    }
+                }
+            } else if (lowerText.contains("am")) {
+                int start = lowerText.indexOf("am") - 1;
+                if (start >= 0) {
+                    String beforeAm = text.substring(0, start + 1);
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)\\s*am");
+                    java.util.regex.Matcher matcher = pattern.matcher(beforeAm);
+                    if (matcher.find()) {
+                        int hour = Integer.parseInt(matcher.group(1));
+                        if (hour >= 1 && hour <= 12) {
+                            time = String.format("%02d:00", hour);
+                            log.info("模式2提取时间: {}am -> {}", hour, time);
+                            return time;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 如果没有找到时间，返回默认时间
+        log.info("未找到明确的时间，使用默认时间: 09:00");
+        return "09:00";
+    }
+    
+    /**
+     * 智能提取日程类别
+     */
+    private String extractScheduleCategory(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // 根据时间或关键词判断类别
+        if (lowerText.contains("早上") || lowerText.contains("am") || lowerText.contains("morning")) {
+            return "morning";
+        } else if (lowerText.contains("下午") || lowerText.contains("pm") || lowerText.contains("afternoon")) {
+            return "afternoon";
+        } else if (lowerText.contains("晚上") || lowerText.contains("evening") || lowerText.contains("night")) {
+            return "evening";
+        } else if (lowerText.contains("吃药") || lowerText.contains("medicine") || lowerText.contains("medication")) {
+            return "medication";
+        }
+        
+        // 如果没有找到明确类别，根据时间推断
+        String time = extractScheduleTime(text);
+        if (time != null) {
+            int hour = Integer.parseInt(time.split(":")[0]);
+            if (hour >= 6 && hour < 12) {
+                return "morning";
+            } else if (hour >= 12 && hour < 18) {
+                return "afternoon";
+            } else {
+                return "evening";
+            }
+        }
+        
+        // 默认类别
+        log.info("未找到明确的类别，使用默认类别: afternoon");
+        return "afternoon";
+    }
+    
+    /**
+     * 智能提取日程描述
+     */
+    private String extractScheduleDescription(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // 尝试提取描述
+        String description = null;
+        
+        // 模式1: "内容是[描述]" 或 "content is [描述]"
+        if (lowerText.contains("内容是") || lowerText.contains("content is")) {
+            int start;
+            if (lowerText.contains("内容是")) {
+                start = text.indexOf("内容是") + 4;
+            } else {
+                start = text.indexOf("content is") + 12;
+            }
+            
+            if (start < text.length()) {
+                description = text.substring(start).trim();
+                if (!description.isEmpty()) {
+                    log.info("模式1提取日程描述: {}", description);
+                    return description;
+                }
+            }
+        }
+        
+        // 如果没有找到描述，返回null
+        log.info("未找到明确的日程描述");
+        return null;
+    }
+    
+    /**
+     * 智能提取日程优先级
+     */
+    private String extractSchedulePriority(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // 根据关键词判断优先级
+        if (lowerText.contains("重要") || lowerText.contains("紧急") || lowerText.contains("important") || lowerText.contains("urgent")) {
+            return "high";
+        } else if (lowerText.contains("一般") || lowerText.contains("普通") || lowerText.contains("normal") || lowerText.contains("regular")) {
+            return "low";
+        }
+        
+        // 默认优先级
+        log.info("未找到明确的优先级，使用默认优先级: medium");
+        return "medium";
     }
 }
