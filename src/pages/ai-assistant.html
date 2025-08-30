@@ -925,6 +925,11 @@
                             if (result.intent.functionName === 'add_schedule') {
                                 sendScheduleAddedMessage(result);
                             }
+                            
+                            // 如果是重要日期添加功能，发送页面间通信消息
+                            if (result.intent.functionName === 'add_important_date') {
+                                sendImportantDateAddedMessage(result);
+                            }
                         } else {
                             addMessage('assistant', result.errorMessage || '命令执行失败');
                         }
@@ -1346,6 +1351,33 @@
                 
                 // 显示提示信息
                 addMessage('assistant', '📅 日程已成功添加！如果您正在查看日程页面，页面将自动刷新显示新日程。');
+                
+            } catch (error) {
+                console.error('发送页面间通信消息失败:', error);
+            }
+        }
+        
+        // 页面间通信：发送重要日期添加成功消息
+        function sendImportantDateAddedMessage(result) {
+            try {
+                // 发送消息给其他页面
+                window.postMessage({
+                    type: 'importantDateAdded',
+                    data: {
+                        success: true,
+                        importantDateId: result.execution?.resultData?.importantDateId,
+                        message: result.feedbackText,
+                        timestamp: new Date().toISOString()
+                    }
+                }, '*');
+                
+                console.log('已发送重要日期添加成功消息:', {
+                    type: 'importantDateAdded',
+                    data: result.execution?.resultData
+                });
+                
+                // 显示提示信息
+                addMessage('assistant', '🎉 重要日期已成功添加！如果您正在查看重要日期页面，页面将自动刷新显示新日期。');
                 
             } catch (error) {
                 console.error('发送页面间通信消息失败:', error);
