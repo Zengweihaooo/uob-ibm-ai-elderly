@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.example.demo.util.JwtUtil;
+import org.springframework.web.server.ResponseStatusException;
+
 /**
  * Controller for managing important dates and email reminders
  * 
@@ -26,6 +29,9 @@ public class ImportantDateController {
 
     @Autowired
     private ImportantDateService importantDateService;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
     
     // @Autowired
     // private UserService userService; // Not used currently
@@ -43,12 +49,7 @@ public class ImportantDateController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            Long userId;
-            if (requestBody.get("userId") != null) {
-                userId = Long.valueOf(requestBody.get("userId").toString());
-            } else {
-                userId = getUserIdFromToken(authHeader);
-            }
+            Long userId = requireUserId(authHeader);
             String title = (String) requestBody.get("title");
             String dateStr = (String) requestBody.get("date");
             String type = (String) requestBody.get("type");
@@ -86,7 +87,7 @@ public class ImportantDateController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long userId = getUserIdFromToken(authHeader);
+            Long userId = requireUserId(authHeader);
             List<ImportantDate> importantDates = importantDateService.getImportantDatesByUser(userId);
             response.put("success", true);
             response.put("importantDates", importantDates);
@@ -108,7 +109,7 @@ public class ImportantDateController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long userId = getUserIdFromToken(authHeader);
+            Long userId = requireUserId(authHeader);
             Map<String, Object> stats = importantDateService.getImportantDateStats(userId);
             response.put("success", true);
             response.put("stats", stats);
@@ -368,8 +369,23 @@ public class ImportantDateController {
     }
 
     // ==================== Helper ====================
-    private Long getUserIdFromToken(String authHeader) {
-        // TODO: parse JWT from Authorization header. For now, return a default user ID
-        return 1L;
+    private Long requireUserId(String authHeader) {
+        if (authHeader == null || authHeader.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing Authorization header");
+        }
+        String header = authHeader.trim();
+        String prefix = "Bearer ";
+        if (!header.regionMatches(true, 0, prefix, 0, prefix.length())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authorization must be Bearer token");
+        }
+        String token = header.substring(prefix.length()).trim();
+        if (!jwtUtil.isValidToken(token)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired JWT");
+        }
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "JWT missing userId");
+        }
+        return userId;
     }
 } 

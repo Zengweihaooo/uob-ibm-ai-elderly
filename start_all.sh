@@ -34,6 +34,13 @@ nohup ./mvnw -DskipTests spring-boot:run > "$PROJECT_DIR/backend.log" 2>&1 &
 BACKEND_PID=$!
 cd "$PROJECT_DIR"
 
+# Start voice command microservice
+echo "🎤 Starting voice command microservice..."
+cd "$PROJECT_DIR/voice-command-microservice"
+nohup ../springboot/mvnw spring-boot:run > "$PROJECT_DIR/microservice.log" 2>&1 &
+MICROSERVICE_PID=$!
+cd "$PROJECT_DIR"
+
 # Start frontend
 echo "🌐 Starting frontend (HTTP Server)..."
 nohup python3 -m http.server 3000 > "$PROJECT_DIR/frontend.log" 2>&1 &
@@ -52,6 +59,13 @@ else
     echo "❌ Backend failed to start - check backend.log"
 fi
 
+# Test microservice
+if curl -s http://localhost:8090/api/voice-command/health > /dev/null 2>&1; then
+    echo "✅ Microservice is running on http://localhost:8090"
+else
+    echo "❌ Microservice failed to start - check microservice.log"
+fi
+
 # Test frontend
 if curl -s http://localhost:3000/ > /dev/null 2>&1; then
     echo "✅ Frontend is running on http://localhost:3000"
@@ -63,16 +77,19 @@ echo ""
 echo "🎉 Services started!"
 echo "📱 Frontend: http://localhost:3000"
 echo "🔧 Backend: http://localhost:8080"
+echo "🎤 Microservice: http://localhost:8090"
 echo "🧪 Voice Test: http://localhost:3000/voice-test.html"
 echo "🤖 AI Assistant: http://localhost:3000/src/pages/ai-assistant.html"
 echo ""
 echo "📋 Process IDs:"
 echo "   Backend: $BACKEND_PID"
+echo "   Microservice: $MICROSERVICE_PID"
 echo "   Frontend: $FRONTEND_PID"
 echo ""
 echo "📄 Logs:"
 echo "   Backend: tail -f backend.log"
+echo "   Microservice: tail -f microservice.log"
 echo "   Frontend: tail -f frontend.log"
 echo ""
 echo "🛑 To stop services:"
-echo "   kill $BACKEND_PID $FRONTEND_PID"
+echo "   kill $BACKEND_PID $MICROSERVICE_PID $FRONTEND_PID"

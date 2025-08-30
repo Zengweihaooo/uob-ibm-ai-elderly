@@ -50,7 +50,7 @@ echo "========================================"
 echo ""
 
 # 注入 Google Cloud 服务账号（如存在）
-KEY_FILE="$SCRIPT_DIR/docs/keys/organic-totem-467918-a5-d17504cd5eba.json"
+KEY_FILE="/Users/zengweihao/Downloads/keys/organic-totem-467918-a5-d17504cd5eba.json"
 if [ -f "$KEY_FILE" ]; then
   export GOOGLE_APPLICATION_CREDENTIALS="$KEY_FILE"
   echo "🔐 Using Google credentials: $GOOGLE_APPLICATION_CREDENTIALS"

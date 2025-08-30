@@ -41,8 +41,9 @@ public class EmailComposeService {
             Email email = new Email(fromEmail, toEmail, subject, content);
             emailMapper.insert(email);
             
-            // Send the email
-            emailService.sendCustomEmail(toEmail, subject, content, fromEmail);
+            // Send the email with personalized sender name
+            String senderName = "AI智能助手";
+            emailService.sendCustomEmail(toEmail, subject, content, senderName);
             
             // Update email status to SENT
             email.markAsSent();

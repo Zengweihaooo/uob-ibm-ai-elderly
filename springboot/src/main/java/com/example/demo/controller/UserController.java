@@ -34,6 +34,7 @@ import java.util.HashMap;
  */
 @Controller
 @RequestMapping("/user")
+@CrossOrigin(origins = "*")
 public class UserController {
 
     @Autowired
