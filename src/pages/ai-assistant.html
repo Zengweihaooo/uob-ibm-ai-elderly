@@ -1307,9 +1307,21 @@
                 if (data.success && data.records.length > 0) {
                     data.records.forEach(record => {
                         const div = document.createElement('div');
+                        // 安全的时间格式化函数
+                        const formatTime = (timeStr) => {
+                            if (!timeStr) return '时间未知';
+                            try {
+                                const date = new Date(timeStr);
+                                if (isNaN(date.getTime())) return '时间格式错误';
+                                return date.toLocaleString('zh-CN');
+                            } catch (e) {
+                                return '时间解析错误';
+                            }
+                        };
+                        
                         div.innerHTML = `
                             <strong>${record.type}</strong>: ${record.value} ${record.unit || ''}<br>
-                            🕒 ${new Date(record.recordTime).toLocaleString()}<br>
+                            🕒 ${formatTime(record.recordTime)}<br>
                             📝 ${record.notes || '无'}<hr>`;
                         container.appendChild(div);
                     });

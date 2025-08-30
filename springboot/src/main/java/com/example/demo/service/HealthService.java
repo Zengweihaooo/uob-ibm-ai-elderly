@@ -40,9 +40,19 @@ public class HealthService {
 
     public HealthRecord addHealthRecord(Long userId, String type, String value) {
         HealthRecord r = new HealthRecord(userId, type, value);
+        
+        // 确保时间字段都有正确的值
+        LocalDateTime now = LocalDateTime.now();
         if (r.getRecordTime() == null) {
-            r.setRecordTime(LocalDateTime.now());
+            r.setRecordTime(now);
         }
+        if (r.getCreatedAt() == null) {
+            r.setCreatedAt(now);
+        }
+        if (r.getUpdatedAt() == null) {
+            r.setUpdatedAt(now);
+        }
+        
         r.setShared(false);
         r.setSharedWithUserId(null);
         r.setSharedWithRole(null);

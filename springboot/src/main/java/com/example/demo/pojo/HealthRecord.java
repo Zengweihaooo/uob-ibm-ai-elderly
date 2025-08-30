@@ -1,6 +1,7 @@
 package com.example.demo.pojo;
 
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class HealthRecord {
     private Long id;
@@ -83,6 +84,7 @@ public class HealthRecord {
         this.unit = unit;
     }
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     public LocalDateTime getRecordTime() {
         return recordTime;
     }
@@ -99,6 +101,7 @@ public class HealthRecord {
         this.notes = notes;
     }
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -107,6 +110,7 @@ public class HealthRecord {
         this.createdAt = createdAt;
     }
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
@@ -140,6 +144,7 @@ public class HealthRecord {
         this.sharedWithRole = sharedWithRole;
     }
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     public LocalDateTime getSharedAt() {
         return sharedAt;
     }
