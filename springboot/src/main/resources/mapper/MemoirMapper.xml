@@ -59,6 +59,11 @@
     SELECT * FROM memoir_project WHERE id = #{id}
   </select>
 
+  <!-- 按 title + owner 查询项目（用于种子数据幂等） -->
+  <select id="findProjectByTitleAndOwner" resultMap="MemoirProjectMap">
+    SELECT * FROM memoir_project WHERE title = #{title} AND owner = #{owner} LIMIT 1
+  </select>
+
   <!-- 按owner列出项目；owner可为空（返回所有） -->
   <select id="listProjectsByOwner" parameterType="string" resultMap="MemoirProjectMap">
     SELECT * FROM memoir_project

@@ -54,7 +54,7 @@ public class MemoirShareController {
     @PostMapping("/api/memoir/projects/{id}/share")
     public ResponseEntity<?> createShare(@PathVariable("id") Integer projectId,
                                          @RequestBody Map<String, Object> payload,
-                                         javax.servlet.http.HttpServletRequest request) {
+                                         jakarta.servlet.http.HttpServletRequest request) {
         String pin = (String) payload.get("pin");
         Integer days = payload.get("days") instanceof Number ? ((Number) payload.get("days")).intValue() : null;
         Integer max = payload.get("maxDownloads") instanceof Number ? ((Number) payload.get("maxDownloads")).intValue() : null;
