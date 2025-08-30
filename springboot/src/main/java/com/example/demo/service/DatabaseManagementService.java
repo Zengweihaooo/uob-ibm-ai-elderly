@@ -27,10 +27,10 @@ import java.util.Map;
 @Service
 public class DatabaseManagementService {
 
-    @Value("${app.database.path:springboot/data/elderly_companion.db}")
+    @Value("${app.database.path:data/elderly_companion.db}")
     private String databasePath;
 
-    @Value("${app.database.backup.path:springboot/data/backups/}")
+    @Value("${app.database.backup.path:data/backups/}")
     private String backupPath;
 
     /**
