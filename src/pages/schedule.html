@@ -2223,6 +2223,9 @@
             
             // Handle URL hash navigation (e.g., #pet)
             handleUrlHash();
+            
+            // 设置页面间通信监听器
+            setupPageCommunication();
         });
 
         // Initialize form handlers
@@ -3930,7 +3933,44 @@
             });
         }
 
-
+        // 页面间通信：监听AI助手的消息
+        function setupPageCommunication() {
+            window.addEventListener('message', function(event) {
+                console.log('收到页面间消息:', event.data);
+                
+                // 验证消息来源（可选）
+                if (event.origin !== window.location.origin && event.origin !== 'null') {
+                    console.log('消息来源验证失败:', event.origin);
+                    return;
+                }
+                
+                // 处理日程添加成功消息
+                if (event.data.type === 'scheduleAdded') {
+                    console.log('收到AI助手日程添加成功消息:', event.data);
+                    
+                    if (event.data.data && event.data.data.success) {
+                        // 显示成功提示
+                        showMessage('🎉 AI助手已成功添加新日程！正在刷新页面数据...', 'success');
+                        
+                        // 延迟一下再刷新，确保后端数据已保存
+                        setTimeout(() => {
+                            console.log('开始刷新日程数据...');
+                            // 刷新日程数据
+                            loadSchedule();
+                            
+                            // 如果当前在日历视图，也刷新日历数据
+                            if (currentView === 'week' || currentView === 'month') {
+                                loadAllActivities();
+                            }
+                            
+                            showMessage('✅ 页面数据已刷新，新日程已显示！', 'success');
+                        }, 1000);
+                    }
+                }
+            });
+            
+            console.log('页面间通信监听器已设置');
+        }
 
     </script>
 </body>
