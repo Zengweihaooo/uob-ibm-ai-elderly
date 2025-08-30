@@ -11,6 +11,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * Service class for managing email operations
@@ -422,6 +423,129 @@ public class EmailService {
             System.err.println("Error type: " + e.getClass().getSimpleName());
             e.printStackTrace();
             throw new RuntimeException("Unexpected error sending plain text email", e);
+        }
+    }
+
+    // ==================== 异步邮件发送方法 ====================
+
+    /**
+     * Send custom email asynchronously
+     * 
+     * @param toEmail The recipient's email address
+     * @param subject The email subject
+     * @param content The email content (HTML)
+     * @param senderName The sender's name (optional)
+     */
+    @Async("emailTaskExecutor")
+    public void sendCustomEmailAsync(String toEmail, String subject, String content, String senderName) {
+        try {
+            sendCustomEmail(toEmail, subject, content, senderName);
+            System.out.println("Async email sent successfully to: " + toEmail + " with subject: " + subject);
+        } catch (Exception e) {
+            System.err.println("Async email sending failed to: " + toEmail + " => " + e.getMessage());
+            // 异步方法中不抛出异常，只记录日志
+        }
+    }
+
+    /**
+     * Send verification email asynchronously
+     * 
+     * @param toEmail The recipient's email address
+     * @param verificationCode The 6-digit verification code
+     */
+    @Async("emailTaskExecutor")
+    public void sendVerificationEmailAsync(String toEmail, String verificationCode) {
+        try {
+            sendVerificationEmail(toEmail, verificationCode);
+            System.out.println("Async verification email sent successfully to: " + toEmail);
+        } catch (Exception e) {
+            System.err.println("Async verification email sending failed to: " + toEmail + " => " + e.getMessage());
+        }
+    }
+
+    /**
+     * Send health alert email asynchronously
+     * 
+     * @param toEmail The recipient's email address
+     * @param subject The email subject
+     * @param message The email message content
+     */
+    @Async("emailTaskExecutor")
+    public void sendHealthAlertEmailAsync(String toEmail, String subject, String message) {
+        try {
+            sendHealthAlertEmail(toEmail, subject, message);
+            System.out.println("Async health alert email sent successfully to: " + toEmail);
+        } catch (Exception e) {
+            System.err.println("Async health alert email sending failed to: " + toEmail + " => " + e.getMessage());
+        }
+    }
+
+    /**
+     * Send daily health check reminder email asynchronously
+     * 
+     * @param toEmail The recipient's email address
+     * @param subject The email subject
+     * @param message The email message content
+     */
+    @Async("emailTaskExecutor")
+    public void sendDailyHealthCheckReminderEmailAsync(String toEmail, String subject, String message) {
+        try {
+            sendDailyHealthCheckReminderEmail(toEmail, subject, message);
+            System.out.println("Async daily health check reminder email sent successfully to: " + toEmail);
+        } catch (Exception e) {
+            System.err.println("Async daily health check reminder email sending failed to: " + toEmail + " => " + e.getMessage());
+        }
+    }
+
+    /**
+     * Send daily plan reminder email asynchronously
+     * 
+     * @param toEmail The recipient's email address
+     * @param subject The email subject
+     * @param message The email message content
+     */
+    @Async("emailTaskExecutor")
+    public void sendDailyPlanReminderEmailAsync(String toEmail, String subject, String message) {
+        try {
+            sendDailyPlanReminderEmail(toEmail, subject, message);
+            System.out.println("Async daily plan reminder email sent successfully to: " + toEmail);
+        } catch (Exception e) {
+            System.err.println("Async daily plan reminder email sending failed to: " + toEmail + " => " + e.getMessage());
+        }
+    }
+
+    /**
+     * Send important date reminder email asynchronously
+     * 
+     * @param toEmail The recipient's email address
+     * @param userName The user's name
+     * @param importantDate The important date object
+     * @param reminderType The type of reminder (week/day)
+     */
+    @Async("emailTaskExecutor")
+    public void sendImportantDateReminderEmailAsync(String toEmail, String userName, 
+                                                   com.example.demo.pojo.ImportantDate importantDate, 
+                                                   String reminderType) {
+        try {
+            sendImportantDateReminderEmail(toEmail, userName, importantDate, reminderType);
+            System.out.println("Async important date reminder email sent successfully to: " + toEmail);
+        } catch (Exception e) {
+            System.err.println("Async important date reminder email sending failed to: " + toEmail + " => " + e.getMessage());
+        }
+    }
+
+    /**
+     * Send emails to all subscribers asynchronously
+     * 
+     * This method sends emails to all subscribers without blocking the main thread
+     */
+    @Async("emailTaskExecutor")
+    public void sendEmailsToAllAsync() {
+        try {
+            sendEmailsToAll();
+            System.out.println("Async bulk emails sent successfully to all subscribers");
+        } catch (Exception e) {
+            System.err.println("Async bulk email sending failed: " + e.getMessage());
         }
     }
 }
