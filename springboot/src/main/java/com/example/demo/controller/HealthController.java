@@ -804,9 +804,25 @@ public class HealthController {
                 // 默认今天 - 修复时间范围计算
                 LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
                 LocalDateTime endOfDay = LocalDateTime.now().toLocalDate().atTime(23, 59, 59, 999999999);
-                String startIso = startOfDay.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                String endIso = endOfDay.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                // 使用与数据库存储格式匹配的时间格式
+                String startIso = startOfDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                String endIso = endOfDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                
+                // 添加调试日志
+                System.out.println("=== 时间范围调试信息 ===");
+                System.out.println("用户ID: " + userId);
+                System.out.println("开始时间: " + startIso);
+                System.out.println("结束时间: " + endIso);
+                System.out.println("当前时间: " + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                
                 records = healthService.history(userId, startIso, endIso);
+                
+                System.out.println("查询结果记录数: " + records.size());
+                if (!records.isEmpty()) {
+                    System.out.println("第一条记录时间: " + records.get(0).getRecordTime());
+                    System.out.println("最后一条记录时间: " + records.get(records.size() - 1).getRecordTime());
+                }
+                System.out.println("=== 调试信息结束 ===");
             }
             
             // 计算统计信息
