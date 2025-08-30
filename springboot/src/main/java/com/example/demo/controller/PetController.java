@@ -465,6 +465,14 @@ public class PetController {
         String lowerMessage = userMessage.toLowerCase();
         String response;
         
+        // 改进的情感识别逻辑 - 先检查否定词
+        boolean isNegative = lowerMessage.contains("not ") || lowerMessage.contains("no ") || 
+                           lowerMessage.contains("don't ") || lowerMessage.contains("doesn't ") ||
+                           lowerMessage.contains("isn't ") || lowerMessage.contains("aren't ") ||
+                           lowerMessage.contains("can't ") || lowerMessage.contains("won't ") ||
+                           lowerMessage.contains("bad") || lowerMessage.contains("terrible") ||
+                           lowerMessage.contains("awful") || lowerMessage.contains("horrible");
+        
         // Health-related responses
         if (lowerMessage.contains("health") || lowerMessage.contains("medicine") || lowerMessage.contains("doctor")) {
             response = "Meow! 🏥 Health is very important! I can help remind you about your medications and appointments. Have you taken your medicine today?";
@@ -473,12 +481,18 @@ public class PetController {
         else if (lowerMessage.contains("schedule") || lowerMessage.contains("appointment") || lowerMessage.contains("reminder")) {
             response = "Purr! 📅 I love helping with schedules! I can see you have some activities planned. Would you like me to remind you about them?";
         }
-        // Emotional responses
-        else if (lowerMessage.contains("sad") || lowerMessage.contains("lonely") || lowerMessage.contains("tired")) {
-            response = "Meow... 🤗 I'm here for you! You're never alone when I'm around. Let's do something fun together to cheer you up!";
+        // 负面情感响应 - 优先检查
+        else if (isNegative || lowerMessage.contains("sad") || lowerMessage.contains("lonely") || 
+                lowerMessage.contains("tired") || lowerMessage.contains("depressed") || 
+                lowerMessage.contains("anxious") || lowerMessage.contains("worried") ||
+                lowerMessage.contains("angry") || lowerMessage.contains("frustrated") ||
+                lowerMessage.contains("upset") || lowerMessage.contains("disappointed")) {
+            response = "Meow... 😢 I'm sorry you're feeling this way! I'm here for you and I care about you very much. Would you like to talk about what's bothering you? I'm a good listener! 🤗";
         }
-        // Happy responses
-        else if (lowerMessage.contains("happy") || lowerMessage.contains("good") || lowerMessage.contains("great")) {
+        // 正面情感响应 - 只有在没有否定词的情况下才触发
+        else if (!isNegative && (lowerMessage.contains("happy") || lowerMessage.contains("good") || 
+                lowerMessage.contains("great") || lowerMessage.contains("wonderful") || 
+                lowerMessage.contains("excellent") || lowerMessage.contains("fantastic"))) {
             response = "Purr! 😸 I'm so happy to hear that! Your happiness makes me happy too! Let's keep this positive energy going!";
         }
         // Greeting responses
