@@ -11,8 +11,10 @@ yarn-error.log*
 target/
 **/target/
 
-# Google Cloud credentials
+# Google Cloud credentials  
 docs/keys/*.json
+# 但不忽略示例文件
+!docs/keys/*.json.example
 .env
 
 # Log files
