@@ -1,0 +1,5 @@
+[33m9120d4d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32msms-service-2.2[m[33m, [m[1;31morigin/sms-service-2.2[m[33m)[m fix 3
+[33mbac8183[m[33m ([m[1;32msms-service-2.1[m[33m)[m fix 2
+[33m4988ad3[m fix secret message
+[33m3beefd2[m change sending phone number
+[33m78e0654[m fix phone number bug

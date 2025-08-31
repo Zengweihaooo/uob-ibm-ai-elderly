@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -37,14 +39,17 @@ public class SmsService {
     
 
     
-    // Twilio配置属性
-    @Value("${app.sms.twilio.account-sid:}")
+    // Twilio配置属性 - 从TwilioConfig Bean注入
+    @Autowired
+    @Qualifier("twilioAccountSid")
     private String twilioAccountSid;
     
-    @Value("${app.sms.twilio.auth-token:}")
+    @Autowired
+    @Qualifier("twilioAuthToken") 
     private String twilioAuthToken;
     
-    @Value("${app.sms.twilio.from-number:}")
+    @Autowired
+    @Qualifier("twilioFromNumber")
     private String twilioFromNumber;
     
     // 短信验证和限制配置
