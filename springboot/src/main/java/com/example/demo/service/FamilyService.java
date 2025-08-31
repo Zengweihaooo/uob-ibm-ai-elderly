@@ -449,19 +449,72 @@ public class FamilyService {
                 return true;
             } else if ("sms".equalsIgnoreCase(messageType) && contact.getPhone() != null) {
                 String content = buildMessageContent(message, messageType, contact.getName());
+                String phoneNumber = formatPhoneNumber(contact.getPhone());
                 
                 if (DEBUG_ENABLED) {
                     System.out.println("DEBUG: 发送短信");
+                    System.out.println("原始电话号码: " + contact.getPhone());
+                    System.out.println("格式化电话号码: " + phoneNumber);
                     System.out.println("短信内容长度: " + content.length());
                 }
                 
-                smsService.sendSMS(contact.getPhone(), content);
+                Map<String, Object> smsResult = smsService.sendSMS(phoneNumber, content);
+                boolean smsSuccess = (Boolean) smsResult.getOrDefault("success", false);
                 
                 if (DEBUG_ENABLED) {
-                    System.out.println("DEBUG: 短信发送成功");
+                    System.out.println("DEBUG: 短信发送结果: " + smsSuccess);
+                    System.out.println("短信响应: " + smsResult);
                     System.out.println("========================================");
                 }
-                return true;
+                
+                return smsSuccess;
+            } else if ("general".equalsIgnoreCase(messageType)) {
+                // 对于general类型，优先发送短信，如果没有电话则发送邮件
+                if (contact.getPhone() != null && !contact.getPhone().trim().isEmpty()) {
+                    String content = buildMessageContent(message, "sms", contact.getName());
+                    String phoneNumber = formatPhoneNumber(contact.getPhone());
+                    
+                    if (DEBUG_ENABLED) {
+                        System.out.println("DEBUG: general消息 - 发送短信");
+                        System.out.println("原始电话号码: " + contact.getPhone());
+                        System.out.println("格式化电话号码: " + phoneNumber);
+                        System.out.println("短信内容长度: " + content.length());
+                    }
+                    
+                    Map<String, Object> smsResult = smsService.sendSMS(phoneNumber, content);
+                    boolean smsSuccess = (Boolean) smsResult.getOrDefault("success", false);
+                    
+                    if (DEBUG_ENABLED) {
+                        System.out.println("DEBUG: 短信发送结果: " + smsSuccess);
+                        System.out.println("短信响应: " + smsResult);
+                        System.out.println("========================================");
+                    }
+                    
+                    return smsSuccess;
+                } else if (contact.getEmail() != null && !contact.getEmail().trim().isEmpty()) {
+                    String subject = buildMessageSubject("email", contact.getName());
+                    String content = buildMessageContent(message, "email", contact.getName());
+                    
+                    if (DEBUG_ENABLED) {
+                        System.out.println("DEBUG: general消息 - 发送邮件");
+                        System.out.println("邮件主题: " + subject);
+                        System.out.println("邮件内容长度: " + content.length());
+                    }
+                    
+                    emailService.sendHealthAlertEmail(contact.getEmail(), subject, content);
+                    
+                    if (DEBUG_ENABLED) {
+                        System.out.println("DEBUG: 邮件发送成功");
+                        System.out.println("=========================================");
+                    }
+                    return true;
+                } else {
+                    if (DEBUG_ENABLED) {
+                        System.err.println("DEBUG: general消息 - 联系人既没有电话也没有邮箱");
+                        System.out.println("联系人电话: " + contact.getPhone());
+                        System.out.println("联系人邮箱: " + contact.getEmail());
+                    }
+                }
             } else {
                 if (DEBUG_ENABLED) {
                     System.err.println("DEBUG: 无法发送消息 - 联系方式不匹配或不存在");
@@ -565,6 +618,38 @@ public class FamilyService {
             default:
                 return "消息通知 - " + contactName;
         }
+    }
+
+    /**
+     * 格式化电话号码为国际格式
+     * 
+     * @param phoneNumber 原始电话号码
+     * @return 格式化后的电话号码
+     */
+    private String formatPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            return phoneNumber;
+        }
+        
+        // 移除所有非数字字符
+        String digits = phoneNumber.replaceAll("[^0-9+]", "");
+        
+        // 如果是中国手机号且没有国际区号，添加+86
+        if (digits.matches("^1[3-9]\\d{9}$")) {
+            return "+86" + digits;
+        }
+        
+        // 如果是美国号码且没有国际区号，添加+1
+        if (digits.matches("^[2-9]\\d{9}$")) {
+            return "+1" + digits;
+        }
+        
+        // 如果没有+号，添加+1作为默认（美国）
+        if (!digits.startsWith("+")) {
+            return "+1" + digits;
+        }
+        
+        return digits;
     }
 
     /**

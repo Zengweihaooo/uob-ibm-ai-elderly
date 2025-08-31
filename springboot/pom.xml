@@ -161,6 +161,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Twilio SMS 依赖 -->
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>10.6.2</version>
+        </dependency>
+
         <!-- Markdown & PDF 导出 -->
         <dependency>
             <groupId>com.vladsch.flexmark</groupId>
