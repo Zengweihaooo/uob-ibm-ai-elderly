@@ -6,9 +6,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.twilio.Twilio;
+import com.twilio.rest.api.v2010.account.Message;
+import com.twilio.type.PhoneNumber;
 
 /**
  * SMS服务类 - 支持模拟和真实SMS发送
@@ -42,9 +47,25 @@ public class SmsService {
     @Value("${app.sms.twilio.from-number:}")
     private String twilioFromNumber;
     
+    // 短信验证和限制配置
+    @Value("${app.sms.phone.validation.pattern:^\\+[1-9]\\d{1,14}$}")
+    private String phoneValidationPattern;
+    
+    @Value("${app.sms.max.message.length:160}")
+    private int maxMessageLength;
+    
+    @Value("${app.sms.test.phone.numbers:}")
+    private String testPhoneNumbers;
+    
+    @Value("${app.sms.debug.enabled:false}")
+    private boolean debugEnabled;
+    
     // 内存存储SMS记录（演示用途，生产环境建议使用数据库）
     private final List<Map<String, Object>> smsLogs = new ArrayList<>();
     private long smsIdCounter = 1;
+    
+    // 手机号码验证模式
+    private Pattern phonePattern;
     
     /**
      * 发送SMS短信
@@ -158,43 +179,112 @@ public class SmsService {
             return createErrorResponse(errorMsg);
         }
         
+        // 验证手机号码格式
+        if (!isValidPhoneNumber(phoneNumber)) {
+            String errorMsg = "手机号码格式无效: " + phoneNumber + "，请使用国际格式（如 +1234567890）";
+            System.err.println("❌ " + errorMsg);
+            return createErrorResponse(errorMsg);
+        }
+        
+        // 验证消息长度
+        if (message.length() > maxMessageLength) {
+            String errorMsg = "消息内容过长，当前长度: " + message.length() + "，最大允许: " + maxMessageLength;
+            System.err.println("❌ " + errorMsg);
+            return createErrorResponse(errorMsg);
+        }
+        
+        // 检查是否为测试号码
+        if (isTestPhoneNumber(phoneNumber)) {
+            if (debugEnabled) {
+                System.out.println("⚠️  检测到测试号码，强制使用模拟模式: " + phoneNumber);
+            }
+            return sendMockSMS(phoneNumber, message, messageType);
+        }
+        
         try {
-            // 显示Twilio发送信息（模拟）
-            System.out.println("📱 Twilio SMS发送");
-            System.out.println("Account SID: " + twilioAccountSid.substring(0, 10) + "...");
-            System.out.println("发送方号码: " + twilioFromNumber);
-            System.out.println("接收方号码: " + phoneNumber);
-            System.out.println("消息类型: " + messageType);
-            System.out.println("消息内容: " + message);
+            if (debugEnabled) {
+                System.out.println("📱 Twilio SMS发送");
+                System.out.println("Account SID: " + twilioAccountSid.substring(0, 10) + "...");
+                System.out.println("发送方号码: " + twilioFromNumber);
+                System.out.println("接收方号码: " + phoneNumber);
+                System.out.println("消息类型: " + messageType);
+                System.out.println("消息内容: " + message);
+            }
             
-            // 实际的Twilio集成代码（需要添加Twilio依赖后取消注释）:
-            /*
+            // 初始化Twilio客户端
             Twilio.init(twilioAccountSid, twilioAuthToken);
             
+            // 发送SMS消息
             Message twilioMessage = Message.creator(
                 new PhoneNumber(phoneNumber),
                 new PhoneNumber(twilioFromNumber),
                 message
             ).create();
             
-            System.out.println("✅ Twilio SMS发送成功，MessageSID: " + twilioMessage.getSid());
-            return createSuccessResponse(twilioMessage.getSid(), "Twilio SMS发送成功");
-            */
+            String messageSid = twilioMessage.getSid();
+            String status = twilioMessage.getStatus().toString();
             
-            // 当前为模拟发送（等待添加Twilio依赖）
-            String mockMessageId = "twilio_sim_" + System.currentTimeMillis();
-            System.out.println("⚠️  模拟Twilio发送（需要添加Twilio依赖才能真实发送）");
+            if (debugEnabled) {
+                System.out.println("✅ Twilio SMS发送成功");
+                System.out.println("MessageSID: " + messageSid);
+                System.out.println("Status: " + status);
+            }
             
-            return createSuccessResponse(mockMessageId, "Twilio SMS模拟发送成功");
+            Map<String, Object> result = createSuccessResponse(messageSid, "Twilio SMS发送成功");
+            result.put("status", status);
+            result.put("provider", "twilio");
+            
+            return result;
             
         } catch (Exception e) {
             String errorMsg = "Twilio SMS发送失败: " + e.getMessage();
             System.err.println("❌ " + errorMsg);
+            if (debugEnabled) {
+                e.printStackTrace();
+            }
             return createErrorResponse(errorMsg);
         }
     }
     
 
+    
+    /**
+     * 初始化手机号码验证模式
+     */
+    private void initPhonePattern() {
+        if (phonePattern == null) {
+            phonePattern = Pattern.compile(phoneValidationPattern);
+        }
+    }
+    
+    /**
+     * 验证手机号码格式
+     */
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            return false;
+        }
+        
+        initPhonePattern();
+        return phonePattern.matcher(phoneNumber.trim()).matches();
+    }
+    
+    /**
+     * 检查是否为测试号码
+     */
+    private boolean isTestPhoneNumber(String phoneNumber) {
+        if (testPhoneNumbers == null || testPhoneNumbers.trim().isEmpty()) {
+            return false;
+        }
+        
+        String[] testNumbers = testPhoneNumbers.split(",");
+        for (String testNumber : testNumbers) {
+            if (phoneNumber.trim().equals(testNumber.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     /**
      * 格式化电话号码
