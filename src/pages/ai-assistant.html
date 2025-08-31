@@ -1321,7 +1321,7 @@
                         
                         div.innerHTML = `
                             <strong>${record.type}</strong>: ${record.value} ${record.unit || ''}<br>
-                            🕒 ${formatTime(record.recordTime)}<br>
+                            🕒 ${record.recordTimeStr || formatTime(record.recordTime)}<br>
                             📝 ${record.notes || '无'}<hr>`;
                         container.appendChild(div);
                     });

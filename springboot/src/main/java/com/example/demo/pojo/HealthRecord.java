@@ -88,6 +88,11 @@ public class HealthRecord {
     public LocalDateTime getRecordTime() {
         return recordTime;
     }
+    
+    // 添加一个字符串格式的getter方法用于JSON序列化
+    public String getRecordTimeStr() {
+        return recordTime != null ? recordTime.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
+    }
 
     public void setRecordTime(LocalDateTime recordTime) {
         this.recordTime = recordTime;
@@ -105,6 +110,11 @@ public class HealthRecord {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+    
+    // 添加一个字符串格式的getter方法用于JSON序列化
+    public String getCreatedAtStr() {
+        return createdAt != null ? createdAt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
+    }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
@@ -113,6 +123,11 @@ public class HealthRecord {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+    
+    // 添加一个字符串格式的getter方法用于JSON序列化
+    public String getUpdatedAtStr() {
+        return updatedAt != null ? updatedAt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {

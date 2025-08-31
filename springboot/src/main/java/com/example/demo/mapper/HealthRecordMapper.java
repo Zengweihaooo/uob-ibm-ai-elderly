@@ -79,6 +79,12 @@ public interface HealthRecordMapper {
     List<HealthRecord> findAll();
     
     /**
+     * 获取所有健康记录（使用XML映射）
+     * @return 所有健康记录列表
+     */
+    List<HealthRecord> listAll();
+    
+    /**
      * 获取总记录数
      * @return 总记录数
      */

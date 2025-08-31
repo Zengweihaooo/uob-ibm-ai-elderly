@@ -850,7 +850,7 @@ public class HealthService {
      * @return 所有健康记录列表
      */
     public List<HealthRecord> getAll() {
-        return healthRecordMapper.findAll();
+        return healthRecordMapper.listAll();
     }
     
     // ========== 其他辅助方法结束 ==========
