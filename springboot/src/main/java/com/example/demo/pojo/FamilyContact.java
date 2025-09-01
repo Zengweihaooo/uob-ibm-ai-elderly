@@ -20,7 +20,6 @@ public class FamilyContact {
     private String phone;  // 电话号码
     private String email;  // 邮箱地址
     private String address;  // 地址
-    private String notificationPreference;  // 通知偏好: ALL, HEALTH_ALERT, DAILY_SUMMARY, NONE
     private Boolean isEmergencyContact;  // 是否为紧急联系人
     private Boolean isActive;  // 是否激活
     private LocalDateTime createdAt;  // 创建时间
@@ -30,7 +29,6 @@ public class FamilyContact {
     public FamilyContact() {
         this.isActive = true;
         this.isEmergencyContact = false;
-        this.notificationPreference = "ALL";  // 默认接收所有通知
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -102,14 +100,6 @@ public class FamilyContact {
         this.address = address;
     }
     
-    public String getNotificationPreference() {
-        return notificationPreference;
-    }
-    
-    public void setNotificationPreference(String notificationPreference) {
-        this.notificationPreference = notificationPreference;
-    }
-    
     public Boolean getIsEmergencyContact() {
         return isEmergencyContact;
     }
@@ -152,7 +142,6 @@ public class FamilyContact {
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
                 ", address='" + address + '\'' +
-                ", notificationPreference='" + notificationPreference + '\'' +
                 ", isEmergencyContact=" + isEmergencyContact +
                 ", isActive=" + isActive +
                 ", createdAt=" + createdAt +
