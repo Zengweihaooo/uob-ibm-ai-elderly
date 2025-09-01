@@ -10,10 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 
 /**
- * 功能路由服务
+ * Function Router Service
  * 
- * 根据AI意图分析结果，自动路由到相应的功能执行器
- * 支持邮件发送、日程管理等功能的自动调用
+ * Routes to appropriate function executors based on AI intent analysis
+ * Supports auto-calling capabilities like email sending and schedule management
  * 
  * @author AI Assistant
  * @version 1.0.0
@@ -32,13 +32,13 @@ public class FunctionRouterService {
     private ImportantDateManagementService importantDateManagementService;
     
     /**
-     * 执行功能
+     * Execute function
      * 
-     * @param intent AI意图分析结果
-     * @return 功能执行结果
+     * @param intent AI intent analysis result
+     * @return function execution result
      */
     public FunctionExecutionResult executeFunction(IntentAnalysisResult intent) {
-        log.info("开始执行功能: {}", intent.getFunctionName());
+        log.info("Start executing function: {}", intent.getFunctionName());
         
         FunctionExecutionResult result = FunctionExecutionResult.builder()
             .functionName(intent.getFunctionName())
@@ -70,15 +70,15 @@ public class FunctionRouterService {
                     
                 default:
                     result.setSuccess(false);
-                    result.setErrorMessage("未知功能：" + intent.getFunctionName());
+                    result.setErrorMessage("Unknown function: " + intent.getFunctionName());
                     result.setStatus(FunctionExecutionResult.ExecutionStatus.FAILED);
                     break;
             }
             
         } catch (Exception e) {
-            log.error("执行功能时出错", e);
+            log.error("Error while executing function", e);
             result.setSuccess(false);
-            result.setErrorMessage("执行功能时出错：" + e.getMessage());
+            result.setErrorMessage("Error while executing function: " + e.getMessage());
             result.setStatus(FunctionExecutionResult.ExecutionStatus.FAILED);
         }
         
@@ -89,59 +89,59 @@ public class FunctionRouterService {
             result.setStatus(FunctionExecutionResult.ExecutionStatus.COMPLETED);
         }
         
-        log.info("功能执行完成: 功能={}, 成功={}, 耗时={}ms", 
+        log.info("Function execution finished: function={}, success={}, time={}ms", 
                 intent.getFunctionName(), result.isSuccess(), result.getExecutionTime());
         
         return result;
     }
     
     /**
-     * 执行邮件发送功能
+     * Execute email sending function
      */
     private FunctionExecutionResult executeSendEmail(IntentAnalysisResult intent) {
-        log.info("执行邮件发送功能");
+        log.info("Execute email sending");
         
         try {
             Map<String, Object> params = intent.getParameters();
             
-            // 提取邮件参数
+            // Extract email parameters
             String toEmail = extractEmailParameter(params, "toEmail", intent.getOriginalText());
             String subject = extractEmailParameter(params, "subject", intent.getOriginalText());
             String content = extractEmailParameter(params, "content", intent.getOriginalText());
             
-            // 设置默认发件人
+            // Default sender
             String fromEmail = "system@elderly-companion.com";
-            String senderName = "智能助手";
+            String senderName = "AI Assistant";
             
-            // 获取用户信息，用于邮件个性化
+            // Get user info for personalization
             String userId = extractEmailParameter(params, "userId", intent.getOriginalText());
             String userName = extractEmailParameter(params, "userName", intent.getOriginalText());
             
-            // 如果参数中没有用户信息，尝试从context中获取
+            // If user info not in params, fallback to defaults
             if (userName == null || userName.trim().isEmpty()) {
-                userName = "用户"; // 默认用户名
+                userName = "User"; // default user name
             }
             
-            // 个性化邮件内容，保持原标题 - 使用英文模板
+            // Personalize email content - English template
             String personalizedContent = String.format("Hello!\n\n%s\n\nThis email was sent by %s through AI Assistant.\n\nBest regards!", 
                 content, userName);
             
-            // 验证必要参数
+            // Validate required params
             if (toEmail == null || subject == null || content == null) {
                 return FunctionExecutionResult.builder()
                     .functionName("send_email")
                     .success(false)
-                    .errorMessage("缺少必要参数：收件人、主题或内容")
+                    .errorMessage("Missing required parameters: recipient, subject or content")
                     .status(FunctionExecutionResult.ExecutionStatus.FAILED)
                     .build();
             }
             
-            // 调用主项目邮件服务
+            // Call main project's email service
             com.voicecommand.model.EmailResponse emailResponse = emailServiceClient.sendEmail(
                 fromEmail, toEmail, subject, personalizedContent, userName);
             
             if (emailResponse.isSuccess()) {
-                // 构建成功反馈 - 使用英文
+                // Build success feedback - English
                 String feedbackText = String.format(
                     "Email sent successfully! Recipient: %s, Subject: %s, Content: %s", 
                     toEmail, subject, content);
@@ -158,42 +158,42 @@ public class FunctionRouterService {
                 return FunctionExecutionResult.builder()
                     .functionName("send_email")
                     .success(false)
-                    .errorMessage("邮件发送失败：" + emailResponse.getErrorMessage())
+                    .errorMessage("Email sending failed: " + emailResponse.getErrorMessage())
                     .status(FunctionExecutionResult.ExecutionStatus.FAILED)
                     .build();
             }
             
         } catch (Exception e) {
-            log.error("邮件发送功能执行失败", e);
+            log.error("Email sending execution failed", e);
             return FunctionExecutionResult.builder()
                 .functionName("send_email")
                 .success(false)
-                .errorMessage("邮件发送功能执行失败：" + e.getMessage())
+                .errorMessage("Email sending execution failed: " + e.getMessage())
                 .status(FunctionExecutionResult.ExecutionStatus.FAILED)
                 .build();
         }
     }
     
     /**
-     * 从参数或原始文本中提取邮件参数
+     * Extract email parameter from params or original text
      */
     private String extractEmailParameter(Map<String, Object> params, String paramName, String originalText) {
-        // 首先尝试从AI解析的参数中获取
+        // Try from AI parsed params first
         if (params != null && params.containsKey(paramName)) {
             return (String) params.get(paramName);
         }
         
-        // 如果参数中没有，尝试从原始文本中智能提取
+        // Otherwise, try extracting from original text
         return extractParameterFromText(originalText, paramName);
     }
     
     /**
-     * 从原始文本中智能提取参数
+     * Extract parameter from original text
      */
     private String extractParameterFromText(String text, String paramName) {
         switch (paramName) {
             case "toEmail":
-                // 提取收件人（简化处理，实际应该更智能）
+                // Extract recipient (simplified)
                 if (text.contains("给") && text.contains("发邮件")) {
                     int start = text.indexOf("给") + 1;
                     int end = text.indexOf("发邮件");
@@ -204,7 +204,7 @@ public class FunctionRouterService {
                 break;
                 
             case "subject":
-                // 提取主题
+                // Extract subject
                 if (text.contains("主题是") || text.contains("主题：")) {
                     int start = text.indexOf("主题是");
                     if (start == -1) start = text.indexOf("主题：");
@@ -219,7 +219,7 @@ public class FunctionRouterService {
                 break;
                 
             case "content":
-                // 提取内容
+                // Extract content
                 if (text.contains("内容是") || text.contains("内容：")) {
                     int start = text.indexOf("内容是");
                     if (start == -1) start = text.indexOf("内容：");
@@ -235,25 +235,25 @@ public class FunctionRouterService {
     }
     
     /**
-     * 从参数或原始文本中提取日程参数
+     * Extract schedule parameter from params or original text
      */
     private String extractScheduleParameter(Map<String, Object> params, String paramName, String originalText) {
-        // 首先尝试从AI解析的参数中获取
+        // Try from AI parsed params first
         if (params != null && params.containsKey(paramName)) {
             return (String) params.get(paramName);
         }
         
-        // 如果参数中没有，尝试从原始文本中智能提取
+        // Otherwise, try extracting from original text
         return extractScheduleParameterFromText(originalText, paramName);
     }
     
     /**
-     * 从原始文本中智能提取日程参数
+     * Extract schedule parameter from original text
      */
     private String extractScheduleParameterFromText(String text, String paramName) {
         switch (paramName) {
             case "title":
-                // 提取标题（简化处理）
+                // Extract title (simplified)
                 if (text.contains("添加") || text.contains("add")) {
                     int start = text.indexOf("添加");
                     if (start == -1) start = text.indexOf("add");
@@ -272,7 +272,7 @@ public class FunctionRouterService {
                 break;
                 
             case "date":
-                // 提取日期（简化处理）
+                // Extract date (simplified)
                 if (text.contains("明天")) {
                     return java.time.LocalDate.now().plusDays(1).toString();
                 } else if (text.contains("后天")) {
@@ -283,7 +283,7 @@ public class FunctionRouterService {
                 break;
                 
             case "time":
-                // 提取时间（简化处理）
+                // Extract time (simplified)
                 if (text.contains("下午") || text.contains("pm")) {
                     if (text.contains("下午")) {
                         int start = text.indexOf("下午") + 2;
@@ -314,7 +314,7 @@ public class FunctionRouterService {
                 break;
                 
             case "category":
-                // 提取类别
+                // Extract category
                 if (text.contains("早上") || text.contains("morning")) {
                     return "morning";
                 } else if (text.contains("下午") || text.contains("afternoon")) {
@@ -331,15 +331,15 @@ public class FunctionRouterService {
     }
     
     /**
-     * 执行添加日程功能
+     * Execute add schedule function
      */
     private FunctionExecutionResult executeAddSchedule(IntentAnalysisResult intent) {
-        log.info("执行添加日程功能");
+        log.info("Execute add schedule");
         
         try {
             Map<String, Object> params = intent.getParameters();
             
-            // 提取日程参数
+            // Extract schedule params
             String title = extractScheduleParameter(params, "title", intent.getOriginalText());
             String date = extractScheduleParameter(params, "date", intent.getOriginalText());
             String time = extractScheduleParameter(params, "time", intent.getOriginalText());
@@ -348,17 +348,17 @@ public class FunctionRouterService {
             String priority = extractScheduleParameter(params, "priority", intent.getOriginalText());
             String userId = extractScheduleParameter(params, "userId", intent.getOriginalText());
             
-            // 验证必要参数
+            // Validate required params
             if (title == null || title.trim().isEmpty()) {
                 return FunctionExecutionResult.builder()
                     .functionName("add_schedule")
                     .success(false)
-                    .errorMessage("缺少必要参数：日程标题")
+                    .errorMessage("Missing required parameter: schedule title")
                     .status(FunctionExecutionResult.ExecutionStatus.FAILED)
                     .build();
             }
             
-            // 构建日程数据
+            // Build schedule data
             Map<String, Object> scheduleData = new HashMap<>();
             scheduleData.put("title", title);
             scheduleData.put("date", date != null ? date : java.time.LocalDate.now().toString());
@@ -369,14 +369,14 @@ public class FunctionRouterService {
             }
             scheduleData.put("priority", priority != null ? priority : "medium");
             
-            // 调用日程管理服务
+            // Call schedule service
             ScheduleManagementService.ScheduleResponse scheduleResponse = 
                 scheduleManagementService.addSchedule(scheduleData, userId != null ? userId : "1");
             
             if (scheduleResponse.isSuccess()) {
-                // 构建成功反馈
+                // Build success feedback
                 String feedbackText = String.format(
-                    "日程添加成功！标题：%s，日期：%s，时间：%s，类别：%s", 
+                    "Schedule added successfully! Title: %s, Date: %s, Time: %s, Category: %s", 
                     title, date, time, category);
                 
                 return FunctionExecutionResult.builder()
@@ -391,67 +391,67 @@ public class FunctionRouterService {
                 return FunctionExecutionResult.builder()
                     .functionName("add_schedule")
                     .success(false)
-                    .errorMessage("日程添加失败：" + scheduleResponse.getErrorMessage())
+                    .errorMessage("Schedule add failed: " + scheduleResponse.getErrorMessage())
                     .status(FunctionExecutionResult.ExecutionStatus.FAILED)
                     .build();
             }
             
         } catch (Exception e) {
-            log.error("日程添加功能执行失败", e);
+            log.error("Add schedule execution failed", e);
             return FunctionExecutionResult.builder()
                 .functionName("add_schedule")
                 .success(false)
-                .errorMessage("日程添加功能执行失败：" + e.getMessage())
+                .errorMessage("Add schedule execution failed: " + e.getMessage())
                 .status(FunctionExecutionResult.ExecutionStatus.FAILED)
                 .build();
         }
     }
     
     /**
-     * 执行健康检查功能（待实现）
+     * Execute health check (TBD)
      */
     private FunctionExecutionResult executeHealthCheck(IntentAnalysisResult intent) {
         return FunctionExecutionResult.builder()
             .functionName("health_check")
             .success(false)
-            .errorMessage("健康检查功能暂未实现")
+            .errorMessage("Health check is not implemented yet")
             .status(FunctionExecutionResult.ExecutionStatus.FAILED)
             .build();
     }
     
     /**
-     * 执行宠物交互功能（待实现）
+     * Execute pet interaction (TBD)
      */
     private FunctionExecutionResult executePetInteraction(IntentAnalysisResult intent) {
         return FunctionExecutionResult.builder()
             .functionName("pet_interaction")
             .success(false)
-            .errorMessage("宠物交互功能暂未实现")
+            .errorMessage("Pet interaction is not implemented yet")
             .status(FunctionExecutionResult.ExecutionStatus.FAILED)
             .build();
     }
     
     /**
-     * 执行添加重要日期功能
+     * Execute add important date
      */
     private FunctionExecutionResult executeAddImportantDate(IntentAnalysisResult intent) {
-        log.info("开始执行添加重要日期功能，参数: {}", intent.getParameters());
+        log.info("Start execute add important date, params: {}", intent.getParameters());
         
         try {
             Map<String, Object> params = intent.getParameters();
             
-            // 提取重要日期参数
+            // Extract important date params
             String title = extractScheduleParameter(params, "title", intent.getOriginalText());
             String date = extractScheduleParameter(params, "date", intent.getOriginalText());
             String type = extractScheduleParameter(params, "type", intent.getOriginalText());
             String description = extractScheduleParameter(params, "description", intent.getOriginalText());
             
-            // 验证必要参数
+            // Validate required params
             if (title == null || title.trim().isEmpty()) {
                 return FunctionExecutionResult.builder()
                     .functionName("add_important_date")
                     .success(false)
-                    .errorMessage("缺少必要参数：重要日期标题")
+                    .errorMessage("Missing required parameter: important date title")
                     .status(FunctionExecutionResult.ExecutionStatus.FAILED)
                     .build();
             }
@@ -460,16 +460,16 @@ public class FunctionRouterService {
                 return FunctionExecutionResult.builder()
                     .functionName("add_important_date")
                     .success(false)
-                    .errorMessage("缺少必要参数：重要日期")
+                    .errorMessage("Missing required parameter: important date")
                     .status(FunctionExecutionResult.ExecutionStatus.FAILED)
                     .build();
             }
             
             if (type == null || type.trim().isEmpty()) {
-                type = "custom"; // 默认类型
+                type = "custom"; // default type
             }
             
-            // 构建重要日期数据
+            // Build important date data
             Map<String, Object> importantDateData = new HashMap<>();
             importantDateData.put("title", title);
             importantDateData.put("date", date);
@@ -478,14 +478,14 @@ public class FunctionRouterService {
                 importantDateData.put("description", description);
             }
             
-            // 调用重要日期管理服务
+            // Call important date service
             ImportantDateManagementService.ImportantDateResponse response = 
                 importantDateManagementService.addImportantDate(importantDateData);
             
             if (response.isSuccess()) {
-                log.info("重要日期添加成功: {}", response.getMessage());
+                log.info("Important date added successfully: {}", response.getMessage());
                 
-                // 构建成功结果
+                // Build success result
                 Map<String, Object> resultData = new HashMap<>();
                 resultData.put("importantDateId", response.getImportantDateId());
                 resultData.put("title", title);
@@ -495,27 +495,27 @@ public class FunctionRouterService {
                 return FunctionExecutionResult.builder()
                     .functionName("add_important_date")
                     .success(true)
-                    .feedbackText("重要日期添加成功！标题：" + title + "，日期：" + date + "，类型：" + type)
+                    .feedbackText("Important date added successfully! Title: " + title + ", Date: " + date + ", Type: " + type)
                     .resultData(resultData)
                     .status(FunctionExecutionResult.ExecutionStatus.COMPLETED)
                     .build();
                     
             } else {
-                log.error("重要日期添加失败: {}", response.getMessage());
+                log.error("Failed to add important date: {}", response.getMessage());
                 return FunctionExecutionResult.builder()
                     .functionName("add_important_date")
                     .success(false)
-                    .errorMessage("重要日期添加失败：" + response.getMessage())
+                    .errorMessage("Important date add failed: " + response.getMessage())
                     .status(FunctionExecutionResult.ExecutionStatus.FAILED)
                     .build();
                 }
                 
         } catch (Exception e) {
-            log.error("执行添加重要日期功能时发生异常: {}", e.getMessage(), e);
+            log.error("Exception while executing add important date: {}", e.getMessage(), e);
             return FunctionExecutionResult.builder()
                 .functionName("add_important_date")
                 .success(false)
-                .errorMessage("重要日期添加失败：" + e.getMessage())
+                .errorMessage("Important date add failed: " + e.getMessage())
                 .status(FunctionExecutionResult.ExecutionStatus.FAILED)
                 .build();
         }

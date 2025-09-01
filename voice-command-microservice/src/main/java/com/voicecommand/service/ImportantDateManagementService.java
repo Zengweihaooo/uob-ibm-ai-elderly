@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- * 重要日期管理服务
- * 负责调用后端的重要日期API
+ * Important Date Management Service
+ * Responsible for calling backend Important Date APIs
  */
 @Service
 public class ImportantDateManagementService {
@@ -26,24 +26,24 @@ public class ImportantDateManagementService {
     private static final String IMPORTANT_DATE_ENDPOINT = "/api/important-dates/add";
     
     /**
-     * 添加重要日期
+     * Add important date
      * 
-     * @param importantDateData 重要日期数据
-     * @return 添加结果
+     * @param importantDateData important date data
+     * @return add result
      */
     public ImportantDateResponse addImportantDate(Map<String, Object> importantDateData) {
         try {
-            log.info("开始添加重要日期，数据: {}", importantDateData);
+            log.info("Start adding important date, data: {}", importantDateData);
             
-            // 构建请求头
+            // Build request headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             
-            // 设置认证头（使用默认用户token）
+            // Set auth header (use default user token)
             String userToken = "user-token-1-" + System.currentTimeMillis();
             headers.set("Authorization", "Bearer " + userToken);
             
-            // 构建请求体
+            // Build request body
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("userId", 1L);
             requestBody.put("title", importantDateData.get("title"));
@@ -52,12 +52,12 @@ public class ImportantDateManagementService {
             requestBody.put("description", importantDateData.get("description"));
             requestBody.put("enabled", true);
             
-            // 创建HTTP实体
+            // Create HTTP entity
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
             
-            // 发送POST请求
+            // Send POST request
             String url = BACKEND_BASE_URL + IMPORTANT_DATE_ENDPOINT;
-            log.info("发送请求到: {}", url);
+            log.info("Sending request to: {}", url);
             
             ResponseEntity<Map> response = restTemplate.exchange(
                 url,
@@ -71,38 +71,38 @@ public class ImportantDateManagementService {
                 boolean success = Boolean.TRUE.equals(responseBody.get("success"));
                 
                 if (success) {
-                    log.info("重要日期添加成功: {}", responseBody.get("message"));
+                    log.info("Important date added successfully: {}", responseBody.get("message"));
                     return ImportantDateResponse.builder()
                         .success(true)
                         .message(responseBody.get("message").toString())
                         .importantDateId(extractImportantDateId(responseBody))
                         .build();
                 } else {
-                    log.error("重要日期添加失败: {}", responseBody.get("message"));
+                    log.error("Failed to add important date: {}", responseBody.get("message"));
                     return ImportantDateResponse.builder()
                         .success(false)
                         .message(responseBody.get("message").toString())
                         .build();
                 }
             } else {
-                log.error("重要日期添加失败，HTTP状态码: {}", response.getStatusCode());
+                log.error("Failed to add important date, HTTP status: {}", response.getStatusCode());
                 return ImportantDateResponse.builder()
                     .success(false)
-                    .message("HTTP请求失败，状态码: " + response.getStatusCode())
+                    .message("HTTP request failed, status: " + response.getStatusCode())
                     .build();
             }
             
         } catch (Exception e) {
-            log.error("添加重要日期时发生异常: {}", e.getMessage(), e);
+            log.error("Exception occurred while adding important date: {}", e.getMessage(), e);
             return ImportantDateResponse.builder()
                 .success(false)
-                .message("添加重要日期失败: " + e.getMessage())
+                .message("Failed to add important date: " + e.getMessage())
                 .build();
         }
     }
     
     /**
-     * 从响应中提取重要日期ID
+     * Extract important date ID from response
      */
     private String extractImportantDateId(Map<String, Object> responseBody) {
         try {
@@ -116,13 +116,13 @@ public class ImportantDateManagementService {
                 }
             }
         } catch (Exception e) {
-            log.warn("提取重要日期ID失败: {}", e.getMessage());
+            log.warn("Failed to extract important date ID: {}", e.getMessage());
         }
         return null;
     }
     
     /**
-     * 重要日期响应类
+     * Important date response class
      */
     public static class ImportantDateResponse {
         private boolean success;

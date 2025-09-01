@@ -20,10 +20,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 语音命令服务实现类
+ * Voice Command Service Implementation
  * 
- * 整合语音识别、AI意图分析、功能执行等所有功能
- * 提供完整的语音命令处理流程
+ * Integrates speech recognition, AI intent analysis, function execution, etc.
+ * Provides a complete voice command processing flow
  * 
  * @author AI Assistant
  * @version 1.0.0
@@ -46,7 +46,7 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
     @Autowired
     private MainProjectAIClient mainProjectAIClient;
     
-    // 存储执行状态
+    // Store execution status
     private final Map<String, CommandExecutionStatus> executionStatusMap = new HashMap<>();
     
     @Override
@@ -55,28 +55,28 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
         long startTime = System.currentTimeMillis();
         String executionId = generateExecutionId();
         
-        log.info("开始处理语音命令: executionId={}, userId={}, languageCode={}", 
+        log.info("Start processing voice command: executionId={}, userId={}, languageCode={}", 
                 executionId, userId, languageCode);
         
         try {
-            // 1. 语音转文字
+            // 1. Speech to text
             String transcribedText = convertSpeechToText(audioFile, languageCode);
             if (transcribedText == null || transcribedText.trim().isEmpty()) {
-                return buildErrorResponse(executionId, "语音识别失败，请重新尝试", startTime);
+                return buildErrorResponse(executionId, "Speech recognition failed, please try again", startTime);
             }
             
-            // 2. 意图预判和双路径处理
+            // 2. Intent pre-judgment and dual-path handling
             VoiceCommandResponse response = processWithIntentPrejudgment(transcribedText, languageCode, 
                                                                         userId, sessionId, executionId, startTime);
             
-            log.info("语音命令处理完成: executionId={}, 成功={}, 耗时={}ms", 
+            log.info("Voice command processed: executionId={}, success={}, time={}ms", 
                     executionId, response.isSuccess(), response.getProcessingTime());
             
             return response;
             
         } catch (Exception e) {
-            log.error("处理语音命令失败: executionId={}", executionId, e);
-            return buildErrorResponse(executionId, "处理语音命令失败：" + e.getMessage(), startTime);
+            log.error("Failed to process voice command: executionId={}", executionId, e);
+            return buildErrorResponse(executionId, "Failed to process voice command: " + e.getMessage(), startTime);
         }
     }
     
@@ -86,22 +86,22 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
         long startTime = System.currentTimeMillis();
         String executionId = generateExecutionId();
         
-        log.info("开始处理文本命令: executionId={}, userId={}, text={}", 
+        log.info("Start processing text command: executionId={}, userId={}, text={}", 
                 executionId, userId, textCommand);
         
         try {
-            // 意图预判和双路径处理
+            // Intent pre-judgment and dual-path handling
             VoiceCommandResponse response = processWithIntentPrejudgment(textCommand, languageCode, 
                                                                         userId, sessionId, executionId, startTime);
             
-            log.info("文本命令处理完成: executionId={}, 成功={}, 耗时={}ms", 
+            log.info("Text command processed: executionId={}, success={}, time={}ms", 
                     executionId, response.isSuccess(), response.getProcessingTime());
             
             return response;
             
         } catch (Exception e) {
-            log.error("处理文本命令失败: executionId={}", executionId, e);
-            return buildErrorResponse(executionId, "处理文本命令失败：" + e.getMessage(), startTime);
+            log.error("Failed to process text command: executionId={}", executionId, e);
+            return buildErrorResponse(executionId, "Failed to process text command: " + e.getMessage(), startTime);
         }
     }
     
@@ -111,7 +111,7 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
             CommandExecutionStatus.builder()
                 .executionId(executionId)
                 .status(CommandExecutionStatus.ExecutionStatus.FAILED)
-                .errorMessage("执行ID不存在")
+                .errorMessage("Execution ID does not exist")
                 .build());
     }
     
@@ -122,18 +122,18 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
             status.setStatus(CommandExecutionStatus.ExecutionStatus.CANCELLED);
             status.setCompletionTime(System.currentTimeMillis());
             executionStatusMap.put(executionId, status);
-            log.info("取消执行: executionId={}", executionId);
+            log.info("Cancel execution: executionId={}", executionId);
             return true;
         }
         return false;
     }
     
     /**
-     * 语音转文字
+     * Speech to text
      */
     private String convertSpeechToText(MultipartFile audioFile, String languageCode) {
         try {
-            // 调用主项目的语音识别服务
+            // Call main project's speech-to-text service
             Map<String, Object> request = new HashMap<>();
             request.put("audio", audioFile);
             request.put("languageCode", languageCode);
@@ -144,22 +144,22 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
             if (response != null && (Boolean) response.get("success")) {
                 return (String) response.get("text");
             } else {
-                log.error("语音识别失败: {}", response);
+                log.error("Speech recognition failed: {}", response);
                 return null;
             }
             
         } catch (Exception e) {
-            log.error("语音转文字失败", e);
+            log.error("Speech to text failed", e);
             return null;
         }
     }
     
     /**
-     * 文字转语音
+     * Text to speech
      */
     private String convertTextToSpeech(String text, String languageCode) {
         try {
-            // 调用主项目的文字转语音服务
+            // Call main project's text-to-speech service
             Map<String, Object> request = new HashMap<>();
             request.put("text", text);
             request.put("languageCode", languageCode);
@@ -169,18 +169,18 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
             if (response != null && (Boolean) response.get("success")) {
                 return (String) response.get("audio");
             } else {
-                log.warn("文字转语音失败: {}", response);
+                log.warn("Text to speech failed: {}", response);
                 return null;
             }
             
         } catch (Exception e) {
-            log.warn("文字转语音失败", e);
+            log.warn("Text to speech failed", e);
             return null;
         }
     }
     
     /**
-     * 构建上下文信息
+     * Build context info
      */
     private Map<String, Object> buildContext(String userId, String sessionId) {
         Map<String, Object> context = new HashMap<>();
@@ -192,26 +192,26 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
     }
     
     /**
-     * 生成反馈文本
+     * Generate feedback text
      */
     private String generateFeedbackText(IntentAnalysisResult intent, FunctionExecutionResult execution) {
         if (execution.isSuccess()) {
             return execution.getFeedbackText();
         } else {
-            return String.format("抱歉，%s功能执行失败：%s", 
+            return String.format("Sorry, %s failed: %s", 
                 intent.getFunctionName(), execution.getErrorMessage());
         }
     }
     
     /**
-     * 生成执行ID
+     * Generate execution ID
      */
     private String generateExecutionId() {
         return "exec_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8);
     }
     
     /**
-     * 构建错误响应
+     * Build error response
      */
     private VoiceCommandResponse buildErrorResponse(String executionId, String errorMessage, long startTime) {
         return VoiceCommandResponse.builder()
@@ -225,7 +225,7 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
     }
     
     /**
-     * 更新执行状态
+     * Update execution status
      */
     private void updateExecutionStatus(String executionId, FunctionExecutionResult executionResult) {
         CommandExecutionStatus status = CommandExecutionStatus.builder()
@@ -243,7 +243,7 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
     }
     
     /**
-     * 转换执行状态
+     * Convert execution status
      */
     private CommandExecutionStatus.ExecutionStatus convertStatus(FunctionExecutionResult.ExecutionStatus status) {
         switch (status) {
@@ -263,12 +263,12 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
     private VoiceCommandResponse processWithIntentPrejudgment(String userText, String languageCode, 
                                                             String userId, String sessionId, 
                                                             String executionId, long startTime) {
-        // 意图预判
+        // Intent pre-judgment
         if (isFunctionCallIntent(userText)) {
-            log.info("检测到功能调用意图，使用功能调用路径");
+            log.info("Function-call intent detected, using function-call path");
             return processAsFunctionCall(userText, languageCode, userId, sessionId, executionId, startTime);
         } else {
-            log.info("检测到普通对话意图，使用AI对话路径");
+            log.info("Normal chat intent detected, using AI chat path");
             return processAsNormalChat(userText, languageCode, userId, sessionId, executionId, startTime);
         }
     }
@@ -276,19 +276,19 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
     private boolean isFunctionCallIntent(String userText) {
         String lowerText = userText.toLowerCase();
         
-        // 功能调用关键词
+        // Function-call keywords
         List<String> functionKeywords = Arrays.asList(
-            "发送邮件", "发邮件", "send email", "邮件", "email",
-            "查看日程", "添加日程", "schedule", "日程", "calendar",
-            "健康检查", "health check", "健康", "health",
-            "联系人", "contact", "查找", "find",
-            "重要日期", "important date", "生日", "birthday",
-            "提醒", "reminder", "设置", "set"
+            "send email", "email",
+            "schedule", "calendar",
+            "health check", "health",
+            "contact", "find",
+            "important date", "birthday",
+            "reminder", "set"
         );
         
-        // 如果包含功能关键词，认为是功能调用
+        // If contains any keyword, treat as function call
         boolean isFunctionCall = functionKeywords.stream().anyMatch(lowerText::contains);
-        log.info("意图预判结果: text={}, isFunctionCall={}", userText, isFunctionCall);
+        log.info("Intent pre-judgment: text={}, isFunctionCall={}", userText, isFunctionCall);
         
         return isFunctionCall;
     }
@@ -297,26 +297,26 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
                                                      String userId, String sessionId, 
                                                      String executionId, long startTime) {
         try {
-            // 1. AI意图分析
+            // 1. AI intent analysis
             Map<String, Object> context = buildContext(userId, sessionId);
             IntentAnalysisResult intentResult = aiIntentAnalysisService.analyzeIntent(userText, context);
             
-            // 2. 检查置信度，如果太低则回退到普通对话
+            // 2. Check confidence; if too low, fallback to normal chat
             if (intentResult.getConfidence() < 0.7) {
-                log.info("功能调用置信度过低({})，回退到普通对话", intentResult.getConfidence());
+                log.info("Function-call confidence too low ({}), fallback to normal chat", intentResult.getConfidence());
                 return processAsNormalChat(userText, languageCode, userId, sessionId, executionId, startTime);
             }
             
-            // 3. 执行功能
+            // 3. Execute function
             FunctionExecutionResult executionResult = functionRouterService.executeFunction(intentResult);
             
-            // 4. 生成反馈文本
+            // 4. Generate feedback text
             String feedbackText = generateFeedbackText(intentResult, executionResult);
             
-            // 5. 文字转语音（可选）
+            // 5. Text to speech (optional)
             String audioResponse = convertTextToSpeech(feedbackText, languageCode);
             
-            // 6. 构建响应
+            // 6. Build response
             VoiceCommandResponse response = VoiceCommandResponse.builder()
                 .executionId(executionId)
                 .transcribedText(userText)
@@ -331,13 +331,13 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
                 .statusCode(executionResult.isSuccess() ? 200 : 500)
                 .build();
             
-            // 7. 更新执行状态
+            // 7. Update execution status
             updateExecutionStatus(executionId, executionResult);
             
             return response;
             
         } catch (Exception e) {
-            log.error("功能调用处理失败，回退到普通对话", e);
+            log.error("Function-call handling failed, fallback to normal chat", e);
             return processAsNormalChat(userText, languageCode, userId, sessionId, executionId, startTime);
         }
     }
@@ -346,7 +346,7 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
                                                    String userId, String sessionId, 
                                                    String executionId, long startTime) {
         try {
-            // 1. 调用主项目的AI对话服务
+            // 1. Call main project's AI chat service
             Map<String, Object> request = new HashMap<>();
             request.put("message", userText);
             
@@ -354,13 +354,13 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
             
             String feedbackText = (String) aiResponse.get("response");
             if (feedbackText == null) {
-                feedbackText = "抱歉，我现在无法回答您的问题，请稍后再试。";
+                feedbackText = "Sorry, I cannot answer your question right now. Please try again later.";
             }
             
-            // 2. 文字转语音（可选）
+            // 2. Text to speech (optional)
             String audioResponse = convertTextToSpeech(feedbackText, languageCode);
             
-            // 3. 构建响应
+            // 3. Build response
             VoiceCommandResponse response = VoiceCommandResponse.builder()
                 .executionId(executionId)
                 .transcribedText(userText)
@@ -375,8 +375,8 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
             return response;
             
         } catch (Exception e) {
-            log.error("普通对话处理失败", e);
-            return buildErrorResponse(executionId, "AI对话服务暂时不可用，请稍后再试", startTime);
+            log.error("Normal chat handling failed", e);
+            return buildErrorResponse(executionId, "AI chat service is temporarily unavailable, please try again later", startTime);
         }
     }
 }

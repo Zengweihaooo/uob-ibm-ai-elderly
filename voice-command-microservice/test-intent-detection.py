@@ -1,93 +1,77 @@
 #!/usr/bin/env python3
-"""
-测试意图检测逻辑的Python脚本
-"""
+# Python script to test intent detection logic
 
-def is_function_call_intent(user_text):
-    """模拟Java中的意图检测逻辑"""
-    lower_text = user_text.lower()
-    
-    # 功能调用关键词
-    function_keywords = [
-        "发送邮件", "发邮件", "send email", "邮件", "email",
-        "查看日程", "添加日程", "schedule", "日程", "calendar",
-        "健康检查", "health check", "健康", "health",
-        "联系人", "contact", "查找", "find",
-        "重要日期", "important date", "生日", "birthday",
-        "提醒", "reminder", "设置", "set"
+
+def is_function_call(text: str) -> bool:
+    """Simulate intent detection logic in Java"""
+    lower = text.lower()
+    # Function call keywords (English only)
+    keywords = [
+        "send email", "email",
+        "schedule", "calendar",
+        "health check", "health",
+        "contact", "find",
+        "important date", "birthday",
+        "reminder", "set"
     ]
-    
-    # 如果包含功能关键词，认为是功能调用
-    is_function_call = any(keyword in lower_text for keyword in function_keywords)
-    
-    return is_function_call
+    # If contains any function keywords, consider as function call
+    return any(k in lower for k in keywords)
+
 
 def test_intent_detection():
-    """测试意图检测功能"""
-    print("🧪 测试意图检测逻辑")
-    print("=" * 50)
-    
-    # 测试用例
-    test_cases = [
-        # 功能调用测试
-        ("发送邮件给张三", True),
-        ("send email to john", True),
-        ("查看日程", True),
-        ("health check", True),
-        ("添加联系人", True),
-        ("设置提醒", True),
-        ("重要日期", True),
-        
-        # 普通对话测试
-        ("你好", False),
-        ("今天天气怎么样", False),
+    """Test intent detection"""
+    print("🧪 Testing intent detection logic")
+
+    # Test cases
+    cases = [
+        # Function calls
+        ("send email to Zhang San", True),
+        ("view schedule", True),
+        ("add contact", True),
+        ("set reminder", True),
+        ("important date", True),
+        # Normal chats
         ("hello", False),
-        ("how are you", False),
-        ("讲个笑话", False),
-        ("现在几点了", False),
-        ("谢谢", False),
+        ("what's the weather today", False),
+        ("tell me a joke", False),
+        ("what time is it", False),
+        ("thanks", False),
     ]
-    
+
     passed = 0
-    total = len(test_cases)
-    
-    for text, expected in test_cases:
-        result = is_function_call_intent(text)
-        status = "✅" if result == expected else "❌"
-        print(f"{status} 输入: '{text}' -> 预期: {expected}, 实际: {result}")
-        
+    total = len(cases)
+    for text, expected in cases:
+        result = is_function_call(text)
+        status = "✅ PASS" if result == expected else "❌ FAIL"
         if result == expected:
             passed += 1
-    
-    print("=" * 50)
-    print(f"测试结果: {passed}/{total} 通过")
-    
-    if passed == total:
-        print("🎉 所有测试通过！意图检测逻辑正确。")
-    else:
-        print("⚠️  部分测试失败，需要检查逻辑。")
+        print(f"{status} input: '{text}' -> expected: {expected}, actual: {result}")
 
-def test_dual_path_logic():
-    """测试双路径处理逻辑"""
-    print("\n🔄 测试双路径处理逻辑")
-    print("=" * 50)
-    
-    test_inputs = [
-        "发送邮件给张三，主题是会议提醒",
-        "今天天气怎么样？",
-        "查看明天的日程安排",
-        "你好，最近怎么样？",
-        "健康检查一下",
-        "讲个笑话给我听",
+    print(f"Results: {passed}/{total} passed")
+    if passed == total:
+        print("🎉 All tests passed! Intent detection logic is correct.")
+    else:
+        print("⚠️  Some tests failed, please check the logic.")
+
+
+def test_dual_path():
+    """Test dual-path processing logic"""
+    print("\n🔄 Testing dual-path processing logic")
+    texts = [
+        "send email to Zhang San, subject is meeting reminder",
+        "what's the weather today?",
+        "view schedule for tomorrow",
+        "hello, how are you?",
+        "health check please",
+        "tell me a joke",
     ]
-    
-    for text in test_inputs:
-        is_function = is_function_call_intent(text)
-        path = "功能调用路径" if is_function else "普通对话路径"
-        print(f"📝 输入: '{text}'")
-        print(f"   → 路径: {path}")
-        print()
+    for text in texts:
+        is_function = is_function_call(text)
+        path = "Function path" if is_function else "Normal chat path"
+        print(f"📝 input: '{text}'")
+        print(f"   → path: {path}")
+
 
 if __name__ == "__main__":
     test_intent_detection()
-    test_dual_path_logic()
+    test_dual_path()

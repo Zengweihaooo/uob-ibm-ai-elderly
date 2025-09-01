@@ -426,7 +426,7 @@ public class EmailService {
         }
     }
 
-    // ==================== 异步邮件发送方法 ====================
+    // ==================== Asynchronous email sending methods ====================
 
     /**
      * Send custom email asynchronously
@@ -443,7 +443,7 @@ public class EmailService {
             System.out.println("Async email sent successfully to: " + toEmail + " with subject: " + subject);
         } catch (Exception e) {
             System.err.println("Async email sending failed to: " + toEmail + " => " + e.getMessage());
-            // 异步方法中不抛出异常，只记录日志
+            // In async method, do not throw; only log the error
         }
     }
 

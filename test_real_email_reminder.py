@@ -1,129 +1,129 @@
 #!/usr/bin/env python3
 """
-实际测试邮件提醒功能
-通过调用后端服务来真正发送测试邮件
+Real test for email reminder function
+Send a real test email by calling backend service
 """
 
 import requests
 import json
 from datetime import datetime, timedelta
 
-# 配置
+# Config
 BASE_URL = "http://localhost:8080"
 TEST_EMAIL = "weihaooo@foxmail.com"
 
 def test_real_email_reminder():
-    """实际测试邮件提醒功能"""
+    """Real test for email reminder function"""
     
-    print("🧪 实际测试邮件提醒功能...")
+    print("🧪 Real test for email reminder function...")
     print("=" * 50)
     
-    # 1. 检查后端服务状态
-    print("1. 检查后端服务状态...")
+    # 1. Check backend service status
+    print("1. Checking backend service status...")
     try:
         response = requests.get(f"{BASE_URL}/api/voice/status")
         if response.status_code == 200:
-            print("✅ 后端服务正常运行")
+            print("✅ Backend service is running")
         else:
-            print("❌ 后端服务异常")
+            print("❌ Backend service error")
             return
     except Exception as e:
-        print(f"❌ 无法连接到后端服务: {e}")
+        print(f"❌ Cannot connect to backend service: {e}")
         return
     
-    # 2. 检查邮件配置
-    print("\n2. 检查邮件配置...")
+    # 2. Check mail configuration
+    print("\n2. Checking mail configuration...")
     try:
-        # 检查邮件服务配置
-        print("   🔍 检查邮件服务配置...")
+        # Check mail service configuration
+        print("   🔍 Checking mail service configuration...")
         
-        # 这里可以检查application.properties中的邮件配置
-        print("   📧 邮件服务配置检查完成")
+        # Here you can check mail config in application.properties
+        print("   📧 Mail service configuration check completed")
         
     except Exception as e:
-        print(f"   ❌ 邮件配置检查失败: {e}")
+        print(f"   ❌ Mail configuration check failed: {e}")
     
-    # 3. 测试邮件发送功能
-    print("\n3. 测试邮件发送功能...")
+    # 3. Test email sending function
+    print("\n3. Testing email sending function...")
     
-    # 测试发送自定义邮件
-    print("   📧 测试发送自定义邮件...")
+    # Test sending custom email
+    print("   📧 Testing sending a custom email...")
     try:
         email_data = {
             "toEmail": TEST_EMAIL,
-            "subject": "重要日期提醒功能测试",
+            "subject": "Important Date Reminder Function Test",
             "content": """
             <html>
             <body>
-                <h2>🧪 重要日期提醒功能测试</h2>
-                <p>这是一封测试邮件，用于验证重要日期提醒功能是否正常工作。</p>
-                <h3>测试内容：</h3>
+                <h2>🧪 Important Date Reminder Function Test</h2>
+                <p>This is a test email to verify the important date reminder works properly.</p>
+                <h3>Test Items:</h3>
                 <ul>
-                    <li>✅ 邮件服务配置正常</li>
-                    <li>✅ 邮件发送功能正常</li>
-                    <li>✅ HTML邮件格式支持</li>
-                    <li>✅ 重要日期提醒功能正常</li>
+                    <li>✅ Mail service configuration OK</li>
+                    <li>✅ Email sending function OK</li>
+                    <li>✅ HTML mail format supported</li>
+                    <li>✅ Important date reminder works</li>
                 </ul>
-                <p><strong>测试时间：</strong> {}</p>
-                <p><strong>测试邮箱：</strong> {}</p>
+                <p><strong>Test time:</strong> {}</p>
+                <p><strong>Test email:</strong> {}</p>
                 <hr>
-                <p><em>此邮件由IBM AI Elderly Companion System自动发送</em></p>
+                <p><em>This email is automatically sent by IBM AI Elderly Companion System</em></p>
             </body>
             </html>
             """.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), TEST_EMAIL),
             "senderName": "IBM AI Elderly Companion"
         }
         
-        print(f"   📤 发送测试邮件到: {TEST_EMAIL}")
+        print(f"   📤 Send test email to: {TEST_EMAIL}")
         
-        # 尝试调用邮件发送API
-        # 注意：这里需要实际的API端点
-        print("   ⚠️ 注意：由于没有直接的邮件发送API端点，这里模拟发送")
-        print("   ✅ 测试邮件模拟发送成功")
+        # Try to call mail sending API
+        # Note: An actual API endpoint is needed here
+        print("   ⚠️ Note: No direct email sending API endpoint, simulate sending here")
+        print("   ✅ Simulated sending test email succeeded")
         
     except Exception as e:
-        print(f"   ❌ 测试邮件发送失败: {e}")
+        print(f"   ❌ Sending test email failed: {e}")
     
-    # 4. 测试重要日期提醒邮件
-    print("\n4. 测试重要日期提醒邮件...")
+    # 4. Test important date reminder email
+    print("\n4. Testing important date reminder email...")
     
-    # 创建测试重要日期
+    # Create a test important date
     tomorrow = datetime.now() + timedelta(days=1)
     tomorrow_str = tomorrow.strftime("%Y-%m-%d")
     
     important_date = {
         "id": 1,
         "userId": 1,
-        "title": "测试重要日期-明天",
-        "description": "这是一个测试重要日期，用于验证提前一天的邮件提醒功能",
+        "title": "Test Important Date - Tomorrow",
+        "description": "This is a test important date to verify one-day prior reminder",
         "date": tomorrow_str,
         "type": "custom",
         "repeatCycle": "yearly",
         "enabled": True
     }
     
-    # 测试提前一天的提醒
-    print("   📧 测试提前一天的邮件提醒...")
+    # Test one-day prior reminder
+    print("   📧 Testing one-day prior reminder email...")
     try:
         reminder_data = {
             "toEmail": TEST_EMAIL,
-            "userName": "测试用户",
+            "userName": "Test User",
             "importantDate": important_date,
             "reminderType": "day"
         }
         
-        print(f"   📤 发送提前一天提醒邮件到: {TEST_EMAIL}")
-        print(f"   📋 邮件主题: Important Date Reminder - One Day Notice")
-        print(f"   📅 重要日期: {important_date['title']} ({important_date['date']})")
+        print(f"   📤 Send one-day prior reminder to: {TEST_EMAIL}")
+        print(f"   📋 Subject: Important Date Reminder - One Day Notice")
+        print(f"   📅 Important date: {important_date['title']} ({important_date['date']})")
         
-        # 模拟邮件发送
-        print("   ✅ 提前一天的邮件提醒模拟发送成功")
+        # Simulate sending
+        print("   ✅ Simulated sending one-day prior reminder succeeded")
         
     except Exception as e:
-        print(f"   ❌ 提前一天的邮件提醒发送失败: {e}")
+        print(f"   ❌ Sending one-day prior reminder failed: {e}")
     
-    # 测试提前一周的提醒
-    print("\n   📧 测试提前一周的邮件提醒...")
+    # Test one-week prior reminder
+    print("\n   📧 Testing one-week prior reminder email...")
     try:
         week_later = datetime.now() + timedelta(days=7)
         week_later_str = week_later.strftime("%Y-%m-%d")
@@ -131,8 +131,8 @@ def test_real_email_reminder():
         important_date_week = {
             "id": 2,
             "userId": 1,
-            "title": "测试重要日期-一周后",
-            "description": "这是一个测试重要日期，用于验证提前一周的邮件提醒功能",
+            "title": "Test Important Date - Next Week",
+            "description": "This is a test important date to verify one-week prior reminder",
             "date": week_later_str,
             "type": "custom",
             "repeatCycle": "yearly",
@@ -141,134 +141,134 @@ def test_real_email_reminder():
         
         reminder_data = {
             "toEmail": TEST_EMAIL,
-            "userName": "测试用户",
+            "userName": "Test User",
             "importantDate": important_date_week,
             "reminderType": "week"
         }
         
-        print(f"   📤 发送提前一周提醒邮件到: {TEST_EMAIL}")
-        print(f"   📋 邮件主题: Important Date Reminder - One Week Notice")
-        print(f"   📅 重要日期: {important_date_week['title']} ({important_date_week['date']})")
+        print(f"   📤 Send one-week prior reminder to: {TEST_EMAIL}")
+        print(f"   📋 Subject: Important Date Reminder - One Week Notice")
+        print(f"   📅 Important date: {important_date_week['title']} ({important_date_week['date']})")
         
-        # 模拟邮件发送
-        print("   ✅ 提前一周的邮件提醒模拟发送成功")
+        # Simulate sending
+        print("   ✅ Simulated sending one-week prior reminder succeeded")
         
     except Exception as e:
-        print(f"   ❌ 提前一周的邮件提醒发送失败: {e}")
+        print(f"   ❌ Sending one-week prior reminder failed: {e}")
     
-    # 5. 验证邮件模板
-    print("\n5. 验证邮件模板...")
+    # 5. Validate email template
+    print("\n5. Validating email template...")
     try:
         import os
         template_path = "springboot/src/main/resources/templates/importantDateReminderTemplate.html"
         
         if os.path.exists(template_path):
-            print("   ✅ 邮件模板文件存在")
+            print("   ✅ Email template file exists")
             
-            # 检查模板内容
+            # Check template content
             with open(template_path, 'r', encoding='utf-8') as f:
                 content = f.read()
                 
-            # 检查关键元素
+            # Check key elements
             if "Important Date Reminder" in content:
-                print("   ✅ 邮件模板标题正确")
+                print("   ✅ Template title correct")
             if "reminderType" in content:
-                print("   ✅ 邮件模板支持提醒类型")
+                print("   ✅ Template supports reminder type")
             if "importantDate" in content:
-                print("   ✅ 邮件模板支持重要日期信息")
+                print("   ✅ Template supports important date info")
             if "userName" in content:
-                print("   ✅ 邮件模板支持用户名")
+                print("   ✅ Template supports user name")
                 
         else:
-            print("   ❌ 邮件模板文件不存在")
+            print("   ❌ Email template file not found")
             
     except Exception as e:
-        print(f"   ❌ 邮件模板验证失败: {e}")
+        print(f"   ❌ Email template validation failed: {e}")
     
-    # 6. 测试自动提醒检查
-    print("\n6. 测试自动提醒检查...")
+    # 6. Test auto reminder check
+    print("\n6. Testing auto reminder check...")
     try:
-        print("   🔍 检查需要发送提醒的重要日期...")
+        print("   🔍 Checking important dates that need reminders...")
         
-        # 模拟检查逻辑
+        # Simulate checking logic
         today = datetime.now().date()
         tomorrow = today + timedelta(days=1)
         week_later = today + timedelta(days=7)
         
-        print(f"   📊 今天日期: {today}")
-        print(f"   📊 明天日期: {tomorrow}")
-        print(f"   📊 一周后日期: {week_later}")
+        print(f"   📊 Today: {today}")
+        print(f"   📊 Tomorrow: {tomorrow}")
+        print(f"   📊 One week later: {week_later}")
         
-        # 检查是否有需要发送提醒的日期
+        # Check if there are dates requiring reminders
         if important_date['date'] == tomorrow.strftime("%Y-%m-%d"):
-            print("   ✅ 发现需要发送提前一天提醒的日期")
+            print("   ✅ Found a date requiring one-day prior reminder")
         else:
-            print("   ⚠️ 没有发现需要发送提前一天提醒的日期")
+            print("   ⚠️ No date requiring one-day prior reminder found")
             
         if important_date_week['date'] == week_later.strftime("%Y-%m-%d"):
-            print("   ✅ 发现需要发送提前一周提醒的日期")
+            print("   ✅ Found a date requiring one-week prior reminder")
         else:
-            print("   ⚠️ 没有发现需要发送提前一周提醒的日期")
+            print("   ⚠️ No date requiring one-week prior reminder found")
         
-        print("   ✅ 自动提醒检查功能正常")
+        print("   ✅ Auto reminder check works")
         
     except Exception as e:
-        print(f"   ❌ 自动提醒检查失败: {e}")
+        print(f"   ❌ Auto reminder check failed: {e}")
     
-    # 7. 检查邮件服务配置
-    print("\n7. 检查邮件服务配置...")
+    # 7. Check mail service configuration
+    print("\n7. Checking mail service configuration...")
     try:
-        # 检查application.properties中的邮件配置
+        # Check mail config in application.properties
         config_path = "springboot/src/main/resources/application.properties"
         
         if os.path.exists(config_path):
-            print("   ✅ 配置文件存在")
+            print("   ✅ Configuration file exists")
             
             with open(config_path, 'r', encoding='utf-8') as f:
                 content = f.read()
                 
-            # 检查邮件相关配置
+            # Check mail related config
             if "spring.mail" in content:
-                print("   ✅ 邮件服务配置存在")
+                print("   ✅ Mail service configuration exists")
             else:
-                print("   ⚠️ 邮件服务配置可能不完整")
+                print("   ⚠️ Mail service configuration may be incomplete")
                 
             if "smtp" in content:
-                print("   ✅ SMTP配置存在")
+                print("   ✅ SMTP configuration exists")
             else:
-                print("   ⚠️ SMTP配置可能不完整")
+                print("   ⚠️ SMTP configuration may be incomplete")
                 
         else:
-            print("   ❌ 配置文件不存在")
+            print("   ❌ Configuration file not found")
             
     except Exception as e:
-        print(f"   ❌ 邮件服务配置检查失败: {e}")
+        print(f"   ❌ Mail service configuration check failed: {e}")
     
     print("\n" + "=" * 50)
-    print("🎉 实际邮件提醒功能测试完成！")
-    print("\n📋 测试总结:")
-    print("   ✅ 后端服务状态正常")
-    print("   ✅ 邮件模板文件存在且格式正确")
-    print("   ✅ 邮件提醒逻辑正常")
-    print("   ✅ 自动提醒检查功能正常")
-    print("   ✅ 邮件服务配置检查完成")
-    print("\n📧 测试邮件应该发送到: {TEST_EMAIL}")
-    print("\n🔧 实际测试建议:")
-    print("   1. 在系统中创建真实的重要日期")
-    print("   2. 设置日期为明天或一周后")
-    print("   3. 等待自动提醒触发（每天上午8点）")
-    print("   4. 或手动调用提醒检查功能")
-    print("\n📝 邮件提醒功能说明:")
-    print("   - 提前一天提醒：在重要日期前一天发送邮件")
-    print("   - 提前一周提醒：在重要日期前一周发送邮件")
-    print("   - 自动检查：每天上午8点自动检查并发送提醒")
-    print("   - 邮件模板：使用HTML模板，包含详细的提醒信息")
-    print("   - 邮件配置：使用SMTP服务发送邮件")
-    print("\n⚠️ 注意事项:")
-    print("   - 确保邮件服务配置正确（SMTP服务器、端口、认证信息）")
-    print("   - 确保网络连接正常")
-    print("   - 检查邮箱是否收到测试邮件")
-    print("   - 如果未收到邮件，请检查垃圾邮件文件夹")
+    print("🎉 Real email reminder function test finished!")
+    print("\n📋 Test Summary:")
+    print("   ✅ Backend service status OK")
+    print("   ✅ Email template file exists and correct")
+    print("   ✅ Email reminder logic OK")
+    print("   ✅ Auto reminder check OK")
+    print("   ✅ Mail service configuration check completed")
+    print("\n📧 Test email should be sent to: {TEST_EMAIL}")
+    print("\n🔧 Suggestions for real test:")
+    print("   1. Create a real important date in the system")
+    print("   2. Set the date to tomorrow or next week")
+    print("   3. Wait for auto reminder to trigger (8 AM daily)")
+    print("   4. Or call reminder check manually")
+    print("\n📝 Email reminder function notes:")
+    print("   - One-day prior reminder: send email one day before the important date")
+    print("   - One-week prior reminder: send email one week before the important date")
+    print("   - Auto check: runs every day at 8 AM")
+    print("   - Email template: uses HTML template with detailed info")
+    print("   - Mail configuration: uses SMTP service")
+    print("\n⚠️ Notes:")
+    print("   - Ensure mail service configuration is correct (SMTP server, port, auth)")
+    print("   - Ensure network connection is OK")
+    print("   - Check if the inbox received the test email")
+    print("   - If not received, please check the spam folder")
 
 if __name__ == "__main__":
     test_real_email_reminder()
