@@ -28,7 +28,7 @@ import com.example.demo.service.SmsService;
 @CrossOrigin(origins = "*")
 public class SmsController {
 
-    @Autowired
+    @Autowired(required = false)
     private SmsService smsService;
 
     /**
@@ -39,6 +39,13 @@ public class SmsController {
      */
     @PostMapping("/send")
     public ResponseEntity<Map<String, Object>> sendSMS(@RequestBody Map<String, Object> smsData) {
+        if (smsService == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "SMS服务已禁用");
+            return ResponseEntity.status(503).body(response);
+        }
+        
         Map<String, Object> response = new HashMap<>();
         
         try {
@@ -82,6 +89,13 @@ public class SmsController {
      */
     @PostMapping("/health-alert")
     public ResponseEntity<Map<String, Object>> sendHealthAlert(@RequestBody Map<String, Object> alertData) {
+        if (smsService == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "SMS服务已禁用");
+            return ResponseEntity.status(503).body(response);
+        }
+        
         Map<String, Object> response = new HashMap<>();
         
         try {
@@ -124,6 +138,13 @@ public class SmsController {
      */
     @PostMapping("/emergency")
     public ResponseEntity<Map<String, Object>> sendEmergency(@RequestBody Map<String, Object> emergencyData) {
+        if (smsService == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "SMS服务已禁用");
+            return ResponseEntity.status(503).body(response);
+        }
+        
         Map<String, Object> response = new HashMap<>();
         
         try {
@@ -165,6 +186,13 @@ public class SmsController {
      */
     @GetMapping("/history")
     public ResponseEntity<Map<String, Object>> getSmsHistory() {
+        if (smsService == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "SMS服务已禁用");
+            return ResponseEntity.status(503).body(response);
+        }
+        
         Map<String, Object> response = new HashMap<>();
         
         try {
@@ -191,6 +219,13 @@ public class SmsController {
      */
     @GetMapping("/statistics")
     public ResponseEntity<Map<String, Object>> getSmsStatistics() {
+        if (smsService == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "SMS服务已禁用");
+            return ResponseEntity.status(503).body(response);
+        }
+        
         Map<String, Object> response = new HashMap<>();
         
         try {

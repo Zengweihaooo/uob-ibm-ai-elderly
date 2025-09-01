@@ -2,6 +2,7 @@ package com.voicecommand.config;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -10,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 @Configuration
+@ConditionalOnProperty(name = "google.cloud.enabled", havingValue = "true", matchIfMissing = false)
 public class GoogleCloudConfig {
 
     @Value("${google.cloud.ai.credentials-file}")

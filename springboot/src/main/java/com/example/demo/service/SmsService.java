@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import com.twilio.Twilio;
@@ -27,6 +28,7 @@ import com.twilio.type.PhoneNumber;
  * @version 1.0
  */
 @Service
+@ConditionalOnProperty(name = "app.sms.enabled", havingValue = "true", matchIfMissing = false)
 public class SmsService {
     
     // Configuration: enable mock mode
@@ -39,16 +41,16 @@ public class SmsService {
     
 
     
-    // Twilio config properties - injected from TwilioConfig bean
-    @Autowired
+    // Twilio config properties - injected from TwilioConfig bean (optional)
+    @Autowired(required = false)
     @Qualifier("twilioAccountSid")
     private String twilioAccountSid;
     
-    @Autowired
+    @Autowired(required = false)
     @Qualifier("twilioAuthToken") 
     private String twilioAuthToken;
     
-    @Autowired
+    @Autowired(required = false)
     @Qualifier("twilioFromNumber")
     private String twilioFromNumber;
     
@@ -172,8 +174,9 @@ public class SmsService {
      */
     private Map<String, Object> sendTwilioSMS(String phoneNumber, String message, String messageType) {
         // Validate Twilio config
-        if (twilioAccountSid.isEmpty() || twilioAuthToken.isEmpty()) {
-            String errorMsg = "Twilio configuration incomplete, check account-sid and auth-token";
+        if (twilioAccountSid == null || twilioAuthToken == null || 
+            twilioAccountSid.isEmpty() || twilioAuthToken.isEmpty()) {
+            String errorMsg = "Twilio configuration incomplete or disabled, check account-sid and auth-token";
             System.err.println("❌ " + errorMsg);
             return createErrorResponse(errorMsg);
         }

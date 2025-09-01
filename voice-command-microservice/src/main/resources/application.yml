@@ -34,6 +34,7 @@ openai:
   temperature: 0.7
 google:
   cloud:
+    enabled: false
     project-id: ${GOOGLE_CLOUD_PROJECT_ID:organic-totem-467918-a5}
     # 主密钥文件 - 用于AI服务 (Gemini, TTS, STT)
     credentials-file: ${GOOGLE_APPLICATION_CREDENTIALS:../docs/keys/organic-totem-467918-a5-d17504cd5eba.json}
@@ -41,11 +42,11 @@ google:
     backup-credentials-file: ${GOOGLE_BACKUP_CREDENTIALS:../docs/keys/organic-totem-467918-a5-6497b0d6925f.json}
     # AI服务配置
     ai:
-      enabled: true
+      enabled: false
       credentials-file: ${GOOGLE_AI_CREDENTIALS:../docs/keys/organic-totem-467918-a5-d17504cd5eba.json}
     # 语音服务配置
     speech:
-      enabled: true
+      enabled: false
       language: zh-CN
       credentials-file: ${GOOGLE_SPEECH_CREDENTIALS:../docs/keys/organic-totem-467918-a5-d17504cd5eba.json}
     # TTS服务配置
@@ -65,7 +66,7 @@ function:
       service-url: http://localhost:8080
       controller: EmailComposeController
     schedule:
-      enabled: false
+      enabled: true
       priority: 2
       service-url: http://localhost:8080
       controller: ScheduleController

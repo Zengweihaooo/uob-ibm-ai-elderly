@@ -31,7 +31,7 @@ public class ScheduleMonitorService {
     // @Autowired
     // private EmotionCompanionController emotionCompanionController;
 
-    @Autowired
+    @Autowired(required = false)
     private SmsService smsService;
 
     @Autowired
@@ -92,9 +92,9 @@ public class ScheduleMonitorService {
             System.err.println("Failed to send email reminder to " + user.getEmail() + ": " + e.getMessage());
         }
         
-        // Send SMS reminder (if phone number is available)
+        // Send SMS reminder (if phone number is available and SMS service is enabled)
         try {
-            if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
+            if (smsService != null && user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
                 smsService.sendSMS(user.getPhoneNumber(), message, "REMINDER");
             }
         } catch (Exception e) {
@@ -140,7 +140,7 @@ public class ScheduleMonitorService {
         
         // Send immediate SMS
         try {
-            if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
+            if (smsService != null && user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
                 smsService.sendSMS(user.getPhoneNumber(), message, "MEDICATION_URGENT");
             }
         } catch (Exception e) {
@@ -172,7 +172,7 @@ public class ScheduleMonitorService {
         
         // Send SMS reminder
         try {
-            if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
+            if (smsService != null && user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
                 smsService.sendSMS(user.getPhoneNumber(), message, "APPOINTMENT");
             }
         } catch (Exception e) {

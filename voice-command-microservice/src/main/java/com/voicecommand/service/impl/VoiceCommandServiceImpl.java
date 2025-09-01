@@ -278,12 +278,15 @@ public class VoiceCommandServiceImpl implements VoiceCommandService {
         
         // Function-call keywords
         List<String> functionKeywords = Arrays.asList(
-            "send email", "email",
-            "schedule", "calendar",
-            "health check", "health",
-            "contact", "find",
-            "important date", "birthday",
-            "reminder", "set"
+            "send email", "email", "mail",
+            "schedule", "calendar", "add", "meeting", "appointment", "event", "booking", "reservation",
+            "health check", "health", "medical", "doctor", "hospital",
+            "contact", "find", "search", "locate", "call",
+            "important date", "birthday", "anniversary", "reminder date",
+            "reminder", "set", "create", "make", "plan", "organize",
+            "tomorrow", "today", "next week", "this week", "next month",
+            "pm", "am", "morning", "afternoon", "evening", "night", "noon", "midnight",
+            "o'clock", "hour", "minute", "time", "when"
         );
         
         // If contains any keyword, treat as function call

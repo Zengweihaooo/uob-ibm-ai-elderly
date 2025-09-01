@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
@@ -21,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @version 1.0
  */
 @Configuration
+@ConditionalOnProperty(name = "app.sms.enabled", havingValue = "true", matchIfMissing = false)
 public class TwilioConfig {
 
     @Value("${app.twilio.credentials-file:docs/keys/twilio-config.json}")

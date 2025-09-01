@@ -28,7 +28,7 @@ public class FamilyService {
     @Autowired
     private EmailService emailService;
 
-    @Autowired
+    @Autowired(required = false)
     private SmsService smsService;
 
     @Autowired
@@ -458,8 +458,12 @@ public class FamilyService {
                     System.out.println("SMS content length: " + content.length());
                 }
                 
-                Map<String, Object> smsResult = smsService.sendSMS(phoneNumber, content);
-                boolean smsSuccess = (Boolean) smsResult.getOrDefault("success", false);
+                Map<String, Object> smsResult = null;
+                boolean smsSuccess = false;
+                if (smsService != null) {
+                    smsResult = smsService.sendSMS(phoneNumber, content);
+                    smsSuccess = (Boolean) smsResult.getOrDefault("success", false);
+                }
                 
                 if (DEBUG_ENABLED) {
                     System.out.println("DEBUG: SMS send result: " + smsSuccess);
@@ -481,8 +485,12 @@ public class FamilyService {
                         System.out.println("SMS content length: " + content.length());
                     }
                     
-                    Map<String, Object> smsResult = smsService.sendSMS(phoneNumber, content);
-                    boolean smsSuccess = (Boolean) smsResult.getOrDefault("success", false);
+                    Map<String, Object> smsResult = null;
+                    boolean smsSuccess = false;
+                    if (smsService != null) {
+                        smsResult = smsService.sendSMS(phoneNumber, content);
+                        smsSuccess = (Boolean) smsResult.getOrDefault("success", false);
+                    }
                     
                     if (DEBUG_ENABLED) {
                         System.out.println("DEBUG: SMS send result: " + smsSuccess);
@@ -587,7 +595,9 @@ public class FamilyService {
                 String message = buildEmergencyMessage(emergencyType, description, contact.getName());
                 
                 if (contact.getPhone() != null) {
+                    if (smsService != null) {
                     smsService.sendSMS(contact.getPhone(), message);
+                }
                     notifiedCount++;
                 }
                 

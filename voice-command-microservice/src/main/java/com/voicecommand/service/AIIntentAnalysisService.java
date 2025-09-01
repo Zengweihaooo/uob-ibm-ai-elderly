@@ -1183,6 +1183,8 @@ public class AIIntentAnalysisService {
      */
     private String extractScheduleTime(String text) {
         String lowerText = text.toLowerCase();
+        log.info("Extracting time from text: '{}'", text);
+        log.info("Lowercase text: '{}'", lowerText);
         
         // Try to extract time
         String time = null;
@@ -1206,19 +1208,19 @@ public class AIIntentAnalysisService {
                     }
                 }
             } else if (lowerText.contains("pm")) {
-                int start = lowerText.indexOf("pm") - 1;
-                if (start >= 0) {
-                    // Find number before pm
-                    String beforePm = text.substring(0, start + 1);
-                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)\\s*pm");
-                    java.util.regex.Matcher matcher = pattern.matcher(beforePm);
-                    if (matcher.find()) {
-                        int hour = Integer.parseInt(matcher.group(1));
-                        if (hour >= 1 && hour <= 12) {
-                            time = String.format("%02d:00", hour + 12);
-                            log.info("Pattern1 extracted time: {}pm -> {}", hour, time);
-                            return time;
-                        }
+                // Enhanced PM pattern matching for "3pm", "3:30pm", etc.
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{1,2}):?(\\d{0,2})\\s*pm");
+                java.util.regex.Matcher matcher = pattern.matcher(lowerText);
+                if (matcher.find()) {
+                    int hour = Integer.parseInt(matcher.group(1));
+                    int minute = 0;
+                    if (matcher.group(2) != null && !matcher.group(2).isEmpty()) {
+                        minute = Integer.parseInt(matcher.group(2));
+                    }
+                    if (hour >= 1 && hour <= 12) {
+                        time = String.format("%02d:%02d", hour + 12, minute);
+                        log.info("Pattern1 extracted time: {}:{}pm -> {}", hour, minute, time);
+                        return time;
                     }
                 }
             }
@@ -1242,20 +1244,72 @@ public class AIIntentAnalysisService {
                     }
                 }
             } else if (lowerText.contains("am")) {
-                int start = lowerText.indexOf("am") - 1;
-                if (start >= 0) {
-                    String beforeAm = text.substring(0, start + 1);
-                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)\\s*am");
-                    java.util.regex.Matcher matcher = pattern.matcher(beforeAm);
-                    if (matcher.find()) {
-                        int hour = Integer.parseInt(matcher.group(1));
-                        if (hour >= 1 && hour <= 12) {
-                            time = String.format("%02d:00", hour);
-                            log.info("Pattern2 extracted time: {}am -> {}", hour, time);
-                            return time;
-                        }
+                // Enhanced AM pattern matching for "8am", "8:30am", etc.
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{1,2}):?(\\d{0,2})\\s*am");
+                java.util.regex.Matcher matcher = pattern.matcher(lowerText);
+                if (matcher.find()) {
+                    int hour = Integer.parseInt(matcher.group(1));
+                    int minute = 0;
+                    if (matcher.group(2) != null && !matcher.group(2).isEmpty()) {
+                        minute = Integer.parseInt(matcher.group(2));
+                    }
+                    if (hour >= 1 && hour <= 12) {
+                        time = String.format("%02d:%02d", hour, minute);
+                        log.info("Pattern2 extracted time: {}:{}am -> {}", hour, minute, time);
+                        return time;
                     }
                 }
+            }
+        }
+        
+        // Pattern 3: "3 o'clock" or "3 o clock" or "3 o'clock in the afternoon"
+        java.util.regex.Pattern patternOClock = java.util.regex.Pattern.compile("(\\d{1,2})\\s*o['\\s]*clock");
+        java.util.regex.Matcher matcherOClock = patternOClock.matcher(lowerText);
+        if (matcherOClock.find()) {
+            int hour = Integer.parseInt(matcherOClock.group(1));
+            if (hour >= 1 && hour <= 12) {
+                // Check context for time of day
+                if (lowerText.contains("afternoon") || lowerText.contains("evening") || lowerText.contains("night")) {
+                    time = String.format("%02d:00", hour + 12);
+                    log.info("Pattern3 extracted time: {} o'clock (afternoon/evening) -> {}", hour, time);
+                    return time;
+                } else if (lowerText.contains("morning")) {
+                    time = String.format("%02d:00", hour);
+                    log.info("Pattern3 extracted time: {} o'clock (morning) -> {}", hour, time);
+                    return time;
+                } else {
+                    // Default to morning for 1-12 without context
+                    time = String.format("%02d:00", hour);
+                    log.info("Pattern3 extracted time: {} o'clock (default morning) -> {}", hour, time);
+                    return time;
+                }
+            } else if (hour >= 13 && hour <= 23) {
+                // 24-hour format
+                time = String.format("%02d:00", hour);
+                log.info("Pattern3 extracted time: {} o'clock (24-hour) -> {}", hour, time);
+                return time;
+            }
+        }
+        
+        // Pattern 4: "at 3pm" or "at 3:00pm" (with "at" prefix)
+        java.util.regex.Pattern patternAt = java.util.regex.Pattern.compile("at\\s+(\\d{1,2}):?(\\d{0,2})\\s*(am|pm)");
+        java.util.regex.Matcher matcherAt = patternAt.matcher(lowerText);
+        if (matcherAt.find()) {
+            int hour = Integer.parseInt(matcherAt.group(1));
+            int minute = 0;
+            if (matcherAt.group(2) != null && !matcherAt.group(2).isEmpty()) {
+                minute = Integer.parseInt(matcherAt.group(2));
+            }
+            String period = matcherAt.group(3);
+            
+            if (period.equals("pm") && hour >= 1 && hour <= 12) {
+                time = String.format("%02d:%02d", hour + 12, minute);
+                log.info("Pattern4 extracted time: at {}:{}pm -> {}", hour, minute, time);
+                return time;
+            } else if (period.equals("am") && hour >= 1 && hour <= 12) {
+                time = String.format("%02d:%02d", hour, minute);
+                log.info("Pattern4 extracted time: at {}:{}am -> {}", hour, minute, time);
+                return time;
             }
         }
         
