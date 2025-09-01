@@ -1161,7 +1161,7 @@
                     }
                 });
             } else {
-                showMessage('请先登录以访问家庭联系人功能', 'warning');
+                showMessage('Please sign in to access Family Contacts', 'warning');
                 displayEmptyState();
             }
         });
@@ -1302,10 +1302,10 @@
             const container = document.getElementById('contactsContainer');
             container.innerHTML = `
                 <div style="text-align: center; padding: 50px;">
-                    <h3>需要登录</h3>
-                    <p>请先登录以访问家庭联系人功能</p>
-                    <button onclick="openLoginModal()" class="btn btn-primary">登录</button>
-                    <button onclick="openRegisterModal()" class="btn btn-primary" style="margin-left: 15px;">注册</button>
+                    <h3>Sign In Required</h3>
+                    <p>Please sign in to access Family Contacts</p>
+                    <button onclick="openLoginModal()" class="btn btn-primary">Sign In</button>
+                    <button onclick="openRegisterModal()" class="btn btn-primary" style="margin-left: 15px;">Register</button>
                 </div>
             `;
         }

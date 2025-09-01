@@ -673,8 +673,8 @@
                     <button class="tool-btn" onclick="shareLocation()" title="Share Location">
                         📍 <span>Location</span>
                     </button>
-                                    <button class="tool-btn" id="cloudVoiceBtn" title="AI语音命令 (微服务)" style="display: inline-flex !important; align-items: center; gap: 5px;">
-                    🎙️ <span>AI语音命令</span>
+                                    <button class="tool-btn" id="cloudVoiceBtn" title="AI Voice Command (Microservice)" style="display: inline-flex !important; align-items: center; gap: 5px;">
+                    🎙️ <span>AI Voice Command</span>
                 </button>
                     <button class="tool-btn" onclick="clearChat()" title="Clear Chat History">
                         🗑️ <span>Clear</span>
@@ -755,7 +755,7 @@
                     cloudBtn.style.display = 'inline-flex';
                     cloudBtn.style.alignItems = 'center';
                     cloudBtn.style.gap = '5px';
-                    console.log('AI语音命令按钮已初始化');
+                    console.log('AI Voice Command button initialized');
                 }
             }, 200);
         });
@@ -839,7 +839,7 @@
                         mediaRecorderLocal.stop();
                     }
                     cloudBtn.classList.remove('voice-recording');
-                    cloudBtn.innerHTML = '🎙️ <span>AI语音命令</span>';
+                    cloudBtn.innerHTML = '🎙️ <span>AI Voice Command</span>';
                     if (recordingTimeout) {
                         clearTimeout(recordingTimeout);
                         recordingTimeout = null;
@@ -901,7 +901,7 @@
                     },
                     body: JSON.stringify({
                         textCommand: message,
-                        languageCode: 'zh-CN',
+                        languageCode: 'en-US',
                         userId: 'guest',
                         sessionId: 'session_' + Date.now()
                     })
@@ -913,36 +913,36 @@
                 hideTypingIndicator();
                 
                 if (result && result.success) {
-                    // 显示AI分析结果
+                    // Show AI analysis result
                     if (result.intent && result.intent.functionName !== 'unknown') {
-                        addMessage('assistant', `我识别到您想要执行：${result.intent.functionName} 功能`);
+                        addMessage('assistant', `I detected you want to execute function: ${result.intent.functionName}`);
                         
-                        // 显示执行结果
+                        // Show execution result
                         if (result.execution && result.execution.success) {
-                            addMessage('assistant', result.feedbackText || '命令执行成功！');
+                            addMessage('assistant', result.feedbackText || 'Command executed successfully!');
                             
-                            // 如果是日程添加功能，发送页面间通信消息
+                            // If schedule added, send cross-page message
                             if (result.intent.functionName === 'add_schedule') {
                                 sendScheduleAddedMessage(result);
                             }
                             
-                            // 如果是重要日期添加功能，发送页面间通信消息
+                            // If important date added, send cross-page message
                             if (result.intent.functionName === 'add_important_date') {
                                 sendImportantDateAddedMessage(result);
                             }
                         } else {
-                            addMessage('assistant', result.errorMessage || '命令执行失败');
+                            addMessage('assistant', result.errorMessage || 'Command execution failed');
                         }
                     } else {
-                        addMessage('assistant', result.feedbackText || '抱歉，我无法理解您的命令，请重试。');
+                        addMessage('assistant', result.feedbackText || 'Sorry, I could not understand your command. Please try again.');
                     }
                 } else {
-                    addMessage('assistant', result.errorMessage || '处理命令时出现错误，请重试。');
+                    addMessage('assistant', result.errorMessage || 'An error occurred while processing your command. Please try again.');
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
                 hideTypingIndicator();
-                addMessage('assistant', '连接微服务失败，请检查服务状态。');
+                addMessage('assistant', 'Failed to connect to microservice. Please check service status.');
             }
         }
 
@@ -1003,15 +1003,15 @@
                     
                     // 如果AI分析成功，显示执行结果
                     if (data.intent && data.execution) {
-                        const feedback = data.feedbackText || '命令执行完成';
+                        const feedback = data.feedbackText || 'Command completed';
                         addMessage('assistant', feedback);
                     }
                 } else {
-                    addMessage('assistant', '语音识别失败，请重试。错误：' + (data.errorMessage || '未知错误'));
+                    addMessage('assistant', 'Speech recognition failed. Please try again. Error: ' + (data.errorMessage || 'Unknown error'));
                 }
             } catch (e) {
-                console.error('语音命令处理错误:', e);
-                addMessage('assistant', '语音处理失败，请检查网络连接或重试。');
+                console.error('Voice command processing error:', e);
+                addMessage('assistant', 'Voice processing failed. Please check network connection or try again.');
             }
         }
 
@@ -1309,20 +1309,20 @@
                         const div = document.createElement('div');
                         // 安全的时间格式化函数
                         const formatTime = (timeStr) => {
-                            if (!timeStr) return '时间未知';
+                            if (!timeStr) return 'Time unknown';
                             try {
                                 const date = new Date(timeStr);
-                                if (isNaN(date.getTime())) return '时间格式错误';
+                                if (isNaN(date.getTime())) return 'Time format error';
                                 return date.toLocaleString('zh-CN');
                             } catch (e) {
-                                return '时间解析错误';
+                                return 'Time parsing error';
                             }
                         };
                         
                         div.innerHTML = `
                             <strong>${record.type}</strong>: ${record.value} ${record.unit || ''}<br>
                             🕒 ${record.recordTimeStr || formatTime(record.recordTime)}<br>
-                            📝 ${record.notes || '无'}<hr>`;
+                            📝 ${record.notes || 'No notes'}<hr>`;
                         container.appendChild(div);
                     });
                 } else {
@@ -1356,16 +1356,16 @@
                     }
                 }, '*');
                 
-                console.log('已发送日程添加成功消息:', {
+                console.log('Sent schedule added message:', {
                     type: 'scheduleAdded',
                     data: result.execution?.resultData
                 });
                 
-                // 显示提示信息
-                addMessage('assistant', '📅 日程已成功添加！如果您正在查看日程页面，页面将自动刷新显示新日程。');
+                // Show hint
+                addMessage('assistant', '📅 Schedule added successfully! If you are viewing the schedule page, it will refresh to show the new event.');
                 
             } catch (error) {
-                console.error('发送页面间通信消息失败:', error);
+                console.error('Failed to send cross-page message:', error);
             }
         }
         
@@ -1383,16 +1383,16 @@
                     }
                 }, '*');
                 
-                console.log('已发送重要日期添加成功消息:', {
+                console.log('Sent important date added message:', {
                     type: 'importantDateAdded',
                     data: result.execution?.resultData
                 });
                 
-                // 显示提示信息
-                addMessage('assistant', '🎉 重要日期已成功添加！如果您正在查看重要日期页面，页面将自动刷新显示新日期。');
+                // Show hint
+                addMessage('assistant', '🎉 Important date added successfully! If you are viewing the important dates page, it will refresh to show the new date.');
                 
             } catch (error) {
-                console.error('发送页面间通信消息失败:', error);
+                console.error('Failed to send cross-page message:', error);
             }
         }
     </script>
