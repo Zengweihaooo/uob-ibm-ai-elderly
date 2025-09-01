@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.ImportantDateMapper">
+
+	<resultMap id="ImportantDateResultMap" type="com.example.demo.pojo.ImportantDate">
+		<id column="id" property="id" jdbcType="BIGINT"/>
+		<result column="user_id" property="userId" jdbcType="BIGINT"/>
+		<result column="title" property="title" jdbcType="VARCHAR"/>
+		<result column="description" property="description" jdbcType="VARCHAR"/>
+		<result column="date" property="date" jdbcType="DATE"/>
+		<result column="type" property="type" jdbcType="VARCHAR"/>
+		<result column="repeat_cycle" property="repeatCycle" jdbcType="VARCHAR"/>
+		<result column="enabled" property="enabled" jdbcType="BOOLEAN"/>
+		<result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+		<result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+		<result column="week_reminder_sent" property="weekReminderSent" jdbcType="TIMESTAMP"/>
+		<result column="day_reminder_sent" property="dayReminderSent" jdbcType="TIMESTAMP"/>
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, user_id, title, description, date, type, repeat_cycle, enabled,
+		created_at, updated_at, week_reminder_sent, day_reminder_sent
+	</sql>
+
+	<insert id="insert" parameterType="com.example.demo.pojo.ImportantDate" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO important_dates (
+			user_id, title, description, date, type, repeat_cycle, enabled, created_at, updated_at
+		) VALUES (
+			#{userId}, #{title}, #{description}, #{date}, #{type}, #{repeatCycle}, #{enabled}, #{createdAt}, #{updatedAt}
+		)
+	</insert>
+
+	<update id="update" parameterType="com.example.demo.pojo.ImportantDate">
+		UPDATE important_dates
+		SET title = #{title},
+			description = #{description},
+			date = #{date},
+			type = #{type},
+			repeat_cycle = #{repeatCycle},
+			enabled = #{enabled},
+			updated_at = #{updatedAt}
+		WHERE id = #{id}
+	</update>
+
+	<delete id="deleteById" parameterType="long">
+		DELETE FROM important_dates WHERE id = #{id}
+	</delete>
+
+	<select id="findById" parameterType="long" resultMap="ImportantDateResultMap">
+		SELECT <include refid="Base_Column_List"/>
+		FROM important_dates
+		WHERE id = #{id}
+	</select>
+
+	<select id="findByUserId" parameterType="long" resultMap="ImportantDateResultMap">
+		SELECT <include refid="Base_Column_List"/>
+		FROM important_dates
+		WHERE user_id = #{userId}
+		ORDER BY date ASC
+	</select>
+
+	<select id="findByUserIdAndType" resultMap="ImportantDateResultMap">
+		SELECT <include refid="Base_Column_List"/>
+		FROM important_dates
+		WHERE user_id = #{userId} AND type = #{type}
+		ORDER BY date ASC
+	</select>
+
+	<update id="setEnabled">
+		UPDATE important_dates
+		SET enabled = #{enabled}, updated_at = #{updatedAt}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateWeekReminderSent">
+		UPDATE important_dates
+		SET week_reminder_sent = #{timestamp}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateDayReminderSent">
+		UPDATE important_dates
+		SET day_reminder_sent = #{timestamp}
+		WHERE id = #{id}
+	</update>
+
+	<select id="existsByUserTitleDateType" resultType="int">
+		SELECT COUNT(1) FROM important_dates
+		WHERE user_id = #{userId} AND title = #{title} AND date = #{date} AND type = #{type}
+	</select>
+
+</mapper>
+
+

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.UserMapper">
+
+    <!-- Result Map -->
+    <resultMap id="UserResultMap" type="com.example.demo.pojo.User">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="password_hash" property="passwordHash" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="verification_code" property="verificationCode" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="role" property="role" jdbcType="VARCHAR"/>
+        <result column="phone_number" property="phoneNumber" jdbcType="VARCHAR"/>
+        <result column="is_verified" property="isVerified" jdbcType="BOOLEAN"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="verified_at" property="verifiedAt" jdbcType="TIMESTAMP"/>
+        <result column="code_expires_at" property="codeExpiresAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- Base Columns -->
+    <sql id="Base_Column_List">
+        id, username, email, password_hash, name, verification_code, status, role,
+        phone_number, is_verified, created_at, verified_at, code_expires_at, updated_at
+    </sql>
+
+    <!-- Insert -->
+    <insert id="insert" parameterType="com.example.demo.pojo.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (
+            username, email, password_hash, name, verification_code, status, role,
+            phone_number, is_verified, created_at, verified_at, code_expires_at, updated_at
+        ) VALUES (
+            #{username}, #{email}, #{passwordHash}, #{name}, #{verificationCode}, #{status}, #{role},
+            #{phoneNumber}, #{isVerified}, #{createdAt}, #{verifiedAt}, #{codeExpiresAt}, #{updatedAt}
+        )
+    </insert>
+
+    <!-- Update -->
+    <update id="update" parameterType="com.example.demo.pojo.User">
+        UPDATE users
+        SET username = #{username},
+            email = #{email},
+            password_hash = #{passwordHash},
+            name = #{name},
+            verification_code = #{verificationCode},
+            status = #{status},
+            role = #{role},
+            phone_number = #{phoneNumber},
+            is_verified = #{isVerified},
+            verified_at = #{verifiedAt},
+            code_expires_at = #{codeExpiresAt},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete by ID -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM users WHERE id = #{id}
+    </delete>
+
+    <!-- Find by ID -->
+    <select id="findById" parameterType="java.lang.Long" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE id = #{id}
+    </select>
+
+    <!-- Find by Email -->
+    <select id="findByEmail" parameterType="java.lang.String" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <!-- Find All -->
+    <select id="findAll" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Find by Status -->
+    <select id="findByStatus" parameterType="java.lang.String" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Find by Role -->
+    <select id="findByRole" parameterType="java.lang.String" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE role = #{role}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Find Verified Users -->
+    <select id="findVerifiedUsers" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE is_verified = 1
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Find Users with Expired Codes -->
+    <select id="findUsersWithExpiredCodes" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE code_expires_at IS NOT NULL 
+        AND code_expires_at &lt; CURRENT_TIMESTAMP
+        AND is_verified = 0
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Update Verification Status -->
+    <update id="updateVerificationStatus">
+        UPDATE users
+        SET status = #{status},
+            verified_at = #{verifiedAt},
+            is_verified = CASE 
+                WHEN #{status} = 'VERIFIED' THEN 1
+                ELSE 0
+            END,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{userId}
+    </update>
+
+    <!-- Update Verification Code -->
+    <update id="updateVerificationCode">
+        UPDATE users
+        SET verification_code = #{verificationCode},
+            code_expires_at = #{codeExpiresAt},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{userId}
+    </update>
+
+    <!-- Update User Status -->
+    <update id="updateUserStatus">
+        UPDATE users
+        SET status = #{status},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{userId}
+    </update>
+
+    <!-- Count by Status -->
+    <select id="countByStatus" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(*)
+        FROM users
+        WHERE status = #{status}
+    </select>
+
+    <!-- Count by Role -->
+    <select id="countByRole" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(*)
+        FROM users
+        WHERE role = #{role}
+    </select>
+
+    <!-- Find by Created Date Range -->
+    <select id="findByCreatedDateRange" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE created_at BETWEEN #{startDate} AND #{endDate}
+        ORDER BY created_at DESC
+    </select>
+
+</mapper> 

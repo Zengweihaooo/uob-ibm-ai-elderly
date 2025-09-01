@@ -338,8 +338,12 @@ public class MemoService {
                 return result;
             }
             
+            System.out.println("DEBUG: 设置新PIN码 - 用户ID: " + userId + ", 新PIN: " + newPinCode.trim());
+            
             // 检查用户是否有Important类型的备忘录
             List<Memo> importantMemos = memoRepository.findImportantByUserId(userId);
+            
+            System.out.println("DEBUG: 找到 " + importantMemos.size() + " 个重要memo需要更新");
             
             if (importantMemos.isEmpty()) {
                 result.put("success", false);
@@ -351,25 +355,33 @@ public class MemoService {
             int updatedCount = 0;
             
             for (Memo memo : importantMemos) {
+                System.out.println("DEBUG: 更新memo ID: " + memo.getId() + " 的PIN码从 " + memo.getPinCode() + " 到 " + newPinCode.trim());
                 memo.setPinCode(newPinCode.trim());
                 memo.setUpdateTime(LocalDateTime.now());
                 int updateResult = memoRepository.update(memo);
                 if (updateResult > 0) {
                     updatedCount++;
+                    System.out.println("DEBUG: memo ID: " + memo.getId() + " 更新成功");
+                } else {
+                    System.out.println("DEBUG: memo ID: " + memo.getId() + " 更新失败");
                 }
             }
             
             if (updatedCount > 0) {
                 result.put("success", true);
                 result.put("message", "PIN码更新成功，已更新 " + updatedCount + " 个重要备忘录");
+                System.out.println("DEBUG: PIN码更新成功，共更新 " + updatedCount + " 个memo");
             } else {
                 result.put("success", false);
                 result.put("message", "PIN码更新失败");
+                System.out.println("DEBUG: PIN码更新失败，没有memo被更新");
             }
             
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", "PIN码设置失败: " + e.getMessage());
+            System.err.println("DEBUG: PIN码设置异常: " + e.getMessage());
+            e.printStackTrace();
         }
         
         return result;
@@ -392,8 +404,12 @@ public class MemoService {
                 return result;
             }
             
+            System.out.println("DEBUG: 验证PIN码 - 用户ID: " + userId + ", 输入PIN: " + currentPin.trim());
+            
             // 检查用户是否有Important类型的备忘录
             List<Memo> importantMemos = memoRepository.findImportantByUserId(userId);
+            
+            System.out.println("DEBUG: 找到 " + importantMemos.size() + " 个重要memo");
             
             if (importantMemos.isEmpty()) {
                 result.put("success", false);
@@ -404,8 +420,10 @@ public class MemoService {
             // 验证当前PIN码是否正确
             boolean currentPinValid = false;
             for (Memo memo : importantMemos) {
+                System.out.println("DEBUG: 检查memo ID: " + memo.getId() + ", 存储的PIN: " + memo.getPinCode());
                 if (currentPin.trim().equals(memo.getPinCode())) {
                     currentPinValid = true;
+                    System.out.println("DEBUG: PIN码匹配成功!");
                     break;
                 }
             }
@@ -413,14 +431,18 @@ public class MemoService {
             if (currentPinValid) {
                 result.put("success", true);
                 result.put("message", "当前PIN码验证成功");
+                System.out.println("DEBUG: PIN码验证成功");
             } else {
                 result.put("success", false);
                 result.put("message", "当前PIN码验证失败");
+                System.out.println("DEBUG: PIN码验证失败");
             }
             
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", "PIN码验证失败: " + e.getMessage());
+            System.err.println("DEBUG: PIN码验证异常: " + e.getMessage());
+            e.printStackTrace();
         }
         
         return result;

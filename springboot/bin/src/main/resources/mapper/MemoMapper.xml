@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.repository.MemoRepository">
+
+    <!-- 结果映射 -->
+    <resultMap id="MemoResultMap" type="com.example.demo.pojo.Memo">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="content" property="content" jdbcType="LONGVARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="is_important" property="isImportant" jdbcType="BOOLEAN"/>
+        <result column="pin_code" property="pinCode" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="is_deleted" property="isDeleted" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <!-- 插入备忘录 -->
+    <insert id="insert" parameterType="com.example.demo.pojo.Memo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO memos (
+            user_id, title, content, type, is_important, pin_code, 
+            create_time, update_time, is_deleted
+        ) VALUES (
+            #{userId}, #{title}, #{content}, #{type}, #{isImportant}, #{pinCode},
+            #{createTime}, #{updateTime}, #{isDeleted}
+        )
+    </insert>
+
+    <!-- 保存备忘录（save方法） -->
+    <insert id="save" parameterType="com.example.demo.pojo.Memo" useGeneratedKeys="true" keyProperty="id">
+        INSERT OR REPLACE INTO memos (
+            id, user_id, title, content, type, is_important, pin_code, 
+            create_time, update_time, is_deleted
+        ) VALUES (
+            #{id}, #{userId}, #{title}, #{content}, #{type}, #{isImportant}, #{pinCode},
+            #{createTime}, #{updateTime}, #{isDeleted}
+        )
+    </insert>
+
+    <!-- 更新备忘录 -->
+    <update id="update" parameterType="com.example.demo.pojo.Memo">
+        UPDATE memos 
+        SET title = #{title},
+            content = #{content},
+            type = #{type},
+            is_important = #{isImportant},
+            pin_code = #{pinCode},
+            update_time = #{updateTime}
+        WHERE id = #{id} AND user_id = #{userId} AND is_deleted = 0
+    </update>
+
+    <!-- 根据ID查找备忘录 -->
+    <select id="findById" parameterType="long" resultMap="MemoResultMap">
+        SELECT * FROM memos WHERE id = #{id} AND is_deleted = 0
+    </select>
+
+    <!-- 根据用户ID和备忘录ID查找未删除的备忘录 -->
+    <select id="findByUserIdAndId" resultMap="MemoResultMap">
+        SELECT * FROM memos 
+        WHERE user_id = #{userId} AND id = #{memoId} AND is_deleted = 0
+    </select>
+
+    <!-- 根据用户ID查找所有未删除的备忘录 -->
+    <select id="findByUserId" parameterType="long" resultMap="MemoResultMap">
+        SELECT * FROM memos 
+        WHERE user_id = #{userId} AND is_deleted = 0
+        ORDER BY update_time DESC
+    </select>
+
+    <!-- 根据用户ID和类型查找未删除的备忘录 -->
+    <select id="findByUserIdAndType" resultMap="MemoResultMap">
+        SELECT * FROM memos 
+        WHERE user_id = #{userId} AND type = #{type} AND is_deleted = 0
+        ORDER BY update_time DESC
+    </select>
+
+    <!-- 根据用户ID查找重要备忘录 -->
+    <select id="findImportantByUserId" parameterType="long" resultMap="MemoResultMap">
+        SELECT * FROM memos 
+        WHERE user_id = #{userId} AND is_important = 1 AND is_deleted = 0
+        ORDER BY update_time DESC
+    </select>
+
+    <!-- 根据用户ID和PIN码查找备忘录 -->
+    <select id="findByUserIdAndPinCode" resultMap="MemoResultMap">
+        SELECT * FROM memos 
+        WHERE user_id = #{userId} AND pin_code = #{pinCode} AND is_deleted = 0
+        ORDER BY update_time DESC
+    </select>
+
+    <!-- 搜索备忘录（标题或内容包含关键词） -->
+    <select id="searchByKeyword" resultMap="MemoResultMap">
+        SELECT * FROM memos 
+        WHERE user_id = #{userId} AND is_deleted = 0
+        AND (LOWER(title) LIKE '%' || LOWER(#{keyword}) || '%' 
+             OR LOWER(content) LIKE '%' || LOWER(#{keyword}) || '%')
+        ORDER BY update_time DESC
+    </select>
+
+    <!-- 软删除备忘录 -->
+    <update id="softDelete">
+        UPDATE memos 
+        SET is_deleted = 1, update_time = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId} AND id = #{memoId} AND is_deleted = 0
+    </update>
+
+    <!-- 统计用户备忘录数量 -->
+    <select id="countByUserId" parameterType="long" resultType="long">
+        SELECT COUNT(*) FROM memos 
+        WHERE user_id = #{userId} AND is_deleted = 0
+    </select>
+
+    <!-- 统计用户重要备忘录数量 -->
+    <select id="countImportantByUserId" parameterType="long" resultType="long">
+        SELECT COUNT(*) FROM memos 
+        WHERE user_id = #{userId} AND is_important = 1 AND is_deleted = 0
+    </select>
+
+    <!-- 统计用户各类型备忘录数量 -->
+    <select id="countByUserIdAndType" resultType="long">
+        SELECT COUNT(*) FROM memos 
+        WHERE user_id = #{userId} AND type = #{type} AND is_deleted = 0
+    </select>
+
+    <!-- 检查用户是否有指定PIN码的备忘录 -->
+    <select id="existsByUserIdAndPinCode" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM memos 
+        WHERE user_id = #{userId} AND pin_code = #{pinCode} AND is_deleted = 0
+    </select>
+    
+    <!-- 获取所有备忘录（用于数据迁移） -->
+    <select id="findAll" resultMap="MemoResultMap">
+        SELECT * FROM memos ORDER BY update_time DESC
+    </select>
+    
+    <!-- 统计所有备忘录数量 -->
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM memos
+    </select>
+
+</mapper> 

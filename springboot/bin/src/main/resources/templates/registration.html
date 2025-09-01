@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Pet Reminder App - User Registration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4CAF50;
+        }
+        .form-section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="email"], input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input[type="email"]:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.secondary {
+            background-color: #2196F3;
+        }
+        button.secondary:hover {
+            background-color: #1976D2;
+        }
+        button.danger {
+            background-color: #f44336;
+        }
+        button.danger:hover {
+            background-color: #d32f2f;
+        }
+        button.warning {
+            background-color: #ff9800;
+        }
+        button.warning:hover {
+            background-color: #f57c00;
+        }
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message.info {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #99d3ff;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background-color: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .user-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            background-color: #fafafa;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        .user-info {
+            flex-grow: 1;
+        }
+        .user-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .user-actions button {
+            padding: 6px 12px;
+            font-size: 12px;
+            margin: 0;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-verified {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .status-pending {
+            background-color: #ff9800;
+            color: white;
+        }
+        .status-unregistered {
+            background-color: #9e9e9e;
+            color: white;
+        }
+        .verification-section {
+            background-color: #e3f2fd;
+            border: 2px solid #2196F3;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .code-input {
+            text-align: center;
+            font-size: 24px;
+            letter-spacing: 3px;
+            font-weight: bold;
+        }
+        .delete-section {
+            background-color: #ffeaa7;
+            border: 2px solid #fdcb6e;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .delete-section h3 {
+            color: #e17055;
+            margin-top: 0;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 Pet Reminder App</h1>
+            <h2>User Registration & Management</h2>
+            <p>Join our community and start caring for your virtual pet companion!</p>
+        </div>
+
+        <!-- Registration Statistics -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${stats['total']}">0</div>
+                <div>Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" th:text="${stats['verified']}">0</div>
+                <div>Verified Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" th:text="${stats['pending']}">0</div>
+                <div>Pending Verification</div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div th:if="${message}" th:class="'message ' + ${messageType}" th:text="${message}"></div>
+
+        <!-- Registration Form -->
+        <div class="form-section">
+            <h3>📧 Register Your Email</h3>
+            <form th:action="@{/user/register}" method="post">
+                <div class="form-group">
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+                </div>
+                <button type="submit">Send Verification Code</button>
+            </form>
+        </div>
+
+        <!-- Verification Form (shown when showVerification is true) -->
+        <div th:if="${showVerification}" class="verification-section">
+            <h3>🔐 Email Verification</h3>
+            <p>We've sent a 6-digit verification code to: <strong th:text="${userEmail}"></strong></p>
+            <form th:action="@{/user/verify}" method="post">
+                <input type="hidden" name="email" th:value="${userEmail}">
+                <div class="form-group">
+                    <label for="code">Verification Code:</label>
+                    <input type="text" id="code" name="code" class="code-input" placeholder="123456" maxlength="6" required>
+                </div>
+                <button type="submit">Verify Email</button>
+            </form>
+            
+            <p style="margin-top: 20px;">Didn't receive the code?</p>
+            <form th:action="@{/user/resend}" method="post" style="display: inline;">
+                <input type="hidden" name="email" th:value="${userEmail}">
+                <button type="submit" class="secondary">Resend Code</button>
+            </form>
+        </div>
+
+        <!-- User Management Section -->
+        <div class="delete-section">
+            <h3>🗑️ User Management</h3>
+            
+            <!-- Delete Single User -->
+            <div class="form-group">
+                <label>Delete Single User:</label>
+                <div class="form-row">
+                    <form th:action="@{/user/delete}" method="post" style="flex: 1;">
+                        <div class="form-group">
+                            <input type="email" name="email" placeholder="Enter email to delete" required>
+                        </div>
+                    </form>
+                    <button type="submit" class="danger" onclick="this.previousElementSibling.submit()">Delete User</button>
+                </div>
+            </div>
+
+            <!-- Delete Multiple Users -->
+            <div class="form-group">
+                <label>Delete Multiple Users (comma-separated):</label>
+                <div class="form-row">
+                    <form th:action="@{/user/delete-multiple}" method="post" style="flex: 1;">
+                        <div class="form-group">
+                            <input type="text" name="emails" placeholder="email1@example.com, email2@example.com">
+                        </div>
+                    </form>
+                    <button type="submit" class="danger" onclick="this.previousElementSibling.submit()">Delete Multiple</button>
+                </div>
+            </div>
+
+            <!-- Delete by Status -->
+            <div class="form-group">
+                <label>Delete Users by Status:</label>
+                <div class="form-row">
+                    <form th:action="@{/user/delete-by-status}" method="post" style="flex: 1;">
+                        <div class="form-group">
+                            <select name="status" required>
+                                <option value="">Select Status</option>
+                                <option value="PENDING">Pending Verification</option>
+                                <option value="VERIFIED">Verified Users</option>
+                                <option value="UNREGISTERED">Unregistered Users</option>
+                            </select>
+                        </div>
+                    </form>
+                    <button type="submit" class="warning" onclick="this.previousElementSibling.submit()">Delete by Status</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- User List -->
+        <div class="form-section">
+            <h3>👥 Registered Users</h3>
+            <div class="user-list">
+                <div th:if="${#lists.isEmpty(users)}" style="text-align: center; color: #666; padding: 20px;">
+                    No users registered yet. Be the first to join!
+                </div>
+                <div th:each="user : ${users}" class="user-item">
+                    <div class="user-info">
+                        <div>
+                            <strong th:text="${user.email}"></strong>
+                            <span th:switch="${user.status}" 
+                                  th:class="'status-badge status-' + ${#strings.toLowerCase(user.status)}">
+                                <span th:case="VERIFIED">✓ Verified</span>
+                                <span th:case="PENDING">⏳ Pending</span>
+                                <span th:case="*">⚫ Unregistered</span>
+                            </span>
+                        </div>
+                        <small th:text="'Registered: ' + ${#temporals.format(user.createdAt, 'MMM dd, yyyy HH:mm')}"></small>
+                        <div th:if="${user.verifiedAt}" style="font-size: 12px; color: #4CAF50;">
+                            <small th:text="'Verified: ' + ${#temporals.format(user.verifiedAt, 'MMM dd, yyyy HH:mm')}"></small>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <!-- Resend Code Button (only for pending users) -->
+                        <form th:if="${user.status.name() == 'PENDING'}" th:action="@{/user/resend}" method="post" style="display: inline;">
+                            <input type="hidden" name="email" th:value="${user.email}">
+                            <button type="submit" class="secondary">Resend Code</button>
+                        </form>
+                        
+                        <!-- Delete Button -->
+                        <form th:action="@{/user/delete}" method="post" style="display: inline;" 
+                              onsubmit="return confirm('Are you sure you want to delete user: ' + this.email.value + '?')">
+                            <input type="hidden" name="email" th:value="${user.email}">
+                            <button type="submit" class="danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="form-section">
+            <h3>📋 How It Works</h3>
+            <ol>
+                <li><strong>Register:</strong> Enter your email address to start the registration process</li>
+                <li><strong>Verify:</strong> Check your email for a 6-digit verification code</li>
+                <li><strong>Complete:</strong> Enter the code to verify your email and complete registration</li>
+                <li><strong>Manage:</strong> Use the management tools to delete users or clean up accounts</li>
+                <li><strong>Enjoy:</strong> Start using Pet Reminder App with your verified account!</li>
+            </ol>
+            
+            <div class="message info">
+                <strong>💡 Note:</strong> 
+                <ul style="margin: 10px 0;">
+                    <li>Verification codes expire after 15 minutes</li>
+                    <li>You can delete individual users or multiple users at once</li>
+                    <li>Use "Delete by Status" to clean up pending or unregistered accounts</li>
+                    <li>Deletion actions cannot be undone - please be careful!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-format verification code input
+        document.getElementById('code')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            if (value.length > 6) value = value.slice(0, 6); // Limit to 6 digits
+            e.target.value = value;
+        });
+
+        // Auto-refresh page every 30 seconds to update user list
+        setTimeout(function() {
+            window.location.reload();
+        }, 30000);
+
+        // Add confirmation for bulk delete operations
+        document.querySelectorAll('form[action*="delete"]').forEach(form => {
+            if (form.action.includes('delete-multiple') || form.action.includes('delete-by-status')) {
+                form.addEventListener('submit', function(e) {
+                    if (!confirm('Are you sure you want to delete multiple users? This action cannot be undone.')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
