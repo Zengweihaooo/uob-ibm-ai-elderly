@@ -218,7 +218,6 @@
             height: 400px; /* Unified card height - increase height for consistency */
             min-height: 400px; /* Ensure minimum height */
             max-height: 400px; /* Ensure maximum height */
-            position: relative; /* For favorite button positioning */
         }
 
         .podcast-card:hover {
@@ -296,41 +295,6 @@
             font-weight: 500;
             color: var(--podcast-dark);
             margin-left: 5px;
-        }
-
-        .favorite-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            z-index: 10;
-        }
-
-        .favorite-btn:hover {
-            background: rgba(255, 255, 255, 1);
-            transform: scale(1.1);
-        }
-
-        .favorite-btn.favorited {
-            color: #ff6b6b;
-        }
-
-        .favorite-btn:not(.favorited) {
-            color: #ccc;
-        }
-
-        .favorite-btn:not(.favorited):hover {
-            color: #ff6b6b;
         }
         
         .card-duration {
@@ -1295,9 +1259,6 @@
             
             return `
                 <div class="podcast-card" onclick="${clickFunction}; console.log('Clicked ${isEpisode ? 'episode' : 'podcast'}:', '${title}', 'ID:', '${itemId}', 'Type:', typeof ${itemId});" ${dataAttribute}>
-                    <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite('${itemId}', '${title.replace(/'/g, "\\'")}', ${JSON.stringify(item).replace(/"/g, '&quot;')})" data-podcast-id="${itemId}">
-                        ❤️
-                    </button>
                     <img src="${image}" alt="${title}" class="card-image" onerror="this.src='https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=300&h=200&fit=crop&crop=center'">
                     <div class="card-content">
                         <h3 class="card-title">${title}</h3>
@@ -1310,7 +1271,7 @@
         }
         
         // 渲染搜索结果
-        async function renderSearchResults() {
+        function renderSearchResults() {
             const grid = document.getElementById('podcastGrid');
             
             if (searchResults.length === 0) {
@@ -1324,13 +1285,10 @@
             }
 
             grid.innerHTML = searchResults.map(podcast => renderCard(podcast, false)).join('');
-            
-            // 更新收藏按钮状态
-            await updateFavoriteButtons();
         }
         
         // 渲染播客列表
-        async function renderPodcasts() {
+        function renderPodcasts() {
             const grid = document.getElementById('podcastGrid');
             const filteredPodcasts = podcasts.filter(podcast => podcast.category === currentCategory);
 
@@ -1344,9 +1302,6 @@
             }
 
             grid.innerHTML = filteredPodcasts.map(podcast => renderCard(podcast, false)).join('');
-            
-            // 更新收藏按钮状态
-            await updateFavoriteButtons();
         }
 
         function setupEventListeners() {
@@ -2080,141 +2035,6 @@
                     <button onclick="loadPodcasts()" style="margin-top: 10px; padding: 8px 16px; background: var(--podcast-primary); color: white; border: none; border-radius: 4px; cursor: pointer;">Retry</button>
                 </div>
             `;
-        }
-
-        // 获取JWT token
-        function getAuthToken() {
-            return localStorage.getItem('authToken');
-        }
-
-        // 检查用户是否已登录
-        function isUserLoggedIn() {
-            const token = getAuthToken();
-            return token && token.trim() !== '';
-        }
-
-        // 获取认证头
-        function getAuthHeader() {
-            const token = getAuthToken();
-            return token ? { 'Authorization': `Bearer ${token}` } : {};
-        }
-
-        // 显示登录提示
-        function showLoginPrompt() {
-            alert('请先登录以使用收藏功能');
-        }
-
-        // 切换收藏状态
-        async function toggleFavorite(podcastId, podcastTitle, podcastData) {
-            if (!isUserLoggedIn()) {
-                showLoginPrompt();
-                return;
-            }
-
-            try {
-                const favoriteBtn = document.querySelector(`[data-podcast-id="${podcastId}"]`);
-                const isCurrentlyFavorited = favoriteBtn.classList.contains('favorited');
-
-                if (isCurrentlyFavorited) {
-                    // 移除收藏
-                    const response = await fetch(`http://localhost:8080/api/podcast/favorites/${podcastId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            ...getAuthHeader()
-                        }
-                    });
-
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        favoriteBtn.classList.remove('favorited');
-                        favoriteBtn.innerHTML = '🤍';
-                        console.log('Podcast removed from favorites:', podcastTitle);
-                    } else {
-                        alert('移除收藏失败: ' + data.message);
-                    }
-                } else {
-                    // 添加收藏
-                    const response = await fetch('http://localhost:8080/api/podcast/favorites/add', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            ...getAuthHeader()
-                        },
-                        body: JSON.stringify({
-                            podcastId: podcastId,
-                            title: podcastTitle,
-                            description: podcastData.description || '',
-                            publisher: podcastData.publisher || '',
-                            image: podcastData.image || podcastData.thumbnail || '',
-                            thumbnail: podcastData.thumbnail || podcastData.image || '',
-                            language: podcastData.language || '',
-                            country: podcastData.country || '',
-                            type: podcastData.type || '',
-                            totalEpisodes: podcastData.totalEpisodes || podcastData.episodeCount || 0,
-                            genres: podcastData.genres || [],
-                            rss: podcastData.rss || '',
-                            website: podcastData.website || ''
-                        })
-                    });
-
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        favoriteBtn.classList.add('favorited');
-                        favoriteBtn.innerHTML = '❤️';
-                        console.log('Podcast added to favorites:', podcastTitle);
-                    } else {
-                        alert('添加收藏失败: ' + data.message);
-                    }
-                }
-            } catch (error) {
-                console.error('Error toggling favorite:', error);
-                alert('操作失败，请重试');
-            }
-        }
-
-        // 检查收藏状态
-        async function checkFavoriteStatus(podcastId) {
-            if (!isUserLoggedIn()) {
-                return false;
-            }
-
-            try {
-                const response = await fetch(`http://localhost:8080/api/podcast/favorites/check/${podcastId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...getAuthHeader()
-                    }
-                });
-
-                const data = await response.json();
-                return data.success && data.isFavorited;
-            } catch (error) {
-                console.error('Error checking favorite status:', error);
-                return false;
-            }
-        }
-
-        // 更新收藏按钮状态
-        async function updateFavoriteButtons() {
-            const favoriteBtns = document.querySelectorAll('.favorite-btn');
-            
-            for (const btn of favoriteBtns) {
-                const podcastId = btn.getAttribute('data-podcast-id');
-                if (podcastId) {
-                    const isFavorited = await checkFavoriteStatus(podcastId);
-                    if (isFavorited) {
-                        btn.classList.add('favorited');
-                        btn.innerHTML = '❤️';
-                    } else {
-                        btn.classList.remove('favorited');
-                        btn.innerHTML = '🤍';
-                    }
-                }
-            }
         }
 
         // 显示倍速提示

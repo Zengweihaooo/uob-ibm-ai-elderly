@@ -341,33 +341,3 @@ CREATE TABLE IF NOT EXISTS memoir_share_guard (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(share_id) REFERENCES memoir_share_token(id)
 );
-
--- ===================== Podcast Favorites Module Tables =====================
--- Podcast favorites table: stores user's favorite podcasts
-CREATE TABLE IF NOT EXISTS podcast_favorites (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    podcast_id TEXT NOT NULL,              -- External podcast ID from API
-    title TEXT NOT NULL,
-    description TEXT,
-    publisher TEXT,
-    image TEXT,                            -- Cover image URL
-    thumbnail TEXT,                        -- Thumbnail image URL
-    language TEXT,
-    country TEXT,
-    type TEXT,
-    total_episodes INTEGER,
-    genres TEXT,                           -- JSON format for genres
-    rss TEXT,                              -- RSS feed URL
-    website TEXT,                          -- Official website
-    is_active BOOLEAN DEFAULT 1,           -- Soft delete flag
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, podcast_id)            -- Prevent duplicate favorites
-);
-
--- Create indexes for podcast favorites
-CREATE INDEX IF NOT EXISTS idx_podcast_favorites_user_id ON podcast_favorites(user_id);
-CREATE INDEX IF NOT EXISTS idx_podcast_favorites_podcast_id ON podcast_favorites(podcast_id);
-CREATE INDEX IF NOT EXISTS idx_podcast_favorites_active ON podcast_favorites(user_id, is_active);
-CREATE INDEX IF NOT EXISTS idx_podcast_favorites_created_at ON podcast_favorites(created_at);
