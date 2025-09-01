@@ -1,0 +1,9 @@
+{
+    "aws_region": "us-east-1",
+    "s3_bucket": "elderly-companion-us-east-1",
+    "s3_website_url": "http://None",
+    "elastic_beanstalk_app": "elderly-companion-app",
+    "elastic_beanstalk_env": "elderly-companion-env",
+    "backend_url": "http://None",
+    "deployment_time": "周一 2025/09/01 23:19:18.54"
+}
