@@ -14,7 +14,7 @@ import java.util.Base64;
 import java.util.Map;
 
 /**
- * 分享服务：创建分享、校验 PIN、计数与过期检查
+ * Sharing service: create share links, validate PIN, track download counts, and check expiration.
  */
 @Service
 public class MemoirShareService {
@@ -40,7 +40,7 @@ public class MemoirShareService {
         if (StringUtils.hasText(pin)) gd.setPinHash(sha256(pin));
         mapper.insertShareGuard(gd);
 
-    // 返回最小信息，由控制器根据请求动态拼接 shareUrl，避免硬编码 host
+    // Return minimal info; controller will build shareUrl dynamically to avoid hardcoding host
     Map<String, Object> result = new java.util.HashMap<>();
     result.put("token", token);
     result.put("expiresAt", st.getExpiresAt());
@@ -51,7 +51,7 @@ public class MemoirShareService {
 
     public boolean verifyPin(Integer shareId, String pin) {
         MemoirShareGuard gd = mapper.findShareGuard(shareId);
-        if (gd == null || !StringUtils.hasText(gd.getPinHash())) return true; // 无 PIN 视为通过
+    if (gd == null || !StringUtils.hasText(gd.getPinHash())) return true; // No PIN required -> pass
         return sha256(pin).equals(gd.getPinHash());
     }
 
@@ -70,7 +70,7 @@ public class MemoirShareService {
         return mapper.findShareByToken(token);
     }
 
-    /** 是否需要 PIN（存在并已设置 pinHash） */
+    /** Whether a PIN is required (guard exists and pinHash is set) */
     public boolean requiresPin(Integer shareId) {
         MemoirShareGuard gd = mapper.findShareGuard(shareId);
         return gd != null && org.springframework.util.StringUtils.hasText(gd.getPinHash());
