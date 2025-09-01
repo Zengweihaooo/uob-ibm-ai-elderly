@@ -1161,7 +1161,7 @@
                     }
                 });
             } else {
-                showMessage('Please sign in to access Family Contacts', 'warning');
+                showMessage('请先登录以访问家庭联系人功能', 'warning');
                 displayEmptyState();
             }
         });
@@ -1302,10 +1302,10 @@
             const container = document.getElementById('contactsContainer');
             container.innerHTML = `
                 <div style="text-align: center; padding: 50px;">
-                    <h3>Sign In Required</h3>
-                    <p>Please sign in to access Family Contacts</p>
-                    <button onclick="openLoginModal()" class="btn btn-primary">Sign In</button>
-                    <button onclick="openRegisterModal()" class="btn btn-primary" style="margin-left: 15px;">Register</button>
+                    <h3>需要登录</h3>
+                    <p>请先登录以访问家庭联系人功能</p>
+                    <button onclick="openLoginModal()" class="btn btn-primary">登录</button>
+                    <button onclick="openRegisterModal()" class="btn btn-primary" style="margin-left: 15px;">注册</button>
                 </div>
             `;
         }
@@ -1702,7 +1702,7 @@
 
         // Create contact card HTML
         function createContactCard(contact, searchTerm = '') {
-            const isEmergency = contact.emergencyContact || contact.isEmergencyContact;
+            const isEmergency = contact.isEmergencyContact;
             const emergencyBadge = isEmergency ? '<div class="emergency-badge">🚨 Emergency</div>' : '';
             const emergencyClass = isEmergency ? 'emergency' : '';
             
@@ -1730,10 +1730,10 @@
                         <div class="contact-relationship">${highlightText(contact.relationship || 'Not specified', searchTerm)}</div>
                     </div>
                     <div class="contact-details">
-                        ${contact.phoneNumber ? `
+                        ${contact.phone ? `
                             <div class="contact-detail">
                                 <span class="contact-detail-icon">📞</span>
-                                <span>${highlightText(contact.phoneNumber, searchTerm)}</span>
+                                <span>${highlightText(contact.phone, searchTerm)}</span>
                             </div>
                         ` : ''}
                         ${contact.email ? `
@@ -1748,13 +1748,12 @@
                         </div>
                         ${lastContactInfo}
                     </div>
-                    <div class="contact-actions">
-                        ${contact.phoneNumber ? `<button class="contact-btn primary" onclick="callContact('${contact.phoneNumber}', ${contact.id})">📞 Call</button>` : ''}
-                        <button class="contact-btn" onclick="sendMessage(${contact.id})">💬 Message</button>
-                        <button class="contact-btn" onclick="editContact(${contact.id})">✏️ Edit</button>
-                        <button class="contact-btn" onclick="deleteContact(${contact.id}, '${contact.name}')">🗑️ Delete</button>
-                        <button class="contact-btn" onclick="viewContactHistory(${contact.id}, '${contact.name}')">📋 History</button>
-                    </div>
+                                         <div class="contact-actions">
+                         <button class="contact-btn" onclick="sendMessage(${contact.id})">💬 Message</button>
+                         <button class="contact-btn" onclick="editContact(${contact.id})">✏️ Edit</button>
+                         <button class="contact-btn" onclick="deleteContact(${contact.id}, '${contact.name}')">🗑️ Delete</button>
+                         <button class="contact-btn" onclick="viewContactHistory(${contact.id}, '${contact.name}')">📋 History</button>
+                     </div>
                 </div>
             `;
         }
@@ -1832,11 +1831,11 @@
                         // Fill form with contact data
                         document.getElementById('contactName').value = contact.name || '';
                         document.getElementById('contactRelationship').value = contact.relationship || '';
-                        document.getElementById('contactPhone').value = contact.phoneNumber || '';
+                        document.getElementById('contactPhone').value = contact.phone || '';
                         document.getElementById('contactEmail').value = contact.email || '';
                         document.getElementById('notificationPreference').value = contact.notificationPreference || 'ALL';
-                        document.getElementById('isEmergencyContact').checked = contact.emergencyContact || contact.isEmergencyContact || false;
-                        document.getElementById('contactNotes').value = contact.notes || '';
+                        document.getElementById('isEmergencyContact').checked = contact.isEmergencyContact || false;
+                        document.getElementById('contactNotes').value = contact.address || '';
                         
                         document.getElementById('modalTitle').textContent = 'Edit Contact';
                         document.getElementById('modalMessageContainer').innerHTML = ''; // Clear previous messages
@@ -1935,11 +1934,11 @@
             const formData = {
                 name: document.getElementById('contactName').value,
                 relationship: document.getElementById('contactRelationship').value,
-                phoneNumber: phone,
+                phone: phone,
                 email: email,
                 notificationPreference: document.getElementById('notificationPreference').value,
                 isEmergencyContact: document.getElementById('isEmergencyContact').checked,
-                notes: document.getElementById('contactNotes').value
+                address: document.getElementById('contactNotes').value
             };
 
             try {
@@ -1998,21 +1997,7 @@
             showMessage('Contacts refreshed successfully', 'success');
         }
 
-        function callContact(phoneNumber, contactId) {
-            if (phoneNumber) {
-                window.location.href = `tel:${phoneNumber}`;
-                
-                // Add to contact history
-                if (contactId) {
-                    addContactHistory(contactId, 'call', {
-                        type: 'call',
-                        phoneNumber: phoneNumber,
-                        timestamp: new Date().toISOString(),
-                        details: `Called ${phoneNumber}`
-                    });
-                }
-            }
-        }
+        
 
         // Global variable for current message contact
         let currentMessageContactId = null;
@@ -2133,7 +2118,7 @@
             if (searchTerm) {
                 filtered = filtered.filter(contact => {
                     return (contact.name && contact.name.toLowerCase().includes(searchTerm)) ||
-                           (contact.phoneNumber && contact.phoneNumber.includes(searchTerm)) ||
+                           (contact.phone && contact.phone.includes(searchTerm)) ||
                            (contact.email && contact.email.toLowerCase().includes(searchTerm)) ||
                            (contact.relationship && contact.relationship.toLowerCase().includes(searchTerm));
                 });
@@ -2148,9 +2133,9 @@
 
             // Apply emergency filter
             if (emergencyFilter === 'emergency') {
-                filtered = filtered.filter(contact => contact.emergencyContact === true || contact.isEmergencyContact === true);
+                filtered = filtered.filter(contact => contact.isEmergencyContact === true);
             } else if (emergencyFilter === 'normal') {
-                filtered = filtered.filter(contact => contact.emergencyContact !== true && contact.isEmergencyContact !== true);
+                filtered = filtered.filter(contact => contact.isEmergencyContact !== true);
             }
 
             filteredContacts = filtered;
@@ -2243,19 +2228,18 @@
             return contactHistory[contactId] || [];
         }
 
-        // Format history action for display
-        function formatHistoryAction(action) {
-            const actionMap = {
-                'call': '📞 Phone Call',
-                'message_sent': '💬 Message Sent',
-                'contact_added': '➕ Contact Added',
-                'contact_updated': '✏️ Contact Updated',
-                'contact_deleted': '🗑️ Contact Deleted',
-                'emergency_alert': '🚨 Emergency Alert',
-                'health_alert': '🏥 Health Alert'
-            };
-            return actionMap[action] || action;
-        }
+                 // Format history action for display
+         function formatHistoryAction(action) {
+             const actionMap = {
+                 'message_sent': '💬 Message Sent',
+                 'contact_added': '➕ Contact Added',
+                 'contact_updated': '✏️ Contact Updated',
+                 'contact_deleted': '🗑️ Contact Deleted',
+                 'emergency_alert': '🚨 Emergency Alert',
+                 'health_alert': '🏥 Health Alert'
+             };
+             return actionMap[action] || action;
+         }
 
         // Track current history modal contact ID
         let currentHistoryContactId = null;
