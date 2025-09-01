@@ -10,8 +10,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * 回忆录模块 MyBatis Mapper
- * 中文注释：提供回忆录项目与分段的基本CRUD
+ * Memoir module MyBatis Mapper.
+ * Provides basic CRUD for memoir projects, segments, and sharing.
  */
 @Mapper
 public interface MemoirMapper {

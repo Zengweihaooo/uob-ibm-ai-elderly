@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * AI 回忆录控制器
- * 中文注释：提供最小API：创建项目、列出项目、添加/列出分段
+ * AI Memoir controller.
+ * Provides a minimal API: create project, list projects, add/list segments.
  */
 @RestController
 @RequestMapping("/api/memoir")
@@ -30,7 +30,7 @@ public class MemoirController {
         this.aiService = aiService;
     }
 
-    /** 创建项目 */
+    /** Create project */
     @PostMapping("/projects")
     public ResponseEntity<?> createProject(@RequestBody Map<String, Object> payload) {
         String title = (String) payload.getOrDefault("title", "My Memoir");
@@ -44,13 +44,13 @@ public class MemoirController {
         return ResponseEntity.ok(resp);
     }
 
-    /** 列出项目（按owner过滤，owner为空则返回全部） */
+    /** List projects (filter by owner; if owner is null returns all) */
     @GetMapping("/projects")
     public ResponseEntity<List<MemoirProject>> listProjects(@RequestParam(value = "owner", required = false) String owner) {
         return ResponseEntity.ok(service.listProjects(owner));
     }
 
-    /** 添加分段 */
+    /** Add segment */
     @PostMapping("/projects/{id}/segments")
     public ResponseEntity<MemoirSegment> addSegment(@PathVariable("id") Integer projectId,
                                                     @RequestBody MemoirSegment seg) {
@@ -58,13 +58,13 @@ public class MemoirController {
         return ResponseEntity.ok(service.addSegment(seg));
     }
 
-    /** 列出分段 */
+    /** List segments */
     @GetMapping("/projects/{id}/segments")
     public ResponseEntity<List<MemoirSegment>> listSegments(@PathVariable("id") Integer projectId) {
         return ResponseEntity.ok(service.listSegments(projectId));
     }
 
-    /** 简单模板（人生阶段+主题），用于前端初始化问题库 */
+    /** Simple template (life stages + themes) used for frontend to initialize question catalog */
     @GetMapping("/templates")
     public ResponseEntity<?> templates() {
         Map<String, Object> t = new HashMap<>();
@@ -79,7 +79,7 @@ public class MemoirController {
         return ResponseEntity.ok(t);
     }
 
-    /** 导出：markdown 或 pdf */
+    /** Export: markdown or PDF */
     @GetMapping("/projects/{id}/export")
     public ResponseEntity<?> export(@PathVariable("id") Integer projectId,
                                     @RequestParam("format") String format) {
@@ -99,7 +99,7 @@ public class MemoirController {
     }
 
     /**
-     * AI：生成大纲（mock 默认启用）
+     * AI: generate outline (mock enabled by default)
      */
     @PostMapping("/ai/outline")
     public ResponseEntity<?> aiOutline(@RequestBody Map<String, Object> payload) {
@@ -109,7 +109,7 @@ public class MemoirController {
     }
 
     /**
-     * AI：生成分段草稿（mock 默认启用）
+     * AI: generate segment draft (mock enabled by default)
      */
     @PostMapping("/ai/draft")
     public ResponseEntity<?> aiDraft(@RequestBody Map<String, Object> payload) {

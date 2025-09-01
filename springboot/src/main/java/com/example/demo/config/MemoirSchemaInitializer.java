@@ -6,8 +6,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import jakarta.annotation.PostConstruct;
 
 /**
- * Memoir 表结构初始化器
- * 中文注释：在数据库文件已存在的情况下，确保回忆录相关表存在
+ * Memoir table schema initializer.
+ * Ensures that all memoir-related tables exist when the database file already exists.
  */
 @Configuration
 public class MemoirSchemaInitializer {
@@ -19,7 +19,7 @@ public class MemoirSchemaInitializer {
 
     @PostConstruct
     public void ensureTables() {
-        // 使用 IF NOT EXISTS，避免重复创建
+        // Use IF NOT EXISTS to avoid duplicate creation
         jdbc.execute("CREATE TABLE IF NOT EXISTS memoir_project (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "title TEXT NOT NULL, " +

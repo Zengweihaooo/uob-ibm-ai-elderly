@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 /**
- * 回忆录分享控制器：创建分享、受控下载
+ * Memoir sharing controller: create share links and controlled downloads.
  */
 @RestController
 @RequestMapping
@@ -23,7 +23,7 @@ public class MemoirShareController {
         this.exportService = exportService;
     }
 
-    /** 简单的分享展示页（HTML），允许输入PIN并选择下载格式 */
+    /** Simple share display page (HTML) allowing PIN input and format selection */
     @GetMapping("/s/{token}")
     public ResponseEntity<String> sharePage(@PathVariable("token") String token) {
         MemoirShareToken st = shareService.findByToken(token);
@@ -50,7 +50,7 @@ public class MemoirShareController {
         return ResponseEntity.ok().header("Content-Type", "text/html; charset=utf-8").body(html);
     }
 
-    /** 创建分享链接 */
+    /** Create share link */
     @PostMapping("/api/memoir/projects/{id}/share")
     public ResponseEntity<?> createShare(@PathVariable("id") Integer projectId,
                                          @RequestBody Map<String, Object> payload,
@@ -60,7 +60,7 @@ public class MemoirShareController {
         Integer max = payload.get("maxDownloads") instanceof Number ? ((Number) payload.get("maxDownloads")).intValue() : null;
         String scope = (String) payload.getOrDefault("scope", "view");
         Map<String, Object> res = shareService.createShare(projectId, pin, days, max, scope);
-        // 动态构建 shareUrl（支持反向代理）
+    // Dynamically build shareUrl (supports reverse proxy headers)
         String scheme = request.getHeader("X-Forwarded-Proto");
         if (scheme == null || scheme.isBlank()) scheme = request.getScheme();
         String host = request.getHeader("X-Forwarded-Host");
@@ -74,7 +74,7 @@ public class MemoirShareController {
         return ResponseEntity.ok(res);
     }
 
-    /** 分享页下载（受控） */
+    /** Share page download (controlled) */
     @GetMapping("/s/{token}/download")
     public ResponseEntity<?> download(@PathVariable("token") String token,
                                       @RequestParam(value = "pin", required = false) String pin,
