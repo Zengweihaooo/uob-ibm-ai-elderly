@@ -45,11 +45,12 @@ public class FamilyService {
      * @param phone Phone number
      * @param email Email address
      * @param relationship Relationship type
+     * @param notificationPreference Notification preference (ALL, HEALTH_ALERT, DAILY_SUMMARY, NONE)
      * @param isEmergencyContact Whether this is an emergency contact
      * @return Created family contact
      */
     public FamilyContact addFamilyContact(Long userId, String name, String phone, String email,
-                                       String relationship, Boolean isEmergencyContact) {
+                                       String relationship, String notificationPreference, Boolean isEmergencyContact) {
         
         if (DEBUG_ENABLED) {
             System.out.println("==== FamilyService.addFamilyContact DEBUG ====");
@@ -58,6 +59,7 @@ public class FamilyService {
             System.out.println("电话号码: " + phone);
             System.out.println("邮箱地址: " + email);
             System.out.println("关系: " + relationship);
+            System.out.println("通知偏好: " + notificationPreference);
             System.out.println("是否紧急联系人: " + isEmergencyContact);
             System.out.println("该用户现有联系人数量: " + getFamilyContacts(userId).size());
         }
@@ -85,6 +87,7 @@ public class FamilyService {
         contact.setPhone(phone != null ? phone.trim() : null);
         contact.setEmail(email != null ? email.trim() : null);
         contact.setRelationship(relationship != null ? relationship.trim() : "其他");
+        contact.setNotificationPreference(notificationPreference != null ? notificationPreference : "ALL");
         contact.setIsEmergencyContact(isEmergencyContact != null ? isEmergencyContact : false);
         contact.setIsActive(true);
         contact.setCreatedAt(LocalDateTime.now());
@@ -274,6 +277,14 @@ public class FamilyService {
             contact.setRelationship(newRelationship);
             if (DEBUG_ENABLED) {
                 System.out.println("DEBUG: 更新关系为: " + newRelationship);
+            }
+        }
+
+        if (contactData.containsKey("notificationPreference")) {
+            String newNotificationPreference = (String) contactData.get("notificationPreference");
+            contact.setNotificationPreference(newNotificationPreference);
+            if (DEBUG_ENABLED) {
+                System.out.println("DEBUG: 更新通知偏好为: " + newNotificationPreference);
             }
         }
 
@@ -552,6 +563,54 @@ public class FamilyService {
     }
 
     /**
+     * Get contacts by notification preference
+     * 
+     * @param userId User ID
+     * @param notificationTypes List of notification types to filter by
+     * @return List of contacts that want to receive the specified notification types
+     */
+    public List<FamilyContact> getContactsByNotificationPreference(Long userId, List<String> notificationTypes) {
+        return familyContactMapper.findActiveByUserId(userId).stream()
+                .filter(contact -> shouldReceiveNotification(contact, notificationTypes))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Check if a contact should receive notifications of the given types
+     * 
+     * @param contact The family contact
+     * @param notificationTypes List of notification types being sent
+     * @return true if contact should receive the notification
+     */
+    private boolean shouldReceiveNotification(FamilyContact contact, List<String> notificationTypes) {
+        String preference = contact.getNotificationPreference();
+        
+        // Handle null or empty preference (default to ALL)
+        if (preference == null || preference.trim().isEmpty()) {
+            preference = "ALL";
+        }
+        
+        // NONE means no notifications at all
+        if ("NONE".equals(preference)) {
+            return false;
+        }
+        
+        // ALL means receive all types of notifications
+        if ("ALL".equals(preference)) {
+            return true;
+        }
+        
+        // Check if any of the notification types match the preference
+        for (String notificationType : notificationTypes) {
+            if (preference.equals(notificationType)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
      * Get family statistics for a user
      * 
      * @param userId User ID
@@ -572,6 +631,7 @@ public class FamilyService {
 
     /**
      * Send emergency notification to all emergency contacts
+     * Emergency notifications are ALWAYS sent to emergency contacts regardless of their notification preference
      * 
      * @param userId User ID
      * @param emergencyType Type of emergency
@@ -579,26 +639,195 @@ public class FamilyService {
      * @return Number of contacts notified
      */
     public int sendEmergencyNotification(Long userId, String emergencyType, String description) {
+        // Emergency notifications are controlled ONLY by isEmergencyContact flag
+        // Notification preference is ignored for emergency situations
         List<FamilyContact> emergencyContacts = getEmergencyContacts(userId);
         int notifiedCount = 0;
+
+        if (DEBUG_ENABLED) {
+            System.out.println("==== FamilyService.sendEmergencyNotification DEBUG ====");
+            System.out.println("用户ID: " + userId);
+            System.out.println("紧急类型: " + emergencyType);
+            System.out.println("紧急描述: " + description);
+            System.out.println("紧急联系人数量: " + emergencyContacts.size());
+        }
 
         for (FamilyContact contact : emergencyContacts) {
             try {
                 String message = buildEmergencyMessage(emergencyType, description, contact.getName());
                 
-                if (contact.getPhone() != null) {
-                    smsService.sendSMS(contact.getPhone(), message);
-                    notifiedCount++;
+                if (DEBUG_ENABLED) {
+                    System.out.println("正在通知紧急联系人: " + contact.getName());
+                    System.out.println("联系人通知偏好: " + contact.getNotificationPreference() + " (紧急通知忽略此设置)");
                 }
                 
-                if (contact.getEmail() != null) {
+                // Send SMS if phone available
+                if (contact.getPhone() != null && !contact.getPhone().trim().isEmpty()) {
+                    Map<String, Object> smsResult = smsService.sendSMS(contact.getPhone(), message);
+                    boolean smsSuccess = (Boolean) smsResult.getOrDefault("success", false);
+                    if (smsSuccess) {
+                        notifiedCount++;
+                        if (DEBUG_ENABLED) {
+                            System.out.println("SMS发送成功到: " + contact.getPhone());
+                        }
+                    } else {
+                        if (DEBUG_ENABLED) {
+                            System.err.println("SMS发送失败到: " + contact.getPhone());
+                        }
+                    }
+                }
+                
+                // Send Email if email available
+                if (contact.getEmail() != null && !contact.getEmail().trim().isEmpty()) {
                     String subject = "紧急情况通知 - " + emergencyType;
                     emailService.sendHealthAlertEmail(contact.getEmail(), subject, message);
                     notifiedCount++;
+                    if (DEBUG_ENABLED) {
+                        System.out.println("邮件发送成功到: " + contact.getEmail());
+                    }
                 }
             } catch (Exception e) {
+                if (DEBUG_ENABLED) {
+                    System.err.println("通知紧急联系人失败: " + contact.getName() + " - " + e.getMessage());
+                }
                 System.err.println("Failed to notify emergency contact " + contact.getName() + ": " + e.getMessage());
             }
+        }
+
+        if (DEBUG_ENABLED) {
+            System.out.println("紧急通知完成，总计通知: " + notifiedCount + " 人次");
+            System.out.println("===============================================");
+        }
+
+        return notifiedCount;
+    }
+
+    /**
+     * Send health alert to contacts based on their notification preferences
+     * Only sends to contacts with preference: ALL or HEALTH_ALERT
+     * 
+     * @param userId User ID
+     * @param healthData Health alert data
+     * @param alertType Type of health alert
+     * @return Number of contacts notified
+     */
+    public int sendHealthAlert(Long userId, String healthData, String alertType) {
+        List<String> notificationTypes = List.of("HEALTH_ALERT");
+        List<FamilyContact> eligibleContacts = getContactsByNotificationPreference(userId, notificationTypes);
+        int notifiedCount = 0;
+
+        if (DEBUG_ENABLED) {
+            System.out.println("==== FamilyService.sendHealthAlert DEBUG ====");
+            System.out.println("用户ID: " + userId);
+            System.out.println("健康数据: " + healthData);
+            System.out.println("警报类型: " + alertType);
+            System.out.println("符合通知偏好的联系人数量: " + eligibleContacts.size());
+        }
+
+        for (FamilyContact contact : eligibleContacts) {
+            try {
+                String message = buildHealthAlertMessage(healthData, alertType, contact.getName());
+                
+                if (DEBUG_ENABLED) {
+                    System.out.println("正在发送健康警报给: " + contact.getName());
+                    System.out.println("联系人通知偏好: " + contact.getNotificationPreference());
+                }
+                
+                boolean sent = false;
+                if (contact.getPhone() != null && !contact.getPhone().trim().isEmpty()) {
+                    Map<String, Object> smsResult = smsService.sendSMS(contact.getPhone(), message);
+                    boolean smsSuccess = (Boolean) smsResult.getOrDefault("success", false);
+                    if (smsSuccess) {
+                        notifiedCount++;
+                        sent = true;
+                    }
+                }
+                
+                if (contact.getEmail() != null && !contact.getEmail().trim().isEmpty()) {
+                    String subject = "健康警报 - " + alertType;
+                    emailService.sendHealthAlertEmail(contact.getEmail(), subject, message);
+                    notifiedCount++;
+                    sent = true;
+                }
+                
+                if (DEBUG_ENABLED && sent) {
+                    System.out.println("健康警报发送成功给: " + contact.getName());
+                }
+            } catch (Exception e) {
+                if (DEBUG_ENABLED) {
+                    System.err.println("发送健康警报失败: " + contact.getName() + " - " + e.getMessage());
+                }
+            }
+        }
+
+        if (DEBUG_ENABLED) {
+            System.out.println("健康警报发送完成，总计通知: " + notifiedCount + " 人次");
+            System.out.println("==========================================");
+        }
+
+        return notifiedCount;
+    }
+
+    /**
+     * Send daily summary to contacts based on their notification preferences
+     * Only sends to contacts with preference: ALL or DAILY_SUMMARY
+     * 
+     * @param userId User ID
+     * @param summaryData Daily summary data
+     * @return Number of contacts notified
+     */
+    public int sendDailySummary(Long userId, String summaryData) {
+        List<String> notificationTypes = List.of("DAILY_SUMMARY");
+        List<FamilyContact> eligibleContacts = getContactsByNotificationPreference(userId, notificationTypes);
+        int notifiedCount = 0;
+
+        if (DEBUG_ENABLED) {
+            System.out.println("==== FamilyService.sendDailySummary DEBUG ====");
+            System.out.println("用户ID: " + userId);
+            System.out.println("日常总结数据长度: " + summaryData.length());
+            System.out.println("符合通知偏好的联系人数量: " + eligibleContacts.size());
+        }
+
+        for (FamilyContact contact : eligibleContacts) {
+            try {
+                String message = buildDailySummaryMessage(summaryData, contact.getName());
+                
+                if (DEBUG_ENABLED) {
+                    System.out.println("正在发送日常总结给: " + contact.getName());
+                    System.out.println("联系人通知偏好: " + contact.getNotificationPreference());
+                }
+                
+                boolean sent = false;
+                // For daily summary, prefer email over SMS due to content length
+                if (contact.getEmail() != null && !contact.getEmail().trim().isEmpty()) {
+                    String subject = "日常总结报告";
+                    emailService.sendHealthAlertEmail(contact.getEmail(), subject, message);
+                    notifiedCount++;
+                    sent = true;
+                } else if (contact.getPhone() != null && !contact.getPhone().trim().isEmpty()) {
+                    // Send shortened version via SMS
+                    String shortMessage = buildShortDailySummaryMessage(summaryData, contact.getName());
+                    Map<String, Object> smsResult = smsService.sendSMS(contact.getPhone(), shortMessage);
+                    boolean smsSuccess = (Boolean) smsResult.getOrDefault("success", false);
+                    if (smsSuccess) {
+                        notifiedCount++;
+                        sent = true;
+                    }
+                }
+                
+                if (DEBUG_ENABLED && sent) {
+                    System.out.println("日常总结发送成功给: " + contact.getName());
+                }
+            } catch (Exception e) {
+                if (DEBUG_ENABLED) {
+                    System.err.println("发送日常总结失败: " + contact.getName() + " - " + e.getMessage());
+                }
+            }
+        }
+
+        if (DEBUG_ENABLED) {
+            System.out.println("日常总结发送完成，总计通知: " + notifiedCount + " 人次");
+            System.out.println("========================================");
         }
 
         return notifiedCount;
@@ -673,6 +902,44 @@ public class FamilyService {
     }
 
     /**
+     * Build health alert message
+     */
+    private String buildHealthAlertMessage(String healthData, String alertType, String contactName) {
+        StringBuilder message = new StringBuilder();
+        message.append("健康警报通知\n\n");
+        message.append("亲爱的 ").append(contactName).append("，\n\n");
+        message.append("警报类型：").append(alertType).append("\n");
+        message.append("健康数据：").append(healthData).append("\n\n");
+        message.append("建议及时关注并联系医疗专业人士。\n\n");
+        message.append("此消息由AI老年人陪伴系统自动发送。\n");
+        message.append("发送时间：").append(LocalDateTime.now().toString());
+        return message.toString();
+    }
+
+    /**
+     * Build daily summary message
+     */
+    private String buildDailySummaryMessage(String summaryData, String contactName) {
+        StringBuilder message = new StringBuilder();
+        message.append("日常总结报告\n\n");
+        message.append("亲爱的 ").append(contactName).append("，\n\n");
+        message.append("以下是今日活动总结：\n\n");
+        message.append(summaryData).append("\n\n");
+        message.append("感谢您的关心和陪伴。\n\n");
+        message.append("此消息由AI老年人陪伴系统自动发送。\n");
+        message.append("发送时间：").append(LocalDateTime.now().toString());
+        return message.toString();
+    }
+
+    /**
+     * Build short daily summary message for SMS
+     */
+    private String buildShortDailySummaryMessage(String summaryData, String contactName) {
+        String shortSummary = summaryData.length() > 100 ? summaryData.substring(0, 100) + "..." : summaryData;
+        return "日常总结：" + shortSummary + " - AI老年人陪伴系统";
+    }
+
+    /**
      * Get all contacts (for testing)
      */
     public List<FamilyContact> getAllContacts() {
@@ -722,13 +989,13 @@ public class FamilyService {
             
             // 创建测试用户1的联系人
             Long user1Id = 100L;
-            FamilyContact user1Contact1 = addFamilyContact(user1Id, "张三", "13800000001", "zhangsan@example.com", "儿子", true);
-            addFamilyContact(user1Id, "李四", "13800000002", "lisi@example.com", "女儿", false);
+            FamilyContact user1Contact1 = addFamilyContact(user1Id, "张三", "13800000001", "zhangsan@example.com", "儿子", "ALL", true);
+            addFamilyContact(user1Id, "李四", "13800000002", "lisi@example.com", "女儿", "HEALTH_ALERT", false);
             
             // 创建测试用户2的联系人
             Long user2Id = 200L;
-            FamilyContact user2Contact1 = addFamilyContact(user2Id, "王五", "13800000003", "wangwu@example.com", "配偶", true);
-            addFamilyContact(user2Id, "赵六", "13800000004", "zhaoliu@example.com", "朋友", false);
+            FamilyContact user2Contact1 = addFamilyContact(user2Id, "王五", "13800000003", "wangwu@example.com", "配偶", "ALL", true);
+            addFamilyContact(user2Id, "赵六", "13800000004", "zhaoliu@example.com", "朋友", "DAILY_SUMMARY", false);
             
             // 验证用户1只能看到自己的联系人
             List<FamilyContact> user1Contacts = getFamilyContacts(user1Id);

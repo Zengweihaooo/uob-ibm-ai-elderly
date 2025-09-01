@@ -11,11 +11,8 @@ yarn-error.log*
 target/
 **/target/
 
-# Google Cloud credentials (但允许twilio-config.json)
-docs/keys/organic-totem-*.json
-# 但不忽略twilio配置和示例文件
-!docs/keys/twilio-config.json
-!docs/keys/*.json.example
+# 允许所有配置文件（团队共享），
+!docs/keys/*.json
 .env
 
 # Log files

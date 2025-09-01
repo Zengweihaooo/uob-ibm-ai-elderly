@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS family_contacts (
     phone VARCHAR(20),
     email VARCHAR(100),
     address TEXT,
+    notification_preference VARCHAR(20) DEFAULT 'ALL',
     is_emergency_contact BOOLEAN DEFAULT 0,
     is_active BOOLEAN DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -45,6 +46,7 @@ CREATE TABLE IF NOT EXISTS family_contacts (
 CREATE INDEX IF NOT EXISTS idx_family_contacts_user_id ON family_contacts(user_id);
 CREATE INDEX IF NOT EXISTS idx_family_contacts_emergency ON family_contacts(user_id, is_emergency_contact);
 CREATE INDEX IF NOT EXISTS idx_family_contacts_active ON family_contacts(user_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_family_contacts_notification ON family_contacts(user_id, notification_preference);
 
 -- Health Records Table (if not exists)
 CREATE TABLE IF NOT EXISTS health_records (
@@ -183,14 +185,14 @@ CREATE INDEX IF NOT EXISTS idx_pet_conversation_timestamp ON pet_conversation(ti
 CREATE INDEX IF NOT EXISTS idx_pet_conversation_sender ON pet_conversation(sender_type);
 
 -- Insert sample data for testing
-INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
-VALUES (1, 'Zhang Xiaoming', 'Son', '+86 138 0013 8000', 'xiaoming@example.com', 1);
+INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, notification_preference, is_emergency_contact) 
+VALUES (1, 'Zhang Xiaoming', 'Son', '+86 138 0013 8000', 'xiaoming@example.com', 'ALL', 1);
 
-INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
-VALUES (1, 'Li Xiaohong', 'Daughter', '+86 139 0013 9000', 'xiaohong@example.com', 1);
+INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, notification_preference, is_emergency_contact) 
+VALUES (1, 'Li Xiaohong', 'Daughter', '+86 139 0013 9000', 'xiaohong@example.com', 'ALL', 1);
 
-INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, is_emergency_contact) 
-VALUES (1, 'Dr. Wang', 'Doctor', '+86 137 0013 7000', 'doctor.wang@hospital.com', 0);
+INSERT OR IGNORE INTO family_contacts (user_id, name, relationship, phone, email, notification_preference, is_emergency_contact) 
+VALUES (1, 'Dr. Wang', 'Doctor', '+86 137 0013 7000', 'doctor.wang@hospital.com', 'HEALTH_ALERT', 0);
 
 -- Insert sample users
 INSERT OR IGNORE INTO users (username, email, password_hash, name, status, role, is_verified) 

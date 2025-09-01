@@ -11,6 +11,7 @@
         <result column="phone" property="phone" jdbcType="VARCHAR"/>
         <result column="email" property="email" jdbcType="VARCHAR"/>
         <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="notification_preference" property="notificationPreference" jdbcType="VARCHAR"/>
         <result column="is_emergency_contact" property="isEmergencyContact" jdbcType="BOOLEAN"/>
         <result column="is_active" property="isActive" jdbcType="BOOLEAN"/>
         <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
@@ -19,17 +20,17 @@
 
     <!-- Base Columns -->
     <sql id="Base_Column_List">
-        id, user_id, name, relationship, phone, email, address, 
+        id, user_id, name, relationship, phone, email, address, notification_preference,
         is_emergency_contact, is_active, created_at, updated_at
     </sql>
 
     <!-- Insert -->
     <insert id="insert" parameterType="com.example.demo.pojo.FamilyContact" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO family_contacts (
-            user_id, name, relationship, phone, email, address,
+            user_id, name, relationship, phone, email, address, notification_preference,
             is_emergency_contact, is_active, created_at, updated_at
         ) VALUES (
-            #{userId}, #{name}, #{relationship}, #{phone}, #{email}, #{address},
+            #{userId}, #{name}, #{relationship}, #{phone}, #{email}, #{address}, #{notificationPreference},
             #{isEmergencyContact}, #{isActive}, #{createdAt}, #{updatedAt}
         )
     </insert>
@@ -43,6 +44,7 @@
             phone = #{phone},
             email = #{email},
             address = #{address},
+            notification_preference = #{notificationPreference},
             is_emergency_contact = #{isEmergencyContact},
             is_active = #{isActive},
             updated_at = #{updatedAt}
