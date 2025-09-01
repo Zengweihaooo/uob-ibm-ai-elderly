@@ -67,11 +67,11 @@ public class MemoirExportService {
     }
 
     /**
-     * 生成 Markdown 文本
+     * Generate Markdown text
      */
     public String generateMarkdown(Integer projectId) {
         MemoirProject p = mapper.findProjectById(projectId);
-        if (p == null) throw new IllegalArgumentException("项目不存在: " + projectId);
+        if (p == null) throw new IllegalArgumentException("Project not found: " + projectId);
         List<MemoirSegment> segs = mapper.listSegmentsByProject(projectId);
 
         StringBuilder sb = new StringBuilder();
@@ -83,7 +83,7 @@ public class MemoirExportService {
         sb.append("locale: ").append(p.getLocale() == null ? "en-US" : p.getLocale()).append("\n");
         sb.append("---\n\n");
 
-        // 正文结构
+        // Body structure
         sb.append("# ").append(p.getTitle()).append("\n\n");
 
         String currentChapter = null;
@@ -104,10 +104,10 @@ public class MemoirExportService {
     }
 
     /**
-     * Markdown -> 简单 HTML（最小可用）
+     * Markdown -> minimal HTML (MVP)
      */
     private String toSimpleHtml(String markdown) {
-        // 解析frontmatter用于设置<title>/author
+        // Parse frontmatter to set <title>/author
         String[] lines = markdown.split("\r?\n");
         String fmTitle = null, fmAuthor = null;
         if (lines.length > 0 && lines[0].trim().equals("---")) {
@@ -146,7 +146,7 @@ public class MemoirExportService {
                    .append(escapeHtml(title)).append("</a></li>");
             }
         }
-        // H3 目录（可选）
+        // H3 in TOC (optional)
         if (tocLevel >= 3) {
             for (String line : lines) {
                 if (line.startsWith("### ")) {
@@ -162,12 +162,12 @@ public class MemoirExportService {
         toc.append("</ol></div>");
 
         String html = markdown;
-        // 多行替换：支持 ^ 和 $ 匹配行首行尾
+        // Multi-line replacements: support ^ and $ anchors
         html = html.replaceAll("(?m)^# (.*)$", "<h1>$1</h1>");
         html = html.replaceAll("(?m)^## (.*)$", "<h2>$1</h2>");
         html = html.replaceAll("(?m)^### (.*)$", "<h3>$1</h3>");
-        html = html.replaceAll("---\\n[\\s\\S]*?---\\n", ""); // 去掉frontmatter
-        // 处理 Markdown 图片与链接（先图片再链接，避免冲突）
+        html = html.replaceAll("---\n[\\s\\S]*?---\n", ""); // remove frontmatter
+        // Convert Markdown images and links (images first, then links)
         html = convertMarkdownImages(html);
         html = convertMarkdownLinks(html);
         html = html.replace("\n\n", "<br/><br/>");
@@ -176,11 +176,11 @@ public class MemoirExportService {
             "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />" +
             "<title>" + escapeHtml((fmTitle == null || fmTitle.isBlank()) ? (headingList.isEmpty() ? "Memoir" : headingList.get(0)[1]) : fmTitle) + "</title>" +
             (fmAuthor == null ? "" : ("<meta name=\"author\" content=\"" + escapeHtml(fmAuthor) + "\" />")) +
-            // 基础样式：页面边距、标题层级、段落行高、分页控制
+            // Basic styles: page margins, heading levels, paragraph line-height, page breaks
             "<style>" +
             "@page { size: A4; margin: " + escapeCss(pageMargin) + "; }" +
             "@page cover { size: A4; margin: " + escapeCss(coverMargin) + "; }" +
-            // 页眉页脚（openhtmltopdf 支持运行中元素与页边距盒）
+            // Header/Footer (openhtmltopdf supports running elements + margin boxes)
             "@page {" +
             "  @top-center { content: element(doc-header) }" +
             "  @bottom-center { content: element(doc-footer) }" +
@@ -213,7 +213,7 @@ public class MemoirExportService {
             ".footer .page-num:after{ content: 'Page ' counter(page) ' of ' counter(pages); }" +
             "</style>" +
             "</head><body>";
-        // 为标题注入 id 以支持 TOC 锚点
+        // Inject id to headings for TOC anchors
         for (String[] h : headingList) {
             String level = h[0];
             String title = h[1];
@@ -223,11 +223,11 @@ public class MemoirExportService {
             html = html.replaceFirst(find, repl);
         }
 
-    // 组装页眉文案：项目名（取首个标题近似） + 生成日期（UK 格式）
+    // Compose header: project name (approx from first title) + generate date (UK format)
     String headerTitle = headingList.isEmpty() ? "Memoir" : escapeHtml(headingList.get(0)[1]);
     String dateUk = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy", java.util.Locale.UK));
     String header = "<div class=\"header\">AI Memoir — " + headerTitle + " · " + dateUk + "</div>";
-        // 封面（若有frontmatter标题或推断标题）
+        // Cover page (if frontmatter title exists or inferred)
         String coverTitle = (fmTitle == null || fmTitle.isBlank()) ? headerTitle : escapeHtml(fmTitle);
         String coverMeta = (fmAuthor == null || fmAuthor.isBlank()) ? dateUk : (escapeHtml(fmAuthor) + " — " + dateUk);
     String coverStyle = (coverImage != null && !coverImage.isBlank())
@@ -240,7 +240,7 @@ public class MemoirExportService {
         return head + header + cover + tocHtml + html + footer + "</body></html>";
     }
 
-    // 简单 HTML 转义，保证生成内容安全（最小实现）
+    // Simple HTML escaping to ensure safety (minimal)
     private String escapeHtml(String s) {
         if (s == null) return "";
         return s.replace("&", "&amp;")
@@ -266,7 +266,7 @@ public class MemoirExportService {
      }
 
     /**
-     * 通过 openhtmltopdf 生成 PDF（反射调用）
+     * Generate PDF via openhtmltopdf (reflection)
      */
     public byte[] generatePdfFromMarkdown(String markdown) {
         String htmlDoc = toSimpleHtml(markdown);
@@ -280,7 +280,7 @@ public class MemoirExportService {
             Method withHtmlContent = builderClz.getMethod("withHtmlContent", String.class, String.class);
             String base = resolveBaseUri();
             withHtmlContent.invoke(builder, htmlDoc, base);
-            // 可选：注册字体文件，增强中英混排与离线显示一致性
+            // Optional: register font files to improve mixed CJK/Latin rendering and offline consistency
             if (pdfFontPaths != null && !pdfFontPaths.isBlank()) {
                 String[] paths = pdfFontPaths.split(";");
                 for (String p : paths) {
@@ -294,11 +294,11 @@ public class MemoirExportService {
                                 Method useFont = builderClz.getMethod("useFont", File.class, String.class);
                                 useFont.invoke(builder, f, family);
                             } catch (NoSuchMethodException ignore) {
-                                // 忽略：不同版本方法签名可能差异
+                                // Ignore: different versions may have different signatures
                             }
                         }
                     } catch (Exception ignore) {
-                        // 字体注册失败不影响导出
+                        // Font registration failure should not block export
                     }
                 }
             }
@@ -309,19 +309,19 @@ public class MemoirExportService {
             Method run = builderClz.getMethod("run");
             run.invoke(builder);
             byte[] pdf = baos.toByteArray();
-            // 可选：应用 PDF 元数据与加密（基于 PDFBox 反射），不影响基本导出
-            if (pdfSecEnabled || true) { // 即便未加密，也尝试设置元数据
+            // Optional: apply PDF metadata and encryption (via PDFBox reflection), does not block export
+            if (pdfSecEnabled || true) { // Even if not encrypted, try to set metadata
                 try {
                     String title = parseFrontmatterValue(markdown, "title");
                     String author = parseFrontmatterValue(markdown, "author");
                     pdf = applyPdfMetadataAndSecurity(pdf, title, author);
                 } catch (Throwable ignore) {
-                    // 元数据或加密失败不阻断
+                    // Metadata or encryption failure should not block
                 }
             }
             return pdf;
         } catch (Exception e) {
-            throw new RuntimeException("生成PDF失败", e);
+            throw new RuntimeException("PDF generation failed", e);
         }
     }
 
@@ -332,7 +332,7 @@ public class MemoirExportService {
         return base.replaceAll("(?i)-(regular|bold|italic|medium|light|semibold)", "");
     }
 
-    // 构造水印 CSS（基于内联 SVG 背景图）
+    // Build watermark CSS (based on inline SVG background)
     private String buildWatermarkCss() {
         if (watermarkText == null || watermarkText.isBlank()) return "";
         try {
@@ -354,13 +354,13 @@ public class MemoirExportService {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;");
     }
 
+    // Simple filtering for newlines and invalid characters to avoid breaking CSS
     private String escapeCss(String s) {
         if (s == null) return "";
-        // 简单过滤换行与非法字符，避免破坏 CSS
         return s.replace("\n", " ").replace("\r", " ").trim();
     }
 
-    // 从 frontmatter 解析简单键值
+    // Parse simple key-value pairs from frontmatter
     private String parseFrontmatterValue(String markdown, String key) {
         if (markdown == null) return null;
         String[] lines = markdown.split("\r?\n");
@@ -379,7 +379,7 @@ public class MemoirExportService {
         return null;
     }
 
-    // 使用 PDFBox（反射）设置文档信息与可选加密
+    // Apply PDF metadata and optional encryption using PDFBox (reflection)
     private byte[] applyPdfMetadataAndSecurity(byte[] pdf, String title, String author) throws Exception {
         Class<?> pdDocumentClz = Class.forName("org.apache.pdfbox.pdmodel.PDDocument");
         Class<?> apClz = Class.forName("org.apache.pdfbox.pdmodel.encryption.AccessPermission");
@@ -390,7 +390,7 @@ public class MemoirExportService {
         java.lang.reflect.Method load = pdDocumentClz.getMethod("load", byte[].class);
         Object doc = load.invoke(null, (Object) pdf);
         try {
-            // 设置文档信息
+            // Set document info
             java.lang.reflect.Method getInfo = pdDocumentClz.getMethod("getDocumentInformation");
             Object info = getInfo.invoke(doc);
             if (info == null) {
@@ -405,26 +405,26 @@ public class MemoirExportService {
                 infoClz.getMethod("setAuthor", String.class).invoke(info, author);
             }
 
-            // 可选加密
+            // Optional encryption
             if (pdfSecEnabled) {
                 Object ap = apClz.getDeclaredConstructor().newInstance();
-                // 设置允许的权限
+                // Set allowed permissions
                 try { apClz.getMethod("setCanPrint", boolean.class).invoke(ap, pdfSecAllowPrint); } catch (Throwable ignored) {}
                 try { apClz.getMethod("setCanExtractContent", boolean.class).invoke(ap, pdfSecAllowCopy); } catch (Throwable ignored) {}
 
                 String owner = (pdfSecOwnerPassword != null && !pdfSecOwnerPassword.isBlank()) ? pdfSecOwnerPassword : pdfSecUserPassword;
                 String user = (pdfSecUserPassword != null && !pdfSecUserPassword.isBlank()) ? pdfSecUserPassword : pdfSecOwnerPassword;
-                if (owner == null || owner.isBlank()) owner = "owner"; // 回退
+                if (owner == null || owner.isBlank()) owner = "owner"; // fallback
                 if (user == null) user = "";
 
                 Object spp = sppClz.getConstructor(String.class, String.class, apClz).newInstance(owner, user, ap);
                 // key length
                 try { sppClz.getMethod("setEncryptionKeyLength", int.class).invoke(spp, pdfSecKeyLength); } catch (Throwable ignored) {}
-                // 应用保护
+                // Apply protection
                 pdDocumentClz.getMethod("protect", Class.forName("org.apache.pdfbox.pdmodel.encryption.ProtectionPolicy")).invoke(doc, spp);
             }
 
-            // 保存至字节
+            // Save to byte array
             java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
             pdDocumentClz.getMethod("save", java.io.OutputStream.class).invoke(doc, out);
             return out.toByteArray();
@@ -433,9 +433,9 @@ public class MemoirExportService {
         }
     }
 
-    // 将 Markdown 图片语法转换为 XHTML <img/>
+    // Convert Markdown image syntax to XHTML <img/>
     private String convertMarkdownImages(String text) {
-        // ![alt](url "title") 或 ![alt](url)
+        // ![alt](url "title") or ![alt](url)
         Pattern p = Pattern.compile("!\\[(.*?)\\]\\((\\S+?)(?:\\s+\\\"(.*?)\\\")?\\)");
         Matcher m = p.matcher(text);
         StringBuffer sb = new StringBuffer();
@@ -451,9 +451,9 @@ public class MemoirExportService {
         return sb.toString();
     }
 
-    // 将 Markdown 链接语法转换为 <a>
+    // Convert Markdown link syntax to <a>
     private String convertMarkdownLinks(String text) {
-        // [text](url "title") 或 [text](url)
+        // [text](url "title") or [text](url)
         Pattern p = Pattern.compile("(?<!!)\\[(.+?)\\]\\((\\S+?)(?:\\s+\\\"(.*?)\\\")?\\)");
         Matcher m = p.matcher(text);
         StringBuffer sb = new StringBuffer();
@@ -479,7 +479,7 @@ public class MemoirExportService {
             if (!uri.endsWith("/")) uri = uri + "/";
             return uri; // file:///.../
         } catch (Exception e) {
-            return "/"; // 回退
+            return "/"; // fallback
         }
     }
 

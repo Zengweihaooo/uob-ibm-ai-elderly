@@ -2,159 +2,159 @@
   "functions": [
     {
       "name": "send_email",
-      "description": "发送电子邮件功能",
+      "description": "Send email function",
       "parameters": {
         "toEmail": {
           "type": "string",
           "required": true,
-          "description": "收件人邮箱地址"
+          "description": "Recipient email address"
         },
         "subject": {
           "type": "string",
           "required": true,
-          "description": "邮件主题"
+          "description": "Email subject"
         },
         "content": {
           "type": "string",
           "required": true,
-          "description": "邮件内容"
+          "description": "Email content"
         },
         "fromEmail": {
           "type": "string",
           "required": false,
-          "description": "发件人邮箱（可选，默认使用系统邮箱）"
+          "description": "Sender email (optional, system default if omitted)"
         }
       },
       "examples": [
-        "发送邮件给张三，主题是会议提醒，内容是明天下午3点开会",
-        "给李四发邮件，告诉他明天开会",
-        "写邮件给王五，内容是关于项目进度"
+        "Send an email to Zhang San, subject: meeting reminder, content: meeting at 3 PM tomorrow",
+        "Send an email to Li Si, tell him about tomorrow's meeting",
+        "Write an email to Wang Wu about the project progress"
       ],
-      "keywords": ["邮件", "发送", "email", "发邮件", "写邮件"],
+      "keywords": ["email", "send", "write email"],
       "endpoint": "/api/email/send"
     },
     {
       "name": "check_health",
-      "description": "健康检查功能",
+      "description": "Health check function",
       "parameters": {
         "userId": {
           "type": "string",
           "required": true,
-          "description": "用户ID"
+          "description": "User ID"
         }
       },
       "examples": [
-        "检查我的健康状态",
-        "查看健康报告",
-        "健康检查"
+        "Check my health status",
+        "View health report",
+        "Health check"
       ],
-      "keywords": ["健康", "检查", "状态", "报告", "health", "check"],
+      "keywords": ["health", "check", "status", "report"],
       "endpoint": "/api/health/check"
     },
     {
       "name": "add_schedule",
-      "description": "添加日程安排功能",
+      "description": "Add schedule function",
       "parameters": {
         "title": {
           "type": "string",
           "required": true,
-          "description": "日程标题"
+          "description": "Schedule title"
         },
         "date": {
           "type": "string",
           "required": true,
-          "description": "日程日期（YYYY-MM-DD格式）"
+          "description": "Schedule date (YYYY-MM-DD)"
         },
         "time": {
           "type": "string",
           "required": true,
-          "description": "日程时间（HH:MM格式）"
+          "description": "Schedule time (HH:MM)"
         },
         "category": {
           "type": "string",
           "required": true,
-          "description": "日程类别（morning, afternoon, evening, medication）"
+          "description": "Schedule category (morning, afternoon, evening, medication)"
         },
         "description": {
           "type": "string",
           "required": false,
-          "description": "日程描述（可选）"
+          "description": "Schedule description (optional)"
         },
         "priority": {
           "type": "string",
           "required": false,
-          "description": "优先级（high, medium, low，默认medium）"
+          "description": "Priority (high, medium, low; default medium)"
         }
       },
       "examples": [
-        "添加明天下午3点的会议日程",
-        "设置明天早上8点吃药提醒",
-        "安排后天晚上7点看电影",
-        "添加下周一上午9点的医生预约"
+        "Add a meeting at 3 PM tomorrow",
+        "Set a medication reminder at 8 AM tomorrow",
+        "Schedule a movie at 7 PM the day after tomorrow",
+        "Add a doctor's appointment at 9 AM next Monday"
       ],
-      "keywords": ["日程", "安排", "添加", "设置", "schedule", "add", "安排", "预约"],
+      "keywords": ["schedule", "add", "set", "appointment"],
       "endpoint": "/api/schedule/activity"
     },
     {
       "name": "add_important_date",
-      "description": "添加重要日期功能",
+      "description": "Add important date function",
       "parameters": {
         "title": {
           "type": "string",
           "required": true,
-          "description": "重要日期标题"
+          "description": "Important date title"
         },
         "date": {
           "type": "string",
           "required": true,
-          "description": "重要日期（YYYY-MM-DD格式）"
+          "description": "Important date (YYYY-MM-DD)"
         },
         "type": {
           "type": "string",
           "required": true,
-          "description": "重要日期类型（birthday, anniversary, holiday, custom）"
+          "description": "Important date type (birthday, anniversary, holiday, custom)"
         },
         "description": {
           "type": "string",
           "required": false,
-          "description": "重要日期描述（可选）"
+          "description": "Important date description (optional)"
         }
       },
       "examples": [
-        "添加张三的生日是12月25日",
-        "设置结婚纪念日是6月15日",
-        "添加春节是2月10日",
-        "设置妈妈生日是3月8日"
+        "Add Zhang San's birthday on December 25",
+        "Set wedding anniversary on June 15",
+        "Add Spring Festival on February 10",
+        "Set mom's birthday on March 8"
       ],
-      "keywords": ["重要日期", "生日", "纪念日", "节日", "important date", "birthday", "anniversary", "holiday", "添加", "设置"],
+      "keywords": ["important date", "birthday", "anniversary", "holiday", "add", "set"],
       "endpoint": "/api/important-dates/add"
     },
     {
       "name": "set_reminder",
-      "description": "设置提醒功能",
+      "description": "Set reminder function",
       "parameters": {
         "title": {
           "type": "string",
           "required": true,
-          "description": "提醒标题"
+          "description": "Reminder title"
         },
         "datetime": {
           "type": "string",
           "required": true,
-          "description": "提醒时间"
+          "description": "Reminder time"
         },
         "description": {
           "type": "string",
           "required": false,
-          "description": "提醒描述（可选）"
+          "description": "Reminder description (optional)"
         }
       },
       "examples": [
-        "设置明天下午3点的会议提醒",
-        "提醒我吃药",
-        "设置生日提醒"
+        "Set a meeting reminder at 3 PM tomorrow",
+        "Remind me to take medicine",
+        "Set a birthday reminder"
       ],
-      "keywords": ["提醒", "设置", "闹钟", "时间", "reminder", "set"],
+      "keywords": ["reminder", "set", "alarm", "time"],
       "endpoint": "/api/reminder/set"
     }
   ]

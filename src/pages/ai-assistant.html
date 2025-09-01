@@ -1313,7 +1313,7 @@
                             try {
                                 const date = new Date(timeStr);
                                 if (isNaN(date.getTime())) return 'Time format error';
-                                return date.toLocaleString('zh-CN');
+                                return date.toLocaleString('en-GB');
                             } catch (e) {
                                 return 'Time parsing error';
                             }

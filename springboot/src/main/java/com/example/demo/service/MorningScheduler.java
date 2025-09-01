@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 /**
  * Morning Scheduler Service
- * 负责每天早上为活跃用户创建早安问候和日程安排
+ * Responsible for creating morning greetings and schedules for active users
  * 
  * @author Lepeng Zhou
  * @version 1.0
@@ -45,59 +45,59 @@ public class MorningScheduler {
     private String defaultPodcastTime;
 
     /**
-     * 每天早上定时任务
-     * 调试时用 pet.morning.cron，生产可改回 0 0 8 * * *
+     * Daily morning cron task
+     * Use pet.morning.cron for debugging; production example: 0 0 8 * * *
      */
     @Scheduled(cron = "${pet.morning.cron:0 0 8 * * *}")
     public void morningPing() {
-        logger.info("🌅 开始执行早安问候任务...");
+        logger.info("🌅 Start executing morning greeting task...");
         
         try {
             List<Long> activeUserIds = scheduleService.activeUserIds();
-            logger.info("找到 " + activeUserIds.size() + " 个活跃用户");
+            logger.info("Found " + activeUserIds.size() + " active users");
             
             for (Long userId : activeUserIds) {
                 try {
-                    // 检查是否已经有早安问候
+                    // Check if morning greeting already exists
                     if (!scheduleService.hasMorningGreeting(userId)) {
-                        // 创建早安问候
+                        // Create morning greeting
                         Schedule morningGreeting = scheduleService.createTodo(
                             userId, 
-                            "早安问候", 
-                            "今天做什么？我可以安排播客/提醒散步/联系家人。", 
+                            "Morning Greeting", 
+                            "What would you like to do today? I can schedule podcasts / remind you to walk / contact family.", 
                             "08:05"
                         );
                         
-                        // 更新宠物情绪（早晨互动）
+                        // Update pet mood (morning interaction)
                         petMoodService.adjustMood(userId, 10);
                         
-                        logger.info("为用户 " + userId + " 创建早安问候: " + morningGreeting.getTitle());
+                        logger.info("Created morning greeting for user " + userId + ": " + morningGreeting.getTitle());
                     }
                     
-                    // 创建默认的早晨活动
+                    // Create default morning activities
                     createDefaultMorningActivities(userId);
                     
                 } catch (Exception e) {
-                    logger.warning("为用户 " + userId + " 创建早安问候失败: " + e.getMessage());
+                    logger.warning("Failed to create morning greeting for user " + userId + ": " + e.getMessage());
                 }
             }
             
-            logger.info("✅ 早安问候任务完成");
+            logger.info("✅ Morning greeting task completed");
             
         } catch (Exception e) {
-            logger.severe("早安问候任务执行失败: " + e.getMessage());
+            logger.severe("Morning greeting task failed: " + e.getMessage());
         }
     }
 
     /**
-     * 处理用户意图，创建相应的待办事项
+     * Handle user intent and create corresponding todos
      * 
-     * @param userId 用户ID
-     * @param intent 用户意图
-     * @return 创建的待办事项
+     * @param userId User ID
+     * @param intent User intent
+     * @return created todo
      */
     public Schedule handleIntent(Long userId, String intent) {
-        logger.info("处理用户 " + userId + " 的意图: " + intent);
+        logger.info("Handling intent for user " + userId + ": " + intent);
         
         Schedule createdTodo = null;
         
@@ -106,184 +106,184 @@ public class MorningScheduler {
                 case "SCHEDULE_PODCAST" -> {
                     createdTodo = scheduleService.createTodo(
                         userId, 
-                        "播放播客", 
-                        "自动安排的播客时间，放松心情", 
+                        "Play Podcast", 
+                        "Auto-scheduled podcast time to relax", 
                         defaultPodcastTime
                     );
-                    logger.info("为用户 " + userId + " 安排播客时间");
+                    logger.info("Scheduled podcast time for user " + userId);
                 }
                 
                 case "REMIND_WALK" -> {
                     createdTodo = scheduleService.createTodo(
                         userId, 
-                        "散步20分钟", 
-                        "健康提醒：户外散步，呼吸新鲜空气", 
+                        "Walk for 20 minutes", 
+                        "Health reminder: outdoor walk and fresh air", 
                         "16:00"
                     );
-                    logger.info("为用户 " + userId + " 安排散步提醒");
+                    logger.info("Scheduled walking reminder for user " + userId);
                 }
                 
                 case "MESSAGE_FAMILY" -> {
                     createdTodo = scheduleService.createTodo(
                         userId, 
-                        "给家人发消息", 
-                        "关怀沟通：联系家人，分享今日心情", 
+                        "Message family", 
+                        "Caring communication: contact family and share today's mood", 
                         "10:00"
                     );
-                    logger.info("为用户 " + userId + " 安排家人联系提醒");
+                    logger.info("Scheduled family contact reminder for user " + userId);
                 }
                 
                 case "MORNING_EXERCISE" -> {
                     createdTodo = scheduleService.createTodo(
                         userId, 
-                        "晨练", 
-                        "轻度晨练：伸展运动，唤醒身体", 
+                        "Morning exercise", 
+                        "Light morning exercise: stretches to wake up the body", 
                         "07:30"
                     );
-                    logger.info("为用户 " + userId + " 安排晨练");
+                    logger.info("Scheduled morning exercise for user " + userId);
                 }
                 
                 case "BREAKFAST_REMINDER" -> {
                     createdTodo = scheduleService.createTodo(
                         userId, 
-                        "早餐提醒", 
-                        "营养早餐：记得吃早餐，补充能量", 
+                        "Breakfast reminder", 
+                        "Nutritious breakfast: remember to eat and replenish energy", 
                         "08:00"
                     );
-                    logger.info("为用户 " + userId + " 安排早餐提醒");
+                    logger.info("Scheduled breakfast reminder for user " + userId);
                 }
                 
                 default -> {
-                    logger.warning("未知的用户意图: " + intent);
+                    logger.warning("Unknown user intent: " + intent);
                     return null;
                 }
             }
             
-            // 如果成功创建待办事项，增加宠物经验值
+            // If todo created successfully, increase pet experience
             if (createdTodo != null) {
                 petMoodService.addExperience(userId, 5);
             }
             
         } catch (Exception e) {
-            logger.severe("处理用户意图失败: " + e.getMessage());
+            logger.severe("Failed to handle user intent: " + e.getMessage());
         }
         
         return createdTodo;
     }
 
     /**
-     * 创建默认的早晨活动
+     * Create default morning activities
      * 
-     * @param userId 用户ID
+     * @param userId User ID
      */
     private void createDefaultMorningActivities(Long userId) {
         try {
             LocalDate today = LocalDate.now();
             
-            // 检查是否已有早晨活动
+            // Check if morning activities already exist
             List<Schedule> todaySchedule = scheduleService.getTodaySchedule(userId);
             boolean hasMorningActivities = todaySchedule.stream()
                 .anyMatch(schedule -> schedule.getCategory().equals("morning") && 
                                    schedule.getActivityTime().isBefore(LocalTime.of(12, 0)));
             
             if (!hasMorningActivities) {
-                // 创建默认的早晨活动
+                // Create default morning activities
                 scheduleService.createTodo(
                     userId, 
-                    "晨间伸展", 
-                    "轻柔的伸展运动，唤醒身体", 
+                    "Morning stretch", 
+                    "Gentle stretches to wake up the body", 
                     "07:30"
                 );
                 
                 scheduleService.createTodo(
                     userId, 
-                    "早餐时间", 
-                    "营养均衡的早餐", 
+                    "Breakfast time", 
+                    "Balanced nutritious breakfast", 
                     "08:00"
                 );
                 
                 scheduleService.createTodo(
                     userId, 
-                    "晨间散步", 
-                    "在公园散步15分钟，呼吸新鲜空气", 
+                    "Morning walk", 
+                    "15-minute walk in the park for fresh air", 
                     "08:30"
                 );
                 
-                logger.info("为用户 " + userId + " 创建默认早晨活动");
+                logger.info("Created default morning activities for user " + userId);
             }
             
         } catch (Exception e) {
-            logger.warning("为用户 " + userId + " 创建默认早晨活动失败: " + e.getMessage());
+            logger.warning("Failed to create default morning activities for user " + userId + ": " + e.getMessage());
         }
     }
 
     /**
-     * 手动触发早安问候（用于测试）
+     * Manually trigger morning greeting (for testing)
      * 
-     * @param userId 用户ID
-     * @return 是否成功
+     * @param userId User ID
+     * @return success flag
      */
     public boolean triggerMorningGreeting(Long userId) {
         try {
             if (!scheduleService.hasMorningGreeting(userId)) {
                 Schedule morningGreeting = scheduleService.createTodo(
                     userId, 
-                    "早安问候", 
-                    "今天做什么？我可以安排播客/提醒散步/联系家人。", 
+                    "Morning Greeting", 
+                    "What would you like to do today? I can schedule podcasts / remind you to walk / contact family.", 
                     "08:05"
                 );
                 
-                // 更新宠物情绪
+                // Update pet mood
                 petMoodService.adjustMood(userId, 10);
                 
-                logger.info("手动触发用户 " + userId + " 的早安问候");
+                logger.info("Manually triggered morning greeting for user " + userId);
                 return true;
             }
             
             return false;
             
         } catch (Exception e) {
-            logger.severe("手动触发早安问候失败: " + e.getMessage());
+            logger.severe("Failed to manually trigger morning greeting: " + e.getMessage());
             return false;
         }
     }
 
     /**
-     * 获取用户的早晨日程建议
+     * Get user's morning schedule suggestions
      * 
-     * @param userId 用户ID
-     * @return 早晨日程建议列表
+     * @param userId User ID
+     * @return suggestions list
      */
     public List<String> getMorningSuggestions(Long userId) {
         List<String> suggestions = new java.util.ArrayList<>();
         
         try {
-            // 基于用户状态提供个性化建议
+            // Provide personalized suggestions based on user status
             var petStatus = petMoodService.getFullPetStatus(userId);
             int moodScore = (Integer) petStatus.get("moodScore");
             
             if (moodScore < 0) {
-                suggestions.add("今天心情不太好，建议听些轻音乐");
-                suggestions.add("可以安排一次户外散步，改善心情");
+                suggestions.add("Not feeling great today. Consider listening to some light music.");
+                suggestions.add("Schedule an outdoor walk to improve mood.");
             } else if (moodScore > 20) {
-                suggestions.add("今天心情不错，可以尝试新的活动");
-                suggestions.add("建议联系朋友分享好心情");
+                suggestions.add("You're in a good mood today. Try a new activity.");
+                suggestions.add("Consider contacting friends to share your good mood.");
             } else {
-                suggestions.add("今天心情平稳，适合规律作息");
-                suggestions.add("可以安排一些轻松的活动");
+                suggestions.add("Mood is stable today. Keep a regular routine.");
+                suggestions.add("Plan some light activities.");
             }
             
-            // 添加通用建议
-            suggestions.add("记得按时吃药");
-            suggestions.add("保持适度运动");
-            suggestions.add("多与家人朋友联系");
+            // Add general suggestions
+            suggestions.add("Remember to take medications on time.");
+            suggestions.add("Maintain moderate exercise.");
+            suggestions.add("Stay in touch with family and friends.");
             
         } catch (Exception e) {
-            logger.warning("获取早晨建议失败: " + e.getMessage());
-            // 返回默认建议
-            suggestions.add("保持规律作息");
-            suggestions.add("适度运动");
-            suggestions.add("保持社交联系");
+            logger.warning("Failed to get morning suggestions: " + e.getMessage());
+            // Return default suggestions
+            suggestions.add("Keep a regular routine.");
+            suggestions.add("Exercise moderately.");
+            suggestions.add("Maintain social connections.");
         }
         
         return suggestions;

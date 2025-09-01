@@ -41,59 +41,59 @@ public class UserService {
     private static final int CODE_EXPIRY_MINUTES = 30;
     
     /**
-     * Register a new user with enhanced validation (增强版)
+     * Register a new user with enhanced validation (enhanced version)
      * 
      * @param email The email address to register
      * @return The user object
      * @throws IllegalArgumentException if email is invalid
      */
     public User registerUser(String email) {
-        // 1. 最终邮箱验证 - 但允许已存在但未验证的邮箱重新发送
+        // 1) Final email normalization - allow resending if existing but not verified
         email = email.trim().toLowerCase();
         
         User existingUser = userMapper.findByEmail(email);
         
-        // 如果邮箱已存在且已验证，拒绝注册
+        // If email exists and is already verified, reject registration
         if (existingUser != null && existingUser.getStatus() == User.UserStatus.VERIFIED) {
-            throw new IllegalArgumentException("该邮箱已被注册并验证，请使用其他邮箱或联系管理员重置");
+            throw new IllegalArgumentException("This email is already registered and verified. Please use another email or contact admin to reset.");
         }
         
-        // 基础邮箱格式验证（不包括数据库重复检查）
+        // Basic email format validation (not including duplicate check)
         EmailVerificationResult formatCheck = emailVerificationService.validateEmailFormatOnly(email);
         if (!formatCheck.isSuccess()) {
             throw new IllegalArgumentException(formatCheck.getMessage());
         }
         
-        // 2. 生成验证码
+        // 2) Generate verification code
         String verificationCode = VerificationCodeGenerator.generateCode();
         LocalDateTime codeExpiresAt = LocalDateTime.now().plusMinutes(CODE_EXPIRY_MINUTES);
         
-        // 3. 先尝试发送邮件（在数据库操作之前）
+        // 3) Try sending email first (before DB operations)
         try {
             emailService.sendVerificationEmail(email, verificationCode);
         } catch (Exception e) {
-            // 邮件发送失败，不进行数据库操作
-            throw new RuntimeException("邮件发送失败: " + e.getMessage(), e);
+            // If email sending fails, do not perform DB operations
+            throw new RuntimeException("Email sending failed: " + e.getMessage(), e);
         }
         
-        // 4. 邮件发送成功后，进行数据库操作
+        // 4) After email is sent successfully, proceed with DB operations
         User user;
         if (existingUser == null) {
-            // 创建新用户
+            // Create new user
             user = new User(email);
             // Set a temporary password hash for registration (user will set real password later)
             user.setPasswordHash("temp_hash_" + System.currentTimeMillis());
             userMapper.insert(user);
         } else {
-            // 更新现有用户
+            // Update existing user
             user = existingUser;
         }
         
-        // 5. 更新验证码和状态
+        // 5) Update verification code and status
         userMapper.updateVerificationCode(user.getId(), verificationCode, codeExpiresAt);
         userMapper.updateUserStatus(user.getId(), "PENDING");
         
-        // 6. 更新用户对象
+        // 6) Update user object
         user.setVerificationCode(verificationCode);
         user.setStatus(User.UserStatus.PENDING);
         user.setCodeExpiresAt(codeExpiresAt);
@@ -410,11 +410,11 @@ public class UserService {
     }
     
     /**
-     * 检查数据库是否可用
+     * Check if database is available
      */
     private boolean isDatabaseAvailable() {
         try {
-            // 尝试执行一个简单的查询来检查数据库连接
+            // Try a simple query to verify DB connection
             userMapper.findAll();
             return true;
         } catch (Exception e) {

@@ -9,8 +9,8 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 
 /**
- * 回忆录服务层
- * 中文注释：封装基础业务逻辑与入参校验
+ * Memoir service layer
+ * Provides basic business logic and input validation
  */
 @Service
 public class MemoirService {
@@ -20,9 +20,9 @@ public class MemoirService {
         this.mapper = mapper;
     }
 
-    /** 新建项目 */
+    /** Create project */
     public MemoirProject createProject(String title, String owner, String locale, String pinHash) {
-        if (!StringUtils.hasText(title)) throw new IllegalArgumentException("title 不能为空");
+        if (!StringUtils.hasText(title)) throw new IllegalArgumentException("title must not be empty");
         MemoirProject p = new MemoirProject();
         p.setTitle(title.trim());
         p.setOwner(StringUtils.hasText(owner) ? owner.trim() : null);
@@ -32,20 +32,20 @@ public class MemoirService {
         return mapper.findProjectById(p.getId());
     }
 
-    /** 按拥有者列出项目 */
+    /** List projects by owner */
     public List<MemoirProject> listProjects(String owner) {
         return mapper.listProjectsByOwner(owner);
     }
 
-    /** 添加分段 */
+    /** Add segment */
     public MemoirSegment addSegment(MemoirSegment seg) {
-        if (seg.getProjectId() == null) throw new IllegalArgumentException("projectId 必填");
-        if (!StringUtils.hasText(seg.getChapter())) throw new IllegalArgumentException("chapter 必填");
+        if (seg.getProjectId() == null) throw new IllegalArgumentException("projectId is required");
+        if (!StringUtils.hasText(seg.getChapter())) throw new IllegalArgumentException("chapter is required");
         mapper.insertSegment(seg);
         return seg;
     }
 
-    /** 按项目列出分段 */
+    /** List segments by project */
     public List<MemoirSegment> listSegments(Integer projectId) {
         return mapper.listSegmentsByProject(projectId);
     }

@@ -431,25 +431,25 @@
 </head>
 <body>
     <div class="auth-container">
-        <!-- 左侧信息栏 -->
+        <!-- Left Information Sidebar -->
         <div class="auth-sidebar">
             <div class="pet-icon">🐾</div>
             <h2>Pet Reminder App</h2>
             <p>Your AI companion for elderly care. Join our community and start caring for your virtual pet while staying connected with your loved ones.</p>
         </div>
 
-        <!-- 右侧认证表单 -->
+        <!-- Right-side Authentication Forms -->
         <div class="auth-main">
-            <!-- 标签页切换 -->
+            <!-- Tabs Switch -->
             <div class="auth-tabs">
                 <button class="auth-tab active" data-tab="login">Login</button>
                 <button class="auth-tab" data-tab="register">Register</button>
             </div>
 
-            <!-- 消息显示区域 -->
+            <!-- Message Display Area -->
             <div id="message-container"></div>
 
-            <!-- 登录表单 -->
+            <!-- Login Form -->
             <div id="login-form" class="auth-form active">
                 <form id="loginForm">
                     <div class="form-group">
@@ -474,13 +474,13 @@
                 <button type="button" class="btn btn-guest" id="guestBtn">Continue as Guest</button>
             </div>
 
-            <!-- 忘记密码表单 -->
+            <!-- Forgot Password Form -->
             <div id="forgot-password-form" class="auth-form">
                 <div class="back-link">
                     <a href="#" id="backToLogin">← Back to Login</a>
                 </div>
                 
-                <!-- 步骤1: 输入邮箱 -->
+                <!-- Step 1: Input Email -->
                 <div id="forgot-step-1" class="forgot-step active">
                     <h3>Reset Your Password</h3>
                     <p>Enter your email address and we'll send you a verification code to reset your password.</p>
@@ -494,7 +494,7 @@
                     </form>
                 </div>
                 
-                <!-- 步骤2: 输入验证码和新密码 -->
+                <!-- Step 2: Enter Code and New Password -->
                 <div id="forgot-step-2" class="forgot-step">
                     <h3>Enter Reset Code</h3>
                     <p>We've sent a 6-digit code to your email. Enter the code and your new password below.</p>
@@ -521,16 +521,16 @@
                 </div>
             </div>
 
-            <!-- 注册表单 -->
+            <!-- Registration Form -->
             <div id="register-form" class="auth-form">
-                <!-- 步骤指示器 -->
+                <!-- Step Indicator -->
                 <div class="step-indicator">
                     <div class="step active" id="step1">1</div>
                     <div class="step inactive" id="step2">2</div>
                     <div class="step inactive" id="step3">3</div>
                 </div>
 
-                <!-- 步骤1: 邮箱注册 -->
+                <!-- Step 1: Email Registration -->
                 <div id="register-step-1" class="register-step active">
                     <form id="emailForm">
                         <div class="form-group">
@@ -541,7 +541,7 @@
                     </form>
                 </div>
 
-                <!-- 步骤2: 验证码 -->
+                <!-- Step 2: Verification Code -->
                 <div id="register-step-2" class="register-step" style="display: none;">
                     <div class="verification-section">
                         <h3 style="text-align: center; margin-bottom: 1rem;">Verify Your Email</h3>
@@ -567,7 +567,7 @@
                     </div>
                 </div>
 
-                <!-- 步骤3: 完成注册 -->
+                <!-- Step 3: Complete Registration -->
                 <div id="register-step-3" class="register-step" style="display: none;">
                     <form id="completeForm">
                         <div class="form-group">
@@ -598,17 +598,17 @@
     </div>
 
     <script>
-        // 全局变量
+        // Global variables
         let currentStep = 1;
         let currentEmail = '';
         let isGuest = false;
 
-        // DOM 元素
+        // DOM elements
         const authTabs = document.querySelectorAll('.auth-tab');
         const authForms = document.querySelectorAll('.auth-form');
         const messageContainer = document.getElementById('message-container');
 
-        // 标签页切换
+        // Tab switching
         authTabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 const tabName = tab.dataset.tab;
@@ -617,39 +617,39 @@
         });
 
         function switchTab(tabName) {
-            // 更新标签页状态
+            // Update tab states
             authTabs.forEach(tab => {
                 tab.classList.toggle('active', tab.dataset.tab === tabName);
             });
 
-            // 更新表单显示
+            // Update form display
             authForms.forEach(form => {
                 form.classList.toggle('active', form.id === `${tabName}-form`);
             });
 
-            // 清除消息
+            // Clear messages
             clearMessage();
 
-            // 重置注册步骤
+            // Reset registration steps
             if (tabName === 'register') {
                 resetRegistrationSteps();
             }
         }
 
-        // 显示指定表单（用于忘记密码功能）
+        // Show target form (for forgot password flow)
         function showForm(formId) {
-            // 隐藏所有表单
+            // Hide all forms
             authForms.forEach(form => {
                 form.classList.remove('active');
             });
             
-            // 显示指定表单
+            // Show target form
             const targetForm = document.getElementById(formId);
             if (targetForm) {
                 targetForm.classList.add('active');
             }
             
-            // 更新标签页状态（如果是login或register表单）
+            // Update tab state (if login/register form)
             if (formId === 'login-form') {
                 authTabs.forEach(tab => {
                     tab.classList.toggle('active', tab.dataset.tab === 'login');
@@ -659,17 +659,17 @@
                     tab.classList.toggle('active', tab.dataset.tab === 'register');
                 });
             } else {
-                // 对于forgot-password-form，取消所有标签页的active状态
+                // For forgot-password-form, remove active on tabs
                 authTabs.forEach(tab => {
                     tab.classList.remove('active');
                 });
             }
             
-            // 清除消息
+            // Clear messages
             clearMessage();
         }
 
-        // 消息显示函数
+        // Message rendering helpers
         function showMessage(message, type = 'info') {
             messageContainer.innerHTML = `<div class="message ${type}">${message}</div>`;
             setTimeout(() => {
@@ -681,7 +681,7 @@
             messageContainer.innerHTML = '';
         }
 
-        // 按钮加载状态
+        // Button loading states
         function setButtonLoading(button, loading) {
             if (loading) {
                 button.classList.add('loading');
@@ -692,7 +692,7 @@
             }
         }
 
-        // 步骤指示器更新
+        // Step indicator update
         function updateStepIndicator(step) {
             for (let i = 1; i <= 3; i++) {
                 const stepEl = document.getElementById(`step${i}`);
@@ -706,28 +706,28 @@
             }
         }
 
-        // 显示注册步骤
+        // Show registration step
         function showRegistrationStep(step) {
-            // 隐藏所有步骤
+            // Hide all steps
             document.querySelectorAll('.register-step').forEach(stepEl => {
                 stepEl.style.display = 'none';
             });
 
-            // 显示当前步骤
+            // Show current step
             document.getElementById(`register-step-${step}`).style.display = 'block';
             
-            // 更新步骤指示器
+            // Update step indicator
             updateStepIndicator(step);
             currentStep = step;
         }
 
-        // 重置注册步骤
+        // Reset registration steps
         function resetRegistrationSteps() {
             showRegistrationStep(1);
             currentEmail = '';
         }
 
-        // 登录表单处理
+        // Login form handler
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const loginBtn = document.getElementById('loginBtn');
@@ -752,29 +752,29 @@
 
                 if (result.success) {
                     showMessage('Login successful! Redirecting to your schedule...', 'success');
-                    // 存储用户信息
+                    // Store user info
                     localStorage.setItem('userEmail', email);
                     localStorage.setItem('userName', result.user.name || 'User');
                     localStorage.setItem('userRole', result.user.role || 'ELDERLY');
                     localStorage.setItem('userId', result.user.id || '1');
                     localStorage.setItem('isLoggedIn', 'true');
                     
-                    // 存储真正的JWT token
+                    // Store real JWT token
                     if (result.token) {
                         localStorage.setItem('authToken', result.token);
-                        // 设置token过期时间（JWT通常24小时过期，这里设置23小时确保安全）
+                        // Set token expiry (JWT often 24h; use 23h for safety)
                         const tokenExpiry = Date.now() + (23 * 60 * 60 * 1000);
                         localStorage.setItem('tokenExpiry', tokenExpiry.toString());
-                        console.log('JWT token已保存:', result.token);
+                        console.log('JWT token saved:', result.token);
                     } else {
-                        console.error('登录响应中没有JWT token');
-                        showMessage('登录成功但token获取失败，请重试', 'warning');
+                        console.error('JWT token missing in login response');
+                        showMessage('Login succeeded but token missing, please try again', 'warning');
                         return;
                     }
                     
                     localStorage.removeItem('guestMode');
                     
-                    // 重定向到schedule页面
+                    // Redirect to schedule page
                     setTimeout(() => {
                         window.location.href = './schedule.html';
                     }, 1500);
@@ -789,16 +789,16 @@
             }
         });
 
-        // 邮箱注册处理
+        // Email registration handler
         document.getElementById('emailForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            e.stopPropagation(); // 防止事件冒泡
+            e.stopPropagation(); // Prevent event bubbling
             const emailBtn = document.getElementById('emailBtn');
             
             const formData = new FormData(e.target);
             const email = formData.get('email');
             
-            // 验证邮箱格式
+            // Validate email format
             if (!email || !email.includes('@')) {
                 showMessage('Please enter a valid email address.', 'error');
                 return;
@@ -835,7 +835,7 @@
             }
         });
 
-        // 验证码输入处理
+        // Verification code input handling
         const codeInputs = document.querySelectorAll('.code-input');
         codeInputs.forEach((input, index) => {
             input.addEventListener('input', (e) => {
@@ -852,10 +852,10 @@
             });
         });
 
-        // 验证码验证处理
+        // Verification code submit handler
         document.getElementById('verificationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            e.stopPropagation(); // 防止事件冒泡
+            e.stopPropagation(); // Prevent event bubbling
             const verifyBtn = document.getElementById('verifyBtn');
             
             const code = Array.from(codeInputs).map(input => input.value).join('');
@@ -884,7 +884,7 @@
                     showRegistrationStep(3);
                 } else {
                     showMessage(result.message || 'Invalid verification code. Please try again.', 'error');
-                    // 清空验证码输入
+                    // Clear code inputs
                     codeInputs.forEach(input => input.value = '');
                     codeInputs[0].focus();
                 }
@@ -896,7 +896,7 @@
             }
         });
 
-        // 重发验证码
+        // Resend verification code
         document.getElementById('resendBtn').addEventListener('click', async () => {
             const resendBtn = document.getElementById('resendBtn');
             
@@ -916,7 +916,7 @@
 
                 if (result.success) {
                     showMessage('New verification code sent!', 'success');
-                    // 清空验证码输入
+                    // Clear code inputs
                     codeInputs.forEach(input => input.value = '');
                     codeInputs[0].focus();
                 } else {
@@ -930,10 +930,10 @@
             }
         });
 
-        // 完成注册处理
+        // Complete registration handler
         document.getElementById('completeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            e.stopPropagation(); // 防止事件冒泡
+            e.stopPropagation(); // Prevent event bubbling
             const completeBtn = document.getElementById('completeBtn');
             
             const formData = new FormData(e.target);
@@ -942,7 +942,7 @@
             const confirmPassword = formData.get('confirmPassword');
             const role = formData.get('role');
 
-            // 验证密码
+            // Validate password
             if (password !== confirmPassword) {
                 showMessage('Passwords do not match.', 'error');
                 return;
@@ -970,13 +970,13 @@
                 if (result.success) {
                     showMessage('Registration completed successfully! You can now sign in.', 'success');
                     
-                    // 存储用户信息
+                    // Store user info
                     localStorage.setItem('userEmail', currentEmail);
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('authToken', 'user-token-' + Date.now());
                     localStorage.removeItem('guestMode');
                     
-                    // 切换到schedule页面
+                    // Navigate to schedule page
                     setTimeout(() => {
                         window.location.href = './schedule.html';
                     }, 2000);
@@ -991,24 +991,24 @@
             }
         });
 
-        // 游客模式处理
+        // Guest mode handler
         document.getElementById('guestBtn').addEventListener('click', () => {
             showMessage('Entering guest mode...', 'info');
             
-            // 设置游客模式标识
+            // Set guest mode flags
             localStorage.setItem('isGuest', 'true');
             localStorage.setItem('guestMode', 'true');
             localStorage.setItem('userEmail', 'guest@example.com');
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('authToken');
             
-            // 重定向到schedule页面
+            // Redirect to schedule page
             setTimeout(() => {
                 window.location.href = './schedule.html';
             }, 1000);
         });
 
-        // 忘记密码处理
+        // Forgot password flow
         let currentForgotEmail = '';
         
         document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
@@ -1017,13 +1017,13 @@
             showForgotStep(1);
         });
         
-        // 返回登录
+        // Back to login
         document.getElementById('backToLogin').addEventListener('click', (e) => {
             e.preventDefault();
             showForm('login-form');
         });
         
-        // 发送重置验证码
+        // Send reset code
         document.getElementById('forgotEmailForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1060,7 +1060,7 @@
             }
         });
         
-        // 重置密码
+        // Reset password
         document.getElementById('resetPasswordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1069,7 +1069,7 @@
             const newPassword = formData.get('newPassword');
             const confirmPassword = formData.get('confirmPassword');
             
-            // 验证密码匹配
+            // Validate password match
             if (newPassword !== confirmPassword) {
                 showMessage('Passwords do not match. Please try again.', 'error');
                 return;
@@ -1092,10 +1092,10 @@
                 
                 if (result.success) {
                     showMessage(result.message, 'success');
-                    // 3秒后返回登录页面
+                    // Return to login after 3 seconds
                     setTimeout(() => {
                         showForm('login-form');
-                        // 清空表单
+                        // Clear forms
                         document.getElementById('forgotEmailForm').reset();
                         document.getElementById('resetPasswordForm').reset();
                         showForgotStep(1);
@@ -1111,7 +1111,7 @@
             }
         });
         
-        // 重新发送重置验证码
+        // Resend reset code
         document.getElementById('resendResetCode').addEventListener('click', async (e) => {
             e.preventDefault();
             
@@ -1143,7 +1143,7 @@
             }
         });
         
-        // 显示忘记密码步骤
+        // Show forgot password steps
         function showForgotStep(step) {
             const steps = document.querySelectorAll('.forgot-step');
             steps.forEach(s => s.classList.remove('active'));
@@ -1154,26 +1154,26 @@
             }
         }
 
-        // 页面加载时检查登录状态 - 已禁用自动重定向
+        // Check login status on load - autobounce disabled
         // window.addEventListener('load', () => {
         //     const isLoggedIn = localStorage.getItem('isLoggedIn');
         //     const isGuest = localStorage.getItem('isGuest');
         //     
         //     if (isLoggedIn || isGuest) {
-        //         // 如果已经登录或处于游客模式，重定向到主页
+        //         // If logged in or guest mode, redirect to home
         //         window.location.href = '../../index.html';
         //     }
         // });
 
-        // 添加调试信息
+        // Add debug info
         console.log('Register page loaded successfully');
         
-        // 监听页面卸载事件，帮助调试
+        // Listen beforeunload for debug
         window.addEventListener('beforeunload', (e) => {
             console.log('Page is about to unload');
         });
         
-        // 监听页面可见性变化
+        // Listen visibility change
         document.addEventListener('visibilitychange', () => {
             console.log('Page visibility changed:', document.visibilityState);
         });

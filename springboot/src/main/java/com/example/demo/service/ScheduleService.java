@@ -377,6 +377,6 @@ public class ScheduleService {
         LocalDate today = LocalDate.now();
         List<Schedule> todaySchedules = scheduleMapper.findByUserIdAndDate(userId, today);
         return todaySchedules.stream()
-                .anyMatch(schedule -> schedule.getTitle().equals("早安问候"));
+                .anyMatch(schedule -> schedule.getTitle().equals("Morning Greeting"));
     }
 } 

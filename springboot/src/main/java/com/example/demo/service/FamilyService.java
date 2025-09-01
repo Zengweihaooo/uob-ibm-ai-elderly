@@ -20,7 +20,7 @@ import com.example.demo.pojo.FamilyContact;
  * and family member communication for the IBM AI Elderly Project.
  * 
  * @author Weihao Zeng
- * @version 2.0 - 已实现数据持久化和用户数据隔离
+ * @version 2.0 - Data persistence and per-user data isolation implemented
  */
 @Service
 public class FamilyService {
@@ -34,7 +34,7 @@ public class FamilyService {
     @Autowired
     private FamilyContactMapper familyContactMapper;
 
-    // 调试信息开关
+    // Debug flag
     private static final boolean DEBUG_ENABLED = true;
 
     /**
@@ -53,19 +53,19 @@ public class FamilyService {
         
         if (DEBUG_ENABLED) {
             System.out.println("==== FamilyService.addFamilyContact DEBUG ====");
-            System.out.println("用户ID: " + userId);
-            System.out.println("联系人姓名: " + name);
-            System.out.println("电话号码: " + phone);
-            System.out.println("邮箱地址: " + email);
-            System.out.println("关系: " + relationship);
-            System.out.println("是否紧急联系人: " + isEmergencyContact);
-            System.out.println("该用户现有联系人数量: " + getFamilyContacts(userId).size());
+            System.out.println("User ID: " + userId);
+            System.out.println("Contact name: " + name);
+            System.out.println("Phone: " + phone);
+            System.out.println("Email: " + email);
+            System.out.println("Relationship: " + relationship);
+            System.out.println("Is emergency contact: " + isEmergencyContact);
+            System.out.println("Existing contacts count: " + getFamilyContacts(userId).size());
         }
         
         // Validate input
         if (name == null || name.trim().isEmpty()) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 验证失败 - 联系人姓名为空");
+                System.err.println("DEBUG: Validation failed - empty contact name");
             }
             throw new IllegalArgumentException("Contact name is required");
         }
@@ -73,7 +73,7 @@ public class FamilyService {
         if ((phone == null || phone.trim().isEmpty()) && 
             (email == null || email.trim().isEmpty())) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 验证失败 - 电话和邮箱都为空");
+                System.err.println("DEBUG: Validation failed - both phone and email are empty");
             }
             throw new IllegalArgumentException("Either phone number or email is required");
         }
@@ -84,7 +84,7 @@ public class FamilyService {
         contact.setName(name.trim());
         contact.setPhone(phone != null ? phone.trim() : null);
         contact.setEmail(email != null ? email.trim() : null);
-        contact.setRelationship(relationship != null ? relationship.trim() : "其他");
+        contact.setRelationship(relationship != null ? relationship.trim() : "other");
         contact.setIsEmergencyContact(isEmergencyContact != null ? isEmergencyContact : false);
         contact.setIsActive(true);
         contact.setCreatedAt(LocalDateTime.now());
@@ -95,29 +95,29 @@ public class FamilyService {
             int result = familyContactMapper.insert(contact);
             if (result > 0) {
                 if (DEBUG_ENABLED) {
-                    System.out.println("DEBUG: 联系人保存到数据库成功");
-                    System.out.println("数据库返回结果: " + result);
+                    System.out.println("DEBUG: Contact saved to database successfully");
+                    System.out.println("DB result: " + result);
                 }
             } else {
                 if (DEBUG_ENABLED) {
-                    System.err.println("DEBUG: 数据库插入失败");
+                    System.err.println("DEBUG: DB insert failed");
                 }
                 throw new RuntimeException("Failed to save contact to database");
             }
         } catch (Exception e) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 数据库操作异常");
-                System.err.println("异常信息: " + e.getMessage());
+                System.err.println("DEBUG: DB operation exception");
+                System.err.println("Error: " + e.getMessage());
                 e.printStackTrace();
             }
             throw new RuntimeException("Database operation failed: " + e.getMessage());
         }
 
         if (DEBUG_ENABLED) {
-            System.out.println("DEBUG: 联系人创建成功");
-            System.out.println("分配的联系人ID: " + contact.getId());
-            System.out.println("联系人创建时间: " + contact.getCreatedAt());
-            System.out.println("该用户当前联系人总数: " + getFamilyContacts(userId).size());
+            System.out.println("DEBUG: Contact created successfully");
+            System.out.println("Assigned contact ID: " + contact.getId());
+            System.out.println("Contact created at: " + contact.getCreatedAt());
+            System.out.println("Current contact count: " + getFamilyContacts(userId).size());
             System.out.println("============================================");
         }
 
@@ -134,19 +134,19 @@ public class FamilyService {
     public List<FamilyContact> getFamilyContacts(Long userId) {
         if (DEBUG_ENABLED) {
             System.out.println("==== FamilyService.getFamilyContacts DEBUG ====");
-            System.out.println("查询用户ID: " + userId);
+            System.out.println("Query user ID: " + userId);
         }
         
         try {
             List<FamilyContact> userContacts = familyContactMapper.findActiveByUserId(userId);
             
             if (DEBUG_ENABLED) {
-                System.out.println("该用户的联系人数量: " + userContacts.size());
-                System.out.println("联系人详情:");
+                System.out.println("Contact count for user: " + userContacts.size());
+                System.out.println("Contact details:");
                 for (FamilyContact contact : userContacts) {
-                    System.out.println("  - ID: " + contact.getId() + ", 姓名: " + contact.getName() + 
-                                     ", 关系: " + contact.getRelationship() + 
-                                     ", 紧急联系人: " + contact.getIsEmergencyContact());
+                    System.out.println("  - ID: " + contact.getId() + ", Name: " + contact.getName() + 
+                                     ", Relationship: " + contact.getRelationship() + 
+                                     ", Emergency: " + contact.getIsEmergencyContact());
                 }
                 System.out.println("==============================================");
             }
@@ -154,11 +154,11 @@ public class FamilyService {
             return userContacts;
         } catch (Exception e) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 数据库查询异常");
-                System.err.println("异常信息: " + e.getMessage());
+                System.err.println("DEBUG: DB query exception");
+                System.err.println("Error: " + e.getMessage());
                 e.printStackTrace();
             }
-            // 返回空列表而不是抛出异常，保证系统稳定性
+            // Return empty list instead of throwing, to keep stability
             return new ArrayList<>();
         }
     }
@@ -173,35 +173,35 @@ public class FamilyService {
     public FamilyContact getFamilyContact(Long userId, Long contactId) {
         if (DEBUG_ENABLED) {
             System.out.println("==== FamilyService.getFamilyContact DEBUG ====");
-            System.out.println("查询用户ID: " + userId);
-            System.out.println("查询联系人ID: " + contactId);
+            System.out.println("Query user ID: " + userId);
+            System.out.println("Query contact ID: " + contactId);
         }
         
         try {
             FamilyContact contact = familyContactMapper.findById(contactId);
             
-            // 验证数据隔离：确保用户只能访问自己的联系人
+            // Validate data isolation: only access own contacts
             if (contact != null && contact.getUserId().equals(userId) && contact.getIsActive()) {
                 if (DEBUG_ENABLED) {
-                    System.out.println("找到联系人: " + contact.getName() + ", 关系: " + contact.getRelationship());
+                    System.out.println("Found contact: " + contact.getName() + ", Relationship: " + contact.getRelationship());
                 }
                 return contact;
             } else {
                 if (DEBUG_ENABLED) {
                     if (contact == null) {
-                        System.out.println("未找到联系人");
+                        System.out.println("Contact not found");
                     } else if (!contact.getUserId().equals(userId)) {
-                        System.out.println("数据隔离验证失败：用户ID不匹配");
+                        System.out.println("Data isolation check failed: user ID mismatch");
                     } else if (!contact.getIsActive()) {
-                        System.out.println("联系人已被删除");
+                        System.out.println("Contact is deleted/inactive");
                     }
                 }
                 return null;
             }
         } catch (Exception e) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 数据库查询异常");
-                System.err.println("异常信息: " + e.getMessage());
+                System.err.println("DEBUG: DB query exception");
+                System.err.println("Error: " + e.getMessage());
                 e.printStackTrace();
             }
             return null;
@@ -219,22 +219,22 @@ public class FamilyService {
     public FamilyContact updateFamilyContact(Long userId, Long contactId, Map<String, Object> contactData) {
         if (DEBUG_ENABLED) {
             System.out.println("==== FamilyService.updateFamilyContact DEBUG ====");
-            System.out.println("更新用户ID: " + userId);
-            System.out.println("更新联系人ID: " + contactId);
-            System.out.println("更新数据: " + contactData);
+            System.out.println("Update user ID: " + userId);
+            System.out.println("Update contact ID: " + contactId);
+            System.out.println("Update data: " + contactData);
         }
         
         FamilyContact contact = getFamilyContact(userId, contactId);
         if (contact == null) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 未找到要更新的联系人");
+                System.err.println("DEBUG: Contact not found for update");
                 System.out.println("===========================================");
             }
             return null;
         }
 
         if (DEBUG_ENABLED) {
-            System.out.println("更新前联系人信息: " + contact.getName());
+            System.out.println("Contact before update: " + contact.getName());
         }
 
         // Update fields if provided
@@ -243,11 +243,11 @@ public class FamilyService {
             if (name != null && !name.trim().isEmpty()) {
                 contact.setName(name.trim());
                 if (DEBUG_ENABLED) {
-                    System.out.println("DEBUG: 更新姓名为: " + name.trim());
+                    System.out.println("DEBUG: Update name to: " + name.trim());
                 }
             } else {
                 if (DEBUG_ENABLED) {
-                    System.err.println("DEBUG: 姓名验证失败 - 姓名不能为空");
+                    System.err.println("DEBUG: Name validation failed - must not be empty");
                 }
                 throw new IllegalArgumentException("Contact name cannot be empty");
             }
@@ -257,7 +257,7 @@ public class FamilyService {
             String newPhone = (String) contactData.get("phone");
             contact.setPhone(newPhone);
             if (DEBUG_ENABLED) {
-                System.out.println("DEBUG: 更新电话为: " + newPhone);
+                System.out.println("DEBUG: Update phone to: " + newPhone);
             }
         }
 
@@ -265,7 +265,7 @@ public class FamilyService {
             String newEmail = (String) contactData.get("email");
             contact.setEmail(newEmail);
             if (DEBUG_ENABLED) {
-                System.out.println("DEBUG: 更新邮箱为: " + newEmail);
+                System.out.println("DEBUG: Update email to: " + newEmail);
             }
         }
 
@@ -273,7 +273,7 @@ public class FamilyService {
             String newRelationship = (String) contactData.get("relationship");
             contact.setRelationship(newRelationship);
             if (DEBUG_ENABLED) {
-                System.out.println("DEBUG: 更新关系为: " + newRelationship);
+                System.out.println("DEBUG: Update relationship to: " + newRelationship);
             }
         }
 
@@ -281,7 +281,7 @@ public class FamilyService {
             Boolean isEmergency = (Boolean) contactData.get("isEmergencyContact");
             contact.setIsEmergencyContact(isEmergency);
             if (DEBUG_ENABLED) {
-                System.out.println("DEBUG: 更新紧急联系人状态为: " + isEmergency);
+                System.out.println("DEBUG: Update emergency contact to: " + isEmergency);
             }
         }
 
@@ -289,7 +289,7 @@ public class FamilyService {
             String newAddress = (String) contactData.get("address");
             contact.setAddress(newAddress);
             if (DEBUG_ENABLED) {
-                System.out.println("DEBUG: 更新地址为: " + newAddress);
+                System.out.println("DEBUG: Update address to: " + newAddress);
             }
         }
 
@@ -297,7 +297,7 @@ public class FamilyService {
         if ((contact.getPhone() == null || contact.getPhone().trim().isEmpty()) &&
             (contact.getEmail() == null || contact.getEmail().trim().isEmpty())) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 验证失败 - 电话和邮箱都为空");
+                System.err.println("DEBUG: Validation failed - both phone and email are empty");
             }
             throw new IllegalArgumentException("Either phone number or email is required");
         }
@@ -309,20 +309,20 @@ public class FamilyService {
             int result = familyContactMapper.update(contact);
             if (result > 0) {
                 if (DEBUG_ENABLED) {
-                    System.out.println("DEBUG: 联系人更新成功");
-                    System.out.println("数据库更新结果: " + result);
-                    System.out.println("更新时间: " + contact.getUpdatedAt());
+                    System.out.println("DEBUG: Contact updated successfully");
+                    System.out.println("DB update result: " + result);
+                    System.out.println("Updated at: " + contact.getUpdatedAt());
                 }
             } else {
                 if (DEBUG_ENABLED) {
-                    System.err.println("DEBUG: 数据库更新失败");
+                    System.err.println("DEBUG: DB update failed");
                 }
                 throw new RuntimeException("Failed to update contact in database");
             }
         } catch (Exception e) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 数据库更新异常");
-                System.err.println("异常信息: " + e.getMessage());
+                System.err.println("DEBUG: DB update exception");
+                System.err.println("Error: " + e.getMessage());
                 e.printStackTrace();
             }
             throw new RuntimeException("Database update failed: " + e.getMessage());
@@ -345,21 +345,21 @@ public class FamilyService {
     public boolean deleteFamilyContact(Long userId, Long contactId) {
         if (DEBUG_ENABLED) {
             System.out.println("==== FamilyService.deleteFamilyContact DEBUG ====");
-            System.out.println("删除用户ID: " + userId);
-            System.out.println("删除联系人ID: " + contactId);
+            System.out.println("Delete user ID: " + userId);
+            System.out.println("Delete contact ID: " + contactId);
         }
         
         FamilyContact contact = getFamilyContact(userId, contactId);
         if (contact == null) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 未找到要删除的联系人");
+                System.err.println("DEBUG: Contact not found for deletion");
                 System.out.println("============================================");
             }
             return false;
         }
 
         if (DEBUG_ENABLED) {
-            System.out.println("删除联系人: " + contact.getName());
+            System.out.println("Delete contact: " + contact.getName());
         }
 
         contact.setIsActive(false);
@@ -370,20 +370,20 @@ public class FamilyService {
             int result = familyContactMapper.update(contact);
             if (result > 0) {
                 if (DEBUG_ENABLED) {
-                    System.out.println("DEBUG: 联系人软删除成功");
-                    System.out.println("数据库更新结果: " + result);
-                    System.out.println("删除时间: " + contact.getUpdatedAt());
+                    System.out.println("DEBUG: Contact soft-deleted successfully");
+                    System.out.println("DB update result: " + result);
+                    System.out.println("Deleted at: " + contact.getUpdatedAt());
                 }
             } else {
                 if (DEBUG_ENABLED) {
-                    System.err.println("DEBUG: 数据库删除失败");
+                    System.err.println("DEBUG: DB delete failed");
                 }
                 return false;
             }
         } catch (Exception e) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 数据库删除异常");
-                System.err.println("异常信息: " + e.getMessage());
+                System.err.println("DEBUG: DB delete exception");
+                System.err.println("Error: " + e.getMessage());
                 e.printStackTrace();
             }
             return false;
@@ -408,25 +408,25 @@ public class FamilyService {
     public boolean sendMessageToFamily(Long userId, Long contactId, String message, String messageType) {
         if (DEBUG_ENABLED) {
             System.out.println("==== FamilyService.sendMessageToFamily DEBUG ====");
-            System.out.println("发送消息用户ID: " + userId);
-            System.out.println("接收联系人ID: " + contactId);
-            System.out.println("消息内容: " + message);
-            System.out.println("消息类型: " + messageType);
+            System.out.println("Send message user ID: " + userId);
+            System.out.println("Recipient contact ID: " + contactId);
+            System.out.println("Message content: " + message);
+            System.out.println("Message type: " + messageType);
         }
         
         FamilyContact contact = getFamilyContact(userId, contactId);
         if (contact == null) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 未找到联系人，无法发送消息");
+                System.err.println("DEBUG: Contact not found, cannot send message");
                 System.out.println("==========================================");
             }
             return false;
         }
 
         if (DEBUG_ENABLED) {
-            System.out.println("目标联系人: " + contact.getName());
-            System.out.println("联系人电话: " + contact.getPhone());
-            System.out.println("联系人邮箱: " + contact.getEmail());
+            System.out.println("Target contact: " + contact.getName());
+            System.out.println("Contact phone: " + contact.getPhone());
+            System.out.println("Contact email: " + contact.getEmail());
         }
 
         try {
@@ -435,15 +435,15 @@ public class FamilyService {
                 String content = buildMessageContent(message, messageType, contact.getName());
                 
                 if (DEBUG_ENABLED) {
-                    System.out.println("DEBUG: 发送邮件");
-                    System.out.println("邮件主题: " + subject);
-                    System.out.println("邮件内容长度: " + content.length());
+                    System.out.println("DEBUG: Sending email");
+                    System.out.println("Email subject: " + subject);
+                    System.out.println("Email content length: " + content.length());
                 }
                 
                 emailService.sendHealthAlertEmail(contact.getEmail(), subject, content);
                 
                 if (DEBUG_ENABLED) {
-                    System.out.println("DEBUG: 邮件发送成功");
+                    System.out.println("DEBUG: Email sent successfully");
                     System.out.println("=========================================");
                 }
                 return true;
@@ -452,41 +452,41 @@ public class FamilyService {
                 String phoneNumber = formatPhoneNumber(contact.getPhone());
                 
                 if (DEBUG_ENABLED) {
-                    System.out.println("DEBUG: 发送短信");
-                    System.out.println("原始电话号码: " + contact.getPhone());
-                    System.out.println("格式化电话号码: " + phoneNumber);
-                    System.out.println("短信内容长度: " + content.length());
+                    System.out.println("DEBUG: Sending SMS");
+                    System.out.println("Raw phone: " + contact.getPhone());
+                    System.out.println("Formatted phone: " + phoneNumber);
+                    System.out.println("SMS content length: " + content.length());
                 }
                 
                 Map<String, Object> smsResult = smsService.sendSMS(phoneNumber, content);
                 boolean smsSuccess = (Boolean) smsResult.getOrDefault("success", false);
                 
                 if (DEBUG_ENABLED) {
-                    System.out.println("DEBUG: 短信发送结果: " + smsSuccess);
-                    System.out.println("短信响应: " + smsResult);
+                    System.out.println("DEBUG: SMS send result: " + smsSuccess);
+                    System.out.println("SMS response: " + smsResult);
                     System.out.println("========================================");
                 }
                 
                 return smsSuccess;
             } else if ("general".equalsIgnoreCase(messageType)) {
-                // 对于general类型，优先发送短信，如果没有电话则发送邮件
+                // For 'general', prefer SMS; fallback to email if no phone
                 if (contact.getPhone() != null && !contact.getPhone().trim().isEmpty()) {
                     String content = buildMessageContent(message, "sms", contact.getName());
                     String phoneNumber = formatPhoneNumber(contact.getPhone());
                     
                     if (DEBUG_ENABLED) {
-                        System.out.println("DEBUG: general消息 - 发送短信");
-                        System.out.println("原始电话号码: " + contact.getPhone());
-                        System.out.println("格式化电话号码: " + phoneNumber);
-                        System.out.println("短信内容长度: " + content.length());
+                        System.out.println("DEBUG: general - sending SMS");
+                        System.out.println("Raw phone: " + contact.getPhone());
+                        System.out.println("Formatted phone: " + phoneNumber);
+                        System.out.println("SMS content length: " + content.length());
                     }
                     
                     Map<String, Object> smsResult = smsService.sendSMS(phoneNumber, content);
                     boolean smsSuccess = (Boolean) smsResult.getOrDefault("success", false);
                     
                     if (DEBUG_ENABLED) {
-                        System.out.println("DEBUG: 短信发送结果: " + smsSuccess);
-                        System.out.println("短信响应: " + smsResult);
+                        System.out.println("DEBUG: SMS send result: " + smsSuccess);
+                        System.out.println("SMS response: " + smsResult);
                         System.out.println("========================================");
                     }
                     
@@ -496,37 +496,37 @@ public class FamilyService {
                     String content = buildMessageContent(message, "email", contact.getName());
                     
                     if (DEBUG_ENABLED) {
-                        System.out.println("DEBUG: general消息 - 发送邮件");
-                        System.out.println("邮件主题: " + subject);
-                        System.out.println("邮件内容长度: " + content.length());
+                        System.out.println("DEBUG: general - sending email");
+                        System.out.println("Email subject: " + subject);
+                        System.out.println("Email content length: " + content.length());
                     }
                     
                     emailService.sendHealthAlertEmail(contact.getEmail(), subject, content);
                     
                     if (DEBUG_ENABLED) {
-                        System.out.println("DEBUG: 邮件发送成功");
+                        System.out.println("DEBUG: Email sent successfully");
                         System.out.println("=========================================");
                     }
                     return true;
                 } else {
                     if (DEBUG_ENABLED) {
-                        System.err.println("DEBUG: general消息 - 联系人既没有电话也没有邮箱");
-                        System.out.println("联系人电话: " + contact.getPhone());
-                        System.out.println("联系人邮箱: " + contact.getEmail());
+                        System.err.println("DEBUG: general - contact has neither phone nor email");
+                        System.out.println("Contact phone: " + contact.getPhone());
+                        System.out.println("Contact email: " + contact.getEmail());
                     }
                 }
             } else {
                 if (DEBUG_ENABLED) {
-                    System.err.println("DEBUG: 无法发送消息 - 联系方式不匹配或不存在");
-                    System.out.println("消息类型: " + messageType);
-                    System.out.println("联系人电话: " + contact.getPhone());
-                    System.out.println("联系人邮箱: " + contact.getEmail());
+                    System.err.println("DEBUG: Cannot send - contact method mismatch or missing");
+                    System.out.println("Message type: " + messageType);
+                    System.out.println("Contact phone: " + contact.getPhone());
+                    System.out.println("Contact email: " + contact.getEmail());
                 }
             }
         } catch (Exception e) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 发送消息异常");
-                System.err.println("异常信息: " + e.getMessage());
+                System.err.println("DEBUG: Exception when sending message");
+                System.err.println("Error: " + e.getMessage());
                 e.printStackTrace();
             }
             System.err.println("Failed to send message to family contact: " + e.getMessage());
@@ -592,7 +592,7 @@ public class FamilyService {
                 }
                 
                 if (contact.getEmail() != null) {
-                    String subject = "紧急情况通知 - " + emergencyType;
+                    String subject = "Emergency Notification - " + emergencyType;
                     emailService.sendHealthAlertEmail(contact.getEmail(), subject, message);
                     notifiedCount++;
                 }
@@ -610,41 +610,36 @@ public class FamilyService {
     private String buildMessageSubject(String messageType, String contactName) {
         switch (messageType.toLowerCase()) {
             case "health":
-                return "健康状态更新 - " + contactName;
+                return "Health Status Update - " + contactName;
             case "schedule":
-                return "日程提醒 - " + contactName;
+                return "Schedule Reminder - " + contactName;
             case "emergency":
-                return "紧急情况通知 - " + contactName;
+                return "Emergency Notification - " + contactName;
             default:
-                return "消息通知 - " + contactName;
+                return "Message Notification - " + contactName;
         }
     }
 
-    /**
-     * 格式化电话号码为国际格式
-     * 
-     * @param phoneNumber 原始电话号码
-     * @return 格式化后的电话号码
-     */
+    /** Format phone number to international format */
     private String formatPhoneNumber(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
             return phoneNumber;
         }
         
-        // 移除所有非数字字符
+        // Remove non-digit characters
         String digits = phoneNumber.replaceAll("[^0-9+]", "");
         
-        // 如果是中国手机号且没有国际区号，添加+86
+        // If Mainland China mobile without country code, add +86
         if (digits.matches("^1[3-9]\\d{9}$")) {
             return "+86" + digits;
         }
         
-        // 如果是美国号码且没有国际区号，添加+1
+        // If US number without country code, add +1
         if (digits.matches("^[2-9]\\d{9}$")) {
             return "+1" + digits;
         }
         
-        // 如果没有+号，添加+1作为默认（美国）
+        // If missing +, add +1 as default (US)
         if (!digits.startsWith("+")) {
             return "+1" + digits;
         }
@@ -652,24 +647,20 @@ public class FamilyService {
         return digits;
     }
 
-    /**
-     * Build message content
-     */
+    /** Build message content */
     private String buildMessageContent(String message, String messageType, String contactName) {
         StringBuilder content = new StringBuilder();
-        content.append("亲爱的 ").append(contactName).append("，\n\n");
+        content.append("Dear ").append(contactName).append(",\n\n");
         content.append(message).append("\n\n");
-        content.append("此消息由AI老年人陪伴系统自动发送。\n");
-        content.append("发送时间：").append(LocalDateTime.now().toString());
+        content.append("This message was sent automatically by the AI Elderly Companion System.\n");
+        content.append("Sent at: ").append(LocalDateTime.now().toString());
         
         return content.toString();
     }
 
-    /**
-     * Build emergency message
-     */
+    /** Build emergency message */
     private String buildEmergencyMessage(String emergencyType, String description, String contactName) {
-        return "紧急情况通知：\n" + emergencyType + "\n" + description + "\n\n联系人：" + contactName;
+        return "Emergency Notification:\n" + emergencyType + "\n" + description + "\n\nContact: " + contactName;
     }
 
     /**
@@ -679,12 +670,10 @@ public class FamilyService {
         return familyContactMapper.findAll();
     }
 
-    /**
-     * Clear all contacts (for testing)
-     */
+    /** Clear all contacts (for testing) */
     public void clearAllContacts() {
-        // 注意：这个方法仅用于测试，生产环境应该谨慎使用
-        // 这里我们通过软删除所有联系人的方式来实现
+        // Note: For testing only. Use with caution in production.
+        // Implemented by soft-deleting all contacts.
         try {
             List<FamilyContact> allContacts = familyContactMapper.findAll();
             for (FamilyContact contact : allContacts) {
@@ -693,60 +682,60 @@ public class FamilyService {
                 familyContactMapper.update(contact);
             }
             if (DEBUG_ENABLED) {
-                System.out.println("DEBUG: 已软删除所有联系人，数量: " + allContacts.size());
+                System.out.println("DEBUG: Soft-deleted all contacts, count: " + allContacts.size());
             }
         } catch (Exception e) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 清空联系人失败: " + e.getMessage());
+                System.err.println("DEBUG: Failed to clear contacts: " + e.getMessage());
             }
         }
     }
 
     /**
-     * 验证多用户数据隔离功能
-     * 此方法用于测试JWT集成后不同用户的数据是否正确隔离
+     * Validate multi-user data isolation
+     * Used to test if data is correctly isolated per user after JWT integration
      * 
-     * @return 测试结果信息
+     * @return test result map
      */
     public Map<String, Object> testUserDataIsolation() {
         Map<String, Object> testResult = new HashMap<>();
         
         if (DEBUG_ENABLED) {
             System.out.println("==== FamilyService.testUserDataIsolation DEBUG ====");
-            System.out.println("开始测试多用户数据隔离功能");
+            System.out.println("Start testing multi-user data isolation");
         }
         
         try {
-            // 清理现有数据
+            // Clean existing data
             clearAllContacts();
             
-            // 创建测试用户1的联系人
+            // Create contacts for test user 1
             Long user1Id = 100L;
             FamilyContact user1Contact1 = addFamilyContact(user1Id, "张三", "13800000001", "zhangsan@example.com", "儿子", true);
             addFamilyContact(user1Id, "李四", "13800000002", "lisi@example.com", "女儿", false);
             
-            // 创建测试用户2的联系人
+            // Create contacts for test user 2
             Long user2Id = 200L;
             FamilyContact user2Contact1 = addFamilyContact(user2Id, "王五", "13800000003", "wangwu@example.com", "配偶", true);
             addFamilyContact(user2Id, "赵六", "13800000004", "zhaoliu@example.com", "朋友", false);
             
-            // 验证用户1只能看到自己的联系人
+            // Validate user 1 can only see own contacts
             List<FamilyContact> user1Contacts = getFamilyContacts(user1Id);
             List<FamilyContact> user2Contacts = getFamilyContacts(user2Id);
             
-            // 验证数据隔离
+            // Validate isolation
             boolean isolationTest1 = user1Contacts.size() == 2;
             boolean isolationTest2 = user2Contacts.size() == 2;
             boolean isolationTest3 = user1Contacts.stream().allMatch(c -> c.getUserId().equals(user1Id));
             boolean isolationTest4 = user2Contacts.stream().allMatch(c -> c.getUserId().equals(user2Id));
             
-            // 验证跨用户访问
+            // Cross-user access checks
             FamilyContact crossUserAccess1 = getFamilyContact(user1Id, user2Contact1.getId());
             FamilyContact crossUserAccess2 = getFamilyContact(user2Id, user1Contact1.getId());
             boolean isolationTest5 = (crossUserAccess1 == null);
             boolean isolationTest6 = (crossUserAccess2 == null);
             
-            // 汇总测试结果
+            // Summarize results
             boolean allTestsPassed = isolationTest1 && isolationTest2 && isolationTest3 && 
                                     isolationTest4 && isolationTest5 && isolationTest6;
             
@@ -759,12 +748,12 @@ public class FamilyService {
             testResult.put("totalContactsInSystem", familyContactMapper.findAll().size());
             
             if (DEBUG_ENABLED) {
-                System.out.println("测试结果:");
-                System.out.println("用户1联系人数量: " + user1Contacts.size());
-                System.out.println("用户2联系人数量: " + user2Contacts.size());
-                System.out.println("数据隔离是否成功: " + allTestsPassed);
-                System.out.println("跨用户访问是否被阻止: " + (isolationTest5 && isolationTest6));
-                System.out.println("系统中总联系人数量: " + familyContactMapper.findAll().size());
+                System.out.println("Test result:");
+                System.out.println("User1 contact count: " + user1Contacts.size());
+                System.out.println("User2 contact count: " + user2Contacts.size());
+                System.out.println("Data isolation success: " + allTestsPassed);
+                System.out.println("Cross-user access blocked: " + (isolationTest5 && isolationTest6));
+                System.out.println("Total contacts in system: " + familyContactMapper.findAll().size());
                 System.out.println("===============================================");
             }
             
@@ -772,8 +761,8 @@ public class FamilyService {
             
         } catch (Exception e) {
             if (DEBUG_ENABLED) {
-                System.err.println("DEBUG: 数据隔离测试异常");
-                System.err.println("异常信息: " + e.getMessage());
+                System.err.println("DEBUG: Data isolation test exception");
+                System.err.println("Error: " + e.getMessage());
                 e.printStackTrace();
             }
             

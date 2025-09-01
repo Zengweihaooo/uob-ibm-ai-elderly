@@ -18,10 +18,10 @@ import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 
 /**
- * SMS服务类 - 支持模拟和真实SMS发送
+ * SMS Service - supports mock and real SMS sending
  * 
- * 此服务类为IBM AI老年人项目提供SMS短信发送功能，
- * 支持开发阶段的模拟发送和生产阶段的真实SMS发送。
+ * Provides SMS sending for the IBM AI Elderly Project, supporting
+ * mock sending in development and real sending in production.
  * 
  * @author Yichen Zhang
  * @version 1.0
@@ -29,17 +29,17 @@ import com.twilio.type.PhoneNumber;
 @Service
 public class SmsService {
     
-    // 配置属性：是否启用模拟模式
+    // Configuration: enable mock mode
     @Value("${app.sms.mock:true}")
     private boolean mockMode;
     
-    // 配置属性：SMS服务提供商
+    // Configuration: SMS provider
     @Value("${app.sms.provider:mock}")
     private String smsProvider;
     
 
     
-    // Twilio配置属性 - 从TwilioConfig Bean注入
+    // Twilio config properties - injected from TwilioConfig bean
     @Autowired
     @Qualifier("twilioAccountSid")
     private String twilioAccountSid;
@@ -52,7 +52,7 @@ public class SmsService {
     @Qualifier("twilioFromNumber")
     private String twilioFromNumber;
     
-    // 短信验证和限制配置
+    // Validation and rate/length limits
     @Value("${app.sms.phone.validation.pattern:^\\+[1-9]\\d{1,14}$}")
     private String phoneValidationPattern;
     
@@ -65,66 +65,66 @@ public class SmsService {
     @Value("${app.sms.debug.enabled:false}")
     private boolean debugEnabled;
     
-    // 内存存储SMS记录（演示用途，生产环境建议使用数据库）
+    // In-memory SMS logs (demo purpose; DB recommended in production)
     private final List<Map<String, Object>> smsLogs = new ArrayList<>();
     private long smsIdCounter = 1;
     
-    // 手机号码验证模式
+    // Phone number validation pattern
     private Pattern phonePattern;
     
     /**
-     * 发送SMS短信
+     * Send SMS
      * 
-     * @param toPhoneNumber 接收方电话号码
-     * @param message 短信内容
-     * @return 发送结果信息
+     * @param toPhoneNumber recipient phone number
+     * @param message SMS content
+     * @return send result
      */
     public Map<String, Object> sendSMS(String toPhoneNumber, String message) {
         return sendSMS(toPhoneNumber, message, "GENERAL");
     }
     
     /**
-     * 发送SMS短信（带消息类型）
+     * Send SMS (with message type)
      * 
-     * @param toPhoneNumber 接收方电话号码
-     * @param message 短信内容
-     * @param messageType 消息类型（如 HEALTH_ALERT, EMERGENCY, GENERAL等）
-     * @return 发送结果信息
+     * @param toPhoneNumber recipient phone number
+     * @param message SMS content
+     * @param messageType message type (HEALTH_ALERT, EMERGENCY, GENERAL, etc.)
+     * @return send result
      */
     public Map<String, Object> sendSMS(String toPhoneNumber, String message, String messageType) {
-        // 验证输入参数
+        // Validate inputs
         if (toPhoneNumber == null || toPhoneNumber.trim().isEmpty()) {
-            return createErrorResponse("电话号码不能为空");
+            return createErrorResponse("Phone number must not be empty");
         }
         
         if (message == null || message.trim().isEmpty()) {
-            return createErrorResponse("短信内容不能为空");
+            return createErrorResponse("Message content must not be empty");
         }
         
-        // 格式化电话号码
+        // Format phone number
         String formattedPhone = formatPhoneNumber(toPhoneNumber.trim());
         
         try {
             Map<String, Object> result;
             
             if (mockMode) {
-                // 模拟SMS发送
+                // Mock SMS
                 result = sendMockSMS(formattedPhone, message, messageType);
             } else {
-                // 真实SMS发送
+                // Real SMS
                 result = sendRealSMS(formattedPhone, message, messageType);
             }
             
-            // 记录SMS日志
+            // Log SMS
             logSmsRecord(formattedPhone, message, messageType, result);
             
             return result;
             
         } catch (Exception e) {
-            String errorMsg = "SMS发送失败: " + e.getMessage();
+            String errorMsg = "SMS send failed: " + e.getMessage();
             System.err.println(errorMsg);
             
-            // 记录失败日志
+            // Log failure
             Map<String, Object> errorResult = createErrorResponse(errorMsg);
             logSmsRecord(formattedPhone, message, messageType, errorResult);
             
@@ -133,93 +133,93 @@ public class SmsService {
     }
     
     /**
-     * 模拟SMS发送
+     * Mock SMS sending
      */
     private Map<String, Object> sendMockSMS(String phoneNumber, String message, String messageType) {
         System.out.println("=".repeat(50));
-        System.out.println("📱 模拟SMS发送");
+        System.out.println("📱 Mock SMS Send");
         System.out.println("=".repeat(50));
-        System.out.println("接收方: " + phoneNumber);
-        System.out.println("消息类型: " + messageType);
-        System.out.println("内容: " + message);
-        System.out.println("发送时间: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        System.out.println("状态: ✅ 模拟发送成功");
+        System.out.println("To: " + phoneNumber);
+        System.out.println("Type: " + messageType);
+        System.out.println("Content: " + message);
+        System.out.println("Sent At: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        System.out.println("Status: ✅ Mock Sent");
         System.out.println("=".repeat(50));
         
-        // 模拟网络延迟
+        // Simulate network delay
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
         
-        return createSuccessResponse("mock_" + System.currentTimeMillis(), "SMS模拟发送成功");
+        return createSuccessResponse("mock_" + System.currentTimeMillis(), "SMS mock sent successfully");
     }
     
     /**
-     * 真实SMS发送（使用Twilio API）
+     * Real SMS sending (Twilio API)
      */
     private Map<String, Object> sendRealSMS(String phoneNumber, String message, String messageType) {
         if ("twilio".equalsIgnoreCase(smsProvider)) {
             return sendTwilioSMS(phoneNumber, message, messageType);
         } else {
-            throw new UnsupportedOperationException("只支持Twilio SMS服务提供商，当前配置: " + smsProvider);
+            throw new UnsupportedOperationException("Only Twilio SMS provider is supported, current: " + smsProvider);
         }
     }
     
     /**
-     * 使用Twilio发送SMS
+     * Send SMS via Twilio
      */
     private Map<String, Object> sendTwilioSMS(String phoneNumber, String message, String messageType) {
-        // 验证Twilio配置
+        // Validate Twilio config
         if (twilioAccountSid.isEmpty() || twilioAuthToken.isEmpty()) {
-            String errorMsg = "Twilio配置不完整，请检查account-sid和auth-token配置";
+            String errorMsg = "Twilio configuration incomplete, check account-sid and auth-token";
             System.err.println("❌ " + errorMsg);
             return createErrorResponse(errorMsg);
         }
         
         if (twilioFromNumber.isEmpty()) {
-            String errorMsg = "Twilio发送方号码未配置，请设置twilio.from-number";
+            String errorMsg = "Twilio from-number is not configured";
             System.err.println("❌ " + errorMsg);
             return createErrorResponse(errorMsg);
         }
         
-        // 验证手机号码格式
+        // Validate phone number format
         if (!isValidPhoneNumber(phoneNumber)) {
-            String errorMsg = "手机号码格式无效: " + phoneNumber + "，请使用国际格式（如 +1234567890）";
+            String errorMsg = "Invalid phone number format: " + phoneNumber + ", use E.164 format (e.g., +1234567890)";
             System.err.println("❌ " + errorMsg);
             return createErrorResponse(errorMsg);
         }
         
-        // 验证消息长度
+        // Validate message length
         if (message.length() > maxMessageLength) {
-            String errorMsg = "消息内容过长，当前长度: " + message.length() + "，最大允许: " + maxMessageLength;
+            String errorMsg = "Message too long, length: " + message.length() + ", max allowed: " + maxMessageLength;
             System.err.println("❌ " + errorMsg);
             return createErrorResponse(errorMsg);
         }
         
-        // 检查是否为测试号码
+        // Check test number
         if (isTestPhoneNumber(phoneNumber)) {
             if (debugEnabled) {
-                System.out.println("⚠️  检测到测试号码，强制使用模拟模式: " + phoneNumber);
+                System.out.println("⚠️  Test number detected, forcing mock mode: " + phoneNumber);
             }
             return sendMockSMS(phoneNumber, message, messageType);
         }
         
         try {
             if (debugEnabled) {
-                System.out.println("📱 Twilio SMS发送");
+                System.out.println("📱 Twilio SMS Send");
                 System.out.println("Account SID: " + twilioAccountSid.substring(0, 10) + "...");
-                System.out.println("发送方号码: " + twilioFromNumber);
-                System.out.println("接收方号码: " + phoneNumber);
-                System.out.println("消息类型: " + messageType);
-                System.out.println("消息内容: " + message);
+                System.out.println("From: " + twilioFromNumber);
+                System.out.println("To: " + phoneNumber);
+                System.out.println("Type: " + messageType);
+                System.out.println("Content: " + message);
             }
             
-            // 初始化Twilio客户端
+            // Init Twilio client
             Twilio.init(twilioAccountSid, twilioAuthToken);
             
-            // 发送SMS消息
+            // Send SMS
             Message twilioMessage = Message.creator(
                 new PhoneNumber(phoneNumber),
                 new PhoneNumber(twilioFromNumber),
@@ -230,19 +230,19 @@ public class SmsService {
             String status = twilioMessage.getStatus().toString();
             
             if (debugEnabled) {
-                System.out.println("✅ Twilio SMS发送成功");
+                System.out.println("✅ Twilio SMS Sent");
                 System.out.println("MessageSID: " + messageSid);
                 System.out.println("Status: " + status);
             }
             
-            Map<String, Object> result = createSuccessResponse(messageSid, "Twilio SMS发送成功");
+            Map<String, Object> result = createSuccessResponse(messageSid, "Twilio SMS sent successfully");
             result.put("status", status);
             result.put("provider", "twilio");
             
             return result;
             
         } catch (Exception e) {
-            String errorMsg = "Twilio SMS发送失败: " + e.getMessage();
+            String errorMsg = "Twilio SMS send failed: " + e.getMessage();
             System.err.println("❌ " + errorMsg);
             if (debugEnabled) {
                 e.printStackTrace();
@@ -253,18 +253,14 @@ public class SmsService {
     
 
     
-    /**
-     * 初始化手机号码验证模式
-     */
+    /** Initialize phone number pattern */
     private void initPhonePattern() {
         if (phonePattern == null) {
             phonePattern = Pattern.compile(phoneValidationPattern);
         }
     }
     
-    /**
-     * 验证手机号码格式
-     */
+    /** Validate phone number format */
     private boolean isValidPhoneNumber(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
             return false;
@@ -274,9 +270,7 @@ public class SmsService {
         return phonePattern.matcher(phoneNumber.trim()).matches();
     }
     
-    /**
-     * 检查是否为测试号码
-     */
+    /** Check if phone number is a test number */
     private boolean isTestPhoneNumber(String phoneNumber) {
         if (testPhoneNumbers == null || testPhoneNumbers.trim().isEmpty()) {
             return false;
@@ -291,19 +285,17 @@ public class SmsService {
         return false;
     }
     
-    /**
-     * 格式化电话号码
-     */
+    /** Format phone number */
     private String formatPhoneNumber(String phoneNumber) {
-        // 移除所有非数字字符
+        // Remove non-digit characters
         String digits = phoneNumber.replaceAll("[^0-9+]", "");
         
-        // 如果是中国手机号且没有国际区号，添加+86
+        // If it's a Mainland China mobile and missing country code, add +86
         if (digits.matches("^1[3-9]\\d{9}$")) {
             return "+86" + digits;
         }
         
-        // 如果没有+号，添加+号
+        // Ensure leading + exists
         if (!digits.startsWith("+")) {
             return "+" + digits;
         }
@@ -311,9 +303,7 @@ public class SmsService {
         return digits;
     }
     
-    /**
-     * 创建成功响应
-     */
+    /** Create success response */
     private Map<String, Object> createSuccessResponse(String messageId, String statusMessage) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -325,9 +315,7 @@ public class SmsService {
         return response;
     }
     
-    /**
-     * 创建错误响应
-     */
+    /** Create error response */
     private Map<String, Object> createErrorResponse(String errorMessage) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", false);
@@ -338,9 +326,7 @@ public class SmsService {
         return response;
     }
     
-    /**
-     * 记录SMS发送日志
-     */
+    /** Log SMS record */
     private void logSmsRecord(String phoneNumber, String message, String messageType, Map<String, Object> result) {
         Map<String, Object> log = new HashMap<>();
         log.put("id", smsIdCounter++);
@@ -355,25 +341,25 @@ public class SmsService {
         
         smsLogs.add(log);
         
-        // 限制日志数量（保留最近1000条）
+        // Limit log size (keep last 1000 records)
         if (smsLogs.size() > 1000) {
             smsLogs.remove(0);
         }
     }
     
     /**
-     * 获取SMS发送历史记录
+     * Get SMS history
      * 
-     * @return SMS发送历史列表
+     * @return SMS history list
      */
     public List<Map<String, Object>> getSmsHistory() {
         return new ArrayList<>(smsLogs);
     }
     
     /**
-     * 获取SMS发送统计信息
+     * Get SMS statistics
      * 
-     * @return 统计信息
+     * @return statistics map
      */
     public Map<String, Object> getSmsStatistics() {
         Map<String, Object> stats = new HashMap<>();
@@ -395,15 +381,15 @@ public class SmsService {
     }
     
     /**
-     * 发送健康警报SMS
+     * Send health alert SMS
      * 
-     * @param phoneNumber 电话号码
-     * @param healthData 健康数据信息
-     * @return 发送结果
+     * @param phoneNumber phone number
+     * @param healthData health data info
+     * @return result
      */
     public Map<String, Object> sendHealthAlertSMS(String phoneNumber, String healthData) {
         String message = String.format(
-            "【健康警报】检测到异常健康数据：%s。请及时关注老人健康状况。- AI老年陪伴系统", 
+            "[Health Alert] Abnormal health data detected: %s. Please check immediately. - AI Elderly Companion System", 
             healthData
         );
         
@@ -411,15 +397,15 @@ public class SmsService {
     }
     
     /**
-     * 发送紧急联系SMS
+     * Send emergency SMS
      * 
-     * @param phoneNumber 电话号码
-     * @param emergencyInfo 紧急情况信息
-     * @return 发送结果
+     * @param phoneNumber phone number
+     * @param emergencyInfo emergency info
+     * @return result
      */
     public Map<String, Object> sendEmergencySMS(String phoneNumber, String emergencyInfo) {
         String message = String.format(
-            "【紧急提醒】%s 请立即联系确认安全。- AI老年陪伴系统", 
+            "[Emergency Alert] %s Please contact immediately to confirm safety. - AI Elderly Companion System", 
             emergencyInfo
         );
         
