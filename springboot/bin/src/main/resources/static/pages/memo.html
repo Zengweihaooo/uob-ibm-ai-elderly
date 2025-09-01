@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memo - Elderly Smart Assistant</title>
     <link rel="stylesheet" href="../styles/main.css">
     <style>
-        /* Memo page specific styles */
+        /* 备忘录页面专用样式 */
         .memo-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -33,23 +33,6 @@
             font-size: 1.2em;
             margin: 10px 0 0 0;
             opacity: 0.9;
-        }
-
-        .pin-hint {
-            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-            color: #856404;
-            padding: 10px 20px;
-            border-radius: 15px;
-            border: 2px solid #ffeaa7;
-            font-size: 1em;
-            margin: 15px 0 0 0;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(255, 234, 167, 0.3);
-        }
-
-        .pin-hint strong {
-            color: #d63031;
-            font-weight: 600;
         }
 
         .memo-controls {
@@ -150,8 +133,9 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
 
-        .memo-card.encrypted {
+        .memo-card.important {
             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border: 2px solid #ff6b6b;
         }
 
         .memo-header-row {
@@ -262,7 +246,7 @@
             margin-top: 5px;
         }
 
-        /* Modal styles */
+        /* 模态框样式 */
         .modal {
             display: none;
             position: fixed;
@@ -380,20 +364,39 @@
             border-color: #667eea;
         }
 
-        .pin-hint-modal {
-            background: #fff3cd;
-            color: #856404;
-            padding: 8px 15px;
-            border-radius: 8px;
-            border: 1px solid #ffeaa7;
-            font-size: 0.9em;
-            margin: 10px 0;
-            text-align: center;
+        /* 首次登录PIN设置样式 */
+        .first-login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .pin-hint-modal strong {
-            color: #d63031;
-            font-weight: 600;
+        .first-login-modal {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .first-login-title {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .first-login-description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
         }
 
         /* 响应式设计 */
@@ -468,73 +471,34 @@
             font-size: 1.2em;
             margin-bottom: 20px;
         }
-
-        /* Bottom Navigation Styles */
-        .bottom-navigation {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: white;
-            border-top: 3px solid #667eea;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .nav-tab {
-            flex: 1;
-            max-width: 200px;
-            height: 100%;
-            background: none;
-            border: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: #666;
-            font-family: inherit;
-            text-decoration: none;
-        }
-
-        .nav-tab:hover {
-            background: #f8f9fa;
-            color: #667eea;
-        }
-
-        .nav-tab.active {
-            background: #667eea;
-            color: white;
-        }
-
-        .nav-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
-        }
-
-        .nav-label {
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        /* Adjust container padding for bottom navigation */
-        .memo-container {
-            padding-bottom: 100px;
-        }
     </style>
 </head>
 <body>
+    <!-- 首次登录PIN设置覆盖层 -->
+    <div id="firstLoginOverlay" class="first-login-overlay" style="display: none;">
+        <div class="first-login-modal">
+            <h2 class="first-login-title">🔐 Welcome to Memo App</h2>
+            <p class="first-login-description">
+                To protect your important memos, please set a 4-digit PIN code.<br>
+                This PIN will be used to access important memos.
+            </p>
+            <div class="pin-input">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="setInitialPinCode()">Set PIN Code</button>
+            </div>
+        </div>
+    </div>
+
     <div class="memo-container">
         <!-- 页面头部 -->
         <div class="memo-header">
             <h1>📝 Memo</h1>
-            <p>Record your thoughts, passwords and todo items</p>
-            <p class="pin-hint">🔐 Default PIN Code: <strong>1234</strong> (for important memos)</p>
+            <p>Record your thoughts, important memos and todo items</p>
         </div>
 
         <!-- 控制栏 -->
@@ -543,9 +507,9 @@
                 <input type="text" id="searchInput" placeholder="Search memos..." maxlength="50">
             </div>
             <div class="memo-actions">
-                <button class="btn btn-secondary" onclick="showPinModal()">🔐 Set PIN Code</button>
+                <button class="btn btn-secondary" onclick="showPinModal()">🔐 Change PIN Code</button>
+                <a class="btn btn-secondary" href="memoir.html" title="Go to AI Memoir">📘 AI Memoir</a>
                 <button class="btn btn-primary" onclick="showCreateModal()">➕ New Memo</button>
-                <a class="btn btn-secondary" href="memoir.html">📘 AI Memoir</a>
             </div>
         </div>
 
@@ -608,14 +572,11 @@
             <form id="pinForm">
                 <div class="form-group">
                     <label class="form-label">Please enter your current PIN code</label>
-                    <div class="pin-hint-modal">
-                        🔐 Default PIN Code: <strong>1234</strong>
-                    </div>
                     <div class="pin-input">
-                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
-                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
-                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
-                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -635,15 +596,12 @@
             </div>
             <form id="verifyPinForm">
                 <div class="form-group">
-                    <label class="form-label">Please enter PIN code</label>
-                    <div class="pin-hint-modal">
-                        🔐 Default PIN Code: <strong>1234</strong>
-                    </div>
+                    <label class="form-label">Please enter PIN code to access this memo</label>
                     <div class="pin-input">
-                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
-                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
-                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
-                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
+                        <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -659,7 +617,8 @@
         let currentMemos = [];
         let currentMemoId = null;
         let currentPinCode = '';
-
+        let isFirstLogin = true;
+        let userPinCode = localStorage.getItem('userPinCode');
 
         // 获取JWT token
         function getAuthToken() {
@@ -686,7 +645,7 @@
                 return;
             }
             
-            loadMemos();
+            checkFirstLogin();
             setupEventListeners();
         });
 
@@ -705,6 +664,84 @@
         // 重定向到登录页面
         function redirectToLogin() {
             window.location.href = 'register.html';
+        }
+
+        // 检查首次登录
+        function checkFirstLogin() {
+            if (!userPinCode) {
+                // 首次登录，显示PIN码设置
+                showFirstLoginOverlay();
+            } else {
+                // 已设置PIN码，加载备忘录
+                loadMemos();
+            }
+        }
+
+        // 显示首次登录覆盖层
+        function showFirstLoginOverlay() {
+            // 清空所有PIN码输入框
+            const pinInputs = document.querySelectorAll('#firstLoginOverlay .pin-digit');
+            pinInputs.forEach(input => {
+                input.value = '';
+            });
+            document.getElementById('firstLoginOverlay').style.display = 'flex';
+            setupPinInputs('#firstLoginOverlay .pin-digit');
+        }
+
+        // 设置首次登录PIN码
+        async function setInitialPinCode() {
+            const pinInputs = document.querySelectorAll('#firstLoginOverlay .pin-digit');
+            const pinCode = Array.from(pinInputs).map(input => input.value).join('');
+
+            if (pinCode.length !== 4) {
+                alert('Please enter a 4-digit PIN code.');
+                return;
+            }
+
+            // 检查用户登录状态
+            if (!isUserLoggedIn()) {
+                showLoginPrompt();
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/memo/set-pin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeader()
+                    },
+                    body: JSON.stringify({
+                        pinCode: pinCode
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 保存PIN码到本地存储
+                    localStorage.setItem('userPinCode', pinCode);
+                    userPinCode = pinCode;
+                    
+                    // 隐藏首次登录覆盖层
+                    document.getElementById('firstLoginOverlay').style.display = 'none';
+                    
+                    // 加载备忘录
+                    loadMemos();
+                    
+                    alert('PIN code was set successfully! Welcome to Memo App!');
+                } else {
+                    if (response.status === 401) {
+                        // 认证失败，清除token并显示登录提示
+                        localStorage.removeItem('authToken');
+                        showLoginPrompt();
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            } catch (error) {
+                alert('Failed to set up: ' + error.message);
+            }
         }
 
         // 设置事件监听器
@@ -742,10 +779,13 @@
         }
 
         // 设置PIN码输入框
-        function setupPinInputs() {
-            const pinInputs = document.querySelectorAll('.pin-digit');
+        function setupPinInputs(selector = '.pin-digit') {
+            const pinInputs = document.querySelectorAll(selector);
             pinInputs.forEach((input, index) => {
                 input.addEventListener('input', function() {
+                    // 只允许输入数字
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    
                     if (this.value && index < pinInputs.length - 1) {
                         pinInputs[index + 1].focus();
                     }
@@ -754,6 +794,16 @@
                 input.addEventListener('keydown', function(e) {
                     if (e.key === 'Backspace' && !this.value && index > 0) {
                         pinInputs[index - 1].focus();
+                    }
+                });
+
+                // 防止粘贴非数字字符
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                    const numbersOnly = pastedText.replace(/[^0-9]/g, '');
+                    if (numbersOnly) {
+                        this.value = numbersOnly.charAt(0);
                     }
                 });
             });
@@ -769,8 +819,8 @@
                     showLoginPrompt();
                     return;
                 }
-
-                const response = await fetch('http://localhost:8080/api/memo/list', {
+                
+                const response = await fetch('/api/memo/list', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -790,11 +840,11 @@
                         localStorage.removeItem('authToken');
                         showLoginPrompt();
                     } else {
-                        showError('Failed to load memos: ' + data.message);
+                        alert('Failed to load memos: ' + data.message);
                     }
                 }
             } catch (error) {
-                showError('Network error: ' + error.message);
+                alert('Network error: ' + error.message);
             }
         }
 
@@ -806,7 +856,7 @@
                 memoList.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📝</div>
-                        <div class="empty-state-text">No memos yet</div>
+                        <div class="empty-state-text">No memos yet.</div>
                         <button class="btn btn-primary" onclick="showCreateModal()">Create your first memo</button>
                     </div>
                 `;
@@ -828,13 +878,10 @@
         // 创建备忘录卡片
         function createMemoCard(memo) {
             const card = document.createElement('div');
-            // Important类型的备忘录视为加密状态
-            const isEncrypted = memo.encrypted || memo.type === 'important';
-            card.className = `memo-card ${isEncrypted ? 'encrypted' : ''}`;
+            card.className = `memo-card ${memo.important ? 'important' : ''}`;
             
-            // Important类型的备忘录不显示内容
-            const content = isEncrypted ? '🔒 Encrypted content' : memo.content;
-            const contentClass = isEncrypted ? 'memo-content encrypted' : 'memo-content';
+            const content = memo.important ? '🔒 Encrypted content' : memo.content;
+            const contentClass = memo.important ? 'memo-content encrypted' : 'memo-content';
 
             card.innerHTML = `
                 <div class="memo-header-row">
@@ -847,7 +894,7 @@
                 <div class="memo-footer">
                     <span>📅 ${memo.formattedUpdateTime}</span>
                     <div class="memo-actions-row">
-                        ${isEncrypted ? 
+                        ${memo.important ? 
                             `<button class="btn btn-small btn-secondary" onclick="editMemo(${memo.id})">✏️ Edit</button>` : 
                             `<button class="btn btn-small btn-secondary" onclick="editMemo(${memo.id})">✏️ Edit</button>`
                         }
@@ -867,7 +914,7 @@
                     return;
                 }
                 
-                const response = await fetch('http://localhost:8080/api/memo/statistics', {
+                const response = await fetch('/api/memo/statistics', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -920,18 +967,10 @@
         async function searchMemos(keyword) {
             try {
                 showLoading();
-                
-                // 检查用户登录状态
-                if (!isUserLoggedIn()) {
-                    showLoginPrompt();
-                    return;
-                }
-                
-                const response = await fetch(`http://localhost:8080/api/memo/search?keyword=${encodeURIComponent(keyword)}`, {
+                const response = await fetch(`/api/memo/search?keyword=${encodeURIComponent(keyword)}`, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
-                        ...getAuthHeader()
+                        'Content-Type': 'application/json'
                     }
                 });
 
@@ -941,16 +980,10 @@
                     currentMemos = data.memos || [];
                     displayMemos(currentMemos);
                 } else {
-                    if (response.status === 401) {
-                        // 认证失败，清除token并显示登录提示
-                        localStorage.removeItem('authToken');
-                        showLoginPrompt();
-                    } else {
-                        showError('Search failed: ' + data.message);
-                    }
+                    alert('Failed to search: ' + data.message);
                 }
             } catch (error) {
-                showError('Network error: ' + error.message);
+                alert('Network error: ' + error.message);
             }
         }
 
@@ -967,28 +1000,36 @@
             const memo = currentMemos.find(m => m.id === memoId);
             if (!memo) return;
 
-            // 如果是Important类型的备忘录，需要PIN码验证
-            if (memo.type === 'important') {
-                currentMemoId = memoId;
-                // 清空PIN码输入框
-                const pinInputs = document.querySelectorAll('#verifyPinModal .pin-digit');
-                pinInputs.forEach(input => input.value = '');
-                
-                // 更新模态框标题，提示用户输入PIN码进行编辑
-                const modalTitle = document.querySelector('#verifyPinModal .modal-title');
-                modalTitle.textContent = '🔐 Enter PIN Code to Edit Important Memo';
-                
-                showModal('verifyPinModal');
-                return;
-            }
-
-            // 普通备忘录直接编辑
             document.getElementById('modalTitle').textContent = 'Edit Memo';
             document.getElementById('memoTitle').value = memo.title;
             document.getElementById('memoContent').value = memo.content;
             document.getElementById('memoType').value = memo.type;
             currentMemoId = memoId;
             showModal('memoModal');
+        }
+
+        // 查看重要备忘录
+        function viewImportantMemo(memoId) {
+            currentMemoId = memoId;
+            currentAction = 'view';
+            // 清空所有PIN码输入框
+            const pinInputs = document.querySelectorAll('#verifyPinModal .pin-digit');
+            pinInputs.forEach(input => {
+                input.value = '';
+            });
+            showModal('verifyPinModal');
+        }
+
+        // 编辑重要备忘录
+        function editImportantMemo(memoId) {
+            currentMemoId = memoId;
+            currentAction = 'edit';
+            // 清空所有PIN码输入框
+            const pinInputs = document.querySelectorAll('#verifyPinModal .pin-digit');
+            pinInputs.forEach(input => {
+                input.value = '';
+            });
+            showModal('verifyPinModal');
         }
 
         // 保存备忘录
@@ -998,18 +1039,12 @@
             const type = document.getElementById('memoType').value;
 
             if (!title || !content) {
-                alert('Please fill in title and content');
-                return;
-            }
-
-            // 检查用户登录状态
-            if (!isUserLoggedIn()) {
-                showLoginPrompt();
+                alert('Please fill in both the title and content.');
                 return;
             }
 
             try {
-                const url = currentMemoId ? `http://localhost:8080/api/memo/${currentMemoId}` : 'http://localhost:8080/api/memo/create';
+                const url = currentMemoId ? `/api/memo/${currentMemoId}` : '/api/memo/create';
                 const method = currentMemoId ? 'PUT' : 'POST';
 
                 const response = await fetch(url, {
@@ -1030,18 +1065,12 @@
                 if (data.success) {
                     closeModal('memoModal');
                     loadMemos();
-                    showSuccess(currentMemoId ? 'Memo updated successfully' : 'Memo created successfully');
+                    alert('Memo was created successfully');
                 } else {
-                    if (response.status === 401) {
-                        // 认证失败，清除token并显示登录提示
-                        localStorage.removeItem('authToken');
-                        showLoginPrompt();
-                    } else {
-                        showError(data.message);
-                    }
+                    alert(data.message);
                 }
             } catch (error) {
-                showError('Save failed: ' + error.message);
+                    alert('Failed to save: ' + error.message);
             }
         }
 
@@ -1051,14 +1080,8 @@
                 return;
             }
 
-            // 检查用户登录状态
-            if (!isUserLoggedIn()) {
-                showLoginPrompt();
-                return;
-            }
-
             try {
-                const response = await fetch(`http://localhost:8080/api/memo/${memoId}`, {
+                const response = await fetch(`/api/memo/${memoId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1070,22 +1093,14 @@
                 
                 if (data.success) {
                     loadMemos();
-                    showSuccess('Memo deleted successfully');
+                    alert('Memo was deleted successfully');
                 } else {
-                    if (response.status === 401) {
-                        // 认证失败，清除token并显示登录提示
-                        localStorage.removeItem('authToken');
-                        showLoginPrompt();
-                    } else {
-                        showError(data.message);
-                    }
+                    alert(data.message);
                 }
             } catch (error) {
-                showError('Delete failed: ' + error.message);
+                alert('Failed to delete: ' + error.message);
             }
         }
-
-
 
         // 验证PIN码
         async function verifyPinCode() {
@@ -1093,54 +1108,37 @@
             const pinCode = Array.from(pinInputs).map(input => input.value).join('');
 
             if (pinCode.length !== 4) {
-                alert('Please enter 4-digit PIN code');
+                alert('Please enter a 4-digit PIN code.');
                 return;
             }
 
-            // 检查用户登录状态
-            if (!isUserLoggedIn()) {
-                showLoginPrompt();
+            // 验证PIN码
+            if (pinCode !== userPinCode) {
+                alert('Incorrect PIN code');
+                // 清空PIN码输入框
+                pinInputs.forEach(input => input.value = '');
                 return;
             }
 
-            try {
-                const response = await fetch(`http://localhost:8080/api/memo/${currentMemoId}/content`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...getAuthHeader()
-                    },
-                    body: JSON.stringify({
-                        pinCode: pinCode
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
+            // PIN码正确，执行相应操作
+            if (currentAction === 'view') {
+                // 查看重要备忘录内容
+                const memo = currentMemos.find(m => m.id === currentMemoId);
+                if (memo) {
                     closeModal('verifyPinModal');
-                    
-                    // Important类型的备忘录，PIN验证成功后直接进入编辑模式
-                    const memo = currentMemos.find(m => m.id === currentMemoId);
-                    if (memo) {
-                        document.getElementById('modalTitle').textContent = 'Edit Important Memo';
-                        document.getElementById('memoTitle').value = memo.title;
-                        document.getElementById('memoContent').value = data.content; // 使用解密后的内容
-                        document.getElementById('memoType').value = memo.type;
-                        showModal('memoModal');
-                    }
-                    
-                    // 清空PIN码输入框
-                    pinInputs.forEach(input => input.value = '');
-                } else {
-                    // PIN码验证失败，只显示错误信息，不清除登录状态
-                    showError(data.message || 'Incorrect PIN code');
-                    // 清空PIN码输入框，让用户重新输入
-                    pinInputs.forEach(input => input.value = '');
+                    alert('Memo Content:\n\n' + memo.content);
                 }
-            } catch (error) {
-                showError('Verification failed: ' + error.message);
+            } else if (currentAction === 'edit') {
+                // 编辑重要备忘录
+                const memo = currentMemos.find(m => m.id === currentMemoId);
+                if (memo) {
+                    closeModal('verifyPinModal');
+                    editMemo(currentMemoId);
+                }
             }
+
+            // 清空PIN码输入框
+            pinInputs.forEach(input => input.value = '');
         }
 
         // 设置PIN码
@@ -1176,7 +1174,7 @@
         async function verifyCurrentPin(currentPin) {
             try {
                 // 使用一个Important备忘录来验证当前PIN
-                const response = await fetch('http://localhost:8080/api/memo/verify-current-pin', {
+                const response = await fetch('/api/memo/verify-current-pin', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1194,20 +1192,20 @@
                     switchToSetNewPinMode();
                 } else {
                     // 当前PIN验证失败
-                    showError('Current PIN verification failed. Please try again.');
+                    alert('Current PIN verification failed. Please try again.');
                     // 清空PIN码输入框，让用户重新输入
                     const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
                     pinInputs.forEach(input => input.value = '');
                 }
             } catch (error) {
-                showError('Verification failed: ' + error.message);
+                alert('Verification failed: ' + error.message);
             }
         }
 
         // 设置新PIN
         async function setNewPin(newPin) {
             try {
-                const response = await fetch('http://localhost:8080/api/memo/set-new-pin', {
+                const response = await fetch('/api/memo/set-new-pin', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1221,8 +1219,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
+                    // 更新本地存储的PIN码
+                    localStorage.setItem('userPinCode', newPin);
+                    userPinCode = newPin;
+                    
                     closeModal('pinModal');
-                    showSuccess('PIN code updated successfully');
+                    alert('PIN code updated successfully');
                     // 清空PIN码输入框
                     const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
                     pinInputs.forEach(input => input.value = '');
@@ -1234,11 +1236,11 @@
                         localStorage.removeItem('authToken');
                         showLoginPrompt();
                     } else {
-                        showError(data.message);
+                        alert(data.message);
                     }
                 }
             } catch (error) {
-                showError('Setup failed: ' + error.message);
+                alert('Setup failed: ' + error.message);
             }
         }
 
@@ -1262,6 +1264,11 @@
             
             modalTitle.textContent = '🔐 Verify Current PIN Code';
             formLabel.textContent = 'Please enter your current PIN code';
+        }
+
+        // 修改PIN码（兼容旧版本）
+        async function changePinCode() {
+            await setPinCode();
         }
 
         // 显示PIN码设置模态框
@@ -1301,7 +1308,7 @@
             document.getElementById('memoList').innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>Loading...</p>
+                    <p>Loading memos...</p>
                 </div>
             `;
         }
@@ -1334,47 +1341,44 @@
                         const pinInputs = modal.querySelectorAll('.pin-digit');
                         pinInputs.forEach(input => input.value = '');
                     }
-
+                    
+                    // 如果关闭PIN模态框，重置为验证模式
+                    if (modal.id === 'pinModal') {
+                        resetPinModalToVerifyMode();
+                    }
                 }
             });
         }
     </script>
-
-    <!-- Bottom Navigation -->
-    <!-- Bottom Navigation -->
-    <div class="bottom-navigation">
-        <a href="schedule.html" class="nav-tab nav-link-tab">
-            <div class="nav-icon">📅</div>
-            <div class="nav-label">Schedule</div>
-        </a>
-        <a href="schedule.html#important-dates" class="nav-tab nav-link-tab">
-            <div class="nav-icon">🎉</div>
-            <div class="nav-label">Important Dates</div>
-        </a>
-        <a href="ai-assistant.html" class="nav-tab nav-link-tab">
-            <div class="nav-icon">🤖</div>
-            <div class="nav-label">AI Assistant</div>
-        </a>
-        <a href="schedule.html#pet" class="nav-tab nav-link-tab">
-            <div class="nav-icon">🐱</div>
-            <div class="nav-label">Virtual Pet</div>
-        </a>
-        <a href="family.html" class="nav-tab nav-link-tab">
-            <div class="nav-icon">👪</div>
-            <div class="nav-label">Family</div>
-        </a>
-        <a href="email-compose.html" class="nav-tab nav-link-tab">
-            <div class="nav-icon">📧</div>
-            <div class="nav-label">Email</div>
-        </a>
-        <a href="memo.html" class="nav-tab nav-link-tab active">
-            <div class="nav-icon">📝</div>
-            <div class="nav-label">Memo</div>
-        </a>
-        <a href="podcast.html" class="nav-tab nav-link-tab">
-            <div class="nav-icon">🎧</div>
-            <div class="nav-label">Podcast</div>
-        </a>
-    </div>
+    
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-container">
+            <a href="schedule.html" class="nav-item">
+                <div class="nav-icon">📅</div>
+                <div class="nav-text">Schedule</div>
+            </a>
+            <a href="ai-assistant.html" class="nav-item">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-text">AI Assistant</div>
+            </a>
+            <a href="memo.html" class="nav-item active">
+                <div class="nav-icon">📝</div>
+                <div class="nav-text">Memo</div>
+            </a>
+            <a href="chatbot.html" class="nav-item">
+                <div class="nav-icon">💬</div>
+                <div class="nav-text">Chat</div>
+            </a>
+            <a href="admin.html" class="nav-item">
+                <div class="nav-icon">⚙️</div>
+                <div class="nav-text">Settings</div>
+            </a>
+            <a href="podcast.html" class="nav-item">
+                <div class="nav-icon">🎧</div>
+                <div class="nav-text">Podcast</div>
+            </a>
+        </div>
+    </nav>
 </body>
 </html> 

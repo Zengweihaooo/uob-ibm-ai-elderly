@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Blogs - UOB-IBM AI Elderly Project</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+    <style>
+        .blogs-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 100%;
+        }
+
+        .blog-section {
+            background: var(--background);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .blog-section h2 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .markdown-body {
+            background: transparent;
+        }
+
+        .meeting-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .meeting-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .meeting-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .meeting-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+
+        .meeting-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .meeting-header .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .meeting-header.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .meeting-content {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .meeting-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .blogs-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 2rem;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-button svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+        }
+
+        .close-button:hover {
+            color: #666;
+        }
+
+        .modal-title {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            padding-right: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="../../index.html" class="home-btn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 16V10H12V16H15V8H18L10 1L2 8H5V16H8Z" fill="currentColor"/>
+                    </svg>
+                </a>
+                <div class="logo-container">
+                    <a href="https://www.bristol.ac.uk" target="_blank" class="logo-link">
+                        <img src="https://www.bristol.ac.uk/assets/responsive-web-project/2.6.0/images/logos/uob-logo.svg" 
+                             alt="University of Bristol Logo" 
+                             class="logo uob-logo">
+                    </a>
+                    <a href="https://www.ibm.com" target="_blank" class="logo-link">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" 
+                             alt="IBM Logo" 
+                             class="logo ibm-logo">
+                    </a>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="https://github.com/Zengweihaooo/uob-ibm-ai-elderly" target="_blank" class="nav-link">GitHub Repo</a>
+                <a href="https://github.com/users/Zengweihaooo/projects/1" target="_blank" class="nav-link">Project Management</a>
+                <div class="dropdown">
+                    <button class="dropdown-btn">Other Platform</button>
+                    <div class="dropdown-content">
+                        <a href="https://www.figma.com/design/ACpMwWcBol9t5wt5u9FkEH/IBM-prototype?node-id=0-1&t=3kvjgXeg7PRMyNxk-1" target="_blank">Figma</a>
+                        <a href="https://teams.microsoft.com/l/channel/19%3ATbJ7cTNrm0h8XNuEz0v9KnBaIb_BxAQXu6ELaI9IqCQ1%40thread.tacv2/General?groupId=4992b869-67ca-4b1d-8786-8e16352bf31d&tenantId=b2e47f30-cd7d-4a4e-a5da-b18cf1a4151b" target="_blank">Teams</a>
+                    </div>
+                </div>
+                <a href="./team-members.html" class="nav-link">Team Members</a>
+                <a href="./blogs.html" class="nav-link">Blogs</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <h1 class="section-title">Project Blogs</h1>
+        <div class="blogs-container">
+            <div class="blog-section">
+                <h2>Meetings</h2>
+                <div id="meetings-content" class="markdown-body">
+                    <!-- Meetings content will be loaded here -->
+                </div>
+            </div>
+            <div class="blog-section">
+                <h2>Learning Journal</h2>
+                <div id="learning-journal-content" class="markdown-body">
+                    <!-- Learning journal content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <!-- Footer content will go here -->
+    </footer>
+
+    <!-- Add Modal -->
+    <div id="meetingModal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <h2 class="modal-title"></h2>
+            <div class="modal-body markdown-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for marked to be loaded
+        window.addEventListener('load', function() {
+            if (typeof marked === 'undefined') {
+                console.error('Marked library not loaded');
+                return;
+            }
+
+            // Modal functionality
+            const modal = document.getElementById('meetingModal');
+            const closeButton = modal.querySelector('.close-button');
+            const modalTitle = modal.querySelector('.modal-title');
+            const modalBody = modal.querySelector('.modal-body');
+
+            // Close modal when clicking the close button
+            closeButton.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside the content
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            async function loadMarkdownContent() {
+                try {
+                    const res = await fetch('../../docs/manifest.json');
+                    if(!res.ok) { console.error('Cannot load manifest'); return; }
+                    const manifest = await res.json();
+                    const sections = [
+                        { items: manifest.meetings || [], containerId: 'meetings-content', titlePrefix: 'Meeting Minutes' },
+                        { items: manifest.learningJournal || [], containerId: 'learning-journal-content', titlePrefix: 'Learning Journal' }
+                    ];
+
+                    for(const section of sections) {
+                        const container = document.getElementById(section.containerId);
+                        container.innerHTML = '';
+                        const listEl = document.createElement('div');
+                        listEl.className = 'meeting-list';
+
+                        const sorted = [...section.items].sort((a,b)=> extractDate(b.name)-extractDate(a.name));
+
+                        for(const file of sorted) {
+                            const item = document.createElement('div');
+                            item.className = 'meeting-item';
+                            const ts = extractDate(file.name);
+                            const displayDate = ts ? formatDateDisplay(ts) : '';
+                            item.innerHTML = `
+                                <div class="meeting-header">
+                                    <h3>${section.titlePrefix}${displayDate? ' - '+displayDate: ''}</h3>
+                                    <span class="toggle-icon">▼</span>
+                                </div>
+                                <div class="meeting-content"></div>
+                            `;
+                            const headerEl = item.querySelector('.meeting-header');
+                            const contentEl = item.querySelector('.meeting-content');
+
+                            headerEl.addEventListener('click', async ()=>{
+                                if(contentEl.innerHTML){
+                                    contentEl.classList.toggle('active');
+                                    headerEl.classList.toggle('active');
+                                    return;
+                                }
+                                try {
+                                    const mdRes = await fetch('../../'+file.path);
+                                    const mdText = await mdRes.text();
+                                    contentEl.innerHTML = marked.parse(mdText);
+                                    contentEl.classList.add('active');
+                                    headerEl.classList.add('active');
+                                }catch(err){
+                                    contentEl.innerHTML = '<p>Error loading content.</p>';
+                                    contentEl.classList.add('active');
+                                }
+                            });
+                            listEl.appendChild(item);
+                        }
+                        container.appendChild(listEl);
+                    }
+                } catch(err) {
+                    console.error('Error:', err);
+                }
+            }
+
+            function extractDate(filename){
+                const m = filename.match(/(\d{4})[-]?(\d{2})[-]?(\d{2})/);
+                if(!m) return 0;
+                return new Date(`${m[1]}-${m[2]}-${m[3]}`).getTime();
+            }
+            function formatDateDisplay(ts){
+                const d = new Date(ts);
+                return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            }
+
+            // Load content when the page loads
+            loadMarkdownContent();
+        });
+    </script>
+</body>
+</html> 

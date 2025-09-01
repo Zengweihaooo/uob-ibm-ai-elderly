@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Important Date Reminder Test</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e8f4fd;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .section h3 {
+            color: #0066cc;
+            margin-top: 0;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        .btn {
+            background-color: #0066cc;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #0052a3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        .result {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .important-date-list {
+            margin: 15px 0;
+        }
+        .important-date-item {
+            background-color: #e8f4fd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #0066cc;
+        }
+        .important-date-title {
+            font-weight: bold;
+            color: #0066cc;
+        }
+        .important-date-details {
+            color: #666;
+            margin: 5px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .stat-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="title">🎉 Important Date Reminder Test</div>
+            <div class="subtitle">IBM AI Elderly Companion System - Email Reminder Feature Demo</div>
+        </div>
+
+        <!-- Add Important Date Section -->
+        <div class="section">
+            <h3>📅 Add Important Date</h3>
+            <form id="addImportantDateForm">
+                <div class="form-group">
+                    <label for="userId">User ID:</label>
+                    <input type="number" id="userId" name="userId" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" placeholder="e.g., Birthday, Anniversary, etc." required>
+                </div>
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="type">Type:</label>
+                    <select id="type" name="type" required>
+                        <option value="birthday">Birthday</option>
+                        <option value="anniversary">Anniversary</option>
+                        <option value="holiday">Holiday</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" placeholder="Optional description"></textarea>
+                </div>
+                <button type="submit" class="btn">Add Important Date</button>
+            </form>
+            <div id="addResult"></div>
+        </div>
+
+        <!-- Get Important Dates Section -->
+        <div class="section">
+            <h3>📋 View Important Dates</h3>
+            <div class="form-group">
+                <label for="getUserId">User ID:</label>
+                <input type="number" id="getUserId" value="1">
+                <button onclick="getImportantDates()" class="btn">Get Important Dates</button>
+            </div>
+            <div id="importantDatesList"></div>
+        </div>
+
+        <!-- Get Upcoming Dates Section -->
+        <div class="section">
+            <h3>🔮 Upcoming Important Dates</h3>
+            <div class="form-group">
+                <label for="upcomingUserId">User ID:</label>
+                <input type="number" id="upcomingUserId" value="1">
+                <button onclick="getUpcomingDates()" class="btn">Get Upcoming Dates</button>
+            </div>
+            <div id="upcomingDatesList"></div>
+        </div>
+
+        <!-- Get Statistics Section -->
+        <div class="section">
+            <h3>📊 Important Date Statistics</h3>
+            <div class="form-group">
+                <label for="statsUserId">User ID:</label>
+                <input type="number" id="statsUserId" value="1">
+                <button onclick="getStats()" class="btn">Get Statistics</button>
+            </div>
+            <div id="statsResult"></div>
+        </div>
+
+        <!-- Send Reminders Section -->
+        <div class="section">
+            <h3>📧 Send Email Reminders</h3>
+            <p>Manually trigger sending all pending important date reminder emails</p>
+            <button onclick="sendReminders()" class="btn btn-success">Send Reminder Emails</button>
+            <div id="sendRemindersResult"></div>
+        </div>
+
+        <!-- Add Default Holidays Section -->
+        <div class="section">
+            <h3>🎊 Add Default Holidays</h3>
+            <div class="form-group">
+                <label for="holidayUserId">User ID:</label>
+                <input type="number" id="holidayUserId" value="1">
+                <button onclick="addDefaultHolidays()" class="btn btn-secondary">Add Default Holidays</button>
+            </div>
+            <div id="holidaysResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // Set default date to tomorrow for testing
+        document.getElementById('date').value = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        // Add Important Date
+        document.getElementById('addImportantDateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                userId: parseInt(document.getElementById('userId').value),
+                title: document.getElementById('title').value,
+                date: document.getElementById('date').value,
+                type: document.getElementById('type').value,
+                description: document.getElementById('description').value
+            };
+
+            fetch('/api/important-dates/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('addResult');
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="result success">✅ ${data.message}</div>`;
+                    document.getElementById('addImportantDateForm').reset();
+                    document.getElementById('date').value = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ ${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('addResult').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
+            });
+        });
+
+        // Get Important Dates
+        function getImportantDates() {
+            const userId = document.getElementById('getUserId').value;
+            
+            fetch(`/api/important-dates/user/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                const listDiv = document.getElementById('importantDatesList');
+                if (data.success) {
+                    let html = '<h4>Important Dates List:</h4>';
+                    if (data.importantDates && data.importantDates.length > 0) {
+                        data.importantDates.forEach(date => {
+                            html += `
+                                <div class="important-date-item">
+                                    <div class="important-date-title">${date.title}</div>
+                                    <div class="important-date-details">
+                                        Type: ${date.type} | Date: ${date.date} | Description: ${date.description || 'None'}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        html += '<p>No important dates found</p>';
+                    }
+                    listDiv.innerHTML = html;
+                } else {
+                    listDiv.innerHTML = `<div class="result error">❌ ${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('importantDatesList').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
+            });
+        }
+
+        // Get Upcoming Dates
+        function getUpcomingDates() {
+            const userId = document.getElementById('upcomingUserId').value;
+            
+            fetch(`/api/important-dates/user/${userId}/upcoming`)
+            .then(response => response.json())
+            .then(data => {
+                const listDiv = document.getElementById('upcomingDatesList');
+                if (data.success) {
+                    let html = '<h4>Upcoming Important Dates:</h4>';
+                    if (data.upcomingDates && data.upcomingDates.length > 0) {
+                        data.upcomingDates.forEach(date => {
+                            html += `
+                                <div class="important-date-item">
+                                    <div class="important-date-title">${date.title}</div>
+                                    <div class="important-date-details">
+                                        Type: ${date.type} | Date: ${date.date} | Description: ${date.description || 'None'}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        html += '<p>No upcoming important dates found</p>';
+                    }
+                    listDiv.innerHTML = html;
+                } else {
+                    listDiv.innerHTML = `<div class="result error">❌ ${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('upcomingDatesList').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
+            });
+        }
+
+        // Get Statistics
+        function getStats() {
+            const userId = document.getElementById('statsUserId').value;
+            
+            fetch(`/api/important-dates/user/${userId}/stats`)
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('statsResult');
+                if (data.success) {
+                    const stats = data.stats;
+                    let html = '<h4>Statistics:</h4><div class="stats-grid">';
+                    html += `<div class="stat-item"><div class="stat-number">${stats.total}</div><div class="stat-label">Total</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.birthdays}</div><div class="stat-label">Birthdays</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.anniversaries}</div><div class="stat-label">Anniversaries</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.holidays}</div><div class="stat-label">Holidays</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.custom}</div><div class="stat-label">Custom</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.upcoming}</div><div class="stat-label">Upcoming</div></div>`;
+                    html += `<div class="stat-item"><div class="stat-number">${stats.today}</div><div class="stat-label">Today</div></div>`;
+                    html += '</div>';
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ ${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('statsResult').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
+            });
+        }
+
+        // Send Reminders
+        function sendReminders() {
+            fetch('/api/important-dates/send-reminders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('sendRemindersResult');
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="result success">✅ ${data.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ ${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('sendRemindersResult').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
+            });
+        }
+
+        // Add Default Holidays
+        function addDefaultHolidays() {
+            const userId = document.getElementById('holidayUserId').value;
+            
+            fetch(`/api/important-dates/user/${userId}/default-holidays`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('holidaysResult');
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="result success">✅ ${data.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ ${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('holidaysResult').innerHTML = `<div class="result error">❌ Request failed: ${error.message}</div>`;
+            });
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIN Hint Preview</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .preview-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .memo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .memo-header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 300;
+        }
+
+        .memo-header p {
+            font-size: 1.2em;
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+
+        .pin-hint {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: 2px solid #ffeaa7;
+            font-size: 1em;
+            margin: 15px 0 0 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(255, 234, 167, 0.3);
+        }
+
+        .pin-hint strong {
+            color: #d63031;
+            font-weight: 600;
+        }
+
+        .modal-preview {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .pin-hint-modal {
+            background: #fff3cd;
+            color: #856404;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid #ffeaa7;
+            font-size: 0.9em;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .pin-hint-modal strong {
+            color: #d63031;
+            font-weight: 600;
+        }
+
+        .pin-input {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .pin-digit {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5em;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin: 0 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+
+        .modal-actions {
+            text-align: center;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <h2 style="text-align: center; color: #2c3e50; margin-bottom: 30px;">🔐 PIN码提示效果预览</h2>
+        
+        <!-- 页面头部预览 -->
+        <div class="memo-header">
+            <h1>📝 Memo</h1>
+            <p>Record your thoughts, passwords and todo items</p>
+            <p class="pin-hint">🔐 Default PIN Code: <strong>1234</strong> (for important memos)</p>
+        </div>
+
+        <!-- PIN码设置模态框预览 -->
+        <div class="modal-preview">
+            <h3 class="modal-title">🔐 Verify Current PIN Code</h3>
+            <div class="pin-hint-modal">
+                🔐 Default PIN Code: <strong>1234</strong>
+            </div>
+            <div class="pin-input">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" placeholder="•">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" placeholder="•">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" placeholder="•">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" placeholder="•">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary">Cancel</button>
+                <button class="btn btn-primary">Verify</button>
+            </div>
+        </div>
+
+        <!-- PIN码验证模态框预览 -->
+        <div class="modal-preview">
+            <h3 class="modal-title">🔐 Enter PIN Code</h3>
+            <div class="pin-hint-modal">
+                🔐 Default PIN Code: <strong>1234</strong>
+            </div>
+            <div class="pin-input">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" placeholder="•">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" placeholder="•">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" placeholder="•">
+                <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" placeholder="•">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary">Cancel</button>
+                <button class="btn btn-primary">Verify</button>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; color: #666;">
+            <p>✅ PIN码提示已成功添加到memo界面的以下位置：</p>
+            <ul style="text-align: left; display: inline-block;">
+                <li>页面头部 - 黄色背景的提示框</li>
+                <li>PIN码设置模态框 - 小型黄色提示</li>
+                <li>PIN码验证模态框 - 小型黄色提示</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

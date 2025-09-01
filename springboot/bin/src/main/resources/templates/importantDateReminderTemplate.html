@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Important Date Reminder</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e8f4fd;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        .reminder-content {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0066cc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .date-info {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .date-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+        .date-details {
+            color: #555;
+            margin: 5px 0;
+        }
+        .reminder-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .reminder-week {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .reminder-day {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        .action-buttons {
+            text-align: center;
+            margin: 25px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 5px;
+            background-color: #0066cc;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background-color: #0052a3;
+        }
+        .tips {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .tips h4 {
+            color: #0c5460;
+            margin-top: 0;
+        }
+        .tips ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .tips li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🎉 Important Date Reminder</div>
+            <div class="subtitle">IBM AI Elderly Companion System</div>
+        </div>
+
+        <!-- Greeting -->
+        <div class="reminder-content">
+            <h3>Dear <span th:text="${userName}">User</span>,</h3>
+            <p>We noticed you have an important date approaching, and we hope this reminder helps you prepare!</p>
+        </div>
+
+        <!-- Date Information -->
+        <div class="date-info">
+            <div class="date-title">
+                <span th:text="${importantDate.title}">Important Date</span>
+                <span class="reminder-type" th:class="${reminderType == 'week' ? 'reminder-week' : 'reminder-day'}" 
+                      th:text="${reminderType == 'week' ? 'One Week Reminder' : 'One Day Reminder'}">Reminder Type</span>
+            </div>
+            <div class="date-details">
+                <strong>Date Type:</strong><span th:text="${importantDate.type}">Birthday</span><br>
+                <strong>Specific Date:</strong><span th:text="${#temporals.format(importantDate.date, 'yyyy-MM-dd')}">2025-01-01</span><br>
+                <span th:if="${importantDate.description}" th:text="'Description: ' + ${importantDate.description}"></span>
+            </div>
+        </div>
+
+        <!-- Reminder Content Based on Type -->
+        <div th:if="${reminderType == 'week'}" class="reminder-content">
+            <h4>📅 One Week Reminder</h4>
+            <p>This important date is one week away. We suggest you:</p>
+            <ul>
+                <li>Prepare related gifts or arrangements</li>
+                <li>Confirm the specific time schedule for the day</li>
+                <li>Notify relevant family and friends</li>
+                <li>Prepare related celebration activities</li>
+            </ul>
+        </div>
+
+        <div th:if="${reminderType == 'day'}" class="reminder-content">
+            <h4>🎯 One Day Reminder</h4>
+            <p>Tomorrow is the important date! Please ensure:</p>
+            <ul>
+                <li>All preparations are completed</li>
+                <li>Confirm the specific arrangements for the day</li>
+                <li>Prepare related items or gifts</li>
+                <li>Set up reminder alarms</li>
+            </ul>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="tips">
+            <h4>💡 Helpful Tips</h4>
+            <ul>
+                <li>If you need to modify or cancel this important date, please log into the system to manage it</li>
+                <li>You can add more important date reminders in the system</li>
+                <li>If you have any questions, please contact our customer service team</li>
+            </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="#" class="btn">View Details</a>
+            <a href="#" class="btn">Manage Important Dates</a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>This email was automatically sent by IBM AI Elderly Companion System</p>
+            <p>Sent at: <span th:text="${#temporals.format(timestamp, 'yyyy-MM-dd HH:mm')}">2025-01-01 09:00</span></p>
+            <p>If you don't want to receive such reminders, please adjust your notification preferences in the system settings</p>
+        </div>
+    </div>
+</body>
+</html> 

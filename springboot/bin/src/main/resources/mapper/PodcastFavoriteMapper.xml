@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.repository.PodcastFavoriteRepository">
+
+    <!-- 结果映射 -->
+    <resultMap id="PodcastFavoriteResultMap" type="com.example.demo.pojo.PodcastFavorite">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="podcast_id" property="podcastId" jdbcType="VARCHAR"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="publisher" property="publisher" jdbcType="VARCHAR"/>
+        <result column="image" property="image" jdbcType="VARCHAR"/>
+        <result column="thumbnail" property="thumbnail" jdbcType="VARCHAR"/>
+        <result column="language" property="language" jdbcType="VARCHAR"/>
+        <result column="country" property="country" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="total_episodes" property="totalEpisodes" jdbcType="INTEGER"/>
+        <result column="genres" property="genres" jdbcType="VARCHAR"/>
+        <result column="rss" property="rss" jdbcType="VARCHAR"/>
+        <result column="website" property="website" jdbcType="VARCHAR"/>
+        <result column="is_active" property="isActive" jdbcType="BOOLEAN"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 插入新的播客收藏 -->
+    <insert id="insert" parameterType="com.example.demo.pojo.PodcastFavorite" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO podcast_favorites (
+            user_id, podcast_id, title, description, publisher, 
+            image, thumbnail, language, country, type, 
+            total_episodes, genres, rss, website, 
+            is_active, created_at, updated_at
+        ) VALUES (
+            #{userId}, #{podcastId}, #{title}, #{description}, #{publisher},
+            #{image}, #{thumbnail}, #{language}, #{country}, #{type},
+            #{totalEpisodes}, #{genres}, #{rss}, #{website},
+            #{isActive}, #{createdAt}, #{updatedAt}
+        )
+    </insert>
+
+    <!-- 更新播客收藏信息 -->
+    <update id="update" parameterType="com.example.demo.pojo.PodcastFavorite">
+        UPDATE podcast_favorites SET
+            title = #{title},
+            description = #{description},
+            publisher = #{publisher},
+            image = #{image},
+            thumbnail = #{thumbnail},
+            language = #{language},
+            country = #{country},
+            type = #{type},
+            total_episodes = #{totalEpisodes},
+            genres = #{genres},
+            rss = #{rss},
+            website = #{website},
+            updated_at = #{updatedAt}
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <!-- 根据ID查找播客收藏 -->
+    <select id="findById" resultMap="PodcastFavoriteResultMap">
+        SELECT * FROM podcast_favorites 
+        WHERE id = #{id} AND is_active = 1
+    </select>
+
+    <!-- 根据用户ID和播客ID查找收藏 -->
+    <select id="findByUserIdAndPodcastId" resultMap="PodcastFavoriteResultMap">
+        SELECT * FROM podcast_favorites 
+        WHERE user_id = #{userId} AND podcast_id = #{podcastId} AND is_active = 1
+    </select>
+
+    <!-- 获取用户的所有收藏 -->
+    <select id="findByUserId" resultMap="PodcastFavoriteResultMap">
+        SELECT * FROM podcast_favorites 
+        WHERE user_id = #{userId} AND is_active = 1
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 检查用户是否已收藏某个播客 -->
+    <select id="existsByUserIdAndPodcastId" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM podcast_favorites 
+        WHERE user_id = #{userId} AND podcast_id = #{podcastId} AND is_active = 1
+    </select>
+
+    <!-- 软删除收藏 -->
+    <update id="softDelete">
+        UPDATE podcast_favorites SET
+            is_active = 0,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId} AND podcast_id = #{podcastId}
+    </update>
+
+    <!-- 统计用户的收藏数量 -->
+    <select id="countByUserId" resultType="long">
+        SELECT COUNT(*) FROM podcast_favorites 
+        WHERE user_id = #{userId} AND is_active = 1
+    </select>
+
+    <!-- 根据用户ID和播客类型查找收藏 -->
+    <select id="findByUserIdAndType" resultMap="PodcastFavoriteResultMap">
+        SELECT * FROM podcast_favorites 
+        WHERE user_id = #{userId} AND type = #{type} AND is_active = 1
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 搜索用户的收藏 -->
+    <select id="searchByKeyword" resultMap="PodcastFavoriteResultMap">
+        SELECT * FROM podcast_favorites 
+        WHERE user_id = #{userId} AND is_active = 1
+        AND (
+            LOWER(title) LIKE '%' || LOWER(#{keyword}) || '%'
+            OR LOWER(description) LIKE '%' || LOWER(#{keyword}) || '%'
+            OR LOWER(publisher) LIKE '%' || LOWER(#{keyword}) || '%'
+        )
+        ORDER BY created_at DESC
+    </select>
+
+</mapper> 
