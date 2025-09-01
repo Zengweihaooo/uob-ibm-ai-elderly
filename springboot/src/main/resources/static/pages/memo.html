@@ -566,12 +566,12 @@
     <div id="pinModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">🔐 Change PIN Code</h3>
+                <h3 class="modal-title">🔐 Verify Current PIN Code</h3>
                 <span class="close" onclick="closeModal('pinModal')">&times;</span>
             </div>
             <form id="pinForm">
                 <div class="form-group">
-                    <label class="form-label">New PIN Code (at least 4 digits)</label>
+                    <label class="form-label">Please enter your current PIN code</label>
                     <div class="pin-input">
                         <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
                         <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" title="Please enter a digit (0-9)">
@@ -581,7 +581,7 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('pinModal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Change PIN Code</button>
+                    <button type="submit" class="btn btn-primary">Verify</button>
                 </div>
             </form>
         </div>
@@ -620,11 +620,51 @@
         let isFirstLogin = true;
         let userPinCode = localStorage.getItem('userPinCode');
 
+        // 获取JWT token
+        function getAuthToken() {
+            return localStorage.getItem('authToken');
+        }
+
+        // 检查用户是否已登录
+        function isUserLoggedIn() {
+            const token = getAuthToken();
+            return token && token !== 'null' && token !== '';
+        }
+
+        // 获取Authorization header
+        function getAuthHeader() {
+            const token = getAuthToken();
+            return token ? { 'Authorization': `Bearer ${token}` } : {};
+        }
+
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 检查用户登录状态
+            if (!isUserLoggedIn()) {
+                showLoginPrompt();
+                return;
+            }
+            
             checkFirstLogin();
             setupEventListeners();
         });
+
+        // 显示登录提示
+        function showLoginPrompt() {
+            const memoList = document.getElementById('memoList');
+            memoList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔐</div>
+                    <div class="empty-state-text">Please login to access your memos</div>
+                    <button class="btn btn-primary" onclick="redirectToLogin()">Login</button>
+                </div>
+            `;
+        }
+
+        // 重定向到登录页面
+        function redirectToLogin() {
+            window.location.href = 'register.html';
+        }
 
         // 检查首次登录
         function checkFirstLogin() {
@@ -658,11 +698,18 @@
                 return;
             }
 
+            // 检查用户登录状态
+            if (!isUserLoggedIn()) {
+                showLoginPrompt();
+                return;
+            }
+
             try {
                 const response = await fetch('/api/memo/set-pin', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...getAuthHeader()
                     },
                     body: JSON.stringify({
                         pinCode: pinCode
@@ -684,7 +731,13 @@
                     
                     alert('PIN code was set successfully! Welcome to Memo App!');
                 } else {
-                    alert(data.message);
+                    if (response.status === 401) {
+                        // 认证失败，清除token并显示登录提示
+                        localStorage.removeItem('authToken');
+                        showLoginPrompt();
+                    } else {
+                        alert(data.message);
+                    }
                 }
             } catch (error) {
                 alert('Failed to set up: ' + error.message);
@@ -712,7 +765,7 @@
             // PIN码表单提交
             document.getElementById('pinForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                changePinCode();
+                setPinCode();
             });
 
             // PIN码验证表单提交
@@ -760,10 +813,18 @@
         async function loadMemos() {
             try {
                 showLoading();
+                
+                // 检查用户登录状态
+                if (!isUserLoggedIn()) {
+                    showLoginPrompt();
+                    return;
+                }
+                
                 const response = await fetch('/api/memo/list', {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...getAuthHeader()
                     }
                 });
 
@@ -774,7 +835,13 @@
                     displayMemos(currentMemos);
                     loadStatistics();
                 } else {
-                    alert('Failed to load memos: ' + data.message);
+                    if (response.status === 401) {
+                        // 认证失败，清除token并显示登录提示
+                        localStorage.removeItem('authToken');
+                        showLoginPrompt();
+                    } else {
+                        alert('Failed to load memos: ' + data.message);
+                    }
                 }
             } catch (error) {
                 alert('Network error: ' + error.message);
@@ -828,8 +895,7 @@
                     <span>📅 ${memo.formattedUpdateTime}</span>
                     <div class="memo-actions-row">
                         ${memo.important ? 
-                            `<button class="btn btn-small btn-secondary" onclick="viewImportantMemo(${memo.id})">🔓 View</button>
-                             <button class="btn btn-small btn-secondary" onclick="editImportantMemo(${memo.id})">✏️ Edit</button>` : 
+                            `<button class="btn btn-small btn-secondary" onclick="editMemo(${memo.id})">✏️ Edit</button>` : 
                             `<button class="btn btn-small btn-secondary" onclick="editMemo(${memo.id})">✏️ Edit</button>`
                         }
                         <button class="btn btn-small btn-danger" onclick="deleteMemo(${memo.id})">🗑️ Delete</button>
@@ -843,10 +909,16 @@
         // 加载统计信息
         async function loadStatistics() {
             try {
+                // 检查用户登录状态
+                if (!isUserLoggedIn()) {
+                    return;
+                }
+                
                 const response = await fetch('/api/memo/statistics', {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...getAuthHeader()
                     }
                 });
 
@@ -854,6 +926,10 @@
                 
                 if (data.success) {
                     displayStatistics(data.statistics);
+                } else if (response.status === 401) {
+                    // 认证失败，清除token并显示登录提示
+                    localStorage.removeItem('authToken');
+                    showLoginPrompt();
                 }
             } catch (error) {
                 console.error('Failed to load statistics:', error);
@@ -867,19 +943,19 @@
 
             statsGrid.innerHTML = `
                 <div class="stat-item">
-                    <div class="stat-number">${stats.totalCount}</div>
+                    <div class="stat-number">${stats.total || 0}</div>
                     <div class="stat-label">Total Memos</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">${stats.generalCount}</div>
+                    <div class="stat-number">${stats.general || 0}</div>
                     <div class="stat-label">General Memos</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">${stats.importantCount}</div>
+                    <div class="stat-number">${stats.important || 0}</div>
                     <div class="stat-label">Important Memos</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">${stats.todoCount}</div>
+                    <div class="stat-number">${stats.todo || 0}</div>
                     <div class="stat-label">Todo Items</div>
                 </div>
             `;
@@ -974,7 +1050,8 @@
                 const response = await fetch(url, {
                     method: method,
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...getAuthHeader()
                     },
                     body: JSON.stringify({
                         title: title,
@@ -1007,7 +1084,8 @@
                 const response = await fetch(`/api/memo/${memoId}`, {
                     method: 'DELETE',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...getAuthHeader()
                     }
                 });
 
@@ -1063,24 +1141,78 @@
             pinInputs.forEach(input => input.value = '');
         }
 
-        // 修改PIN码
-        async function changePinCode() {
+        // 设置PIN码
+        async function setPinCode() {
             const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
             const pinCode = Array.from(pinInputs).map(input => input.value).join('');
 
             if (pinCode.length !== 4) {
-                alert('Please enter a 4-digit PIN code.');
+                alert('Please enter 4-digit PIN code');
                 return;
             }
 
+            // 检查用户登录状态
+            if (!isUserLoggedIn()) {
+                showLoginPrompt();
+                return;
+            }
+
+            // 检查当前状态：是验证当前PIN还是设置新PIN
+            const modalTitle = document.querySelector('#pinModal .modal-title');
+            const isVerifyingCurrentPin = modalTitle.textContent.includes('Verify Current PIN');
+
+            if (isVerifyingCurrentPin) {
+                // 验证当前PIN
+                await verifyCurrentPin(pinCode);
+            } else {
+                // 设置新PIN
+                await setNewPin(pinCode);
+            }
+        }
+
+        // 验证当前PIN
+        async function verifyCurrentPin(currentPin) {
             try {
-                const response = await fetch('/api/memo/set-pin', {
+                // 使用一个Important备忘录来验证当前PIN
+                const response = await fetch('/api/memo/verify-current-pin', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...getAuthHeader()
                     },
                     body: JSON.stringify({
-                        pinCode: pinCode
+                        currentPin: currentPin
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 当前PIN验证成功，切换到设置新PIN模式
+                    switchToSetNewPinMode();
+                } else {
+                    // 当前PIN验证失败
+                    alert('Current PIN verification failed. Please try again.');
+                    // 清空PIN码输入框，让用户重新输入
+                    const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
+                    pinInputs.forEach(input => input.value = '');
+                }
+            } catch (error) {
+                alert('Verification failed: ' + error.message);
+            }
+        }
+
+        // 设置新PIN
+        async function setNewPin(newPin) {
+            try {
+                const response = await fetch('/api/memo/set-new-pin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeader()
+                    },
+                    body: JSON.stringify({
+                        newPinCode: newPin
                     })
                 });
 
@@ -1088,28 +1220,66 @@
                 
                 if (data.success) {
                     // 更新本地存储的PIN码
-                    localStorage.setItem('userPinCode', pinCode);
-                    userPinCode = pinCode;
+                    localStorage.setItem('userPinCode', newPin);
+                    userPinCode = newPin;
                     
                     closeModal('pinModal');
-                    alert('PIN code was changed successfully');
+                    alert('PIN code updated successfully');
                     // 清空PIN码输入框
+                    const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
                     pinInputs.forEach(input => input.value = '');
+                    // 重置为验证模式
+                    resetPinModalToVerifyMode();
                 } else {
-                    alert(data.message);
+                    if (response.status === 401) {
+                        // 认证失败，清除token并显示登录提示
+                        localStorage.removeItem('authToken');
+                        showLoginPrompt();
+                    } else {
+                        alert(data.message);
+                    }
                 }
             } catch (error) {
-                alert('Failed to change: ' + error.message);
+                alert('Setup failed: ' + error.message);
             }
+        }
+
+        // 切换到设置新PIN模式
+        function switchToSetNewPinMode() {
+            const modalTitle = document.querySelector('#pinModal .modal-title');
+            const formLabel = document.querySelector('#pinModal .form-label');
+            
+            modalTitle.textContent = '🔐 Set New PIN Code';
+            formLabel.textContent = 'Please enter new PIN code (4 digits)';
+            
+            // 清空PIN码输入框
+            const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
+            pinInputs.forEach(input => input.value = '');
+        }
+
+        // 重置PIN模态框为验证模式
+        function resetPinModalToVerifyMode() {
+            const modalTitle = document.querySelector('#pinModal .modal-title');
+            const formLabel = document.querySelector('#pinModal .form-label');
+            
+            modalTitle.textContent = '🔐 Verify Current PIN Code';
+            formLabel.textContent = 'Please enter your current PIN code';
+        }
+
+        // 修改PIN码（兼容旧版本）
+        async function changePinCode() {
+            await setPinCode();
         }
 
         // 显示PIN码设置模态框
         function showPinModal() {
-            // 清空所有PIN码输入框
+            // 重置为验证当前PIN模式
+            resetPinModalToVerifyMode();
+            
+            // 清空PIN码输入框
             const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
-            pinInputs.forEach(input => {
-                input.value = '';
-            });
+            pinInputs.forEach(input => input.value = '');
+            
             showModal('pinModal');
         }
 
@@ -1121,6 +1291,16 @@
         // 关闭模态框
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
+            // 如果是PIN码相关模态框，清空输入框
+            if (modalId === 'pinModal' || modalId === 'verifyPinModal') {
+                const pinInputs = document.querySelectorAll(`#${modalId} .pin-digit`);
+                pinInputs.forEach(input => input.value = '');
+            }
+            
+            // 如果关闭PIN模态框，重置为验证模式
+            if (modalId === 'pinModal') {
+                resetPinModalToVerifyMode();
+            }
         }
 
         // 显示加载状态
@@ -1156,6 +1336,16 @@
             modals.forEach(modal => {
                 if (event.target === modal) {
                     modal.style.display = 'none';
+                    // 如果是PIN码相关模态框，清空输入框
+                    if (modal.id === 'pinModal' || modal.id === 'verifyPinModal') {
+                        const pinInputs = modal.querySelectorAll('.pin-digit');
+                        pinInputs.forEach(input => input.value = '');
+                    }
+                    
+                    // 如果关闭PIN模态框，重置为验证模式
+                    if (modal.id === 'pinModal') {
+                        resetPinModalToVerifyMode();
+                    }
                 }
             });
         }

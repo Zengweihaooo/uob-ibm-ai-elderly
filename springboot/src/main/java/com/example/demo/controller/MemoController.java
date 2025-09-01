@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.service.MemoService;
+import com.example.demo.util.UserContextUtil;
 
 /**
  * 备忘录控制器
@@ -31,6 +32,9 @@ public class MemoController {
 
     @Autowired
     private MemoService memoService;
+    
+    @Autowired
+    private UserContextUtil userContextUtil;
 
     /**
      * 创建新备忘录
@@ -44,7 +48,14 @@ public class MemoController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Map<String, Object> response = new HashMap<>();
-        Long userId = getUserIdFromToken(authHeader);
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
         
         try {
             String title = (String) memoData.get("title");
@@ -81,7 +92,14 @@ public class MemoController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Map<String, Object> response = new HashMap<>();
-        Long userId = getUserIdFromToken(authHeader);
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
         
         try {
             Map<String, Object> result = memoService.getUserMemos(userId);
@@ -116,7 +134,14 @@ public class MemoController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Map<String, Object> response = new HashMap<>();
-        Long userId = getUserIdFromToken(authHeader);
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
         
         try {
             Map<String, Object> result = memoService.getMemoById(userId, memoId);
@@ -152,7 +177,14 @@ public class MemoController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Map<String, Object> response = new HashMap<>();
-        Long userId = getUserIdFromToken(authHeader);
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
         
         try {
             String title = (String) memoData.get("title");
@@ -191,7 +223,14 @@ public class MemoController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Map<String, Object> response = new HashMap<>();
-        Long userId = getUserIdFromToken(authHeader);
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
         
         try {
             Map<String, Object> result = memoService.deleteMemo(userId, memoId);
@@ -225,7 +264,14 @@ public class MemoController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Map<String, Object> response = new HashMap<>();
-        Long userId = getUserIdFromToken(authHeader);
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
         
         try {
             String pinCode = (String) pinData.get("pinCode");
@@ -256,7 +302,58 @@ public class MemoController {
     }
 
     /**
-     * 设置用户PIN码
+     * 验证特定备忘录的PIN码
+     * @param memoId 备忘录ID
+     * @param pinData PIN码数据
+     * @param authHeader 授权头
+     * @return 验证结果
+     */
+    @PostMapping("/{memoId}/verify-pin")
+    public ResponseEntity<Map<String, Object>> verifyMemoPinCode(
+            @PathVariable Long memoId,
+            @RequestBody Map<String, Object> pinData,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        
+        try {
+            String pinCode = (String) pinData.get("pinCode");
+            
+            if (pinCode == null || pinCode.trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "PIN码不能为空");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            Map<String, Object> result = memoService.verifyMemoPinCode(userId, memoId, pinCode.trim());
+            
+            if ((Boolean) result.get("success")) {
+                response.put("success", true);
+                response.put("message", result.get("message"));
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", result.get("message"));
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "PIN码验证失败: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 设置用户PIN码（首次设置或重新设置）
      * @param pinData PIN码数据
      * @param authHeader 授权头
      * @return 设置结果
@@ -267,12 +364,97 @@ public class MemoController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Map<String, Object> response = new HashMap<>();
-        Long userId = getUserIdFromToken(authHeader);
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
         
         try {
-            String newPinCode = (String) pinData.get("pinCode");
+            String oldPinCode = (String) pinData.get("oldPinCode");
+            String newPinCode = (String) pinData.get("newPinCode");
+            String pinCode = (String) pinData.get("pinCode"); // 兼容旧版本
             
-            Map<String, Object> result = memoService.setPinCode(userId, newPinCode);
+            // 如果提供了oldPinCode和newPinCode，使用新的验证方式
+            if (oldPinCode != null && newPinCode != null) {
+                Map<String, Object> result = memoService.setPinCode(userId, oldPinCode.trim(), newPinCode.trim());
+                
+                if ((Boolean) result.get("success")) {
+                    response.put("success", true);
+                    response.put("message", result.get("message"));
+                    return ResponseEntity.ok(response);
+                } else {
+                    response.put("success", false);
+                    response.put("message", result.get("message"));
+                    return ResponseEntity.badRequest().body(response);
+                }
+            }
+            
+            // 兼容旧版本：只提供pinCode的情况
+            if (pinCode != null && !pinCode.trim().isEmpty()) {
+                Map<String, Object> result = memoService.setPinCode(userId, pinCode.trim());
+                
+                if ((Boolean) result.get("success")) {
+                    response.put("success", true);
+                    response.put("message", result.get("message"));
+                    return ResponseEntity.ok(response);
+                } else {
+                    response.put("success", false);
+                    response.put("message", result.get("message"));
+                    // 如果需要验证旧PIN，返回特殊状态码
+                    if (result.containsKey("needOldPin") && (Boolean) result.get("needOldPin")) {
+                        response.put("needOldPin", true);
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                    }
+                    return ResponseEntity.badRequest().body(response);
+                }
+            }
+            
+            response.put("success", false);
+            response.put("message", "PIN码参数不完整");
+            return ResponseEntity.badRequest().body(response);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "PIN码设置失败: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 设置新PIN码（已验证当前PIN）
+     * @param pinData PIN码数据
+     * @param authHeader 授权头
+     * @return 设置结果
+     */
+    @PostMapping("/set-new-pin")
+    public ResponseEntity<Map<String, Object>> setNewPin(
+            @RequestBody Map<String, Object> pinData,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        
+        try {
+            String newPinCode = (String) pinData.get("newPinCode");
+            
+            if (newPinCode == null || newPinCode.trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "新PIN码不能为空");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            Map<String, Object> result = memoService.setNewPin(userId, newPinCode.trim());
             
             if ((Boolean) result.get("success")) {
                 response.put("success", true);
@@ -286,7 +468,96 @@ public class MemoController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "设置PIN码失败: " + e.getMessage());
+            response.put("message", "PIN码设置失败: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 验证当前PIN码
+     * @param pinData PIN码数据
+     * @param authHeader 授权头
+     * @return 验证结果
+     */
+    @PostMapping("/verify-current-pin")
+    public ResponseEntity<Map<String, Object>> verifyCurrentPin(
+            @RequestBody Map<String, Object> pinData,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        
+        try {
+            String currentPin = (String) pinData.get("currentPin");
+            
+            if (currentPin == null || currentPin.trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "当前PIN码不能为空");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            Map<String, Object> result = memoService.verifyCurrentPin(userId, currentPin.trim());
+            
+            if ((Boolean) result.get("success")) {
+                response.put("success", true);
+                response.put("message", result.get("message"));
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", result.get("message"));
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "PIN码验证失败: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 检查PIN码状态
+     * @param authHeader 授权头
+     * @return PIN码状态
+     */
+    @GetMapping("/pin-status")
+    public ResponseEntity<Map<String, Object>> checkPinStatus(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        
+        try {
+            Map<String, Object> result = memoService.checkPinCodeStatus(userId);
+            
+            if ((Boolean) result.get("success")) {
+                response.put("success", true);
+                response.put("hasPin", result.get("hasPin"));
+                response.put("message", result.get("message"));
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", result.get("message"));
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "检查PIN码状态失败: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -305,7 +576,14 @@ public class MemoController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Map<String, Object> response = new HashMap<>();
-        Long userId = getUserIdFromToken(authHeader);
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
         
         try {
             String pinCode = (String) pinData.get("pinCode");
@@ -348,7 +626,14 @@ public class MemoController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Map<String, Object> response = new HashMap<>();
-        Long userId = getUserIdFromToken(authHeader);
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
         
         try {
             Map<String, Object> result = memoService.searchMemos(userId, keyword);
@@ -382,7 +667,14 @@ public class MemoController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Map<String, Object> response = new HashMap<>();
-        Long userId = getUserIdFromToken(authHeader);
+        
+        // JWT验证
+        Long userId = userContextUtil.getUserIdFromAuthHeader(authHeader);
+        if (userId == null) {
+            response.put("success", false);
+            response.put("message", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
         
         try {
             Map<String, Object> result = memoService.getMemoStatistics(userId);
@@ -402,16 +694,5 @@ public class MemoController {
             response.put("message", "获取统计信息失败: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-    }
-
-    /**
-     * 从授权头中获取用户ID
-     * @param authHeader 授权头
-     * @return 用户ID
-     */
-    private Long getUserIdFromToken(String authHeader) {
-        // TODO: 实现JWT token解析来提取用户ID
-        // 目前返回默认用户ID
-        return 1L;
     }
 } 

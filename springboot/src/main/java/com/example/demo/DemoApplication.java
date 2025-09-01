@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @SpringBootApplication
 @EnableScheduling
-@MapperScan("com.example.demo.mapper")
+@MapperScan({"com.example.demo.mapper", "com.example.demo.repository"})
 // 自动调用定时任务，如定时检查用户是否提交健康数据，并发送提醒邮件
 public class DemoApplication {
 

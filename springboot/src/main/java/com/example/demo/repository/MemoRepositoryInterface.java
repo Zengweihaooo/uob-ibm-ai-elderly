@@ -3,40 +3,23 @@ package com.example.demo.repository;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Repository;
-
 import com.example.demo.pojo.Memo;
 
 /**
- * 备忘录数据访问层 - MyBatis实现
- * 提供备忘录的数据库操作方法
+ * 备忘录数据访问接口
+ * 定义统一的数据访问方法，支持多种数据库实现
+ * 
+ * @author Lepeng Zhou
+ * @version 1.0
  */
-@Repository("sqliteMemoRepository")
-@Mapper
-public interface MemoRepository {
+public interface MemoRepositoryInterface {
     
     /**
-     * 插入新备忘录
+     * 保存备忘录
      * @param memo 备忘录对象
-     * @return 影响的行数
+     * @return 保存后的备忘录对象
      */
-    int insert(Memo memo);
-    
-    /**
-     * 保存备忘录（新增或更新）
-     * @param memo 备忘录对象
-     * @return 影响的行数
-     */
-    int save(Memo memo);
-    
-    /**
-     * 更新备忘录
-     * @param memo 备忘录对象
-     * @return 影响的行数
-     */
-    int update(Memo memo);
+    Memo save(Memo memo);
     
     /**
      * 根据ID查找备忘录
@@ -51,7 +34,7 @@ public interface MemoRepository {
      * @param memoId 备忘录ID
      * @return 备忘录对象，如果不存在返回Optional.empty()
      */
-    Optional<Memo> findByUserIdAndId(@Param("userId") Long userId, @Param("memoId") Long memoId);
+    Optional<Memo> findByUserIdAndId(Long userId, Long memoId);
     
     /**
      * 根据用户ID查找所有未删除的备忘录
@@ -66,7 +49,7 @@ public interface MemoRepository {
      * @param type 备忘录类型
      * @return 备忘录列表
      */
-    List<Memo> findByUserIdAndType(@Param("userId") Long userId, @Param("type") String type);
+    List<Memo> findByUserIdAndType(Long userId, String type);
     
     /**
      * 根据用户ID查找重要备忘录
@@ -81,7 +64,7 @@ public interface MemoRepository {
      * @param pinCode PIN码
      * @return 备忘录列表
      */
-    List<Memo> findByUserIdAndPinCode(@Param("userId") Long userId, @Param("pinCode") String pinCode);
+    List<Memo> findByUserIdAndPinCode(Long userId, String pinCode);
     
     /**
      * 搜索备忘录（标题或内容包含关键词）
@@ -89,7 +72,7 @@ public interface MemoRepository {
      * @param keyword 搜索关键词
      * @return 搜索结果
      */
-    List<Memo> searchByKeyword(@Param("userId") Long userId, @Param("keyword") String keyword);
+    List<Memo> searchByKeyword(Long userId, String keyword);
     
     /**
      * 软删除备忘录
@@ -97,7 +80,7 @@ public interface MemoRepository {
      * @param memoId 备忘录ID
      * @return 影响的行数
      */
-    int softDelete(@Param("userId") Long userId, @Param("memoId") Long memoId);
+    int softDelete(Long userId, Long memoId);
     
     /**
      * 统计用户备忘录数量
@@ -119,7 +102,7 @@ public interface MemoRepository {
      * @param type 备忘录类型
      * @return 该类型备忘录数量
      */
-    long countByUserIdAndType(@Param("userId") Long userId, @Param("type") String type);
+    long countByUserIdAndType(Long userId, String type);
     
     /**
      * 检查用户是否有指定PIN码的备忘录
@@ -127,7 +110,7 @@ public interface MemoRepository {
      * @param pinCode PIN码
      * @return 是否存在
      */
-    boolean existsByUserIdAndPinCode(@Param("userId") Long userId, @Param("pinCode") String pinCode);
+    boolean existsByUserIdAndPinCode(Long userId, String pinCode);
     
     /**
      * 获取所有备忘录（用于数据迁移）
@@ -140,4 +123,6 @@ public interface MemoRepository {
      * @return 记录总数
      */
     long count();
-}
+} 
+ 
+ 

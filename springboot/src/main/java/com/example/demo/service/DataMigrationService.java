@@ -16,6 +16,7 @@ import com.example.demo.repository.ScheduleRepository;
 import com.example.demo.repository.FamilyContactRepository;
 import com.example.demo.repository.ImportantDateRepository;
 import com.example.demo.repository.MemoRepository;
+import com.example.demo.repository.MemoRepositoryInterface;
 import com.example.demo.repository.PodcastRepository;
 import com.example.demo.repository.EmotionCompanionRepository;
 import com.example.demo.mapper.UserMapper;
@@ -106,7 +107,7 @@ public class DataMigrationService {
     
     @Autowired
     @Qualifier("dynamoDBMemoRepository")
-    private MemoRepository cloudMemoRepository;
+    private MemoRepositoryInterface cloudMemoRepository;
     
     @Autowired
     @Qualifier("dynamoDBPodcastRepository")
