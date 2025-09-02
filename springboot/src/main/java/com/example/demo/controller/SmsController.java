@@ -65,7 +65,7 @@ public class SmsController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            // 发送SMS
+            // Send SMS
             Map<String, Object> smsResult = smsService.sendSMS(phoneNumber, message, messageType);
             
             response.put("success", smsResult.get("success"));
@@ -114,7 +114,7 @@ public class SmsController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            // 发送健康警报SMS
+            // Send health alert SMS
             Map<String, Object> smsResult = smsService.sendHealthAlertSMS(phoneNumber, healthData);
             
             response.put("success", smsResult.get("success"));
@@ -163,7 +163,7 @@ public class SmsController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            // 发送紧急SMS
+            // Send emergency SMS
             Map<String, Object> smsResult = smsService.sendEmergencySMS(phoneNumber, emergencyInfo);
             
             response.put("success", smsResult.get("success"));
