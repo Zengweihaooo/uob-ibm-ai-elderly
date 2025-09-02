@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 /**
- * AI服务客户端
+ * AI Service Client
  * 
- * 通过OpenFeign调用主项目的GeminiController
- * 使用Google Gemini AI进行意图分析
+ * Calls the main project's GeminiController through OpenFeign
+ * Uses Google Gemini AI for intent analysis
  * 
  * @author AI Assistant
  * @version 1.0.0
@@ -18,26 +18,26 @@ import java.util.Map;
 public interface AIServiceClient {
     
     /**
-     * 调用Gemini AI进行聊天 - 调用主项目GeminiController
+     * Call Gemini AI for chat - calls the main project's GeminiController
      */
     @PostMapping("/api/gemini/chat")
     Map<String, Object> chatWithGemini(@RequestBody Map<String, Object> request);
     
     /**
-     * 获取Gemini AI状态 - 调用主项目GeminiController
+     * Get Gemini AI status - calls the main project's GeminiController
      */
     @GetMapping("/api/gemini/status")
     Map<String, Object> getGeminiStatus();
     
     /**
-     * 语音转文字 - 调用主项目VoiceController
+     * Speech to Text - calls the main project's VoiceController
      */
     @PostMapping("/api/voice/stt")
     Map<String, Object> speechToText(@RequestParam("audio") String audioData,
                                      @RequestParam(value = "languageCode", defaultValue = "zh-CN") String languageCode);
     
     /**
-     * 文字转语音 - 调用主项目VoiceController
+     * Text to Speech - calls the main project's VoiceController
      */
     @PostMapping("/api/voice/tts")
     Map<String, Object> textToSpeech(@RequestBody Map<String, Object> request);

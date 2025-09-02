@@ -990,7 +990,7 @@
                 formData.append('userId', 'guest');
                 formData.append('sessionId', 'session_' + Date.now());
                 
-                // 调用我们的微服务进行语音命令处理
+                // Call our microservice for voice command processing
                 const res = await fetch('http://localhost:8090/api/voice-command/process', { 
                     method: 'POST', 
                     body: formData 
@@ -998,10 +998,10 @@
                 
                 const data = await res.json();
                 if (data && data.success && data.transcribedText) {
-                    // 显示转录的文本
+                    // Display transcribed text
                     addMessage('user', data.transcribedText);
                     
-                    // 如果AI分析成功，显示执行结果
+                    // If AI analysis succeeds, display execution result
                     if (data.intent && data.execution) {
                         const feedback = data.feedbackText || 'Command completed';
                         addMessage('assistant', feedback);
@@ -1307,7 +1307,7 @@
                 if (data.success && data.records.length > 0) {
                     data.records.forEach(record => {
                         const div = document.createElement('div');
-                        // 安全的时间格式化函数
+                        // Safe time formatting function
                         const formatTime = (timeStr) => {
                             if (!timeStr) return 'Time unknown';
                             try {
@@ -1342,10 +1342,10 @@
             loadHealthRecords();
         });
 
-        // 页面间通信：发送日程添加成功消息
+        // Cross-page communication: Send schedule added success message
         function sendScheduleAddedMessage(result) {
             try {
-                // 发送消息给其他页面
+                // Send message to other pages
                 window.postMessage({
                     type: 'scheduleAdded',
                     data: {
@@ -1369,10 +1369,10 @@
             }
         }
         
-        // 页面间通信：发送重要日期添加成功消息
+        // Cross-page communication: Send important date added success message
         function sendImportantDateAddedMessage(result) {
             try {
-                // 发送消息给其他页面
+                // Send message to other pages
                 window.postMessage({
                     type: 'importantDateAdded',
                     data: {

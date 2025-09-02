@@ -23,19 +23,19 @@ public class VoiceCommandServiceTest {
     
     @Test
     void testIsFunctionCallIntent() throws Exception {
-        // 使用反射来测试私有方法
+        // Use reflection to test private methods
         Method method = VoiceCommandServiceImpl.class.getDeclaredMethod("isFunctionCallIntent", String.class);
         method.setAccessible(true);
         
-        // 测试功能调用意图
-        assertTrue((Boolean) method.invoke(voiceCommandService, "发送邮件给张三"));
+        // Test function call intents
+        assertTrue((Boolean) method.invoke(voiceCommandService, "send email to zhangsan"));
         assertTrue((Boolean) method.invoke(voiceCommandService, "send email to john"));
-        assertTrue((Boolean) method.invoke(voiceCommandService, "查看日程"));
+        assertTrue((Boolean) method.invoke(voiceCommandService, "check schedule"));
         assertTrue((Boolean) method.invoke(voiceCommandService, "health check"));
         
-        // 测试普通对话意图
-        assertFalse((Boolean) method.invoke(voiceCommandService, "你好"));
-        assertFalse((Boolean) method.invoke(voiceCommandService, "今天天气怎么样"));
+        // Test regular conversation intents
+        assertFalse((Boolean) method.invoke(voiceCommandService, "hello"));
+        assertFalse((Boolean) method.invoke(voiceCommandService, "how is the weather today"));
         assertFalse((Boolean) method.invoke(voiceCommandService, "hello"));
         assertFalse((Boolean) method.invoke(voiceCommandService, "how are you"));
     }
