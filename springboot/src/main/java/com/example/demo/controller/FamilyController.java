@@ -101,7 +101,7 @@ public class FamilyController {
 
             // Extract contact data
             String name = (String) contactData.get("name");
-            String phoneNumber = (String) contactData.get("phoneNumber");
+            String phoneNumber = (String) contactData.get("phone"); // Changed from "phoneNumber" to "phone" to match frontend
             String email = (String) contactData.get("email");
             String relationship = (String) contactData.get("relationship");
             Boolean isEmergencyContact = (Boolean) contactData.getOrDefault("isEmergencyContact", false);
