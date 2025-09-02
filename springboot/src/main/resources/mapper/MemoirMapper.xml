@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.mapper.MemoirMapper">
 
-  <!-- 结果映射：项目 -->
+  <!-- Result mapping: Project -->
   <resultMap id="MemoirProjectMap" type="com.example.demo.pojo.memoir.MemoirProject">
     <id column="id" property="id" />
     <result column="title" property="title" />
@@ -13,7 +13,7 @@
     <result column="updated_at" property="updatedAt" />
   </resultMap>
 
-  <!-- 结果映射：分段 -->
+  <!-- Result mapping: Segment -->
   <resultMap id="MemoirSegmentMap" type="com.example.demo.pojo.memoir.MemoirSegment">
     <id column="id" property="id" />
     <result column="project_id" property="projectId" />
@@ -28,7 +28,7 @@
     <result column="updated_at" property="updatedAt" />
   </resultMap>
 
-  <!-- 结果映射：分享令牌 -->
+  <!-- Result mapping: Share Token -->
   <resultMap id="MemoirShareTokenMap" type="com.example.demo.pojo.memoir.MemoirShareToken">
     <id column="id" property="id" />
     <result column="project_id" property="projectId" />
@@ -38,7 +38,7 @@
     <result column="created_at" property="createdAt" />
   </resultMap>
 
-  <!-- 结果映射：分享守护 -->
+  <!-- Result mapping: Share Guard -->
   <resultMap id="MemoirShareGuardMap" type="com.example.demo.pojo.memoir.MemoirShareGuard">
     <id column="id" property="id" />
     <result column="share_id" property="shareId" />
@@ -48,23 +48,23 @@
     <result column="created_at" property="createdAt" />
   </resultMap>
 
-  <!-- 插入项目 -->
+  <!-- Insert project -->
   <insert id="insertProject" parameterType="com.example.demo.pojo.memoir.MemoirProject" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO memoir_project(title, owner, locale, pin_hash)
     VALUES(#{title}, #{owner}, #{locale}, #{pinHash})
   </insert>
 
-  <!-- 按ID查询项目 -->
+  <!-- Query project by ID -->
   <select id="findProjectById" parameterType="int" resultMap="MemoirProjectMap">
     SELECT * FROM memoir_project WHERE id = #{id}
   </select>
 
-  <!-- 按 title + owner 查询项目（用于种子数据幂等） -->
+  <!-- Query project by title + owner (for seed data idempotency) -->
   <select id="findProjectByTitleAndOwner" resultMap="MemoirProjectMap">
     SELECT * FROM memoir_project WHERE title = #{title} AND owner = #{owner} LIMIT 1
   </select>
 
-  <!-- 按owner列出项目；owner可为空（返回所有） -->
+  <!-- List projects by owner; owner can be null (returns all) -->
   <select id="listProjectsByOwner" parameterType="string" resultMap="MemoirProjectMap">
     SELECT * FROM memoir_project
     <where>
@@ -75,40 +75,40 @@
     ORDER BY id DESC
   </select>
 
-  <!-- 插入分段 -->
+  <!-- Insert segment -->
   <insert id="insertSegment" parameterType="com.example.demo.pojo.memoir.MemoirSegment" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO memoir_segment(project_id, chapter, theme, prompt_id, order_index, text, audio_url, tags)
     VALUES(#{projectId}, #{chapter}, #{theme}, #{promptId}, #{orderIndex}, #{text}, #{audioUrl}, #{tags})
   </insert>
 
-  <!-- 按项目列出分段 -->
+  <!-- List segments by project -->
   <select id="listSegmentsByProject" parameterType="int" resultMap="MemoirSegmentMap">
     SELECT * FROM memoir_segment WHERE project_id = #{projectId} ORDER BY order_index ASC, id ASC
   </select>
 
-  <!-- 插入分享令牌 -->
+  <!-- Insert share token -->
   <insert id="insertShareToken" parameterType="com.example.demo.pojo.memoir.MemoirShareToken" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO memoir_share_token(project_id, token, expires_at, scope)
     VALUES(#{projectId}, #{token}, #{expiresAt}, #{scope})
   </insert>
 
-  <!-- 按 token 查询分享令牌 -->
+  <!-- Query share token by token -->
   <select id="findShareByToken" parameterType="string" resultMap="MemoirShareTokenMap">
     SELECT * FROM memoir_share_token WHERE token = #{token}
   </select>
 
-  <!-- 插入分享守护 -->
+  <!-- Insert share guard -->
   <insert id="insertShareGuard" parameterType="com.example.demo.pojo.memoir.MemoirShareGuard" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO memoir_share_guard(share_id, pin_hash, max_downloads, download_count)
     VALUES(#{shareId}, #{pinHash}, #{maxDownloads}, #{downloadCount})
   </insert>
 
-  <!-- 查询分享守护 -->
+  <!-- Query share guard -->
   <select id="findShareGuard" parameterType="int" resultMap="MemoirShareGuardMap">
     SELECT * FROM memoir_share_guard WHERE share_id = #{shareId}
   </select>
 
-  <!-- 增加下载计数 -->
+  <!-- Increment download count -->
   <update id="incrementDownloadCount">
     UPDATE memoir_share_guard
     SET download_count = COALESCE(download_count,0) + 1

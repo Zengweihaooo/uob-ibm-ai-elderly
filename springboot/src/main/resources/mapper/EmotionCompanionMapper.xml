@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.mapper.EmotionCompanionMapper">
     
-    <!-- 结果映射 -->
+    <!-- Result mapping -->
     <resultMap id="EmotionCompanionResultMap" type="com.example.demo.pojo.EmotionCompanion">
         <id column="id" property="id" jdbcType="BIGINT"/>
         <result column="user_id" property="userId" jdbcType="BIGINT"/>
@@ -37,7 +37,7 @@
         <result column="updated_at" property="updatedAt" typeHandler="com.example.demo.config.SQLiteLocalDateTimeTypeHandler"/>
     </resultMap>
     
-    <!-- 插入情感陪伴记录 -->
+    <!-- Insert emotion companion record -->
     <insert id="insert" parameterType="com.example.demo.pojo.EmotionCompanion" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO emotion_companion (
             user_id, name, personality, avatar, emotion, happiness, energy, responsiveness,
@@ -61,7 +61,7 @@
         )
     </insert>
     
-    <!-- Upsert 操作：存在则更新，不存在则插入 -->
+    <!-- Upsert operation: update if exists, insert if not exists -->
     <insert id="upsert" parameterType="com.example.demo.pojo.EmotionCompanion">
         INSERT INTO emotion_companion (
             user_id, name, personality, avatar, emotion, happiness, energy, responsiveness,
@@ -114,13 +114,13 @@
             updated_at = excluded.updated_at
     </insert>
     
-    <!-- 根据用户ID查找情感陪伴 -->
+    <!-- Find emotion companion by user ID -->
     <select id="findByUserId" resultMap="EmotionCompanionResultMap">
         SELECT * FROM emotion_companion 
         WHERE user_id = #{userId}
     </select>
     
-    <!-- 更新情感陪伴状态 -->
+    <!-- Update emotion companion state -->
     <update id="updateState">
         UPDATE emotion_companion 
         SET emotion = #{emotion},
@@ -146,7 +146,7 @@
         WHERE user_id = #{userId}
     </update>
     
-    <!-- 更新最后交互时间 -->
+    <!-- Update last interaction time -->
     <update id="touchInteraction">
         UPDATE emotion_companion 
         SET last_interaction = #{when, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
@@ -155,7 +155,7 @@
         WHERE user_id = #{userId}
     </update>
     
-    <!-- 更新最后聊天时间 -->
+    <!-- Update last chat time -->
     <update id="touchChat">
         UPDATE emotion_companion 
         SET last_chat = #{when, typeHandler=com.example.demo.config.SQLiteLocalDateTimeTypeHandler},
@@ -164,7 +164,7 @@
         WHERE user_id = #{userId}
     </update>
     
-    <!-- 根据用户ID删除情感陪伴 -->
+    <!-- Delete emotion companion by user ID -->
     <delete id="deleteByUserId">
         DELETE FROM emotion_companion WHERE user_id = #{userId}
     </delete>
