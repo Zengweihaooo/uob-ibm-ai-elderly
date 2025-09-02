@@ -12,8 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -31,8 +29,6 @@ import java.util.Map;
 @Service
 @Slf4j
 public class VoiceCommandServiceImpl implements VoiceCommandService {
-    
-    private static final Logger log = LoggerFactory.getLogger(VoiceCommandServiceImpl.class);
     
     @Autowired
     private AIServiceClient aiServiceClient;

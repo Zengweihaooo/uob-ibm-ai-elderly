@@ -28,7 +28,7 @@ public class GeminiController {
     // Google Cloud project and location settings
     private static final String PROJECT_ID = "organic-totem-467918-a5"; // Your project ID
     private static final String LOCATION = "us-central1"; // Gemini is available in us-central1
-    private static final String MODEL_NAME = "gemini-pro"; // Standard Gemini model
+    private static final String MODEL_NAME = "gemini-1.5-flash"; // Updated Gemini model
 
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getGeminiStatus() {
@@ -103,10 +103,13 @@ public class GeminiController {
             }
         }
         
-        // Create scoped credentials for Vertex AI
+        // Create scoped credentials for both Vertex AI and Generative Language API
         return credentials.createScoped(Arrays.asList(
             "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/auth/cloud-platform.read-only"
+            "https://www.googleapis.com/auth/cloud-platform.read-only",
+            "https://www.googleapis.com/auth/generative-language",
+            "https://www.googleapis.com/auth/generative-language.tuning",
+            "https://www.googleapis.com/auth/generative-language.retriever"
         ));
     }
 
@@ -193,26 +196,25 @@ public class GeminiController {
 
     private String callGeminiRestAPI(String userMessage) throws IOException {
         GoogleCredentials credentials = getGoogleCredentials();
-        
+
         // Get access token
         credentials.refreshIfExpired();
         String accessToken = credentials.getAccessToken().getTokenValue();
-        
-        // Build REST API URL
-        String url = String.format("https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:generateContent", 
-            LOCATION, PROJECT_ID, LOCATION, MODEL_NAME);
-        
-        // Create request body
+
+        // Use Generative Language API instead of Vertex AI API
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+
+        // Create request body for Generative Language API
         Map<String, Object> requestBody = new HashMap<>();
         Map<String, Object> content = new HashMap<>();
         content.put("role", "user");
-        
+
         Map<String, Object> part = new HashMap<>();
         part.put("text", userMessage);
         content.put("parts", Arrays.asList(part));
-        
+
         requestBody.put("contents", Arrays.asList(content));
-        
+
         // Set generation parameters
         Map<String, Object> generationConfig = new HashMap<>();
         generationConfig.put("temperature", 0.7);
@@ -220,20 +222,20 @@ public class GeminiController {
         generationConfig.put("topK", 40);
         generationConfig.put("maxOutputTokens", 1024);
         requestBody.put("generationConfig", generationConfig);
-        
+
         // Create HTTP headers
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
         headers.set("Content-Type", "application/json");
-        
+
         // Make REST call
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-        
+
         try {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
-            
-            // Extract response text
+
+            // Extract response text from Generative Language API response
             Map<String, Object> responseBody = response.getBody();
             if (responseBody != null && responseBody.containsKey("candidates")) {
                 List<Map<String, Object>> candidates = (List<Map<String, Object>>) responseBody.get("candidates");
@@ -253,7 +255,7 @@ public class GeminiController {
         } catch (Exception e) {
             throw new IOException("Failed to call Gemini REST API: " + e.getMessage());
         }
-        
+
         return "I received your message but couldn't generate a proper response. Please try again.";
     }
 
@@ -261,7 +263,7 @@ public class GeminiController {
         String message = userMessage.toLowerCase().trim();
         
         // Greeting responses
-        if (message.contains("hello") || message.contains("hi") || message.contains("你好")) {
+        if (message.contains("hello") || message.contains("hi")) {
             return "Hello! I'm your AI assistant. While I'm having some connection issues with my main AI services, I'm still here to help you as best I can. How are you feeling today?";
         }
         
@@ -271,27 +273,27 @@ public class GeminiController {
         }
         
         // Loneliness or emotional support
-        if (message.contains("lonely") || message.contains("sad") || message.contains("alone") || message.contains("孤独")) {
+        if (message.contains("lonely") || message.contains("sad") || message.contains("alone")) {
             return "I'm sorry to hear you're feeling this way. Remember that you're not alone - I'm here to chat with you, and there are people who care about you. Would you like to talk about what's on your mind?";
         }
         
         // Schedule or time-related
-        if (message.contains("schedule") || message.contains("time") || message.contains("appointment") || message.contains("日程")) {
+        if (message.contains("schedule") || message.contains("time") || message.contains("appointment")) {
             return "I can help you think about your schedule! You can use the Schedule page to add and manage your appointments. Is there a particular event or activity you'd like to plan?";
         }
         
         // Weather-related
-        if (message.contains("weather") || message.contains("rain") || message.contains("sunny") || message.contains("天气")) {
+        if (message.contains("weather") || message.contains("rain") || message.contains("sunny")) {
             return "I wish I could check the current weather for you! For the most accurate weather information, I recommend checking your local weather app or website. Are you planning any outdoor activities?";
         }
         
         // Family or social
-        if (message.contains("family") || message.contains("children") || message.contains("grandchildren") || message.contains("家人")) {
+        if (message.contains("family") || message.contains("children") || message.contains("grandchildren")) {
             return "Family is so important! It's wonderful that you're thinking about your loved ones. Have you been able to connect with them recently? Sometimes a simple phone call or message can brighten everyone's day.";
         }
         
         // Thank you
-        if (message.contains("thank") || message.contains("thanks") || message.contains("谢谢")) {
+        if (message.contains("thank") || message.contains("thanks")) {
             return "You're very welcome! I'm happy to help. Even though I'm having some technical difficulties, I'm always here to listen and support you. Is there anything else you'd like to talk about?";
         }
         

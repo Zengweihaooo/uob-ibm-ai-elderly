@@ -11,13 +11,10 @@ import java.util.Map;
 
 /**
  * Database Management Controller
- * 数据库管理控制器
- * 
- * 提供数据库状态检查、备份、恢复等API接口
  * Provides API endpoints for database status check, backup, restore, etc.
- * 
- * @author Weihao Zeng
- * @version 1.0
+ *
+ * Author: Weihao Zeng
+ * Version: 1.0
  */
 @RestController
 @RequestMapping("/api/database")
@@ -28,9 +25,7 @@ public class DatabaseController {
     private DatabaseManagementService databaseManagementService;
 
     /**
-     * 获取数据库状态
-     * Get database status
-     * 
+     * Get database status.
      * @return Database status information
      */
     @GetMapping("/status")
@@ -55,9 +50,7 @@ public class DatabaseController {
     }
 
     /**
-     * 创建数据库备份
-     * Create database backup
-     * 
+     * Create database backup.
      * @return Backup creation result
      */
     @PostMapping("/backup")
@@ -82,9 +75,7 @@ public class DatabaseController {
     }
 
     /**
-     * 从备份恢复数据库
-     * Restore database from backup
-     * 
+     * Restore database from backup.
      * @param requestBody Request containing backup filename
      * @return Restore operation result
      */
@@ -123,9 +114,7 @@ public class DatabaseController {
     }
 
     /**
-     * 验证数据库完整性
-     * Validate database integrity
-     * 
+     * Validate database integrity.
      * @return Database integrity validation result
      */
     @GetMapping("/validate")
@@ -150,9 +139,7 @@ public class DatabaseController {
     }
 
     /**
-     * 清理旧备份文件
-     * Clean up old backup files
-     * 
+     * Clean up old backup files.
      * @param requestBody Request containing keep count
      * @return Cleanup operation result
      */
@@ -182,9 +169,7 @@ public class DatabaseController {
     }
 
     /**
-     * 获取数据库基本信息
-     * Get basic database information
-     * 
+     * Get basic database information.
      * @return Database basic information
      */
     @GetMapping("/info")
