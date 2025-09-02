@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.pojo.Memo;
 
 /**
- * SQLite MemoRepository 适配器
- * 包装 MyBatis MemoRepository 并实现 MemoRepositoryInterface
+ * SQLite MemoRepository adapter
+ * Wraps MyBatis MemoRepository and implements MemoRepositoryInterface
  * 
  * @author Lepeng Zhou
  * @version 1.0
@@ -26,13 +26,13 @@ public class SqliteMemoRepositoryAdapter implements MemoRepositoryInterface {
     @Override
     public Memo save(Memo memo) {
         if (memo.getId() == null) {
-            // 新记录，使用insert
+            // New record, use insert
             int result = memoRepository.insert(memo);
             if (result > 0) {
                 return memo;
             }
         } else {
-            // 更新记录，使用update
+            // Existing record, use update
             int result = memoRepository.update(memo);
             if (result > 0) {
                 return memo;

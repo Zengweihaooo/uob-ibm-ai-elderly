@@ -30,14 +30,14 @@ import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemResponse;
 
 /**
- * DynamoDB版本的备忘录数据访问实现
- * 使用AWS DynamoDB作为云端数据存储
+ * DynamoDB implementation of memo data access
+ * Uses AWS DynamoDB as cloud data storage
  * 
  * @author Lepeng Zhou
  * @version 1.0
  */
 @Repository("dynamoDBMemoRepository")
-@Profile("aws") // 只在AWS环境下使用
+@Profile("aws") // Only used in AWS environments
 public class DynamoDBMemoRepository implements MemoRepositoryInterface {
     
     @Autowired
@@ -138,7 +138,7 @@ public class DynamoDBMemoRepository implements MemoRepositoryInterface {
             
             QueryRequest request = QueryRequest.builder()
                 .tableName(TABLE_NAME)
-                .indexName("userId-index") // 需要创建GSI
+                .indexName("userId-index") // Requires GSI
                 .keyConditionExpression("#userId = :userId")
                 .filterExpression("#isDeleted = :isDeleted")
                 .expressionAttributeNames(expressionAttributeNames)
@@ -174,7 +174,7 @@ public class DynamoDBMemoRepository implements MemoRepositoryInterface {
             
             QueryRequest request = QueryRequest.builder()
                 .tableName(TABLE_NAME)
-                .indexName("userId-type-index") // 需要创建GSI
+                .indexName("userId-type-index") // Requires GSI
                 .keyConditionExpression("#userId = :userId AND #type = :type")
                 .filterExpression("#isDeleted = :isDeleted")
                 .expressionAttributeNames(expressionAttributeNames)
@@ -210,7 +210,7 @@ public class DynamoDBMemoRepository implements MemoRepositoryInterface {
             
             QueryRequest request = QueryRequest.builder()
                 .tableName(TABLE_NAME)
-                .indexName("userId-important-index") // 需要创建GSI
+                .indexName("userId-important-index") // Requires GSI
                 .keyConditionExpression("#userId = :userId")
                 .filterExpression("#isImportant = :isImportant AND #isDeleted = :isDeleted")
                 .expressionAttributeNames(expressionAttributeNames)
@@ -246,7 +246,7 @@ public class DynamoDBMemoRepository implements MemoRepositoryInterface {
             
             QueryRequest request = QueryRequest.builder()
                 .tableName(TABLE_NAME)
-                .indexName("userId-pinCode-index") // 需要创建GSI
+                .indexName("userId-pinCode-index") // Requires GSI
                 .keyConditionExpression("#userId = :userId")
                 .filterExpression("#pinCode = :pinCode AND #isDeleted = :isDeleted")
                 .expressionAttributeNames(expressionAttributeNames)
@@ -270,7 +270,7 @@ public class DynamoDBMemoRepository implements MemoRepositoryInterface {
     @Override
     public List<Memo> searchByKeyword(Long userId, String keyword) {
         try {
-            // 使用Scan操作进行全文搜索（在生产环境中应该使用Elasticsearch等搜索引擎）
+            // Use Scan for full-text search (should use Elasticsearch in production)
             Map<String, String> expressionAttributeNames = new HashMap<>();
             expressionAttributeNames.put("#userId", USER_ID_ATTR);
             expressionAttributeNames.put("#title", TITLE_ATTR);
@@ -500,7 +500,7 @@ public class DynamoDBMemoRepository implements MemoRepositoryInterface {
         }
     }
     
-    // 辅助方法：将Memo对象转换为DynamoDB Item
+    // Helper: convert Memo object to DynamoDB Item
     private Map<String, AttributeValue> mapToDynamoDBItem(Memo memo) {
         Map<String, AttributeValue> item = new HashMap<>();
         
@@ -528,7 +528,7 @@ public class DynamoDBMemoRepository implements MemoRepositoryInterface {
         return item;
     }
     
-    // 辅助方法：将DynamoDB Item转换为Memo对象
+    // Helper: convert DynamoDB Item to Memo object
     private Memo mapToMemo(Map<String, AttributeValue> item) {
         Memo memo = new Memo();
         
