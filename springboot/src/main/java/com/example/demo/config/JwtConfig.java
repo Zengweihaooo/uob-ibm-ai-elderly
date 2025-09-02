@@ -4,18 +4,18 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * JWT配置类
- * 用于配置JWT相关参数
+ * JWT configuration class.
+ * Holds JWT related parameters.
  * 
- * @author Weihao Zeng
- * @version 1.0
+ * Author: Weihao Zeng
+ * Version: 1.0
  */
 @Configuration
 @ConfigurationProperties(prefix = "jwt")
 public class JwtConfig {
     
     private String secret = "defaultSecretKeyForDevelopmentOnlyChangeInProduction";
-    private long expiration = 86400000; // 24小时，单位：毫秒
+    private long expiration = 86400000; // 24 hours in milliseconds
     private String header = "Authorization";
     private String prefix = "Bearer ";
     

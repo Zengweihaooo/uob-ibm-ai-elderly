@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 宠物情绪数据访问接口
- * 定义统一的数据访问方法，支持多种数据库实现
+ * Pet mood data access interface
+ * Defines unified data access methods with multiple database implementations
  * 
  * @author Lepeng Zhou
  * @version 1.0
@@ -14,56 +14,56 @@ import java.util.Optional;
 public interface PetMoodRepository {
     
     /**
-     * 根据用户ID查找宠物情绪
-     * @param userId 用户ID
-     * @return 宠物情绪对象，如果不存在返回Optional.empty()
+     * Find pet mood by user ID
+     * @param userId User ID
+     * @return Pet mood object, or Optional.empty() if not found
      */
     Optional<PetMood> findByUserId(Long userId);
     
     /**
-     * 保存宠物情绪记录
-     * @param petMood 宠物情绪对象
-     * @return 保存后的宠物情绪对象
+     * Save pet mood record
+     * @param petMood Pet mood object
+     * @return Saved pet mood object
      */
     PetMood save(PetMood petMood);
     
     /**
-     * 更新宠物情绪记录
-     * @param petMood 宠物情绪对象
-     * @return 更新后的宠物情绪对象
+     * Update pet mood record
+     * @param petMood Pet mood object
+     * @return Updated pet mood object
      */
     PetMood update(PetMood petMood);
     
     /**
-     * 根据用户ID删除宠物情绪记录
-     * @param userId 用户ID
+     * Delete pet mood record by user ID
+     * @param userId User ID
      */
     void deleteByUserId(Long userId);
     
     /**
-     * 检查用户是否有宠物情绪记录
-     * @param userId 用户ID
-     * @return 是否存在记录
+     * Check if user has a pet mood record
+     * @param userId User ID
+     * @return Whether a record exists
      */
     boolean existsByUserId(Long userId);
     
     /**
-     * 获取所有宠物情绪记录
-     * @return 所有记录列表
+     * Get all pet mood records
+     * @return List of all records
      */
     List<PetMood> findAll();
     
     /**
-     * 根据情绪分数范围查找记录
-     * @param minScore 最小分数
-     * @param maxScore 最大分数
-     * @return 符合条件的记录列表
+     * Find records by mood score range
+     * @param minScore Minimum score
+     * @param maxScore Maximum score
+     * @return List of matching records
      */
     List<PetMood> findByMoodScoreBetween(int minScore, int maxScore);
     
     /**
-     * 统计记录总数
-     * @return 记录总数
+     * Count total number of records
+     * @return Total count
      */
     long count();
 }

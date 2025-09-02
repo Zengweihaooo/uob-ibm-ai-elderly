@@ -11,14 +11,14 @@ import software.amazon.awssdk.services.dynamodb.model.*;
 import java.util.*;
 
 /**
- * DynamoDB版本的宠物情绪数据访问实现
- * 使用AWS DynamoDB作为云端数据存储
+ * DynamoDB implementation of pet mood data access
+ * Uses AWS DynamoDB as cloud data storage
  * 
  * @author Lepeng Zhou
  * @version 1.0
  */
 @Repository("dynamoDBPetMoodRepository")
-@Profile("aws") // 只在AWS环境下使用
+@Profile("aws") // Only used in AWS environments
 public class DynamoDBPetMoodRepository implements PetMoodRepository {
     
     @Autowired
@@ -69,7 +69,7 @@ public class DynamoDBPetMoodRepository implements PetMoodRepository {
     
     @Override
     public PetMood update(PetMood petMood) {
-        return save(petMood); // DynamoDB的put操作可以覆盖现有记录
+        return save(petMood); // DynamoDB put operation can overwrite existing record
     }
     
     @Override
@@ -112,7 +112,7 @@ public class DynamoDBPetMoodRepository implements PetMoodRepository {
     
     @Override
     public List<PetMood> findByMoodScoreBetween(int minScore, int maxScore) {
-        // 简化实现，使用scan + 过滤
+        // Simplified implementation: use scan + filter
         return findAll().stream()
             .filter(pm -> pm.getMoodScore() >= minScore && pm.getMoodScore() <= maxScore)
             .collect(java.util.stream.Collectors.toList());
@@ -135,7 +135,7 @@ public class DynamoDBPetMoodRepository implements PetMoodRepository {
     }
     
     /**
-     * 将PetMood对象转换为DynamoDB属性映射
+     * Convert PetMood object to DynamoDB attribute map
      */
     private Map<String, AttributeValue> mapToDynamoDBItem(PetMood petMood) {
         Map<String, AttributeValue> item = new HashMap<>();
@@ -154,7 +154,7 @@ public class DynamoDBPetMoodRepository implements PetMoodRepository {
     }
     
     /**
-     * 将DynamoDB属性映射转换为PetMood对象
+     * Convert DynamoDB attribute map to PetMood object
      */
     private PetMood mapToPetMood(Map<String, AttributeValue> item) {
         PetMood petMood = new PetMood();

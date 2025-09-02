@@ -12,14 +12,14 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 /**
- * SQLite版本的宠物情绪数据访问实现
- * 保持现有的SQLite功能，作为本地缓存使用
+ * SQLite implementation of pet mood data access
+ * Keeps existing SQLite functionality as local cache
  * 
  * @author Lepeng Zhou
  * @version 1.0
  */
 @Repository("sqlitePetMoodRepository")
-// @Profile("!aws") // 临时注释掉Profile限制，确保Bean可以被创建
+// @Profile("!aws") // Temporarily commented out to ensure Bean creation
 public class SQLitePetMoodRepository implements PetMoodRepository {
     
     @Autowired
@@ -39,10 +39,10 @@ public class SQLitePetMoodRepository implements PetMoodRepository {
     public PetMood save(PetMood petMood) {
         try {
             if (petMood.getId() == null) {
-                // 新记录，插入
+                // New record, insert
                 petMoodMapper.insert(petMood);
             } else {
-                // 已存在，更新
+                // Existing record, update
                 petMoodMapper.update(petMood);
             }
             return petMood;
@@ -64,11 +64,11 @@ public class SQLitePetMoodRepository implements PetMoodRepository {
     @Override
     public void deleteByUserId(Long userId) {
         try {
-            // 注意：这里需要根据实际的Mapper方法调整
-            // 如果Mapper没有deleteByUserId方法，可以先用findByUserId找到记录再删除
+            // Note: adjust according to actual mapper methods
+            // If mapper lacks deleteByUserId, find record first then delete
             PetMood existing = petMoodMapper.findByUserId(userId);
             if (existing != null) {
-                // 假设Mapper有deleteById方法
+                // Assume mapper has deleteById
                 // petMoodMapper.deleteById(existing.getId());
                 throw new UnsupportedOperationException("Delete operation not implemented in mapper");
             }
@@ -90,8 +90,8 @@ public class SQLitePetMoodRepository implements PetMoodRepository {
     @Override
     public List<PetMood> findAll() {
         try {
-            // 注意：这里需要根据实际的Mapper方法调整
-            // 如果Mapper没有findAll方法，返回空列表
+            // Note: adjust according to actual mapper methods
+            // If mapper lacks findAll, return empty list
             return new ArrayList<>();
         } catch (Exception e) {
             return new ArrayList<>();
@@ -101,8 +101,8 @@ public class SQLitePetMoodRepository implements PetMoodRepository {
     @Override
     public List<PetMood> findByMoodScoreBetween(int minScore, int maxScore) {
         try {
-            // 注意：这里需要根据实际的Mapper方法调整
-            // 如果Mapper没有范围查询方法，返回空列表
+            // Note: adjust according to actual mapper methods
+            // If mapper lacks range query, return empty list
             return new ArrayList<>();
         } catch (Exception e) {
             return new ArrayList<>();
@@ -112,8 +112,8 @@ public class SQLitePetMoodRepository implements PetMoodRepository {
     @Override
     public long count() {
         try {
-            // 注意：这里需要根据实际的Mapper方法调整
-            // 如果Mapper没有count方法，返回0
+            // Note: adjust according to actual mapper methods
+            // If mapper lacks count, return 0
             return 0;
         } catch (Exception e) {
             return 0;

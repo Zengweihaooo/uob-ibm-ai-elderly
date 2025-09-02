@@ -3,6 +3,7 @@ package com.voicecommand.service;
 import com.voicecommand.model.IntentAnalysisResult;
 import com.voicecommand.model.FunctionInfo;
 import com.voicecommand.client.AIServiceClient;
+import com.voicecommand.service.UnifiedAIServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ import java.time.LocalDate;
 public class AIIntentAnalysisService {
     
     @Autowired
-    private AIServiceClient aiServiceClient;
+    private UnifiedAIServiceClient unifiedAIServiceClient;
     
     @Autowired
     private FunctionKnowledgeService functionKnowledgeService;
@@ -51,7 +52,7 @@ public class AIIntentAnalysisService {
             aiRequest.put("message", analysisPrompt);
             
             try {
-                Map<String, Object> aiResponse = aiServiceClient.chatWithGemini(aiRequest);
+                Map<String, Object> aiResponse = unifiedAIServiceClient.chatWithAI(aiRequest);
                 IntentAnalysisResult result = parseAIResponse(aiResponse, userText);
                 log.info("AI intent analysis done: function={}, confidence={}", result.getFunctionName(), result.getConfidence());
                 return result;
@@ -73,13 +74,12 @@ public class AIIntentAnalysisService {
         // Simple keyword matching
         String lowerText = userText.toLowerCase();
         
-        // Email sending intent detection - support both Chinese and English keywords
-        if (lowerText.contains("邮件") || lowerText.contains("email") || 
-            lowerText.contains("发送") || lowerText.contains("发邮件") || lowerText.contains("send") ||
+        // Email sending intent detection - support English keywords
+        if (lowerText.contains("email") || 
+            lowerText.contains("send") ||
             lowerText.contains("mail") || lowerText.contains("message") ||
-            (lowerText.contains("给") && (lowerText.contains("发") || lowerText.contains("发送"))) ||
             (lowerText.contains("to") && (lowerText.contains("send") || lowerText.contains("mail"))) ||
-            lowerText.contains("使用发送邮件功能") || lowerText.contains("send email")) {
+            lowerText.contains("send email")) {
              
              Map<String, Object> params = new HashMap<>();
              
@@ -188,13 +188,13 @@ public class AIIntentAnalysisService {
             }
         }
         
-        // Important date management intent detection - supports CN/EN keywords (higher priority)
-        if (lowerText.contains("重要日期") || lowerText.contains("important date") || 
-            lowerText.contains("生日") || lowerText.contains("birthday") ||
-            lowerText.contains("纪念日") || lowerText.contains("anniversary") ||
-            lowerText.contains("节日") || lowerText.contains("holiday") ||
-            (lowerText.contains("添加") || lowerText.contains("add") || lowerText.contains("设置") || lowerText.contains("set")) &&
-            (lowerText.contains("生日") || lowerText.contains("birthday") || lowerText.contains("纪念日") || lowerText.contains("anniversary"))) {
+        // Important date management intent detection - supports English keywords (higher priority)
+        if (lowerText.contains("important date") || 
+            lowerText.contains("birthday") ||
+            lowerText.contains("anniversary") ||
+            lowerText.contains("holiday") ||
+            (lowerText.contains("add") || lowerText.contains("set")) &&
+            (lowerText.contains("birthday") || lowerText.contains("anniversary"))) {
              
              Map<String, Object> params = new HashMap<>();
              
@@ -248,12 +248,11 @@ public class AIIntentAnalysisService {
                 .build();
         }
         
-        // Schedule management intent detection - supports CN/EN keywords
-        if (lowerText.contains("日程") || lowerText.contains("schedule") || 
-            lowerText.contains("安排") || lowerText.contains("添加") || lowerText.contains("add") ||
-            lowerText.contains("设置") || lowerText.contains("set") || lowerText.contains("预约") ||
-            lowerText.contains("提醒") || lowerText.contains("reminder") ||
-            (lowerText.contains("明天") || lowerText.contains("后天") || lowerText.contains("下周")) ||
+        // Schedule management intent detection - supports English keywords
+        if (lowerText.contains("schedule") || 
+            lowerText.contains("add") ||
+            lowerText.contains("set") ||
+            lowerText.contains("reminder") ||
             (lowerText.contains("tomorrow") || lowerText.contains("next") || lowerText.contains("schedule"))) {
              
              Map<String, Object> params = new HashMap<>();
@@ -377,14 +376,9 @@ public class AIIntentAnalysisService {
         // Try multiple patterns
         String content = null;
         
-        // Pattern 1: "内容是[content]" or "content is [content]"
-        if (lowerText.contains("内容是") || lowerText.contains("content is")) {
-            int start;
-            if (lowerText.contains("内容是")) {
-                start = text.indexOf("内容是") + 4;
-            } else {
-                start = text.indexOf("content is") + 12;
-            }
+        // Pattern 1: "content is [content]"
+        if (lowerText.contains("content is")) {
+            int start = text.indexOf("content is") + 12;
             
             if (start < text.length()) {
                 content = text.substring(start).trim();
@@ -397,11 +391,9 @@ public class AIIntentAnalysisService {
             }
         }
         
-        // Pattern 2: "发送[content]" or "send [content]"
-        if (lowerText.contains("发送") || lowerText.contains("send")) {
-            int start = lowerText.indexOf("发送");
-            if (start == -1) start = lowerText.indexOf("send");
-            start += (lowerText.contains("发送") ? 2 : 4);
+        // Pattern 2: "send [content]"
+        if (lowerText.contains("send")) {
+            int start = lowerText.indexOf("send") + 4;
             
             if (start < text.length()) {
                 content = text.substring(start).trim();
@@ -414,11 +406,9 @@ public class AIIntentAnalysisService {
             }
         }
         
-        // Pattern 3: "说[content]" or "say [content]"
-        if (lowerText.contains("说") || lowerText.contains("say")) {
-            int start = lowerText.indexOf("说");
-            if (start == -1) start = lowerText.indexOf("say");
-            start += (lowerText.contains("说") ? 1 : 3);
+        // Pattern 3: "say [content]"
+        if (lowerText.contains("say")) {
+            int start = lowerText.indexOf("say") + 3;
             
             if (start < text.length()) {
                 content = text.substring(start).trim();
@@ -439,8 +429,8 @@ public class AIIntentAnalysisService {
             int emailEnd = matcher.end();
             if (emailEnd < text.length()) {
                 content = text.substring(emailEnd).trim();
-                // Remove keywords like "发送"
-                content = content.replaceAll("发送", "").replaceAll("发邮件", "").trim();
+                // Remove keywords like "send"
+                content = content.replaceAll("send", "").replaceAll("email", "").trim();
                 if (!content.isEmpty()) {
                     log.info("Pattern4 content: {}", content);
                     return content;
@@ -459,24 +449,17 @@ public class AIIntentAnalysisService {
         // Try to extract subject
         String subject = null;
         
-        // Pattern 1: "主题是[subject]" or "subject is [subject]"
-        if (lowerText.contains("主题是") || lowerText.contains("subject is")) {
-            int start;
-            if (lowerText.contains("主题是")) {
-                start = text.indexOf("主题是") + 4;
-            } else {
-                start = text.indexOf("subject is") + 12;
-            }
+        // Pattern 1: "subject is [subject]"
+        if (lowerText.contains("subject is")) {
+            int start = text.indexOf("subject is") + 12;
             
             if (start < text.length()) {
                 // Find next keyword
                 int end = text.length();
-                if (lowerText.contains("内容是") || lowerText.contains("content is")) {
-                    end = text.indexOf("内容是");
-                    if (end == -1) end = text.indexOf("content is");
-                } else if (lowerText.contains("内容") || lowerText.contains("content")) {
-                    end = text.indexOf("内容");
-                    if (end == -1) end = text.indexOf("content");
+                if (lowerText.contains("content is")) {
+                    end = text.indexOf("content is");
+                } else if (lowerText.contains("content")) {
+                    end = text.indexOf("content");
                 }
                 
                 if (start < end) {
@@ -505,19 +488,19 @@ public class AIIntentAnalysisService {
         content = content.replaceAll(emailPattern, "");
         
         // Remove irrelevant keywords related to email
-        content = content.replaceAll("邮件", "");
-        content = content.replaceAll("发送", "");
-        content = content.replaceAll("发邮件", "");
-        content = content.replaceAll("给", "");
+        content = content.replaceAll("email", "");
+        content = content.replaceAll("send", "");
+        content = content.replaceAll("mail", "");
+        content = content.replaceAll("to", "");
         
-        // Do not remove "主题是" and "内容是"
-        // content = content.replaceAll("主题是", "");
-        // content = content.replaceAll("内容是", "");
+        // Do not remove "subject is" and "content is"
+        // content = content.replaceAll("subject is", "");
+        // content = content.replaceAll("content is", "");
         
-        // Smartly remove "到" but keep meaningful usage
-        // e.g., "我快到了" -> keep; "到邮箱" -> remove
-        if (content.contains("到") && !content.matches(".*[你我他她它].*到.*")) {
-            content = content.replaceAll("到", "");
+        // Smartly remove "to" but keep meaningful usage
+        // e.g., "I'm almost there" -> keep; "to email" -> remove
+        if (content.contains("to") && !content.matches(".*[I you he she it].*to.*")) {
+            content = content.replaceAll("to", "");
         }
         
         // Trim extra spaces and punctuation
@@ -754,11 +737,25 @@ public class AIIntentAnalysisService {
      */
     private Map<String, Object> extractJSONFromResponse(String responseText) {
         try {
+            log.info("Extracting JSON from response: {}", responseText);
+            
+            // Remove markdown code block markers if present
+            if (responseText.contains("```json")) {
+                responseText = responseText.replaceAll("```json\\s*", "");
+                responseText = responseText.replaceAll("```\\s*$", "");
+                log.info("Removed markdown markers, cleaned text: {}", responseText);
+            } else if (responseText.contains("```")) {
+                responseText = responseText.replaceAll("```\\s*", "");
+                log.info("Removed generic markdown markers, cleaned text: {}", responseText);
+            }
+            
             // Simple JSON extraction logic
             if (responseText.contains("{") && responseText.contains("}")) {
                 int start = responseText.indexOf("{");
                 int end = responseText.lastIndexOf("}") + 1;
                 String jsonText = responseText.substring(start, end);
+                
+                log.info("Extracted JSON text: {}", jsonText);
                 
                 // Should use a real JSON parser; simplified here
                 // In real projects, use Jackson or Gson
@@ -952,8 +949,8 @@ public class AIIntentAnalysisService {
     private String inferFunctionFromText(String text) {
         String lowerText = text.toLowerCase();
         
-        if (lowerText.contains("send_email") || lowerText.contains("邮件") || 
-            lowerText.contains("email") || lowerText.contains("发送")) {
+        if (lowerText.contains("send_email") || 
+            lowerText.contains("email") || lowerText.contains("send")) {
             return "send_email";
         }
         
@@ -973,28 +970,20 @@ public class AIIntentAnalysisService {
         }
         
         // If no email, try name
-        // Pattern 1: "给[Name]发送邮件" or "to [Name] send email"
-        if (text.contains("给") || text.toLowerCase().contains("to")) {
-            int start = -1;
-            if (text.contains("给")) {
-                start = text.indexOf("给") + 1;
-            } else {
-                start = text.toLowerCase().indexOf("to") + 2;
-            }
+        // Pattern 1: "to [Name] send email"
+        if (text.toLowerCase().contains("to")) {
+            int start = text.toLowerCase().indexOf("to") + 2;
             
             if (start < text.length()) {
                 String afterGiving = text.substring(start);
                 // Find next keyword
                 int end = afterGiving.length();
-                if (afterGiving.contains("发送") || afterGiving.toLowerCase().contains("send")) {
-                    end = afterGiving.indexOf("发送");
-                    if (end == -1) end = afterGiving.toLowerCase().indexOf("send");
-                } else if (afterGiving.contains("发邮件") || afterGiving.toLowerCase().contains("email")) {
-                    end = afterGiving.indexOf("发邮件");
-                    if (end == -1) end = afterGiving.toLowerCase().indexOf("email");
-                } else if (afterGiving.contains("邮件") || afterGiving.toLowerCase().contains("mail")) {
-                    end = afterGiving.indexOf("邮件");
-                    if (end == -1) end = afterGiving.toLowerCase().indexOf("mail");
+                if (afterGiving.toLowerCase().contains("send")) {
+                    end = afterGiving.toLowerCase().indexOf("send");
+                } else if (afterGiving.toLowerCase().contains("email")) {
+                    end = afterGiving.toLowerCase().indexOf("email");
+                } else if (afterGiving.toLowerCase().contains("mail")) {
+                    end = afterGiving.toLowerCase().indexOf("mail");
                 }
                 
                 if (end < afterGiving.length()) {
@@ -1007,17 +996,17 @@ public class AIIntentAnalysisService {
             }
         }
         
-        // Pattern 2: "发送邮件给[Name]"
-        if (text.contains("发送邮件给")) {
-            int start = text.indexOf("发送邮件给") + 6;
+        // Pattern 2: "send email to [Name]"
+        if (text.toLowerCase().contains("send email to")) {
+            int start = text.toLowerCase().indexOf("send email to") + 13;
             if (start < text.length()) {
                 String afterTo = text.substring(start);
                 // Find next keyword
                 int end = afterTo.length();
-                if (afterTo.contains("，")) {
-                    end = afterTo.indexOf("，");
-                } else if (afterTo.contains("，")) {
-                    end = afterTo.indexOf("，");
+                if (afterTo.contains(",")) {
+                    end = afterTo.indexOf(",");
+                } else if (afterTo.contains(".")) {
+                    end = afterTo.indexOf(".");
                 }
                 
                 if (end < afterTo.length()) {
@@ -1086,29 +1075,21 @@ public class AIIntentAnalysisService {
         // Try multiple patterns to extract title
         String title = null;
         
-        // Pattern 1: "添加[title]日程" or "add [title] schedule"
-        if (lowerText.contains("添加") || lowerText.contains("add")) {
-            int start;
-            if (lowerText.contains("添加")) {
-                start = lowerText.indexOf("添加") + 2;
-            } else {
-                start = lowerText.indexOf("add") + 3;
-            }
+        // Pattern 1: "add [title] schedule"
+        if (lowerText.contains("add")) {
+            int start = lowerText.indexOf("add") + 3;
             
             if (start < text.length()) {
                 // Find next keyword
                 int end = text.length();
-                if (lowerText.contains("日程") || lowerText.contains("schedule")) {
-                    end = lowerText.indexOf("日程");
-                    if (end == -1) end = lowerText.indexOf("schedule");
-                } else if (lowerText.contains("安排") || lowerText.contains("安排")) {
-                    end = lowerText.indexOf("安排");
-                } else if (lowerText.contains("明天") || lowerText.contains("tomorrow")) {
-                    end = lowerText.indexOf("明天");
-                    if (end == -1) end = lowerText.indexOf("tomorrow");
-                } else if (lowerText.contains("后天") || lowerText.contains("next")) {
-                    end = lowerText.indexOf("后天");
-                    if (end == -1) end = lowerText.indexOf("next");
+                if (lowerText.contains("schedule")) {
+                    end = lowerText.indexOf("schedule");
+                } else if (lowerText.contains("arrange")) {
+                    end = lowerText.indexOf("arrange");
+                } else if (lowerText.contains("tomorrow")) {
+                    end = lowerText.indexOf("tomorrow");
+                } else if (lowerText.contains("next")) {
+                    end = lowerText.indexOf("next");
                 }
                 
                 if (start < end) {
@@ -1121,14 +1102,9 @@ public class AIIntentAnalysisService {
             }
         }
         
-        // Pattern 2: "安排[title]" or "schedule [title]"
-        if (lowerText.contains("安排") || lowerText.contains("schedule")) {
-            int start;
-            if (lowerText.contains("安排")) {
-                start = lowerText.indexOf("安排") + 2;
-            } else {
-                start = lowerText.indexOf("schedule") + 8;
-            }
+        // Pattern 2: "schedule [title]"
+        if (lowerText.contains("schedule")) {
+            int start = lowerText.indexOf("schedule") + 8;
             
             if (start < text.length()) {
                 title = text.substring(start).trim();
@@ -1153,20 +1129,15 @@ public class AIIntentAnalysisService {
         java.time.LocalDate today = java.time.LocalDate.now();
         
         // Try to extract relative date
-        if (lowerText.contains("明天") || lowerText.contains("tomorrow")) {
+        if (lowerText.contains("tomorrow")) {
             String date = today.plusDays(1).toString();
             log.info("Extracted relative date: tomorrow -> {}", date);
             return date;
-        } else if (lowerText.contains("后天") || lowerText.contains("next day")) {
+        } else if (lowerText.contains("next day")) {
             String date = today.plusDays(2).toString();
-            log.info("Extracted relative date: tomorrow -> {}", date);
+            log.info("Extracted relative date: next day -> {}", date);
             return date;
-        } else if (lowerText.contains("下周") || lowerText.contains("next week")) {
-            // Next week corresponds to 7 days later
-            String date = today.plusDays(7).toString();
-            log.info("Extracted relative date: next week -> {}", date);
-            return date;
-        } else if (lowerText.contains("下周") || lowerText.contains("next week")) {
+        } else if (lowerText.contains("next week")) {
             // Next week corresponds to 7 days later
             String date = today.plusDays(7).toString();
             log.info("Extracted relative date: next week -> {}", date);
@@ -1189,25 +1160,8 @@ public class AIIntentAnalysisService {
         // Try to extract time
         String time = null;
         
-        // Pattern 1: "下午3点" or "3pm"
-        if (lowerText.contains("下午") || lowerText.contains("pm")) {
-            if (lowerText.contains("下午")) {
-                int start = lowerText.indexOf("下午") + 2;
-                if (start < text.length()) {
-                    String afterAfternoon = text.substring(start);
-                    // Extract number
-                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)");
-                    java.util.regex.Matcher matcher = pattern.matcher(afterAfternoon);
-                    if (matcher.find()) {
-                        int hour = Integer.parseInt(matcher.group(1));
-                        if (hour >= 1 && hour <= 12) {
-                            time = String.format("%02d:00", hour + 12);
-                            log.info("Pattern1 extracted time: afternoon{} -> {}", hour, time);
-                            return time;
-                        }
-                    }
-                }
-            } else if (lowerText.contains("pm")) {
+        // Pattern 1: "3pm"
+        if (lowerText.contains("pm")) {
                 // Enhanced PM pattern matching for "3pm", "3:30pm", etc.
                 java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{1,2}):?(\\d{0,2})\\s*pm");
                 java.util.regex.Matcher matcher = pattern.matcher(lowerText);
@@ -1226,24 +1180,8 @@ public class AIIntentAnalysisService {
             }
         }
         
-        // Pattern 2: "早上8点" or "8am"
-        if (lowerText.contains("早上") || lowerText.contains("am")) {
-            if (lowerText.contains("早上")) {
-                int start = lowerText.indexOf("早上") + 2;
-                if (start < text.length()) {
-                    String afterMorning = text.substring(start);
-                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)");
-                    java.util.regex.Matcher matcher = pattern.matcher(afterMorning);
-                    if (matcher.find()) {
-                        int hour = Integer.parseInt(matcher.group(1));
-                        if (hour >= 1 && hour <= 12) {
-                            time = String.format("%02d:00", hour);
-                            log.info("Pattern2 extracted time: morning{} -> {}", hour, time);
-                            return time;
-                        }
-                    }
-                }
-            } else if (lowerText.contains("am")) {
+        // Pattern 2: "8am"
+        if (lowerText.contains("am")) {
                 // Enhanced AM pattern matching for "8am", "8:30am", etc.
                 java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{1,2}):?(\\d{0,2})\\s*am");
                 java.util.regex.Matcher matcher = pattern.matcher(lowerText);
@@ -1325,13 +1263,13 @@ public class AIIntentAnalysisService {
         String lowerText = text.toLowerCase();
         
         // Determine category by time or keywords
-        if (lowerText.contains("早上") || lowerText.contains("am") || lowerText.contains("morning")) {
+        if (lowerText.contains("am") || lowerText.contains("morning")) {
             return "morning";
-        } else if (lowerText.contains("下午") || lowerText.contains("pm") || lowerText.contains("afternoon")) {
+        } else if (lowerText.contains("pm") || lowerText.contains("afternoon")) {
             return "afternoon";
-        } else if (lowerText.contains("晚上") || lowerText.contains("evening") || lowerText.contains("night")) {
+        } else if (lowerText.contains("evening") || lowerText.contains("night")) {
             return "evening";
-        } else if (lowerText.contains("吃药") || lowerText.contains("medicine") || lowerText.contains("medication")) {
+        } else if (lowerText.contains("medicine") || lowerText.contains("medication")) {
             return "medication";
         }
         
@@ -1362,14 +1300,9 @@ public class AIIntentAnalysisService {
         // Try to extract description
         String description = null;
         
-        // Pattern 1: "内容是[描述]" or "content is [描述]"
-        if (lowerText.contains("内容是") || lowerText.contains("content is")) {
-            int start;
-            if (lowerText.contains("内容是")) {
-                start = text.indexOf("内容是") + 4;
-            } else {
-                start = text.indexOf("content is") + 12;
-            }
+        // Pattern 1: "content is [description]"
+        if (lowerText.contains("content is")) {
+            int start = text.indexOf("content is") + 12;
             
             if (start < text.length()) {
                 description = text.substring(start).trim();
@@ -1392,9 +1325,9 @@ public class AIIntentAnalysisService {
         String lowerText = text.toLowerCase();
         
         // Determine priority by keywords
-        if (lowerText.contains("重要") || lowerText.contains("紧急") || lowerText.contains("important") || lowerText.contains("urgent")) {
+        if (lowerText.contains("important") || lowerText.contains("urgent")) {
             return "high";
-        } else if (lowerText.contains("一般") || lowerText.contains("普通") || lowerText.contains("normal") || lowerText.contains("regular")) {
+        } else if (lowerText.contains("normal") || lowerText.contains("regular")) {
             return "low";
         }
         
@@ -1411,24 +1344,15 @@ public class AIIntentAnalysisService {
     private String extractImportantDateTitle(String text) {
         String lowerText = text.toLowerCase();
         
-        // Pattern 1: "添加[title]的生日" or "add [title] birthday"
-        if (lowerText.contains("的生日") || lowerText.contains(" birthday")) {
-            int end;
-            if (lowerText.contains("的生日")) {
-                end = text.indexOf("的生日");
-            } else {
-                end = text.indexOf(" birthday");
-            }
+        // Pattern 1: "add [title] birthday"
+        if (lowerText.contains(" birthday")) {
+            int end = text.indexOf(" birthday");
             
             if (end > 0) {
                 // Find title start position
                 int start = 0;
-                if (lowerText.contains("添加")) {
-                    start = text.indexOf("添加") + 2;
-                } else if (lowerText.contains("add")) {
+                if (lowerText.contains("add")) {
                     start = text.indexOf("add") + 3;
-                } else if (lowerText.contains("设置")) {
-                    start = text.indexOf("设置") + 2;
                 } else if (lowerText.contains("set")) {
                     start = text.indexOf("set") + 3;
                 }
@@ -1443,20 +1367,13 @@ public class AIIntentAnalysisService {
             }
         }
         
-        // Pattern 2: "添加[title]纪念日" or "add [title] anniversary"
-        if (lowerText.contains("纪念日") || lowerText.contains(" anniversary")) {
-            int end;
-            if (lowerText.contains("纪念日")) {
-                end = text.indexOf("纪念日");
-            } else {
-                end = text.indexOf(" anniversary");
-            }
+        // Pattern 2: "add [title] anniversary"
+        if (lowerText.contains(" anniversary")) {
+            int end = text.indexOf(" anniversary");
             
             if (end > 0) {
                 int start = 0;
-                if (lowerText.contains("添加")) {
-                    start = text.indexOf("添加") + 2;
-                } else if (lowerText.contains("add")) {
+                if (lowerText.contains("add")) {
                     start = text.indexOf("add") + 3;
                 }
                 
@@ -1471,15 +1388,15 @@ public class AIIntentAnalysisService {
         }
         
         // Pattern 3: extract title directly (no specific keyword)
-        String[] keywords = {"添加", "add", "设置", "set"};
+        String[] keywords = {"add", "set"};
         for (String keyword : keywords) {
             if (lowerText.contains(keyword)) {
                 int start = text.indexOf(keyword) + keyword.length();
                 if (start < text.length()) {
                     String title = text.substring(start).trim();
                     // Remove date/time parts
-                    if (title.contains("是") || title.contains("is")) {
-                        int dateIndex = title.indexOf("是");
+                    if (title.contains("is")) {
+                        int dateIndex = title.indexOf("is");
                         if (dateIndex > 0) {
                             title = title.substring(0, dateIndex).trim();
                         }
@@ -1502,14 +1419,9 @@ public class AIIntentAnalysisService {
     private String extractImportantDateDate(String text) {
         String lowerText = text.toLowerCase();
         
-        // Pattern 1: "是[日期]" or "is [date]"
-        if (lowerText.contains("是") || lowerText.contains("is")) {
-            int start;
-            if (lowerText.contains("是")) {
-                start = text.indexOf("是") + 1;
-            } else {
-                start = text.indexOf("is") + 2;
-            }
+        // Pattern 1: "is [date]"
+        if (lowerText.contains("is")) {
+            int start = text.indexOf("is") + 2;
             
             if (start < text.length()) {
                 String datePart = text.substring(start).trim();
@@ -1541,13 +1453,13 @@ public class AIIntentAnalysisService {
         String lowerText = text.toLowerCase();
         
         // Determine type by keywords
-        if (lowerText.contains("生日") || lowerText.contains("birthday")) {
+        if (lowerText.contains("birthday")) {
             return "birthday";
-        } else if (lowerText.contains("纪念日") || lowerText.contains("anniversary")) {
+        } else if (lowerText.contains("anniversary")) {
             return "anniversary";
-        } else if (lowerText.contains("节日") || lowerText.contains("holiday")) {
+        } else if (lowerText.contains("holiday")) {
             return "holiday";
-        } else if (lowerText.contains("自定义") || lowerText.contains("custom")) {
+        } else if (lowerText.contains("custom")) {
             return "custom";
         }
         
@@ -1565,14 +1477,9 @@ public class AIIntentAnalysisService {
         // Try to extract description
         String description = null;
         
-        // Pattern 1: "描述是[内容]" or "description is [内容]"
-        if (lowerText.contains("描述是") || lowerText.contains("description is")) {
-            int start;
-            if (lowerText.contains("描述是")) {
-                start = text.indexOf("描述是") + 4;
-            } else {
-                start = text.indexOf("description is") + 15;
-            }
+        // Pattern 1: "description is [content]"
+        if (lowerText.contains("description is")) {
+            int start = text.indexOf("description is") + 15;
             
             if (start < text.length()) {
                 description = text.substring(start).trim();
@@ -1597,17 +1504,7 @@ public class AIIntentAnalysisService {
             text = text.trim();
             
             // Try various date formats
-            if (text.matches("\\d{1,2}月\\d{1,2}日")) {
-                // Chinese format: 12月25日
-                String[] parts = text.split("[月日]");
-                if (parts.length >= 2) {
-                    int month = Integer.parseInt(parts[0]);
-                    int day = Integer.parseInt(parts[1]);
-                    // Assume next year
-                    int year = LocalDate.now().getYear() + 1;
-                    return String.format("%d-%02d-%02d", year, month, day);
-                }
-            } else if (text.matches("\\d{1,2}/\\d{1,2}")) {
+            if (text.matches("\\d{1,2}/\\d{1,2}")) {
                 // English format: 12/25
                 String[] parts = text.split("/");
                 if (parts.length >= 2) {
@@ -1622,11 +1519,11 @@ public class AIIntentAnalysisService {
             }
             
             // Try relative dates
-            if (text.contains("明天")) {
+            if (text.contains("tomorrow")) {
                 return LocalDate.now().plusDays(1).toString();
-            } else if (text.contains("后天")) {
+            } else if (text.contains("next day")) {
                 return LocalDate.now().plusDays(2).toString();
-            } else if (text.contains("下周")) {
+            } else if (text.contains("next week")) {
                 return LocalDate.now().plusWeeks(1).toString();
             }
             

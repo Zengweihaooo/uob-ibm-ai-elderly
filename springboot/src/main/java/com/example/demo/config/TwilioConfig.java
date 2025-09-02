@@ -15,11 +15,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Twilio配置类
- * 类似于Google Cloud配置，从本地JSON文件加载Twilio密钥
+ * Twilio configuration class.
+ * Similar to Google Cloud style config: loads Twilio credentials from a local JSON file.
  * 
- * @author Yichen Zhang
- * @version 1.0
+ * Author: Yichen Zhang
+ * Version: 1.0
  */
 @Configuration
 @ConditionalOnProperty(name = "app.sms.enabled", havingValue = "true", matchIfMissing = false)
@@ -37,17 +37,17 @@ public class TwilioConfig {
     }
 
     /**
-     * 加载Twilio配置
-     * 从JSON文件中读取敏感信息
+     * Load Twilio configuration.
+     * Reads sensitive information from a JSON file (or falls back to environment variables).
      * 
-     * @return Twilio配置Map
+     * @return Map of Twilio credentials
      */
     @Bean(name = "twilioCredentials")
     public Map<String, String> loadTwilioCredentials() {
         Map<String, String> credentials = new HashMap<>();
         
         try {
-            // 尝试加载配置文件
+            // Try to load the local credentials file
             File configFile = new File(twilioCredentialsFile);
             
             if (configFile.exists()) {
@@ -67,7 +67,7 @@ public class TwilioConfig {
                 System.out.println("⚠️  Twilio config file not found: " + configFile.getAbsolutePath());
                 System.out.println("   Using environment variables or default values");
                 
-                // 回退到环境变量
+                // Fallback: use environment variables
                 credentials.put("account_sid", System.getenv("TWILIO_ACCOUNT_SID"));
                 credentials.put("auth_token", System.getenv("TWILIO_AUTH_TOKEN"));
                 credentials.put("from_number", System.getenv("TWILIO_FROM_NUMBER"));
@@ -77,7 +77,7 @@ public class TwilioConfig {
             System.err.println("❌ Failed to load Twilio credentials: " + e.getMessage());
             System.out.println("   Falling back to environment variables...");
             
-            // 错误时回退到环境变量
+            // On error: fallback to environment variables
             credentials.put("account_sid", System.getenv("TWILIO_ACCOUNT_SID"));
             credentials.put("auth_token", System.getenv("TWILIO_AUTH_TOKEN"));
             credentials.put("from_number", System.getenv("TWILIO_FROM_NUMBER"));
@@ -87,7 +87,7 @@ public class TwilioConfig {
     }
     
     /**
-     * 获取Twilio Account SID
+     * Provide Twilio Account SID.
      */
     @Bean(name = "twilioAccountSid")
     public String getTwilioAccountSid() {
@@ -96,7 +96,7 @@ public class TwilioConfig {
     }
     
     /**
-     * 获取Twilio Auth Token
+     * Provide Twilio Auth Token.
      */
     @Bean(name = "twilioAuthToken")
     public String getTwilioAuthToken() {
@@ -105,7 +105,7 @@ public class TwilioConfig {
     }
     
     /**
-     * 获取Twilio From Number
+     * Provide Twilio From Number.
      */
     @Bean(name = "twilioFromNumber")
     public String getTwilioFromNumber() {

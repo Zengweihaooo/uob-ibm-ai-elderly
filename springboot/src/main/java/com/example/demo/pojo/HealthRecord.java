@@ -14,16 +14,16 @@ public class HealthRecord {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
-    // ========== 新增共享功能相关字段 ==========
-    // 是否已共享
+    // ========== Added fields for sharing feature ==========
+    // Whether shared
     private Boolean shared;
-    // 共享目标用户ID
+    // Shared-to user ID
     private Long sharedWithUserId;
-    // 共享对象角色（family 或 doctor）
+    // Shared target role (family or doctor)
     private String sharedWithRole;
-    // 共享时间
+    // Shared timestamp
     private LocalDateTime sharedAt;
-    // ========== 新增字段结束 ==========
+    // ========== End of added fields ==========
 
     // Constructors
     public HealthRecord() {}
@@ -35,12 +35,12 @@ public class HealthRecord {
         this.recordTime = LocalDateTime.now();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        // ========== 初始化共享相关字段 ==========
+        // ========== Initialize sharing-related fields ==========
         this.shared = false;
         this.sharedWithUserId = null;
         this.sharedWithRole = null;
         this.sharedAt = null;
-        // ========== 初始化结束 ==========
+        // ========== Initialization end ==========
     }
 
     // Getters and Setters
@@ -89,7 +89,7 @@ public class HealthRecord {
         return recordTime;
     }
     
-    // 添加一个字符串格式的getter方法用于JSON序列化
+    // Additional string-format getter for JSON serialization
     public String getRecordTimeStr() {
         return recordTime != null ? recordTime.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
     }
@@ -111,7 +111,7 @@ public class HealthRecord {
         return createdAt;
     }
     
-    // 添加一个字符串格式的getter方法用于JSON序列化
+    // Additional string-format getter for JSON serialization
     public String getCreatedAtStr() {
         return createdAt != null ? createdAt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
     }
@@ -125,7 +125,7 @@ public class HealthRecord {
         return updatedAt;
     }
     
-    // 添加一个字符串格式的getter方法用于JSON序列化
+    // Additional string-format getter for JSON serialization
     public String getUpdatedAtStr() {
         return updatedAt != null ? updatedAt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
     }
@@ -134,7 +134,7 @@ public class HealthRecord {
         this.updatedAt = updatedAt;
     }
 
-    // ========== 共享功能相关getter和setter ==========
+    // ========== Getters and setters for sharing feature ==========
     public Boolean getShared() {
         return shared;
     }
@@ -167,7 +167,7 @@ public class HealthRecord {
     public void setSharedAt(LocalDateTime sharedAt) {
         this.sharedAt = sharedAt;
     }
-    // ========== 共享功能相关getter和setter结束 ==========
+    // ========== End of getters and setters for sharing feature ==========
 
     @Override
     public String toString() {

@@ -8,63 +8,63 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.concurrent.Executor;
 
 /**
- * 异步配置类
+ * Asynchronous configuration.
  * 
- * 配置线程池用于邮件发送等异步操作
- * 避免邮件发送阻塞主线程，提高系统响应性能
+ * Defines thread pools used for asynchronous operations such as email sending.
+ * Prevents email operations from blocking the main thread and improves overall responsiveness.
  * 
- * @author AI Assistant
- * @version 1.0.0
+ * author AI Assistant
+ * version 1.0.0
  */
 @Configuration
 @EnableAsync
 public class AsyncConfig {
 
     /**
-     * 邮件发送专用线程池
+     * Dedicated thread pool for email sending.
      * 
-     * 配置说明：
-     * - corePoolSize: 核心线程数，保持活跃的线程数量
-     * - maxPoolSize: 最大线程数，线程池能创建的最大线程数量
-     * - queueCapacity: 队列容量，等待执行的任务数量
-     * - threadNamePrefix: 线程名前缀，便于调试和监控
-     * - keepAliveSeconds: 空闲线程存活时间
+     * Configuration notes:
+     * - corePoolSize: number of core threads kept alive.
+     * - maxPoolSize: maximum number of threads allowed in the pool.
+     * - queueCapacity: capacity for queued tasks waiting for execution.
+     * - threadNamePrefix: prefix added to thread names for easier debug/monitoring.
+     * - keepAliveSeconds: idle time before non-core threads are terminated.
      */
     @Bean(name = "emailTaskExecutor")
     public Executor emailTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         
-        // 核心线程数：2个（考虑到邮件发送的并发需求）
+    // Core threads: 2 (sufficient for expected email concurrency)
         executor.setCorePoolSize(2);
         
-        // 最大线程数：5个（峰值时可以创建更多线程）
+    // Max threads: 5 (allows elasticity during peaks)
         executor.setMaxPoolSize(5);
         
-        // 队列容量：100个任务（防止内存溢出）
+    // Queue capacity: 100 tasks (avoid uncontrolled growth)
         executor.setQueueCapacity(100);
         
-        // 线程名前缀
+    // Thread name prefix
         executor.setThreadNamePrefix("email-");
         
-        // 空闲线程存活时间：60秒
+    // Keep-alive for idle threads: 60 seconds
         executor.setKeepAliveSeconds(60);
         
-        // 等待所有任务完成后再关闭线程池
+    // Wait for tasks to finish on shutdown
         executor.setWaitForTasksToCompleteOnShutdown(true);
         
-        // 等待时间：30秒
+    // Await termination timeout: 30 seconds
         executor.setAwaitTerminationSeconds(30);
         
-        // 初始化线程池
+    // Initialize the executor
         executor.initialize();
         
         return executor;
     }
 
     /**
-     * 通用异步任务线程池
+     * General-purpose async task thread pool.
      * 
-     * 用于其他不需要特殊配置的异步操作
+     * Used for other asynchronous operations that do not need a dedicated configuration.
      */
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {

@@ -5,16 +5,16 @@ import org.apache.ibatis.annotations.*;
 import java.util.List;
 
 /**
- * 宠物情绪数据访问接口
- * 提供宠物情绪数据的增删改查操作
+ * Data access interface for pet mood
+ * Provides CRUD operations for pet mood data
  */
 @Mapper
 public interface PetMoodMapper {
 
     /**
-     * 根据用户ID查找宠物情绪
-     * @param userId 用户ID
-     * @return 宠物情绪对象，如果不存在返回null
+     * Find pet mood by user ID
+     * @param userId User ID
+     * @return Pet mood object, or null if not found
      */
     @Select("SELECT * FROM pet_mood WHERE user_id = #{userId}")
     @Results({
@@ -35,9 +35,9 @@ public interface PetMoodMapper {
     PetMood findByUserId(Long userId);
 
     /**
-     * 插入新的宠物情绪记录
-     * @param petMood 宠物情绪对象
-     * @return 影响的行数
+     * Insert a new pet mood record
+     * @param petMood Pet mood object
+     * @return Number of affected rows
      */
     @Insert("INSERT INTO pet_mood (user_id, mood_score, happiness, health, energy, mood_emoji, status, level, experience, last_interaction, created_at, updated_at) " +
             "VALUES (#{userId}, #{moodScore}, #{happiness}, #{health}, #{energy}, #{moodEmoji}, #{status}, #{level}, #{experience}, #{lastInteraction}, #{createdAt}, #{updatedAt})")
@@ -45,9 +45,9 @@ public interface PetMoodMapper {
     int insert(PetMood petMood);
 
     /**
-     * 更新宠物情绪记录
-     * @param petMood 宠物情绪对象
-     * @return 影响的行数
+     * Update pet mood record
+     * @param petMood Pet mood object
+     * @return Number of affected rows
      */
     @Update("UPDATE pet_mood SET mood_score = #{moodScore}, happiness = #{happiness}, health = #{health}, " +
             "energy = #{energy}, mood_emoji = #{moodEmoji}, status = #{status}, level = #{level}, " +
@@ -56,9 +56,9 @@ public interface PetMoodMapper {
     int update(PetMood petMood);
 
     /**
-     * 插入或更新宠物情绪记录（upsert操作）
-     * @param petMood 宠物情绪对象
-     * @return 影响的行数
+     * Insert or update pet mood record (upsert)
+     * @param petMood Pet mood object
+     * @return Number of affected rows
      */
     @Insert("INSERT INTO pet_mood (user_id, mood_score, happiness, health, energy, mood_emoji, status, level, experience, last_interaction, created_at, updated_at) " +
             "VALUES (#{userId}, #{moodScore}, #{happiness}, #{health}, #{energy}, #{moodEmoji}, #{status}, #{level}, #{experience}, #{lastInteraction}, #{createdAt}, #{updatedAt}) " +
@@ -69,24 +69,24 @@ public interface PetMoodMapper {
     int upsert(PetMood petMood);
 
     /**
-     * 根据用户ID删除宠物情绪记录
-     * @param userId 用户ID
-     * @return 影响的行数
+     * Delete pet mood record by user ID
+     * @param userId User ID
+     * @return Number of affected rows
      */
     @Delete("DELETE FROM pet_mood WHERE user_id = #{userId}")
     int deleteByUserId(Long userId);
 
     /**
-     * 检查用户是否有宠物情绪记录
-     * @param userId 用户ID
-     * @return 记录数量
+     * Check if the user has a pet mood record
+     * @param userId User ID
+     * @return Number of records
      */
     @Select("SELECT COUNT(*) FROM pet_mood WHERE user_id = #{userId}")
     int countByUserId(Long userId);
     
     /**
-     * 获取所有宠物情绪记录
-     * @return 所有宠物情绪记录列表
+     * Get all pet mood records
+     * @return List of all pet mood records
      */
     @Select("SELECT * FROM pet_mood")
     @Results({
@@ -107,8 +107,8 @@ public interface PetMoodMapper {
     List<PetMood> findAll();
     
     /**
-     * 获取总记录数
-     * @return 总记录数
+     * Get total record count
+     * @return Total count
      */
     @Select("SELECT COUNT(*) FROM pet_mood")
     long count();

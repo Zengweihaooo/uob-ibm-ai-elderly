@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 用户数据访问接口
- * 定义统一的用户数据访问方法，支持多种数据库实现
+ * User data access interface
+ * Defines unified user data access methods with multiple database implementations
  * 
  * @author Lepeng Zhou
  * @version 1.0
@@ -14,62 +14,62 @@ import java.util.Optional;
 public interface UserRepository {
     
     /**
-     * 根据ID查找用户
-     * @param id 用户ID
-     * @return 用户对象，如果不存在返回Optional.empty()
+     * Find user by ID
+     * @param id User ID
+     * @return User object, or Optional.empty() if not found
      */
     Optional<User> findById(Long id);
     
     /**
-     * 根据邮箱查找用户
-     * @param email 邮箱地址
-     * @return 用户对象，如果不存在返回Optional.empty()
+     * Find user by email
+     * @param email Email address
+     * @return User object, or Optional.empty() if not found
      */
     Optional<User> findByEmail(String email);
     
     /**
-     * 保存用户
-     * @param user 用户对象
-     * @return 保存后的用户对象
+     * Save user
+     * @param user User object
+     * @return Saved user object
      */
     User save(User user);
     
     /**
-     * 更新用户
-     * @param user 用户对象
-     * @return 更新后的用户对象
+     * Update user
+     * @param user User object
+     * @return Updated user object
      */
     User update(User user);
     
     /**
-     * 删除用户
-     * @param id 用户ID
+     * Delete user by ID
+     * @param id User ID
      */
     void deleteById(Long id);
     
     /**
-     * 获取所有用户
-     * @return 所有用户列表
+     * Get all users
+     * @return List of all users
      */
     List<User> findAll();
     
     /**
-     * 根据状态查找用户
-     * @param status 用户状态
-     * @return 符合条件的用户列表
+     * Find users by status
+     * @param status User status
+     * @return List of matching users
      */
     List<User> findByStatus(String status);
     
     /**
-     * 根据角色查找用户
-     * @param role 用户角色
-     * @return 符合条件的用户列表
+     * Find users by role
+     * @param role User role
+     * @return List of matching users
      */
     List<User> findByRole(String role);
     
     /**
-     * 统计用户总数
-     * @return 用户总数
+     * Count total number of users
+     * @return Total number of users
      */
     long count();
 }

@@ -10,8 +10,8 @@ import com.example.demo.service.PetMoodService;
 import com.example.demo.pojo.PetMood;
 
 /**
- * 宠物情绪管理控制器
- * 提供宠物情绪相关的REST API接口
+ * Pet Mood Management Controller
+ * Provides REST API endpoints related to virtual pet mood and attributes.
  */
 @RestController
 @RequestMapping("/api/pet/mood")
@@ -26,9 +26,9 @@ public class PetMoodController {
     }
 
     /**
-     * 获取宠物情绪状态
-     * @param userId 用户ID
-     * @return 情绪分数和状态
+     * Get pet mood state.
+     * @param userId user ID
+     * @return mood score and state string
      */
     @GetMapping("/state")
     public ResponseEntity<Map<String, Object>> getMoodState(@RequestParam Long userId) {
@@ -53,10 +53,10 @@ public class PetMoodController {
     }
 
     /**
-     * 调整宠物情绪分数
-     * @param userId 用户ID
-     * @param requestBody 包含delta的请求体
-     * @return 调整后的分数和状态
+     * Adjust pet mood score.
+     * @param userId user ID
+     * @param requestBody request body containing delta
+     * @return adjusted score and derived state
      */
     @PostMapping("/adjust")
     public ResponseEntity<Map<String, Object>> adjustMood(
@@ -94,9 +94,9 @@ public class PetMoodController {
     }
 
     /**
-     * 获取完整的宠物状态
-     * @param userId 用户ID
-     * @return 完整的宠物状态信息
+     * Get full pet status (happiness, health, energy, exp, level, etc.).
+     * @param userId user ID
+     * @return full pet status map
      */
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getFullPetStatus(@RequestParam Long userId) {
@@ -119,10 +119,10 @@ public class PetMoodController {
     }
 
     /**
-     * 更新宠物属性
-     * @param userId 用户ID
-     * @param requestBody 包含happiness, health, energy的请求体
-     * @return 更新后的宠物状态
+     * Update pet attributes.
+     * @param userId user ID
+     * @param requestBody request body with happiness, health, energy
+     * @return updated pet status
      */
     @PostMapping("/attributes")
     public ResponseEntity<Map<String, Object>> updatePetAttributes(
@@ -152,10 +152,10 @@ public class PetMoodController {
     }
 
     /**
-     * 增加经验值
-     * @param userId 用户ID
-     * @param requestBody 包含exp的请求体
-     * @return 更新后的经验值
+     * Add experience points.
+     * @param userId user ID
+     * @param requestBody request body containing exp value
+     * @return updated total experience
      */
     @PostMapping("/experience")
     public ResponseEntity<Map<String, Object>> addExperience(
@@ -183,16 +183,16 @@ public class PetMoodController {
     }
 
     /**
-     * 重置宠物情绪（用于测试或重置）
-     * @param userId 用户ID
-     * @return 重置后的状态
+     * Reset pet mood (testing / manual reset helper).
+     * @param userId user ID
+     * @return reset pet state
      */
     @PostMapping("/reset")
     public ResponseEntity<Map<String, Object>> resetPetMood(@RequestParam Long userId) {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 重置为默认值
+            // Reset to default values
             PetMood resetPet = moodService.updatePetAttributes(userId, 85, 92, 78);
             
             response.put("success", true);
@@ -209,9 +209,9 @@ public class PetMoodController {
     }
 
     /**
-     * 清除缓存（用于维护）
-     * @param userId 用户ID（可选，如果不提供则清除所有缓存）
-     * @return 操作结果
+     * Clear cache (maintenance endpoint).
+     * @param userId optional user ID; if absent clears all caches
+     * @return operation result
      */
     @DeleteMapping("/cache")
     public ResponseEntity<Map<String, Object>> clearCache(
@@ -240,11 +240,11 @@ public class PetMoodController {
     }
 
     /**
-     * 从请求体中安全地获取整数值
-     * @param requestBody 请求体
-     * @param key 键名
-     * @param defaultValue 默认值
-     * @return 整数值
+     * Safely extract an int value from request body.
+     * @param requestBody request body map
+     * @param key key name
+     * @param defaultValue fallback default value
+     * @return parsed int value or default
      */
     private int getIntValue(Map<String, Object> requestBody, String key, int defaultValue) {
         Object value = requestBody.get(key);

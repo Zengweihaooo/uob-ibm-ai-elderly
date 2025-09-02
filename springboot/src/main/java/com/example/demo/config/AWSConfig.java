@@ -16,14 +16,14 @@ import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 
 /**
- * AWS服务配置类
- * 配置各种AWS服务的客户端
+ * AWS services configuration class.
+ * Configures clients for various AWS services.
  * 
- * @author Lepeng Zhou
- * @version 1.0
+ * Author: Lepeng Zhou
+ * Version: 1.0
  */
 @Configuration
-@Profile("aws") // 只在aws profile激活时加载
+@Profile("aws") // Only loaded when the 'aws' profile is active
 public class AWSConfig {
 
     @Value("${aws.access-key-id}")
@@ -39,7 +39,7 @@ public class AWSConfig {
     private String endpoint;
 
     /**
-     * 创建AWS凭证提供者
+     * Create AWS credentials provider.
      */
     @Bean
     public StaticCredentialsProvider awsCredentialsProvider() {
@@ -48,7 +48,7 @@ public class AWSConfig {
     }
 
     /**
-     * S3客户端配置
+     * S3 client configuration.
      */
     @Bean
     public S3Client s3Client() {
@@ -64,7 +64,7 @@ public class AWSConfig {
     }
 
     /**
-     * DynamoDB客户端配置
+     * DynamoDB client configuration.
      */
     @Bean
     public DynamoDbClient dynamoDbClient() {
@@ -80,7 +80,7 @@ public class AWSConfig {
     }
 
     /**
-     * SNS客户端配置
+     * SNS client configuration.
      */
     @Bean
     public SnsClient snsClient() {
@@ -96,7 +96,7 @@ public class AWSConfig {
     }
 
     /**
-     * SES客户端配置
+     * SES client configuration.
      */
     @Bean
     public SesClient sesClient() {
@@ -112,7 +112,7 @@ public class AWSConfig {
     }
 
     /**
-     * Lambda客户端配置
+     * Lambda client configuration.
      */
     @Bean
     public LambdaClient lambdaClient() {
@@ -128,7 +128,7 @@ public class AWSConfig {
     }
 
     /**
-     * CloudWatch客户端配置
+     * CloudWatch client configuration.
      */
     @Bean
     public CloudWatchClient cloudWatchClient() {

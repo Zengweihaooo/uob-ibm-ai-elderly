@@ -3,7 +3,7 @@ package com.example.demo.pojo.memoir;
 import java.time.LocalDateTime;
 
 /**
- * 分享守护配置：PIN、下载配额
+ * Sharing guard configuration: PIN and download quota
  */
 public class MemoirShareGuard {
     private Integer id;

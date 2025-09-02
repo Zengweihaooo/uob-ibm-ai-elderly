@@ -1,178 +1,177 @@
-# FamilyController 测试说明
+# FamilyController Test Guide
 
-## 概述
+## Overview
 
-本项目为FamilyController创建了完整的单元测试套件。
+This project provides a comprehensive unit test suite for the FamilyController.
 
-## 测试文件结构
+## Test File Structure
 
 ```
 src/test/java/com/example/demo/controller/
-└── FamilyControllerTest.java              # 单元测试（使用Mock）
+└── FamilyControllerTest.java              # Unit tests (Mock-based)
 ```
 
-## 测试类型
+## Test Types
 
-### 单元测试 (FamilyControllerTest.java)
+### Unit Test (FamilyControllerTest.java)
 
-**特点：**
-- 使用`@WebMvcTest`注解，只加载Web层
-- 使用`@MockBean`模拟FamilyService
-- 测试Controller层的逻辑和HTTP响应
-- 运行速度快，隔离性好
-- 不依赖数据库或外部服务
+**Characteristics:**
+- Uses `@WebMvcTest` to load only the web layer
+- Uses `@MockBean` to mock FamilyService
+- Tests controller logic and HTTP responses
+- Fast execution and good isolation
+- No dependency on database or external services
 
-**测试内容：**
-- ✅ 添加家庭联系人（成功/失败场景）
-- ✅ 获取所有联系人
-- ✅ 获取特定联系人
-- ✅ 更新联系人
-- ✅ 删除联系人
-- ✅ 发送消息
-- ✅ 获取紧急联系人
-- ✅ 获取统计信息
-- ✅ 认证验证
-- ✅ 数据验证
-- ✅ 错误处理
+**Coverage:**
+- ✅ Add family contact (success/failure)
+- ✅ Get all contacts
+- ✅ Get specific contact
+- ✅ Update contact
+- ✅ Delete contact
+- ✅ Send message
+- ✅ Get emergency contacts
+- ✅ Get statistics
+- ✅ Authentication validation
+- ✅ Data validation
+- ✅ Error handling
 
-## 如何运行测试
+## How to Run Tests
 
-### 方法1：使用Maven Wrapper
+### Method 1: Maven Wrapper
 
 ```bash
-# 进入项目目录
+# Enter project directory
 cd uob-ibm-ai-elderly/springboot
 
-# 运行所有测试
+# Run all tests
 ./mvnw test
 
-# 运行特定测试类
+# Run a specific test class
 ./mvnw test -Dtest=FamilyControllerTest
 
-# 运行特定测试方法
+# Run a specific test method
 ./mvnw test -Dtest=FamilyControllerTest#testAddFamilyContact_Success
 ```
 
-### 方法2：使用批处理脚本（Windows）
+### Method 2: Batch Script (Windows)
 
 ```bash
-# 双击运行
+# Double-click to run
 run-familytests.bat
 ```
 
-### 方法3：使用IDE
+### Method 3: IDE
 
-在IDE中右键点击测试类或测试方法，选择"Run Test"。
+Right-click the test class or test method in your IDE and select "Run Test".
 
-## 测试数据
+## Test Data
 
-### 测试联系人数据
+### Sample Contact JSON
 
 ```json
 {
-  "name": "张三",
+  "name": "Zhang San",
   "phoneNumber": "13800138000",
   "email": "zhangsan@example.com",
   "relationship": "CHILD",
   "notificationPreference": "ALL",
   "isEmergencyContact": true,
-  "notes": "我的儿子"
+  "notes": "My son"
 }
 ```
 
-### 认证头
+### Authorization Header
 
-所有需要认证的API都使用以下认证头：
+All secured APIs use the following header:
 ```
 Authorization: Bearer test-token
 ```
 
-## 测试覆盖的API端点
+## API Endpoints Covered by Tests
 
-| HTTP方法 | 端点 | 描述 | 测试状态 |
-|---------|------|------|----------|
-| POST | `/api/family/contacts` | 添加联系人 | ✅ |
-| GET | `/api/family/contacts` | 获取所有联系人 | ✅ |
-| GET | `/api/family/contacts/{id}` | 获取特定联系人 | ✅ |
-| PUT | `/api/family/contacts/{id}` | 更新联系人 | ✅ |
-| DELETE | `/api/family/contacts/{id}` | 删除联系人 | ✅ |
-| POST | `/api/family/contacts/{id}/message` | 发送消息 | ✅ |
-| GET | `/api/family/emergency-contacts` | 获取紧急联系人 | ✅ |
-| GET | `/api/family/stats` | 获取统计信息 | ✅ |
+| HTTP | Endpoint | Description | Tested |
+|------|----------|-------------|--------|
+| POST | `/api/family/contacts` | Add contact | ✅ |
+| GET  | `/api/family/contacts` | Get all contacts | ✅ |
+| GET  | `/api/family/contacts/{id}` | Get specific contact | ✅ |
+| PUT  | `/api/family/contacts/{id}` | Update contact | ✅ |
+| DELETE | `/api/family/contacts/{id}` | Delete contact | ✅ |
+| POST | `/api/family/contacts/{id}/message` | Send message | ✅ |
+| GET | `/api/family/emergency-contacts` | Get emergency contacts | ✅ |
+| GET | `/api/family/stats` | Get statistics | ✅ |
 
-## 测试场景
+## Test Scenarios
 
-### 成功场景
-- ✅ 正常添加联系人
-- ✅ 正常获取联系人列表
-- ✅ 正常更新联系人信息
-- ✅ 正常删除联系人
-- ✅ 正常发送消息
+### Success
+- ✅ Add contact
+- ✅ Get contact list
+- ✅ Update contact
+- ✅ Delete contact
+- ✅ Send message
 
-### 错误场景
-- ✅ 缺少认证头
-- ✅ 无效的认证头
-- ✅ 缺少必填字段
-- ✅ 联系人不存在
-- ✅ 服务异常
+### Error
+- ✅ Missing auth header
+- ✅ Invalid auth header
+- ✅ Missing required field
+- ✅ Contact not found
+- ✅ Service exception
 
-### 边界场景
-- ✅ 空联系人列表
-- ✅ 多个联系人管理
-- ✅ 紧急联系人筛选
+### Edge
+- ✅ Empty list
+- ✅ Multiple contacts
+- ✅ Emergency contact filtering
 
-## 测试结果解读
+## Result Interpretation
 
-### 成功测试
-- HTTP状态码：200 OK
-- 响应格式：`{"success": true, "message": "...", "data": {...}}`
+### Success Response
+- HTTP Status: 200 OK
+- Response: `{"success": true, "message": "...", "data": {...}}`
 
-### 失败测试
-- HTTP状态码：400 Bad Request / 401 Unauthorized / 404 Not Found / 500 Internal Server Error
-- 响应格式：`{"success": false, "message": "错误描述"}`
+### Failure Response
+- HTTP Status: 400 / 401 / 404 / 500
+- Response: `{"success": false, "message": "Error description"}`
 
-## 注意事项
+## Notes
 
-1. **内存存储**：测试使用内存存储，每次测试前会自动清理数据
-2. **认证模拟**：目前使用简单的Bearer token验证，实际项目中需要实现JWT验证
-3. **邮件服务**：测试环境禁用了真实的邮件发送，避免发送测试邮件
-4. **数据隔离**：每个测试方法都是独立的，不会相互影响
-5. **Mock使用**：使用Mockito模拟FamilyService，确保测试的隔离性
+1. In-memory storage reset before each test
+2. Simple Bearer token auth (JWT later)
+3. Real email sending disabled
+4. Each test isolated
+5. Mockito mocks FamilyService
 
-## 扩展测试
+## Extending Tests
 
-如果需要添加更多测试，可以：
+You can add:
+1. More boundary tests
+2. Different relationship types
+3. Notification preference variants
+4. Concurrency scenarios
+5. Performance metrics
 
-1. **添加更多边界条件测试**
-2. **测试不同的关系类型**
-3. **测试通知偏好设置**
-4. **测试并发操作**
-5. **测试性能指标**
+## Troubleshooting
 
-## 故障排除
+### Common Issues
 
-### 常见问题
+1. Test failure: verify FamilyService implementation
+2. Compilation error: check dependencies
+3. Auth failure: check Authorization header format
 
-1. **测试失败**：检查FamilyService是否正确实现
-2. **编译错误**：确保所有依赖都已正确导入
-3. **认证失败**：检查认证头的格式是否正确
+### Debug Tips
 
-### 调试技巧
+1. Add `System.out.println()` for quick logs
+2. Use IDE debugger
+3. Inspect test logs
 
-1. 在测试中添加`System.out.println()`输出调试信息
-2. 使用IDE的调试功能逐步执行测试
-3. 查看测试日志了解详细错误信息
+## Future Roadmap
 
-## 未来规划
+### After database integration
+1. Service layer unit tests
+2. Repository tests
+3. DB integration tests
+4. Transaction tests
 
-### 当项目接入数据库后
-1. **添加Service层单元测试**
-2. **添加Repository层测试**
-3. **添加数据库集成测试**
-4. **添加事务测试**
-
-### 当项目有外部服务时
-1. **添加外部服务集成测试**
-2. **添加端到端测试**
-3. **添加性能测试**
-4. **添加负载测试** 
+### With external services
+1. External service integration tests
+2. End-to-end tests
+3. Performance tests
+4. Load tests
