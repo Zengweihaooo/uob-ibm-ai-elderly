@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # SQLite Database API Testing Script
-# SQLite数据库API测试脚本
 
 BASE_URL="http://localhost:8080"
 

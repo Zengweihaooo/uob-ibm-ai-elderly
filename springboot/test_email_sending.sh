@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Email Sending Test Script
-# 邮件发送测试脚本
 
 echo "==================================="
 echo "Email Sending Test for IBM AI Elderly Care System"
