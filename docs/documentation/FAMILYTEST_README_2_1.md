@@ -1,178 +1,119 @@
-# FamilyController 测试说明
+# FamilyController Test Guide
 
-## 概述
+## Overview
+Complete unit test suite for FamilyController.
 
-本项目为FamilyController创建了完整的单元测试套件。
-
-## 测试文件结构
+## Structure
 
 ```
 src/test/java/com/example/demo/controller/
-└── FamilyControllerTest.java              # 单元测试（使用Mock）
+└── FamilyControllerTest.java  # Unit tests (Mock-based)
 ```
 
-## 测试类型
+## Unit Tests
+### Unit Test (FamilyControllerTest.java)
 
-### 单元测试 (FamilyControllerTest.java)
+Characteristics:
+- `@WebMvcTest` only loads web layer
+- `@MockBean` for FamilyService
+- Controller logic + HTTP responses
+- Fast & isolated
+- No DB / external dependencies
 
-**特点：**
-- 使用`@WebMvcTest`注解，只加载Web层
-- 使用`@MockBean`模拟FamilyService
-- 测试Controller层的逻辑和HTTP响应
-- 运行速度快，隔离性好
-- 不依赖数据库或外部服务
+Coverage:
+- Add contact (success/failure)
+- Get all contacts
+- Get one contact
+- Update contact
+- Delete contact
+- Send message
+- Emergency contacts
+- Statistics
+- Auth validation
+- Data validation
+- Error handling
 
-**测试内容：**
-- ✅ 添加家庭联系人（成功/失败场景）
-- ✅ 获取所有联系人
-- ✅ 获取特定联系人
-- ✅ 更新联系人
-- ✅ 删除联系人
-- ✅ 发送消息
-- ✅ 获取紧急联系人
-- ✅ 获取统计信息
-- ✅ 认证验证
-- ✅ 数据验证
-- ✅ 错误处理
+## Run
 
-## 如何运行测试
-
-### 方法1：使用Maven Wrapper
+Maven Wrapper:
 
 ```bash
-# 进入项目目录
+cd uob-ibm-ai-elderly/springboot
 cd uob-ibm-ai-elderly/springboot
 
-# 运行所有测试
 ./mvnw test
-
-# 运行特定测试类
 ./mvnw test -Dtest=FamilyControllerTest
-
-# 运行特定测试方法
 ./mvnw test -Dtest=FamilyControllerTest#testAddFamilyContact_Success
 ```
 
-### 方法2：使用批处理脚本（Windows）
+Batch (Windows):
 
 ```bash
-# 双击运行
+run-familytests.bat
 run-familytests.bat
 ```
 
-### 方法3：使用IDE
+IDE: Right-click -> Run
 
-在IDE中右键点击测试类或测试方法，选择"Run Test"。
+## Sample Data
 
-## 测试数据
-
-### 测试联系人数据
+### Contact JSON
 
 ```json
 {
-  "name": "张三",
+  "name": "Zhang San",
   "phoneNumber": "13800138000",
   "email": "zhangsan@example.com",
   "relationship": "CHILD",
   "notificationPreference": "ALL",
   "isEmergencyContact": true,
-  "notes": "我的儿子"
+  "notes": "My son"
 }
 ```
 
-### 认证头
-
-所有需要认证的API都使用以下认证头：
+Auth Header:
 ```
 Authorization: Bearer test-token
 ```
 
-## 测试覆盖的API端点
+## Endpoints Tested
 
-| HTTP方法 | 端点 | 描述 | 测试状态 |
-|---------|------|------|----------|
-| POST | `/api/family/contacts` | 添加联系人 | ✅ |
-| GET | `/api/family/contacts` | 获取所有联系人 | ✅ |
-| GET | `/api/family/contacts/{id}` | 获取特定联系人 | ✅ |
-| PUT | `/api/family/contacts/{id}` | 更新联系人 | ✅ |
-| DELETE | `/api/family/contacts/{id}` | 删除联系人 | ✅ |
-| POST | `/api/family/contacts/{id}/message` | 发送消息 | ✅ |
-| GET | `/api/family/emergency-contacts` | 获取紧急联系人 | ✅ |
-| GET | `/api/family/stats` | 获取统计信息 | ✅ |
+| HTTP | Endpoint | Description | Tested |
+|------|----------|-------------|--------|
+| POST | `/api/family/contacts` | Add contact | ✅ |
+| GET | `/api/family/contacts` | List contacts | ✅ |
+| GET | `/api/family/contacts/{id}` | Get contact | ✅ |
+| PUT | `/api/family/contacts/{id}` | Update contact | ✅ |
+| DELETE | `/api/family/contacts/{id}` | Delete contact | ✅ |
+| POST | `/api/family/contacts/{id}/message` | Send message | ✅ |
+| GET | `/api/family/emergency-contacts` | Emergency contacts | ✅ |
+| GET | `/api/family/stats` | Statistics | ✅ |
 
-## 测试场景
+## Scenarios
+Success: add/list/update/delete/send
+Errors: missing auth, invalid auth, missing fields, not found, service exception
+Edge: empty list, multiple contacts, emergency filter
 
-### 成功场景
-- ✅ 正常添加联系人
-- ✅ 正常获取联系人列表
-- ✅ 正常更新联系人信息
-- ✅ 正常删除联系人
-- ✅ 正常发送消息
+## Responses
+Success: 200 + `{"success": true, ...}`
+Failure: 400/401/404/500 + `{"success": false, "message": "Error description"}`
 
-### 错误场景
-- ✅ 缺少认证头
-- ✅ 无效的认证头
-- ✅ 缺少必填字段
-- ✅ 联系人不存在
-- ✅ 服务异常
+## Notes
+1. In-memory reset per test
+2. Simple Bearer token (JWT later)
+3. Email disabled
+4. Each test isolated
+5. Mockito mock service
 
-### 边界场景
-- ✅ 空联系人列表
-- ✅ 多个联系人管理
-- ✅ 紧急联系人筛选
+## Extend
+Boundary cases, relationships, notification prefs, concurrency, performance
 
-## 测试结果解读
+## Troubleshooting
+Service impl, dependencies, auth header
 
-### 成功测试
-- HTTP状态码：200 OK
-- 响应格式：`{"success": true, "message": "...", "data": {...}}`
+## Debug
+Print logs, debugger, review output
 
-### 失败测试
-- HTTP状态码：400 Bad Request / 401 Unauthorized / 404 Not Found / 500 Internal Server Error
-- 响应格式：`{"success": false, "message": "错误描述"}`
-
-## 注意事项
-
-1. **内存存储**：测试使用内存存储，每次测试前会自动清理数据
-2. **认证模拟**：目前使用简单的Bearer token验证，实际项目中需要实现JWT验证
-3. **邮件服务**：测试环境禁用了真实的邮件发送，避免发送测试邮件
-4. **数据隔离**：每个测试方法都是独立的，不会相互影响
-5. **Mock使用**：使用Mockito模拟FamilyService，确保测试的隔离性
-
-## 扩展测试
-
-如果需要添加更多测试，可以：
-
-1. **添加更多边界条件测试**
-2. **测试不同的关系类型**
-3. **测试通知偏好设置**
-4. **测试并发操作**
-5. **测试性能指标**
-
-## 故障排除
-
-### 常见问题
-
-1. **测试失败**：检查FamilyService是否正确实现
-2. **编译错误**：确保所有依赖都已正确导入
-3. **认证失败**：检查认证头的格式是否正确
-
-### 调试技巧
-
-1. 在测试中添加`System.out.println()`输出调试信息
-2. 使用IDE的调试功能逐步执行测试
-3. 查看测试日志了解详细错误信息
-
-## 未来规划
-
-### 当项目接入数据库后
-1. **添加Service层单元测试**
-2. **添加Repository层测试**
-3. **添加数据库集成测试**
-4. **添加事务测试**
-
-### 当项目有外部服务时
-1. **添加外部服务集成测试**
-2. **添加端到端测试**
-3. **添加性能测试**
-4. **添加负载测试** 
+## Future
+After DB: service/repo/db/transaction tests
+With external services: integration/E2E/performance/load
