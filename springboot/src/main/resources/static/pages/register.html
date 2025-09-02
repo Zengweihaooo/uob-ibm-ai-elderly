@@ -556,12 +556,12 @@
                         const errorMatch = htmlText.match(/Error: ([^<]+)/);
                         const errorMsg = errorMatch ? errorMatch[1] : 'Registration failed. Please try again.';
                         showMessage(errorMsg, 'error');
-                    } else if (htmlText.includes('请使用有效的邮箱域名')) {
-                        showMessage('请使用有效的邮箱域名，不能使用测试域名（如 example.com）', 'error');
-                    } else if (htmlText.includes('邮箱格式无效')) {
-                        showMessage('邮箱格式无效，请输入正确的邮箱地址', 'error');
-                    } else if (htmlText.includes('该邮箱已被注册')) {
-                        showMessage('该邮箱已被注册，请使用其他邮箱地址', 'error');
+                    } else if (htmlText.includes('Please use a valid email domain')) {
+                        showMessage('Please use a valid email domain, test domains (e.g., example.com) are not allowed', 'error');
+                    } else if (htmlText.includes('Invalid email format')) {
+                        showMessage('Invalid email format. Please enter a correct email address', 'error');
+                    } else if (htmlText.includes('This email has already been registered')) {
+                        showMessage('This email has already been registered. Please use another email address', 'error');
                     } else {
                         showMessage('Failed to send verification code. Please try again.', 'error');
                     }

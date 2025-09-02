@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -305,7 +305,7 @@
     </div>
 
     <script>
-        // 显示结果
+        // Show result
         function showResult(elementId, data, isSuccess = true) {
             const element = document.getElementById(elementId);
             element.textContent = JSON.stringify(data, null, 2);
@@ -313,7 +313,7 @@
             element.style.display = 'block';
         }
 
-        // 创建备忘录
+        // Create memo
         document.getElementById('createForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -338,7 +338,7 @@
                 showResult('createResult', data, data.success);
                 
                 if (data.success) {
-                    // 清空表单
+                    // Clear form
                     document.getElementById('createForm').reset();
                 }
             } catch (error) {
@@ -346,7 +346,7 @@
             }
         });
 
-        // 获取备忘录列表
+        // Get memo list
         async function getMemos() {
             try {
                 const response = await fetch('/api/memo/list');
@@ -362,7 +362,7 @@
             }
         }
 
-        // 显示备忘录列表
+        // Display memo list
         function displayMemos(memos) {
             const memoList = document.getElementById('memoList');
             memoList.innerHTML = '';
@@ -383,7 +383,7 @@
             });
         }
 
-        // 搜索备忘录
+        // Search memos
         async function searchMemos() {
             const keyword = document.getElementById('searchKeyword').value.trim();
             
@@ -406,7 +406,7 @@
             }
         }
 
-        // 设置PIN码
+        // Set PIN code
         async function setPinCode() {
             const pinCode = document.getElementById('setPinCode').value.trim();
             
@@ -437,7 +437,7 @@
             }
         }
 
-        // 验证PIN码
+        // Verify PIN code
         async function verifyPinCode() {
             const pinCode = document.getElementById('verifyPinCode').value.trim();
             
@@ -468,7 +468,7 @@
             }
         }
 
-        // 获取统计信息
+        // Get statistics
         async function getStatistics() {
             try {
                 const response = await fetch('/api/memo/statistics');
@@ -480,7 +480,7 @@
             }
         }
 
-        // 页面加载时自动获取备忘录列表
+        // Auto-load memo list on page load
         document.addEventListener('DOMContentLoaded', function() {
             getMemos();
         });
