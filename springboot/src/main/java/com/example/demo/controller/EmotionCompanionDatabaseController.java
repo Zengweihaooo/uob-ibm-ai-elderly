@@ -32,10 +32,10 @@ public class EmotionCompanionDatabaseController {
     private UserContextUtil userContextUtil;
 
     /**
-     * 获取或初始化用户的情感陪伴状态
-     * @param userId 用户ID (可选，如果提供则验证与token中的用户ID是否一致)
+     * Get (or lazily initialize) the user's emotion companion state.
+     * @param userId Optional user ID (if provided it's validated against the token user ID)
      * @param authorization Authorization header (Bearer token)
-     * @return 情感陪伴状态
+     * @return Emotion companion state
      */
     @GetMapping("/state")
     public ResponseEntity<Map<String, Object>> getEmotionCompanionState(
@@ -45,14 +45,14 @@ public class EmotionCompanionDatabaseController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 验证JWT token
+            // Validate JWT token
             if (authorization == null || !userContextUtil.isValidAuthHeader(authorization)) {
                 response.put("success", false);
                 response.put("message", "Invalid or missing authorization token");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
             
-            // 从token中提取用户ID
+            // Extract user ID from token
             Long tokenUserId = userContextUtil.getUserIdFromAuthHeader(authorization);
             if (tokenUserId == null) {
                 response.put("success", false);
@@ -60,14 +60,14 @@ public class EmotionCompanionDatabaseController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
             
-            // 如果请求参数中提供了userId，验证是否与token中的用户ID一致
+            // If request param userId provided, ensure it matches token user ID
             if (userId != null && !userId.equals(tokenUserId)) {
                 response.put("success", false);
                 response.put("message", "User ID mismatch: token user ID does not match requested user ID");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
             }
             
-            // 使用token中的用户ID
+            // Use token user ID if request param absent
             Long targetUserId = userId != null ? userId : tokenUserId;
             EmotionCompanion companion = emotionCompanionService.getOrInit(targetUserId);
             
@@ -86,10 +86,10 @@ public class EmotionCompanionDatabaseController {
     }
 
     /**
-     * 更新情感陪伴状态
-     * @param companion 包含更新字段的EmotionCompanion对象（必须包含userId）
+     * Update emotion companion state.
+     * @param companion EmotionCompanion with fields to update (must include userId)
      * @param authorization Authorization header (Bearer token)
-     * @return 更新后的状态
+     * @return Updated state
      */
     @PatchMapping("/state")
     public ResponseEntity<Map<String, Object>> updateEmotionCompanionState(
@@ -99,14 +99,14 @@ public class EmotionCompanionDatabaseController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 验证JWT token
+            // Validate JWT token
             if (authorization == null || !userContextUtil.isValidAuthHeader(authorization)) {
                 response.put("success", false);
                 response.put("message", "Invalid or missing authorization token");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
             
-            // 从token中提取用户ID
+            // Extract user ID from token
             Long tokenUserId = userContextUtil.getUserIdFromAuthHeader(authorization);
             if (tokenUserId == null) {
                 response.put("success", false);
@@ -114,14 +114,14 @@ public class EmotionCompanionDatabaseController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
             
-            // 验证请求体中的用户ID
+            // Validate userId presence in body
             if (companion.getUserId() == null) {
                 response.put("success", false);
                 response.put("message", "UserId is required in request body");
                 return ResponseEntity.badRequest().body(response);
             }
             
-            // 验证用户ID是否与token中的用户ID一致
+            // Ensure body userId matches token userId
             if (!companion.getUserId().equals(tokenUserId)) {
                 response.put("success", false);
                 response.put("message", "User ID mismatch: token user ID does not match request body user ID");
@@ -145,10 +145,10 @@ public class EmotionCompanionDatabaseController {
     }
 
     /**
-     * 更新用户交互时间
-     * @param requestData 包含userId的请求体
+     * Update user's last interaction timestamp.
+     * @param requestData request body containing userId
      * @param authorization Authorization header (Bearer token)
-     * @return 操作结果
+     * @return Operation result
      */
     @PostMapping("/touch/interaction")
     public ResponseEntity<Map<String, Object>> touchInteraction(
@@ -158,14 +158,14 @@ public class EmotionCompanionDatabaseController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 验证JWT token
+            // Validate JWT token
             if (authorization == null || !userContextUtil.isValidAuthHeader(authorization)) {
                 response.put("success", false);
                 response.put("message", "Invalid or missing authorization token");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
             
-            // 从token中提取用户ID
+            // Extract user ID from token
             Long tokenUserId = userContextUtil.getUserIdFromAuthHeader(authorization);
             if (tokenUserId == null) {
                 response.put("success", false);
@@ -173,7 +173,7 @@ public class EmotionCompanionDatabaseController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
             
-            // 验证请求体中的用户ID
+            // Validate userId field
             Object userIdObj = requestData.get("userId");
             if (userIdObj == null) {
                 response.put("success", false);
@@ -183,7 +183,7 @@ public class EmotionCompanionDatabaseController {
             
             Long requestUserId = Long.valueOf(userIdObj.toString());
             
-            // 验证用户ID是否与token中的用户ID一致
+            // Ensure request userId matches token userId
             if (!requestUserId.equals(tokenUserId)) {
                 response.put("success", false);
                 response.put("message", "User ID mismatch: token user ID does not match request body user ID");
@@ -206,10 +206,10 @@ public class EmotionCompanionDatabaseController {
     }
 
     /**
-     * 更新用户聊天时间
-     * @param requestData 包含userId的请求体
+     * Update user's last chat timestamp.
+     * @param requestData request body containing userId
      * @param authorization Authorization header (Bearer token)
-     * @return 操作结果
+     * @return Operation result
      */
     @PostMapping("/touch/chat")
     public ResponseEntity<Map<String, Object>> touchChat(
@@ -219,14 +219,14 @@ public class EmotionCompanionDatabaseController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 验证JWT token
+            // Validate JWT token
             if (authorization == null || !userContextUtil.isValidAuthHeader(authorization)) {
                 response.put("success", false);
                 response.put("message", "Invalid or missing authorization token");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
             
-            // 从token中提取用户ID
+            // Extract user ID from token
             Long tokenUserId = userContextUtil.getUserIdFromAuthHeader(authorization);
             if (tokenUserId == null) {
                 response.put("success", false);
@@ -234,7 +234,7 @@ public class EmotionCompanionDatabaseController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
             
-            // 验证请求体中的用户ID
+            // Validate userId field
             Object userIdObj = requestData.get("userId");
             if (userIdObj == null) {
                 response.put("success", false);
@@ -244,7 +244,7 @@ public class EmotionCompanionDatabaseController {
             
             Long requestUserId = Long.valueOf(userIdObj.toString());
             
-            // 验证用户ID是否与token中的用户ID一致
+            // Ensure request userId matches token userId
             if (!requestUserId.equals(tokenUserId)) {
                 response.put("success", false);
                 response.put("message", "User ID mismatch: token user ID does not match request body user ID");
@@ -267,10 +267,10 @@ public class EmotionCompanionDatabaseController {
     }
 
     /**
-     * 重置用户的情感陪伴（删除记录）
-     * @param requestData 包含userId的请求体
+     * Reset (delete) the user's emotion companion record.
+     * @param requestData request body containing userId
      * @param authorization Authorization header (Bearer token)
-     * @return 操作结果
+     * @return Operation result
      */
     @PostMapping("/reset")
     public ResponseEntity<Map<String, Object>> resetEmotionCompanion(
@@ -280,14 +280,14 @@ public class EmotionCompanionDatabaseController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 验证JWT token
+            // Validate JWT token
             if (authorization == null || !userContextUtil.isValidAuthHeader(authorization)) {
                 response.put("success", false);
                 response.put("message", "Invalid or missing authorization token");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
             
-            // 从token中提取用户ID
+            // Extract user ID from token
             Long tokenUserId = userContextUtil.getUserIdFromAuthHeader(authorization);
             if (tokenUserId == null) {
                 response.put("success", false);
@@ -295,7 +295,7 @@ public class EmotionCompanionDatabaseController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
             
-            // 验证请求体中的用户ID
+            // Validate userId field
             Object userIdObj = requestData.get("userId");
             if (userIdObj == null) {
                 response.put("success", false);
@@ -305,7 +305,7 @@ public class EmotionCompanionDatabaseController {
             
             Long requestUserId = Long.valueOf(userIdObj.toString());
             
-            // 验证用户ID是否与token中的用户ID一致
+            // Ensure request userId matches token userId
             if (!requestUserId.equals(tokenUserId)) {
                 response.put("success", false);
                 response.put("message", "User ID mismatch: token user ID does not match request body user ID");
@@ -328,9 +328,9 @@ public class EmotionCompanionDatabaseController {
     }
     
     /**
-     * JWT测试端点 - 用于验证JWT功能
+     * JWT test endpoint - verify token validity & extraction helpers.
      * @param authorization Authorization header (Bearer token)
-     * @return JWT验证结果
+     * @return JWT validation result
      */
     @GetMapping("/jwt-test")
     public ResponseEntity<Map<String, Object>> testJwt(

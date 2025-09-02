@@ -12,15 +12,15 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * AWS服务初始化控制器
- * 提供API端点来管理AWS服务的初始化、数据迁移等
- * 
- * @author Lepeng Zhou
- * @version 1.0
+ * AWS services initialization controller.
+ * Provides API endpoints to manage AWS service initialization and data migration.
+ *
+ * Author: Lepeng Zhou
+ * Version: 1.0
  */
 @RestController
 @RequestMapping("/api/aws")
-@Profile("aws") // 只在AWS环境下使用
+@Profile("aws") // Only active in AWS profile
 public class AWSInitializationController {
     
     private static final Logger logger = Logger.getLogger(AWSInitializationController.class.getName());
@@ -32,8 +32,8 @@ public class AWSInitializationController {
     private DataMigrationService migrationService;
     
     /**
-     * 初始化AWS服务
-     * 创建必要的DynamoDB表
+     * Initialize AWS services.
+     * Creates the required DynamoDB tables.
      */
     @PostMapping("/init")
     public ResponseEntity<Map<String, Object>> initializeAWS() {
@@ -42,7 +42,7 @@ public class AWSInitializationController {
         try {
             logger.info("Initializing AWS services...");
             
-            // 初始化DynamoDB表
+            // Initialize DynamoDB tables
             tableManager.initializeTables();
             
             response.put("success", true);
@@ -65,8 +65,8 @@ public class AWSInitializationController {
     }
     
     /**
-     * 执行数据迁移
-     * 从SQLite迁移数据到DynamoDB
+     * Execute data migration.
+     * Migrates data from SQLite to DynamoDB.
      */
     @PostMapping("/migrate")
     public ResponseEntity<Map<String, Object>> migrateData() {
@@ -75,7 +75,7 @@ public class AWSInitializationController {
         try {
             logger.info("Starting data migration...");
             
-            // 执行数据迁移
+            // Perform data migration
             DataMigrationService.MigrationResult result = migrationService.migrateAllData();
             
             response.put("success", result.success);
@@ -103,8 +103,8 @@ public class AWSInitializationController {
     }
     
     /**
-     * 异步执行数据迁移
-     * 不阻塞请求线程
+     * Execute data migration asynchronously.
+     * Does not block the request thread.
      */
     @PostMapping("/migrate/async")
     public ResponseEntity<Map<String, Object>> migrateDataAsync() {
@@ -113,7 +113,7 @@ public class AWSInitializationController {
         try {
             logger.info("Starting asynchronous data migration...");
             
-            // 异步执行数据迁移
+            // Run migration asynchronously
             migrationService.migrateAllDataAsync()
                 .thenAccept(result -> {
                     if (result.success) {
@@ -145,7 +145,7 @@ public class AWSInitializationController {
     }
     
     /**
-     * 验证迁移结果
+     * Validate migration results.
      */
     @GetMapping("/migrate/validate")
     public ResponseEntity<Map<String, Object>> validateMigration() {
@@ -154,7 +154,7 @@ public class AWSInitializationController {
         try {
             logger.info("Validating migration results...");
             
-            // 验证迁移结果
+            // Validate migration outcome
             DataMigrationService.ValidationResult result = migrationService.validateMigration();
             
             response.put("success", true);
@@ -175,7 +175,7 @@ public class AWSInitializationController {
     }
     
     /**
-     * 获取AWS服务状态
+     * Get AWS service status.
      */
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getAWSStatus() {
@@ -184,7 +184,7 @@ public class AWSInitializationController {
         try {
             logger.info("Getting AWS service status...");
             
-            // 检查DynamoDB表状态
+            // Check DynamoDB table status
             tableManager.describeTable("pet_mood");
             tableManager.describeTable("schedules");
             
@@ -207,7 +207,7 @@ public class AWSInitializationController {
     }
     
     /**
-     * 健康检查端点
+     * Health check endpoint.
      */
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> healthCheck() {

@@ -15,10 +15,10 @@ import com.example.demo.service.ScheduleService;
 
 /**
  * Morning Scheduler Controller
- * 提供早晨调度相关的REST API接口
- * 
- * @author Lepeng Zhou
- * @version 1.0
+ * Provides REST API endpoints related to morning scheduling and routines.
+ *
+ * Author: Lepeng Zhou
+ * Version: 1.0
  */
 //@RestController
 //@RequestMapping("/api/morning")
@@ -36,10 +36,10 @@ public class MorningSchedulerController {
     }
 
     /**
-     * 手动触发早安问候（用于测试）
-     * 
-     * @param userId 用户ID
-     * @return 操作结果
+     * Manually trigger a morning greeting (for testing).
+     *
+     * @param userId user ID
+     * @return operation result
      */
     @PostMapping("/greeting/trigger")
     public ResponseEntity<Map<String, Object>> triggerMorningGreeting(
@@ -52,11 +52,11 @@ public class MorningSchedulerController {
             
             if (success) {
                 response.put("success", true);
-                response.put("message", "早安问候已触发");
+                response.put("message", "Morning greeting triggered");
                 response.put("userId", userId);
             } else {
                 response.put("success", false);
-                response.put("message", "用户今天已有早安问候");
+                response.put("message", "Morning greeting already sent today");
                 response.put("userId", userId);
             }
             
@@ -64,17 +64,17 @@ public class MorningSchedulerController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "触发早安问候失败: " + e.getMessage());
+            response.put("message", "Failed to trigger morning greeting: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     /**
-     * 处理用户意图，创建相应的待办事项
-     * 
-     * @param userId 用户ID
-     * @param requestBody 包含intent的请求体
-     * @return 创建的待办事项
+     * Process a user intent and create the corresponding TODO item.
+     *
+     * @param userId user ID
+     * @param requestBody request body containing the intent
+     * @return created TODO item
      */
     @PostMapping("/intent")
     public ResponseEntity<Map<String, Object>> handleIntent(
@@ -88,7 +88,7 @@ public class MorningSchedulerController {
             
             if (intent == null || intent.trim().isEmpty()) {
                 response.put("success", false);
-                response.put("message", "意图不能为空");
+                response.put("message", "Intent must not be empty");
                 return ResponseEntity.badRequest().body(response);
             }
             
@@ -96,12 +96,12 @@ public class MorningSchedulerController {
             
             if (createdTodo != null) {
                 response.put("success", true);
-                response.put("message", "成功处理用户意图");
+                response.put("message", "Successfully processed user intent");
                 response.put("todo", createdTodo);
                 response.put("intent", intent);
             } else {
                 response.put("success", false);
-                response.put("message", "处理用户意图失败或意图未知");
+                response.put("message", "Failed to process user intent or intent unknown");
                 response.put("intent", intent);
             }
             
@@ -109,16 +109,16 @@ public class MorningSchedulerController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "处理用户意图失败: " + e.getMessage());
+            response.put("message", "Failed to process user intent: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     /**
-     * 获取用户的早晨日程建议
-     * 
-     * @param userId 用户ID
-     * @return 早晨日程建议
+     * Get morning schedule suggestions for the user.
+     *
+     * @param userId user ID
+     * @return morning schedule suggestions
      */
     @GetMapping("/suggestions")
     public ResponseEntity<Map<String, Object>> getMorningSuggestions(
@@ -138,16 +138,16 @@ public class MorningSchedulerController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "获取早晨建议失败: " + e.getMessage());
+            response.put("message", "Failed to get morning suggestions: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     /**
-     * 获取用户今天的早晨日程
-     * 
-     * @param userId 用户ID
-     * @return 今天的早晨日程
+     * Get the user's morning schedule for today.
+     *
+     * @param userId user ID
+     * @return today's morning schedule
      */
     @GetMapping("/schedule")
     public ResponseEntity<Map<String, Object>> getTodayMorningSchedule(
@@ -158,7 +158,7 @@ public class MorningSchedulerController {
         try {
             List<Schedule> todaySchedule = scheduleService.getTodaySchedule(userId);
             
-            // 过滤早晨活动（12点之前）
+            // Filter morning activities (before 12:00)
             List<Schedule> morningSchedule = todaySchedule.stream()
                 .filter(schedule -> schedule.getActivityTime().getHour() < 12)
                 .sorted((a, b) -> a.getActivityTime().compareTo(b.getActivityTime()))
@@ -173,16 +173,16 @@ public class MorningSchedulerController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "获取早晨日程失败: " + e.getMessage());
+            response.put("message", "Failed to get morning schedule: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     /**
-     * 检查用户是否有早安问候
-     * 
-     * @param userId 用户ID
-     * @return 检查结果
+     * Check whether the user has a morning greeting.
+     *
+     * @param userId user ID
+     * @return check result
      */
     @GetMapping("/greeting/check")
     public ResponseEntity<Map<String, Object>> checkMorningGreeting(
@@ -201,15 +201,15 @@ public class MorningSchedulerController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "检查早安问候失败: " + e.getMessage());
+            response.put("message", "Failed to check morning greeting: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     /**
-     * 获取可用的用户意图列表
-     * 
-     * @return 可用的意图列表
+     * Get list of available user intents.
+     *
+     * @return list of available intents
      */
     @GetMapping("/intents")
     public ResponseEntity<Map<String, Object>> getAvailableIntents() {
@@ -218,11 +218,11 @@ public class MorningSchedulerController {
         
         try {
             Map<String, String> intents = new HashMap<>();
-            intents.put("SCHEDULE_PODCAST", "安排播客时间");
-            intents.put("REMIND_WALK", "提醒散步");
-            intents.put("MESSAGE_FAMILY", "联系家人");
-            intents.put("MORNING_EXERCISE", "晨练安排");
-            intents.put("BREAKFAST_REMINDER", "早餐提醒");
+            intents.put("SCHEDULE_PODCAST", "Schedule podcast time");
+            intents.put("REMIND_WALK", "Remind to walk");
+            intents.put("MESSAGE_FAMILY", "Contact family");
+            intents.put("MORNING_EXERCISE", "Morning exercise");
+            intents.put("BREAKFAST_REMINDER", "Breakfast reminder");
             
             response.put("success", true);
             response.put("intents", intents);
@@ -232,17 +232,17 @@ public class MorningSchedulerController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "获取意图列表失败: " + e.getMessage());
+            response.put("message", "Failed to get intent list: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     /**
-     * 批量处理多个意图
-     * 
-     * @param userId 用户ID
-     * @param requestBody 包含intents数组的请求体
-     * @return 处理结果
+     * Batch process multiple intents.
+     *
+     * @param userId user ID
+     * @param requestBody request body containing an intents array
+     * @return processing result
      */
     @PostMapping("/intents/batch")
     public ResponseEntity<Map<String, Object>> handleMultipleIntents(
@@ -257,7 +257,7 @@ public class MorningSchedulerController {
             
             if (intents == null || intents.isEmpty()) {
                 response.put("success", false);
-                response.put("message", "意图列表不能为空");
+                response.put("message", "Intent list must not be empty");
                 return ResponseEntity.badRequest().body(response);
             }
             
@@ -273,7 +273,7 @@ public class MorningSchedulerController {
                         failedIntents.add(intent);
                     }
                 } catch (Exception e) {
-                    failedIntents.add(intent + " (错误: " + e.getMessage() + ")");
+                    failedIntents.add(intent + " (error: " + e.getMessage() + ")");
                 }
             }
             
@@ -289,7 +289,7 @@ public class MorningSchedulerController {
             
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "批量处理意图失败: " + e.getMessage());
+            response.put("message", "Failed to batch process intents: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

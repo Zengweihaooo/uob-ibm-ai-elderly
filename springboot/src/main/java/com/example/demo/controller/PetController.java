@@ -3,7 +3,7 @@ package com.example.demo.controller;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList; //新增
+import java.util.ArrayList; 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,10 +50,10 @@ public class PetController {
         Long userId = getUserIdFromToken(authHeader);
         
         try {
-            // 使用PetMoodService获取宠物状态
+            // Retrieve pet status using PetMoodService
             Map<String, Object> petStatus = petMoodService.getFullPetStatus(userId);
             
-            // 检查是否被忽视
+            // Check if the pet has been neglected
             checkNeglect(userId);
 
             response.put("success", true);
@@ -93,10 +93,10 @@ public class PetController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            // 使用PetMoodService处理交互
+            // Process interaction via PetMoodService helper
             Map<String, Object> interactionResult = processInteraction(interactionType, message, userId);
             
-            // 获取更新后的宠物状态
+            // Get updated pet status after interaction
             Map<String, Object> petStatus = petMoodService.getFullPetStatus(userId);
             
             response.put("success", true);
@@ -323,10 +323,10 @@ public class PetController {
         Long userId = getUserIdFromToken(authHeader);
         
         try {
-            // 获取当前宠物状态
+            // Get current pet status
             Map<String, Object> petStatus = petMoodService.getFullPetStatus(userId);
             
-            // 更新设置（这里可以扩展更多设置项）
+            // Update settings (can extend with more configurable fields)
             Map<String, Object> settings = new HashMap<>();
             if (settingsData.containsKey("name")) {
                 settings.put("name", settingsData.get("name"));
@@ -360,7 +360,7 @@ public class PetController {
     private Map<String, Object> processInteraction(String type, String message, Long userId) {
         Map<String, Object> result = new HashMap<>();
         
-        // 获取当前宠物状态
+    // Get current pet status
         PetMood currentPet = petMoodService.getOrInitPetMood(userId);
         int currentHappiness = currentPet.getHappiness();
         int currentHealth = currentPet.getHealth();
@@ -406,10 +406,10 @@ public class PetController {
                 result.put("animation", "confused");
         }
         
-        // 使用PetMoodService更新宠物属性
+    // Persist updated pet attributes via service
         petMoodService.updatePetAttributes(userId, currentHappiness, currentHealth, currentEnergy);
         
-        // 增加经验值
+    // Increase experience points
         petMoodService.addExperience(userId, 5);
         
         result.put("type", type);
@@ -427,14 +427,14 @@ public class PetController {
                 long hoursSinceLastInteraction = Duration.between(lastInteraction, LocalDateTime.now()).toHours();
                 
                 if (hoursSinceLastInteraction >= 3) {
-                    // 减少快乐度
+                    // Decrease happiness when neglected
                     int currentHappiness = pet.getHappiness();
                     int newHappiness = Math.max(0, currentHappiness - 10);
                     
-                    // 更新宠物属性
+                    // Update pet attributes after penalty
                     petMoodService.updatePetAttributes(userId, newHappiness, pet.getHealth(), pet.getEnergy());
                     
-                    // 发送悲伤消息
+                    // Send a sad message to the conversation history
                     Map<String, Object> sadMessage = createMessage(
                         "pet",
                         "Meow... I feel lonely, can you be with me? 😢",
@@ -445,7 +445,7 @@ public class PetController {
                 }
             }
         } catch (Exception e) {
-            // 忽略错误，不影响主要功能
+            // Swallow errors to avoid impacting main flow
             System.err.println("Error checking neglect: " + e.getMessage());
         }
     }
@@ -465,7 +465,7 @@ public class PetController {
         String lowerMessage = userMessage.toLowerCase();
         String response;
         
-        // 改进的情感识别逻辑 - 先检查否定词
+    // Improved sentiment detection logic - check negatives first
         boolean isNegative = lowerMessage.contains("not ") || lowerMessage.contains("no ") || 
                            lowerMessage.contains("don't ") || lowerMessage.contains("doesn't ") ||
                            lowerMessage.contains("isn't ") || lowerMessage.contains("aren't ") ||
@@ -481,7 +481,7 @@ public class PetController {
         else if (lowerMessage.contains("schedule") || lowerMessage.contains("appointment") || lowerMessage.contains("reminder")) {
             response = "Purr! 📅 I love helping with schedules! I can see you have some activities planned. Would you like me to remind you about them?";
         }
-        // 负面情感响应 - 优先检查
+    // Negative emotional response (priority)
         else if (isNegative || lowerMessage.contains("sad") || lowerMessage.contains("lonely") || 
                 lowerMessage.contains("tired") || lowerMessage.contains("depressed") || 
                 lowerMessage.contains("anxious") || lowerMessage.contains("worried") ||
@@ -489,7 +489,7 @@ public class PetController {
                 lowerMessage.contains("upset") || lowerMessage.contains("disappointed")) {
             response = "Meow... 😢 I'm sorry you're feeling this way! I'm here for you and I care about you very much. Would you like to talk about what's bothering you? I'm a good listener! 🤗";
         }
-        // 正面情感响应 - 只有在没有否定词的情况下才触发
+    // Positive emotional response only when no negation detected
         else if (!isNegative && (lowerMessage.contains("happy") || lowerMessage.contains("good") || 
                 lowerMessage.contains("great") || lowerMessage.contains("wonderful") || 
                 lowerMessage.contains("excellent") || lowerMessage.contains("fantastic"))) {

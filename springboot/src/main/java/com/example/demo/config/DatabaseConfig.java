@@ -12,14 +12,11 @@ import org.springframework.jdbc.datasource.init.DataSourceInitializer;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 /**
- * Database Configuration for SQLite
- * SQLite数据库配置类
+ * Database Configuration for SQLite.
+ * Responsible for initializing the database file and table structure.
  * 
- * 负责初始化数据库文件和表结构
- * Responsible for initializing database file and table structure
- * 
- * @author Weihao Zeng
- * @version 1.0
+ * Author: Weihao Zeng
+ * Version: 1.0
  */
 @Configuration
 public class DatabaseConfig {
@@ -34,12 +31,11 @@ public class DatabaseConfig {
     private boolean initSchema;
 
     /**
-     * 确保数据库目录存在
-     * Ensure database directory exists
+     * Ensure database (and backup) directories exist.
      */
     @Bean
     public String ensureDatabaseDirectoryExists() {
-        // 创建数据库文件目录
+    // Create database directory
         File dataDir = new File("data");
         if (!dataDir.exists()) {
             boolean created = dataDir.mkdirs();
@@ -48,7 +44,7 @@ public class DatabaseConfig {
             }
         }
 
-        // 创建备份目录
+    // Create backup directory
         File backupDir = new File(backupPath);
         if (!backupDir.exists()) {
             boolean created = backupDir.mkdirs();
@@ -62,11 +58,8 @@ public class DatabaseConfig {
     }
 
     /**
-     * 数据库初始化器
-     * Database initializer
-     * 
-     * 当数据库文件不存在时，自动创建表结构
-     * Automatically creates table structure when database file doesn't exist
+     * Database initializer.
+     * Automatically applies schema and seed scripts (idempotent) if enabled.
      */
     @Bean
     public DataSourceInitializer dataSourceInitializer(DataSource dataSource) {
@@ -74,12 +67,12 @@ public class DatabaseConfig {
         initializer.setDataSource(dataSource);
 
         if (initSchema) {
-            // 始终执行 schema.sql（包含 CREATE TABLE IF NOT EXISTS，幂等安全），确保新增表被创建
+            // Always execute schema.sql (contains CREATE TABLE IF NOT EXISTS; idempotent) to ensure new tables are created.
             File dbFile = new File(databasePath);
             System.out.println((dbFile.exists() ? "Database file exists at: " : "Database file not found. Initializing new database at: ") + dbFile.getAbsolutePath());
 
             ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-            // schema.sql（表结构）
+            // schema.sql (table structure)
             try {
                 ClassPathResource schemaResource = new ClassPathResource("schema.sql");
                 if (schemaResource.exists()) {
@@ -91,7 +84,7 @@ public class DatabaseConfig {
             } catch (Exception e) {
                 System.out.println("Failed to load schema.sql: " + e.getMessage());
             }
-            // data.sql（初始数据，建议使用 INSERT OR IGNORE）
+            // data.sql (seed data; should use INSERT OR IGNORE / idempotent inserts)
             try {
                 ClassPathResource dataResource = new ClassPathResource("data.sql");
                 if (dataResource.exists()) {
