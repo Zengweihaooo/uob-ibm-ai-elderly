@@ -22,25 +22,25 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * 播客服务类
- * 负责与iTunes API进行交互，提供播客搜索、推荐等功能
+ * Podcast service class
+ * Responsible for interacting with iTunes API, providing podcast search and recommendation features
  */
 @Service
 public class PodcastService {
 
-    // Podcastindex API配置
+    // Podcastindex API configuration
     private static final String PODCASTINDEX_API_BASE_URL = "https://api.podcastindex.org/api/1.0";
     private static final String PODCASTINDEX_API_KEY = "LS3YFSDAHTZSGEYYYYHP";
     private static final String PODCASTINDEX_API_SECRET = "#Cxs^5GbcdCnccxgZvbEWkSzH9hv^H4jnvESBVGa";
     
-    // HTTP请求客户端
+    // HTTP request client
     private final RestTemplate restTemplate;
-    // JSON解析器
+    // JSON parser
     private final ObjectMapper objectMapper;
 
     /**
-     * 构造函数
-     * 初始化HTTP客户端和JSON解析器
+     * Constructor
+     * Initialize HTTP client and JSON parser
      */
     public PodcastService() {
         this.restTemplate = new RestTemplate();
@@ -48,8 +48,8 @@ public class PodcastService {
     }
     
     /**
-     * 生成Podcastindex API认证头
-     * @return 包含认证信息的HttpHeaders
+     * Generate Podcastindex API authentication headers
+     * @return HttpHeaders containing authentication information
      */
     private HttpHeaders generateAuthHeaders() {
         HttpHeaders headers = new HttpHeaders();
@@ -57,10 +57,10 @@ public class PodcastService {
         long timestamp = System.currentTimeMillis() / 1000;
         String userAgent = "UOB-IBM-AI-Elderly-Project/1.0";
         
-        // 创建认证字符串
+        // Create authentication string
         String authString = PODCASTINDEX_API_KEY + PODCASTINDEX_API_SECRET + timestamp;
         
-        // 生成SHA1哈希
+        // Generate SHA1 hash
         String hash = generateSHA1Hash(authString);
         
         headers.set("User-Agent", userAgent);
@@ -72,9 +72,9 @@ public class PodcastService {
     }
     
     /**
-     * 生成SHA1哈希
-     * @param input 输入字符串
-     * @return SHA1哈希值
+     * Generate SHA1 hash
+     * @param input input string
+     * @return SHA1 hash value
      */
     private String generateSHA1Hash(String input) {
         try {
@@ -91,29 +91,29 @@ public class PodcastService {
     }
 
     /**
-     * 根据关键词搜索播客
-     * @param query 搜索关键词
-     * @param language 语言过滤器（可选）
-     * @param region 地区过滤器（可选）
-     * @param sortBy 排序方式（可选）：relevance（相关性）、rating（评分）、latest（最新）
-     * @param type 播客类型过滤器（可选）
-     * @return 匹配搜索条件的播客列表
+     * Search podcasts by keyword
+     * @param query search keyword
+     * @param language language filter (optional)
+     * @param region region filter (optional)
+     * @param sortBy sorting method (optional): relevance, rating, latest
+     * @param type podcast type filter (optional)
+     * @return podcast list matching search criteria
      */
     public Map<String, Object> searchPodcasts(String query, String language, String region, String sortBy, String type) {
         try {
-            // 构建API请求URL
+            // Build API request URL
             String url = PODCASTINDEX_API_BASE_URL + "/search/byterm";
             
-            // 使用UriComponentsBuilder构建查询参数
+            // Use UriComponentsBuilder to build query parameters
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                    .queryParam("q", query)                       // 搜索关键词
-                    .queryParam("max", 20);                       // 限制返回结果数量为20个
+                    .queryParam("q", query)                       // Search keyword
+                    .queryParam("max", 20);                       // Limit to 20 results
             
-            // 生成认证头
+            // Generate authentication headers
             HttpHeaders headers = generateAuthHeaders();
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            // 发送GET请求到Podcastindex API
+            // Send GET request to Podcastindex API
             ResponseEntity<String> response = restTemplate.exchange(
                     builder.toUriString(),
                     HttpMethod.GET,
@@ -121,11 +121,11 @@ public class PodcastService {
                     String.class
             );
 
-            // 解析API响应
+            // Parse API response
             return parseSearchResponse(response.getBody());
             
         } catch (Exception e) {
-            // 处理异常，返回错误信息
+            // Handle exceptions, return error message
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("message", "Error searching podcasts: " + e.getMessage());
@@ -134,16 +134,16 @@ public class PodcastService {
     }
 
     /**
-     * 根据用户兴趣获取播客推荐
-     * @param interests 用户兴趣列表
-     * @return 推荐的播客列表
+     * Get podcast recommendations based on user interests
+     * @param interests user interests list
+     * @return recommended podcast list
      */
     public Map<String, Object> getPodcastRecommendations(List<String> interests) {
         try {
             Map<String, Object> response = new HashMap<>();
             List<Podcast> recommendations = new ArrayList<>();
             
-            // 遍历每个兴趣，搜索相关播客
+            // Iterate through each interest, search for related podcasts
             for (String interest : interests) {
                 Map<String, Object> searchResult = searchPodcasts(interest, null, null, "relevance", null);
                 
@@ -151,7 +151,7 @@ public class PodcastService {
                     @SuppressWarnings("unchecked")
                     List<Podcast> podcasts = (List<Podcast>) searchResult.get("podcasts");
                     if (podcasts != null && !podcasts.isEmpty()) {
-                        // 添加前2个播客到推荐列表
+                        // Add the first 2 podcasts to the recommendations list
                         recommendations.addAll(podcasts.subList(0, Math.min(2, podcasts.size())));
                     }
                 }
@@ -172,23 +172,23 @@ public class PodcastService {
     }
 
     /**
-     * 根据播客ID获取播客详细信息
-     * @param podcastId 播客ID
-     * @return 播客详细信息
+     * Get podcast details by podcast ID
+     * @param podcastId podcast ID
+     * @return podcast details
      */
     public Map<String, Object> getPodcastDetails(String podcastId) {
         try {
-            // 构建API请求URL
+            // Build API request URL
             String url = PODCASTINDEX_API_BASE_URL + "/podcasts/byfeedid";
             
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
                     .queryParam("id", podcastId);
             
-            // 生成认证头
+            // Generate authentication headers
             HttpHeaders headers = generateAuthHeaders();
             HttpEntity<String> entity = new HttpEntity<>(headers);
             
-            // 发送GET请求
+            // Send GET request
             ResponseEntity<String> response = restTemplate.exchange(
                     builder.toUriString(),
                     HttpMethod.GET,
@@ -207,19 +207,19 @@ public class PodcastService {
     }
 
     /**
-     * 获取指定播客的剧集列表
-     * @param podcastId 播客ID
-     * @param nextEpisodePubDate 下一页剧集的发布日期（用于分页，可选）
-     * @return 剧集列表
+     * Get episode list for a specific podcast
+     * @param podcastId podcast ID
+     * @param nextEpisodePubDate publication date of the next episode for pagination (optional)
+     * @return episode list
      */
     public Map<String, Object> getPodcastEpisodes(String podcastId, String nextEpisodePubDate) {
         try {
-            // 首先尝试使用Podcast Index API的episodes接口获取所有剧集
+            // First, try to get episodes using the Podcast Index API's episodes interface
             System.out.println("Trying Podcast Index episodes API for podcast ID: " + podcastId);
             
             List<Podcast.Episode> allEpisodes = new ArrayList<>();
             String lastPubDate = null;
-            int maxAttempts = 10; // 最多尝试10次，避免无限循环
+            int maxAttempts = 10; // Max 10 attempts to avoid infinite loop
             int attempt = 0;
             
             while (attempt < maxAttempts) {
@@ -227,7 +227,7 @@ public class PodcastService {
                 System.out.println("Attempt " + attempt + " to fetch episodes");
                 
                 String episodesUrl = PODCASTINDEX_API_BASE_URL + "/episodes/byfeedid";
-                String url = episodesUrl + "?id=" + podcastId + "&max=1000"; // 每次获取1000个剧集
+                String url = episodesUrl + "?id=" + podcastId + "&max=1000"; // Get 1000 episodes each time
                 
                 if (lastPubDate != null) {
                     url += "&since=" + lastPubDate;
@@ -246,7 +246,7 @@ public class PodcastService {
                     String responseBody = response.getBody();
                     System.out.println("Episodes API response length: " + (responseBody != null ? responseBody.length() : 0));
                     
-                    // 尝试解析episodes API响应
+                    // Try to parse episodes API response
                     Map<String, Object> episodesResult = parseEpisodesApiResponse(responseBody);
                     
                     if ((Boolean) episodesResult.get("success")) {
@@ -254,7 +254,7 @@ public class PodcastService {
                         List<Podcast.Episode> episodes = (List<Podcast.Episode>) episodesResult.get("episodes");
                         
                         if (episodes != null && !episodes.isEmpty()) {
-                            // 记录最早的发布日期，用于下次请求
+                            // Record the earliest publication date for the next request
                             Podcast.Episode oldestEpisode = episodes.get(episodes.size() - 1);
                             if (oldestEpisode.getPublishedDate() != null) {
                                 lastPubDate = String.valueOf(oldestEpisode.getPublishedDate().toEpochSecond(java.time.ZoneOffset.UTC));
@@ -263,7 +263,7 @@ public class PodcastService {
                             allEpisodes.addAll(episodes);
                             System.out.println("Added " + episodes.size() + " episodes, total now: " + allEpisodes.size());
                             
-                            // 如果返回的剧集数量少于1000，说明已经获取完所有剧集
+                            // If fewer than 1000 episodes are returned, it means all episodes have been fetched
                             if (episodes.size() < 1000) {
                                 System.out.println("Reached end of episodes, breaking loop");
                                 break;
@@ -281,7 +281,7 @@ public class PodcastService {
                     break;
                 }
                 
-                // 避免过于频繁的API调用
+                // Avoid excessive API calls
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -301,7 +301,7 @@ public class PodcastService {
                 System.out.println("No episodes collected from API, falling back to RSS parsing");
             }
             
-            // 如果API方法失败，回退到RSS解析
+            // If API method fails, fall back to RSS parsing
             System.out.println("Falling back to RSS parsing method");
             return getPodcastEpisodesFromRss(podcastId, nextEpisodePubDate);
             
@@ -309,7 +309,7 @@ public class PodcastService {
             System.err.println("Error in episodes API call: " + e.getMessage());
             e.printStackTrace();
             
-            // 回退到RSS解析
+            // Fall back to RSS parsing
             try {
                 System.out.println("Falling back to RSS parsing due to API error");
                 return getPodcastEpisodesFromRss(podcastId, nextEpisodePubDate);
@@ -323,11 +323,11 @@ public class PodcastService {
     }
     
     /**
-     * 从RSS feed获取播客剧集（回退方法）
+     * Get episodes from RSS feed (fallback method)
      */
     private Map<String, Object> getPodcastEpisodesFromRss(String podcastId, String nextEpisodePubDate) {
         try {
-            // 首先获取播客信息以获取feedUrl
+            // First, get podcast information to get the feedUrl
             Map<String, Object> podcastDetails = getPodcastDetails(podcastId);
             
             if (!(Boolean) podcastDetails.get("success")) {
@@ -344,7 +344,7 @@ public class PodcastService {
                 return errorResponse;
             }
             
-            // 解析RSS feed获取剧集
+            // Parse RSS feed to get episodes
             return parseRssFeed(feedUrl);
             
         } catch (Exception e) {
@@ -356,13 +356,13 @@ public class PodcastService {
     }
 
     /**
-     * 获取热门播客列表
-     * @param region 地区（可选），用于获取特定地区的热门播客
-     * @return 热门播客列表
+     * Get trending podcast list
+     * @param region (optional), for getting trending podcasts in a specific region
+     * @return trending podcast list
      */
     public Map<String, Object> getTrendingPodcasts(String region) {
         try {
-            // 使用搜索API获取热门播客
+            // Use search API to get trending podcasts
             return searchPodcasts("popular", null, region, "relevance", null);
             
         } catch (Exception e) {
@@ -374,9 +374,9 @@ public class PodcastService {
     }
 
     /**
-     * 解析搜索响应
-     * @param responseBody API响应体
-     * @return 解析后的播客列表
+     * Parse search response
+     * @param responseBody API response body
+     * @return parsed podcast list
      */
     private Map<String, Object> parseSearchResponse(String responseBody) {
         Map<String, Object> result = new HashMap<>();
@@ -388,7 +388,7 @@ public class PodcastService {
             
             System.out.println("Parsed JSON root node keys: " + rootNode.fieldNames());
             
-            // 检查API状态
+            // Check API status
             if (rootNode.has("status")) {
                 String status = rootNode.get("status").asText();
                 System.out.println("API status: " + status);
@@ -441,9 +441,9 @@ public class PodcastService {
     }
 
     /**
-     * 解析播客详情响应
-     * @param responseBody API响应体
-     * @return 解析后的播客详情
+     * Parse podcast details response
+     * @param responseBody API response body
+     * @return parsed podcast details
      */
     private Map<String, Object> parsePodcastDetailsResponse(String responseBody) {
         Map<String, Object> result = new HashMap<>();
@@ -453,7 +453,7 @@ public class PodcastService {
             
             JsonNode rootNode = objectMapper.readTree(responseBody);
             
-            // 检查API状态
+            // Check API status
             if (rootNode.has("status") && "true".equals(rootNode.get("status").asText())) {
                 if (rootNode.has("feed")) {
                     JsonNode feedNode = rootNode.get("feed");
@@ -483,9 +483,9 @@ public class PodcastService {
     }
 
     /**
-     * 解析剧集响应
-     * @param responseBody API响应体
-     * @return 解析后的剧集列表
+     * Parse episode response
+     * @param responseBody API response body
+     * @return parsed episode list
      */
     private Map<String, Object> parseEpisodesResponse(String responseBody) {
         Map<String, Object> result = new HashMap<>();
@@ -519,18 +519,18 @@ public class PodcastService {
     }
 
     /**
-     * 解析热门播客响应
-     * @param responseBody API响应体
-     * @return 解析后的热门播客列表
+     * Parse trending podcast response
+     * @param responseBody API response body
+     * @return parsed trending podcast list
      */
     private Map<String, Object> parseTrendingResponse(String responseBody) {
         return parseSearchResponse(responseBody);
     }
     
     /**
-     * 解析RSS feed获取剧集
+     * Parse RSS feed to get episodes
      * @param feedUrl RSS feed URL
-     * @return 剧集列表
+     * @return episode list
      */
     private Map<String, Object> parseRssFeed(String feedUrl) {
         Map<String, Object> result = new HashMap<>();
@@ -538,7 +538,7 @@ public class PodcastService {
         try {
             System.out.println("Parsing RSS feed: " + feedUrl);
             
-            // 设置User-Agent和跟随重定向
+            // Set User-Agent and follow redirects
             HttpHeaders headers = new HttpHeaders();
             headers.set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36");
             
@@ -560,22 +560,22 @@ public class PodcastService {
                 return result;
             }
             
-            // 解析XML
+            // Parse XML
             org.w3c.dom.Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance()
                     .newDocumentBuilder()
                     .parse(new java.io.ByteArrayInputStream(rssContent.getBytes("UTF-8")));
             
             List<Podcast.Episode> episodes = new ArrayList<>();
             
-            // 查找所有item标签（RSS）或entry标签（Atom）
+            // Find all item tags (RSS) or entry tags (Atom)
             org.w3c.dom.NodeList items = doc.getElementsByTagName("item");
             if (items.getLength() == 0) {
-                items = doc.getElementsByTagName("entry"); // 尝试Atom格式
+                items = doc.getElementsByTagName("entry"); // Try Atom format
             }
             
             System.out.println("Found " + items.getLength() + " episodes");
             
-            for (int i = 0; i < Math.min(items.getLength(), 10); i++) { // 限制10个剧集
+            for (int i = 0; i < Math.min(items.getLength(), 10); i++) { // Limit to 10 episodes
                 org.w3c.dom.Element item = (org.w3c.dom.Element) items.item(i);
                 Podcast.Episode episode = parseEpisodeFromXmlElement(item);
                 if (episode != null) {
@@ -598,19 +598,19 @@ public class PodcastService {
     }
     
     /**
-     * 从XML元素解析剧集
-     * @param item XML元素
-     * @return 剧集对象
+     * Parse episode from XML element
+     * @param item XML element
+     * @return episode object
      */
     private Podcast.Episode parseEpisodeFromXmlElement(org.w3c.dom.Element item) {
         try {
             Podcast.Episode episode = new Podcast.Episode();
             
-            // 获取标题
+            // Get title
             String title = getElementText(item, "title");
             episode.setTitle(title != null ? title : "Unknown Episode");
             
-            // 获取描述
+            // Get description
             String description = getElementText(item, "description");
             if (description == null) {
                 description = getElementText(item, "summary");
@@ -620,16 +620,16 @@ public class PodcastService {
             }
             episode.setDescription(description != null ? description : "");
             
-            // 获取音频URL - 支持多种格式
+            // Get audio URL - supports multiple formats
             String audioUrl = getAudioUrlFromElement(item);
             episode.setAudio(audioUrl);
             
-            // 调试信息
+            // Debug information
             if (audioUrl != null) {
                 System.out.println("Found audio URL: " + audioUrl);
             } else {
                 System.out.println("No audio URL found for episode: " + title);
-                // 尝试从描述中提取音频URL
+                // Try to extract audio URL from description
                 if (description != null && !description.isEmpty()) {
                     String extractedUrl = extractUrlFromText(description);
                     if (extractedUrl != null) {
@@ -639,7 +639,7 @@ public class PodcastService {
                 }
             }
             
-            // 获取图片 - 增强图片提取逻辑
+            // Get image - enhanced image extraction logic
             String image = getElementText(item, "image");
             if (image == null) {
                 image = getElementText(item, "itunes:image");
@@ -670,21 +670,21 @@ public class PodcastService {
                     image = getElementText(imageElement, "url");
                 }
             }
-            // 尝试从description中提取图片URL
+            // Try to extract image URL from description
             if (image == null && description != null && !description.isEmpty()) {
                 image = extractImageUrlFromText(description);
             }
             episode.setImage(image);
             episode.setThumbnail(image);
             
-            // 获取时长
+            // Get duration
             String duration = getElementText(item, "duration");
             if (duration == null) {
                 duration = getElementText(item, "itunes:duration");
             }
             episode.setAudioLength(duration != null ? duration : "0");
             
-            // 获取发布日期
+            // Get publication date
             String pubDate = getElementText(item, "pubDate");
             if (pubDate == null) {
                 pubDate = getElementText(item, "published");
@@ -695,7 +695,7 @@ public class PodcastService {
             
             if (pubDate != null) {
                 try {
-                    // 尝试多种日期格式
+                    // Try multiple date formats
                     java.text.SimpleDateFormat[] formats = {
                         new java.text.SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", java.util.Locale.US),
                         new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US),
@@ -709,7 +709,7 @@ public class PodcastService {
                             date = sdf.parse(pubDate);
                             break;
                         } catch (Exception e) {
-                            // 继续尝试下一个格式
+                            // Continue to the next format
                         }
                     }
                     
@@ -739,24 +739,24 @@ public class PodcastService {
     }
     
     /**
-     * 从XML元素获取音频URL
-     * @param item XML元素
-     * @return 音频URL
+     * Get audio URL from XML element
+     * @param item XML element
+     * @return audio URL
      */
     private String getAudioUrlFromElement(org.w3c.dom.Element item) {
-        // 1. 尝试enclosure标签（最常见的音频URL格式）
+        // 1. Try enclosure tag (most common audio URL format)
         org.w3c.dom.NodeList enclosures = item.getElementsByTagName("enclosure");
         for (int i = 0; i < enclosures.getLength(); i++) {
             org.w3c.dom.Element enclosure = (org.w3c.dom.Element) enclosures.item(i);
             String type = enclosure.getAttribute("type");
             String url = enclosure.getAttribute("url");
             
-            // 检查音频类型或直接检查URL扩展名
+            // Check audio type or directly check URL extension
             if (url != null && !url.isEmpty()) {
                 if (type != null && (type.startsWith("audio/") || type.equals("application/octet-stream"))) {
                     return url;
                 }
-                // 如果没有type属性，检查URL扩展名
+                // If no type attribute, check URL extension
                 if (type == null || type.isEmpty()) {
                     String lowerUrl = url.toLowerCase();
                     if (lowerUrl.endsWith(".mp3") || lowerUrl.endsWith(".m4a") || 
@@ -769,7 +769,7 @@ public class PodcastService {
             }
         }
         
-        // 2. 尝试media:content标签
+        // 2. Try media:content tag
         org.w3c.dom.NodeList mediaContents = item.getElementsByTagName("media:content");
         for (int i = 0; i < mediaContents.getLength(); i++) {
             org.w3c.dom.Element mediaContent = (org.w3c.dom.Element) mediaContents.item(i);
@@ -780,7 +780,7 @@ public class PodcastService {
                 if (type != null && type.startsWith("audio/")) {
                     return url;
                 }
-                // 检查URL扩展名
+                // Check URL extension
                 String lowerUrl = url.toLowerCase();
                 if (lowerUrl.endsWith(".mp3") || lowerUrl.endsWith(".m4a") || 
                     lowerUrl.endsWith(".wav") || lowerUrl.endsWith(".ogg") ||
@@ -790,7 +790,7 @@ public class PodcastService {
             }
         }
         
-        // 3. 尝试link标签
+        // 3. Try link tag
         org.w3c.dom.NodeList links = item.getElementsByTagName("link");
         for (int i = 0; i < links.getLength(); i++) {
             org.w3c.dom.Element link = (org.w3c.dom.Element) links.item(i);
@@ -801,7 +801,7 @@ public class PodcastService {
                 if (type != null && type.startsWith("audio/")) {
                     return url;
                 }
-                // 检查URL扩展名
+                // Check URL extension
                 String lowerUrl = url.toLowerCase();
                 if (lowerUrl.endsWith(".mp3") || lowerUrl.endsWith(".m4a") || 
                     lowerUrl.endsWith(".wav") || lowerUrl.endsWith(".ogg") ||
@@ -811,7 +811,7 @@ public class PodcastService {
             }
         }
         
-        // 4. 尝试media:group/media:content（嵌套结构）
+        // 4. Try media:group/media:content (nested structure)
         org.w3c.dom.NodeList mediaGroups = item.getElementsByTagName("media:group");
         for (int i = 0; i < mediaGroups.getLength(); i++) {
             org.w3c.dom.Element mediaGroup = (org.w3c.dom.Element) mediaGroups.item(i);
@@ -825,7 +825,7 @@ public class PodcastService {
                     if (type != null && type.startsWith("audio/")) {
                         return url;
                     }
-                    // 检查URL扩展名
+                    // Check URL extension
                     String lowerUrl = url.toLowerCase();
                     if (lowerUrl.endsWith(".mp3") || lowerUrl.endsWith(".m4a") || 
                         lowerUrl.endsWith(".wav") || lowerUrl.endsWith(".ogg") ||
@@ -836,7 +836,7 @@ public class PodcastService {
             }
         }
         
-        // 5. 尝试atom:link标签（Atom格式）
+        // 5. Try atom:link tag (Atom format)
         org.w3c.dom.NodeList atomLinks = item.getElementsByTagName("atom:link");
         for (int i = 0; i < atomLinks.getLength(); i++) {
             org.w3c.dom.Element atomLink = (org.w3c.dom.Element) atomLinks.item(i);
@@ -849,7 +849,7 @@ public class PodcastService {
                     if (type != null && type.startsWith("audio/")) {
                         return url;
                     }
-                    // 检查URL扩展名
+                    // Check URL extension
                     String lowerUrl = url.toLowerCase();
                     if (lowerUrl.endsWith(".mp3") || lowerUrl.endsWith(".m4a") || 
                         lowerUrl.endsWith(".wav") || lowerUrl.endsWith(".ogg") ||
@@ -860,7 +860,7 @@ public class PodcastService {
             }
         }
         
-        // 6. 尝试查找任何包含音频扩展名的URL
+        // 6. Try to find any URL containing an audio extension
         org.w3c.dom.NodeList allElements = item.getElementsByTagName("*");
         for (int i = 0; i < allElements.getLength(); i++) {
             org.w3c.dom.Element element = (org.w3c.dom.Element) allElements.item(i);
@@ -870,7 +870,7 @@ public class PodcastService {
                 if (lowerText.contains(".mp3") || lowerText.contains(".m4a") || 
                     lowerText.contains(".wav") || lowerText.contains(".ogg") ||
                     lowerText.contains(".aac")) {
-                    // 提取URL
+                    // Extract URL
                     String url = extractUrlFromText(textContent);
                     if (url != null && !url.isEmpty()) {
                         return url;
@@ -883,12 +883,12 @@ public class PodcastService {
     }
     
     /**
-     * 从文本中提取URL
-     * @param text 包含URL的文本
-     * @return 提取的URL
+     * Extract URL from text
+     * @param text text containing URL
+     * @return extracted URL
      */
     private String extractUrlFromText(String text) {
-        // 简单的URL提取正则表达式
+        // Simple URL extraction regex
         String urlPattern = "https?://[^\\s<>\"']+";
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(urlPattern);
         java.util.regex.Matcher matcher = pattern.matcher(text);
@@ -896,7 +896,7 @@ public class PodcastService {
         if (matcher.find()) {
             String url = matcher.group();
             String lowerUrl = url.toLowerCase();
-            // 只返回音频文件URL
+            // Only return audio file URLs
             if (lowerUrl.endsWith(".mp3") || lowerUrl.endsWith(".m4a") || 
                 lowerUrl.endsWith(".wav") || lowerUrl.endsWith(".ogg") ||
                 lowerUrl.endsWith(".aac")) {
@@ -908,10 +908,10 @@ public class PodcastService {
     }
     
     /**
-     * 获取XML元素的文本内容
-     * @param parent 父元素
-     * @param tagName 标签名
-     * @return 文本内容
+     * Get text content of XML element
+     * @param parent parent element
+     * @param tagName tag name
+     * @return text content
      */
     private String getElementText(org.w3c.dom.Element parent, String tagName) {
         org.w3c.dom.NodeList nodes = parent.getElementsByTagName(tagName);
@@ -922,14 +922,14 @@ public class PodcastService {
     }
 
     /**
-     * 从JSON节点解析播客对象
-     * @param podcastNode JSON节点
-     * @return 播客对象
+     * Parse podcast object from JSON node
+     * @param podcastNode JSON node
+     * @return podcast object
      */
     private Podcast parsePodcastFromJson(JsonNode podcastNode) {
         Podcast podcast = new Podcast();
         
-        // Podcastindex API字段映射
+        // Podcastindex API field mapping
         podcast.setId(podcastNode.path("id").asText());
         podcast.setTitle(podcastNode.path("title").asText());
         podcast.setDescription(podcastNode.path("description").asText());
@@ -937,7 +937,7 @@ public class PodcastService {
         podcast.setImage(podcastNode.path("image").asText());
         podcast.setThumbnail(podcastNode.path("artwork").asText());
         
-        // 调试RSS URL
+        // Debug RSS URL
         String rssUrl = podcastNode.path("url").asText();
         System.out.println("RSS URL from API: " + rssUrl);
         podcast.setRss(rssUrl);
@@ -949,7 +949,7 @@ public class PodcastService {
         podcast.setType("podcast");
         podcast.setTotalEpisodes(podcastNode.path("episodeCount").asInt());
         
-        // 解析分类
+        // Parse categories
         List<String> genres = new ArrayList<>();
         if (podcastNode.has("categories")) {
             JsonNode categoriesNode = podcastNode.get("categories");
@@ -966,14 +966,14 @@ public class PodcastService {
     }
 
     /**
-     * 从JSON节点解析剧集对象
-     * @param episodeNode JSON节点
-     * @return 剧集对象
+     * Parse episode object from JSON node
+     * @param episodeNode JSON node
+     * @return episode object
      */
     private Podcast.Episode parseEpisodeFromJson(JsonNode episodeNode) {
         Podcast.Episode episode = new Podcast.Episode();
         
-        // Podcastindex API字段映射
+        // Podcastindex API field mapping
         episode.setId(episodeNode.path("id").asText());
         episode.setTitle(episodeNode.path("title").asText());
         episode.setDescription(episodeNode.path("description").asText());
@@ -982,7 +982,7 @@ public class PodcastService {
         episode.setThumbnail(episodeNode.path("image").asText());
         episode.setAudioLength(episodeNode.path("length").asText());
         
-        // 解析发布日期
+        // Parse publication date
         long pubDate = episodeNode.path("datePublished").asLong();
         if (pubDate > 0) {
             episode.setPublishedDate(LocalDateTime.ofEpochSecond(pubDate, 0, java.time.ZoneOffset.UTC));
@@ -998,31 +998,31 @@ public class PodcastService {
     }
 
     /**
-     * 获取专为老年用户设计的播客推荐
-     * @return 适合老年用户的播客推荐
+     * Get podcast recommendations specifically designed for elderly users
+     * @return podcast recommendations suitable for elderly users
      */
     public Map<String, Object> getElderlyPodcastRecommendations() {
-        // 定义老年用户的常见兴趣
+        // Define common interests for elderly users
         List<String> elderlyInterests = List.of(
-            "health and wellness",      // 健康与保健
-            "meditation",              // 冥想
-            "classical music",         // 古典音乐
-            "history",                 // 历史
-            "gardening",               // 园艺
-            "cooking",                 // 烹饪
-            "travel stories",          // 旅行故事
-            "inspirational stories",   // 励志故事
-            "memory exercises",        // 记忆练习
-            "relaxation"               // 放松
+            "health and wellness",      // Health and Wellness
+            "meditation",              // Meditation
+            "classical music",         // Classical Music
+            "history",                 // History
+            "gardening",               // Gardening
+            "cooking",                 // Cooking
+            "travel stories",          // Travel Stories
+            "inspirational stories",   // Inspirational Stories
+            "memory exercises",        // Memory Exercises
+            "relaxation"               // Relaxation
         );
         
         return getPodcastRecommendations(elderlyInterests);
     }
     
     /**
-     * 解析Podcast Index episodes API响应
-     * @param responseBody API响应体
-     * @return 解析后的剧集列表
+     * Parse Podcast Index episodes API response
+     * @param responseBody API response body
+     * @return parsed episode list
      */
     private Map<String, Object> parseEpisodesApiResponse(String responseBody) {
         Map<String, Object> result = new HashMap<>();
@@ -1084,20 +1084,20 @@ public class PodcastService {
     }
     
     /**
-     * 从API JSON节点解析剧集对象
-     * @param episodeNode JSON节点
-     * @return 剧集对象
+     * Parse episode object from API JSON node
+     * @param episodeNode JSON node
+     * @return episode object
      */
     private Podcast.Episode parseEpisodeFromApiJson(JsonNode episodeNode) {
         try {
             Podcast.Episode episode = new Podcast.Episode();
             
-            // 基本信息
+            // Basic information
             episode.setId(episodeNode.path("id").asText());
             episode.setTitle(episodeNode.path("title").asText());
             episode.setDescription(episodeNode.path("description").asText());
             
-            // 音频URL - 优先使用enclosureUrl
+            // Audio URL - prioritize enclosureUrl
             String audioUrl = episodeNode.path("enclosureUrl").asText();
             if (audioUrl == null || audioUrl.isEmpty()) {
                 audioUrl = episodeNode.path("enclosure").path("url").asText();
@@ -1107,14 +1107,14 @@ public class PodcastService {
             }
             episode.setAudio(audioUrl);
             
-            // 时长
+            // Duration
             String duration = episodeNode.path("duration").asText();
             if (duration == null || duration.isEmpty()) {
                 duration = episodeNode.path("enclosure").path("length").asText();
             }
             episode.setAudioLength(duration != null ? duration : "0");
             
-            // 发布日期
+            // Publication date
             long datePublished = episodeNode.path("datePublished").asLong(0);
             if (datePublished > 0) {
                 episode.setPublishedDate(LocalDateTime.ofEpochSecond(datePublished, 0, java.time.ZoneOffset.UTC));
@@ -1122,12 +1122,12 @@ public class PodcastService {
                 episode.setPublishedDate(LocalDateTime.now());
             }
             
-            // 图片
+            // Image
             String image = episodeNode.path("image").asText();
             episode.setImage(image);
             episode.setThumbnail(image);
             
-            // 链接
+            // Link
             episode.setWebsite(episodeNode.path("link").asText());
             
             episode.setLanguage("en");
@@ -1143,16 +1143,16 @@ public class PodcastService {
     }
     
     /**
-     * 从文本中提取图片URL
-     * @param text 包含图片URL的文本
-     * @return 图片URL，如果没有找到则返回null
+     * Extract image URL from text
+     * @param text text containing image URL
+     * @return image URL, null if not found
      */
     private String extractImageUrlFromText(String text) {
         if (text == null || text.isEmpty()) {
             return null;
         }
         
-        // 使用正则表达式匹配图片URL
+        // Use regex to match image URLs
         String imageUrlPattern = "https?://[^\\s<>\"']+\\.(jpg|jpeg|png|gif|webp|svg)";
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(imageUrlPattern, java.util.regex.Pattern.CASE_INSENSITIVE);
         java.util.regex.Matcher matcher = pattern.matcher(text);

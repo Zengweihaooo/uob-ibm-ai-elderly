@@ -15,57 +15,57 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
- * 播客自动播放服务
- * 负责管理播客的定时播放、播放状态跟踪等功能
+ * Podcast auto-play service
+ * Responsible for managing scheduled podcast playback and playback status tracking
  */
 @Service
 public class PodcastAutoPlayService {
 
-    // 注入播客服务，用于获取播客信息
+    // Inject podcast service for getting podcast information
     @Autowired
     private PodcastService podcastService;
 
-    // 存储用户的播客播放计划（用户ID -> 播放计划列表）
+    // Store user's podcast playback schedules (user ID -> schedule list)
     private final Map<Long, List<Map<String, Object>>> userSchedules = new ConcurrentHashMap<>();
     
-    // 存储当前播放状态（用户ID -> 播放状态）
+    // Store current playback status (user ID -> playback status)
     private final Map<Long, Map<String, Object>> playbackStatuses = new ConcurrentHashMap<>();
 
     /**
-     * 为用户添加播客播放计划
-     * @param userId 用户ID
-     * @param scheduleData 播放计划数据
-     * @return 播放计划ID
+     * Add podcast playback schedule for user
+     * @param userId user ID
+     * @param scheduleData playback schedule data
+     * @return schedule ID
      */
     public String addSchedule(Long userId, Map<String, Object> scheduleData) {
-        // 生成唯一的播放计划ID
+        // Generate unique schedule ID
         String scheduleId = "schedule_" + System.currentTimeMillis();
         
-        // 设置播放计划的基本信息
+        // Set basic information for the schedule
         scheduleData.put("id", scheduleId);
         scheduleData.put("userId", userId);
         scheduleData.put("isActive", true);  // 默认激活状态
         scheduleData.put("createdAt", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         
-        // 将播放计划添加到用户的计划列表中
+        // Add the schedule to user's schedule list
         userSchedules.computeIfAbsent(userId, k -> new ArrayList<>()).add(scheduleData);
         
         return scheduleId;
     }
 
     /**
-     * 获取用户的所有播客播放计划
-     * @param userId 用户ID
-     * @return 播放计划列表
+     * Get all podcast playback schedules for a user
+     * @param userId user ID
+     * @return schedule list
      */
     public List<Map<String, Object>> getUserSchedules(Long userId) {
         return userSchedules.getOrDefault(userId, new ArrayList<>());
     }
 
     /**
-     * 获取用户的所有播客播放计划（返回Map格式）
-     * @param userId 用户ID
-     * @return 播放计划Map
+     * Get all podcast playback schedules for a user (return Map format)
+     * @param userId user ID
+     * @return schedule Map
      */
     public Map<String, Object> getUserSchedulesMap(Long userId) {
         List<Map<String, Object>> schedules = userSchedules.getOrDefault(userId, new ArrayList<>());
@@ -77,12 +77,12 @@ public class PodcastAutoPlayService {
     }
 
     /**
-     * 为用户安排播客播放
-     * @param userId 用户ID
-     * @param podcastTitle 播客标题
-     * @param playTime 播放时间
-     * @param playDate 播放日期
-     * @return 播放计划结果
+     * Schedule podcast playback for user
+     * @param userId user ID
+     * @param podcastTitle podcast title
+     * @param playTime play time
+     * @param playDate play date
+     * @return schedule result
      */
     public Map<String, Object> schedulePodcast(Long userId, String podcastTitle, String playTime, String playDate) {
         try {
@@ -134,46 +134,46 @@ public class PodcastAutoPlayService {
     }
 
     /**
-     * 开始播放指定的播客
-     * @param userId 用户ID
-     * @param scheduleId 播放计划ID
-     * @return 是否成功开始播放
+     * Start playing the specified podcast
+     * @param userId user ID
+     * @param scheduleId schedule ID
+     * @return whether playback started successfully
      */
     public boolean startPlayback(Long userId, String scheduleId) {
-        // 获取用户的所有播放计划
+        // Get all playback schedules for the user
         List<Map<String, Object>> schedules = getUserSchedules(userId);
         
-        // 查找对应的播放计划
+        // Find the corresponding schedule
         for (Map<String, Object> schedule : schedules) {
             if (scheduleId.equals(schedule.get("id"))) {
-                // 创建播放状态对象
+                // Create playback status object
                 Map<String, Object> playbackStatus = new HashMap<>();
                 playbackStatus.put("userId", userId);
                 playbackStatus.put("scheduleId", scheduleId);
                 playbackStatus.put("podcastId", schedule.get("podcastId"));
                 playbackStatus.put("podcastTitle", schedule.get("podcastTitle"));
-                playbackStatus.put("isPlaying", true);  // 设置为播放状态
+                playbackStatus.put("isPlaying", true);  // Set to playing status
                 playbackStatus.put("startedAt", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-                playbackStatus.put("currentPosition", 0);  // 播放位置从0开始
+                playbackStatus.put("currentPosition", 0);  // Playback position starts from 0
                 
-                // 保存播放状态
+                // Save playback status
                 playbackStatuses.put(userId, playbackStatus);
                 return true;
             }
         }
         
-        return false;  // 未找到对应的播放计划
+        return false;  // Schedule not found
     }
 
     /**
-     * 停止用户的播客播放
-     * @param userId 用户ID
-     * @return 是否成功停止播放
+     * Stop user's podcast playback
+     * @param userId user ID
+     * @return whether playback stopped successfully
      */
     public boolean stopPlayback(Long userId) {
-        // 移除用户的播放状态
+        // Remove user's playback status
         Map<String, Object> status = playbackStatuses.remove(userId);
-        return status != null;  // 返回是否之前有播放状态
+        return status != null;  // Return whether there was previous playback status
     }
 
     /**
@@ -194,47 +194,47 @@ public class PodcastAutoPlayService {
     }
 
     /**
-     * 定时任务：检查并执行预定的播客播放
-     * 每分钟执行一次，检查是否有需要播放的播客
+     * Scheduled task: check and execute scheduled podcast playback
+     * Executes every minute to check if there are podcasts that need to be played
      */
     @Scheduled(cron = "0 * * * * ?")
     public void checkAndExecuteScheduledPodcasts() {
-        // 获取当前时间
+        // Get current time
         LocalDateTime now = LocalDateTime.now();
         LocalDate today = now.toLocalDate();
         LocalTime currentTime = now.toLocalTime();
 
-        // 遍历所有用户的播放计划
+        // Iterate through all users' schedules
         for (Map.Entry<Long, List<Map<String, Object>>> entry : userSchedules.entrySet()) {
             Long userId = entry.getKey();
             List<Map<String, Object>> schedules = entry.getValue();
 
-            // 检查用户的每个播放计划
+            // Check each schedule for the user
             for (Map<String, Object> schedule : schedules) {
-                // 只处理激活状态的播放计划
+                // Only process active schedules
                 if (Boolean.TRUE.equals(schedule.get("isActive"))) {
                     String playDateStr = (String) schedule.get("playDate");
                     String playTimeStr = (String) schedule.get("playTime");
 
                     if (playDateStr != null && playTimeStr != null) {
                         try {
-                            // 解析播放日期和时间
+                            // Parse play date and time
                             LocalDate playDate = LocalDate.parse(playDateStr);
                             LocalTime playTime = LocalTime.parse(playTimeStr);
 
-                            // 检查是否到了播放时间
+                            // Check if it's time to play
                             if (playDate.equals(today) && playTime.equals(currentTime)) {
-                                // 开始播放播客
+                                // Start playing podcast
                                 String scheduleId = (String) schedule.get("id");
                                 startPlayback(userId, scheduleId);
                                 
-                                // 输出播放日志
+                                // Output playback log
                                 System.out.println("🎵 自动播放开始: " + schedule.get("podcastTitle") + 
                                                  " (用户: " + userId + ") 时间: " + currentTime);
                             }
                         } catch (Exception e) {
-                            // 处理日期时间解析错误
-                            System.err.println("解析播放计划时间失败: " + e.getMessage());
+                            // Handle date time parsing error
+                            System.err.println("Failed to parse schedule time: " + e.getMessage());
                         }
                     }
                 }
@@ -243,18 +243,18 @@ public class PodcastAutoPlayService {
     }
 
     /**
-     * 获取用户即将播放的播客列表
-     * @param userId 用户ID
-     * @return 即将播放的播客列表
+     * Get user's upcoming podcast list
+     * @param userId user ID
+     * @return upcoming podcast list
      */
     public List<Map<String, Object>> getUpcomingPodcasts(Long userId) {
         List<Map<String, Object>> schedules = getUserSchedules(userId);
         List<Map<String, Object>> upcoming = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
 
-        // 遍历所有播放计划
+        // Iterate through all schedules
         for (Map<String, Object> schedule : schedules) {
-            // 只处理激活状态的播放计划
+            // Only process active schedules
             if (Boolean.TRUE.equals(schedule.get("isActive"))) {
                 String playDateStr = (String) schedule.get("playDate");
                 String playTimeStr = (String) schedule.get("playTime");
@@ -266,7 +266,7 @@ public class PodcastAutoPlayService {
                         LocalTime playTime = LocalTime.parse(playTimeStr);
                         LocalDateTime scheduledTime = LocalDateTime.of(playDate, playTime);
 
-                        // 只添加未来的播放计划
+                        // Only add future schedules
                         if (scheduledTime.isAfter(now)) {
                             Map<String, Object> upcomingPodcast = new HashMap<>(schedule);
                             upcomingPodcast.put("scheduledTime", scheduledTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
@@ -280,7 +280,7 @@ public class PodcastAutoPlayService {
             }
         }
 
-        // 按计划时间排序
+        // Sort by scheduled time
         upcoming.sort((a, b) -> {
             String timeA = (String) a.get("scheduledTime");
             String timeB = (String) b.get("scheduledTime");
@@ -291,24 +291,24 @@ public class PodcastAutoPlayService {
     }
 
     /**
-     * 获取用户最近播放的播客列表
-     * @param userId 用户ID
-     * @return 最近播放的播客列表
+     * Get user's recently played podcast list
+     * @param userId user ID
+     * @return recently played podcast list
      */
     public List<Map<String, Object>> getRecentlyPlayedPodcasts(Long userId) {
         List<Map<String, Object>> schedules = getUserSchedules(userId);
         List<Map<String, Object>> recent = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneWeekAgo = now.minusDays(7);  // 一周前的时间
+        LocalDateTime oneWeekAgo = now.minusDays(7);  // Time one week ago
 
-        // 遍历所有播放计划
+        // Iterate through all schedules
         for (Map<String, Object> schedule : schedules) {
             String createdAtStr = (String) schedule.get("createdAt");
             if (createdAtStr != null) {
                 try {
                     // 解析创建时间
                     LocalDateTime createdAt = LocalDateTime.parse(createdAtStr);
-                    // 只添加一周内创建的播放计划
+                    // Only add schedules created within one week
                     if (createdAt.isAfter(oneWeekAgo)) {
                         recent.add(schedule);
                     }

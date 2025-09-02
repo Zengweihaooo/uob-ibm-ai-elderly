@@ -4,23 +4,23 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * 备忘录实体类
- * 用于存储老年用户的日常备忘录信息
+ * Memo entity class
+ * Used to store daily memo information for elderly users
  */
 public class Memo {
     
-    private Long id;                    // 备忘录ID
-    private Long userId;                // 用户ID
-    private String title;               // 备忘录标题
-    private String content;             // 备忘录内容
-    private String type;                // 备忘录类型：general(一般), important(重要), todo(待办)
-    private boolean isImportant;        // 是否重要（重要备忘录）
-    private String pinCode;             // PIN码（用于重要备忘录）
-    private LocalDateTime createTime;   // 创建时间
-    private LocalDateTime updateTime;   // 更新时间
-    private boolean isDeleted;          // 是否已删除（软删除）
+    private Long id;                    // Memo ID
+    private Long userId;                // User ID
+    private String title;               // Memo title
+    private String content;             // Memo content
+    private String type;                // Memo type: general, important, todo
+    private boolean isImportant;        // Whether it's important (important memo)
+    private String pinCode;             // PIN code (for important memos)
+    private LocalDateTime createTime;   // Creation time
+    private LocalDateTime updateTime;   // Update time
+    private boolean isDeleted;          // Whether deleted (soft delete)
     
-    // 默认构造函数
+    // Default constructor
     public Memo() {
         this.createTime = LocalDateTime.now();
         this.updateTime = LocalDateTime.now();
@@ -29,7 +29,7 @@ public class Memo {
         this.type = "general";
     }
     
-    // 带参数的构造函数
+    // Constructor with parameters
     public Memo(Long userId, String title, String content, String type) {
         this();
         this.userId = userId;
@@ -37,13 +37,13 @@ public class Memo {
         this.content = content;
         this.type = type;
         
-        // 如果是重要类型，自动设置为重要
+        // If it's important type, automatically set as important
         if ("important".equals(type)) {
             this.isImportant = true;
         }
     }
     
-    // Getter和Setter方法
+    // Getter and Setter methods
     public Long getId() {
         return id;
     }
@@ -125,8 +125,8 @@ public class Memo {
     }
     
     /**
-     * 获取格式化的创建时间字符串
-     * @return 格式化的时间字符串
+     * Get formatted creation time string
+     * @return formatted time string
      */
     public String getFormattedCreateTime() {
         if (createTime != null) {
@@ -136,8 +136,8 @@ public class Memo {
     }
     
     /**
-     * 获取格式化的更新时间字符串
-     * @return 格式化的时间字符串
+     * Get formatted update time string
+     * @return formatted time string
      */
     public String getFormattedUpdateTime() {
         if (updateTime != null) {
@@ -147,8 +147,8 @@ public class Memo {
     }
     
     /**
-     * 获取备忘录类型的英文描述
-     * @return 类型描述
+     * Get memo type description in English
+     * @return type description
      */
     public String getTypeDescription() {
         switch (type) {
@@ -163,8 +163,8 @@ public class Memo {
     }
     
     /**
-     * 获取备忘录的图标
-     * @return 图标字符串
+     * Get memo icon
+     * @return icon string
      */
     public String getTypeIcon() {
         switch (type) {

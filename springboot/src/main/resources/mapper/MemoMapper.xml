@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.repository.MemoRepository">
 
-    <!-- 结果映射 -->
+    <!-- Result mapping -->
     <resultMap id="MemoResultMap" type="com.example.demo.pojo.Memo">
         <id column="id" property="id" jdbcType="BIGINT"/>
         <result column="user_id" property="userId" jdbcType="BIGINT"/>
@@ -16,7 +16,7 @@
         <result column="is_deleted" property="isDeleted" jdbcType="BOOLEAN"/>
     </resultMap>
 
-    <!-- 插入备忘录 -->
+    <!-- Insert memo -->
     <insert id="insert" parameterType="com.example.demo.pojo.Memo" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO memos (
             user_id, title, content, type, is_important, pin_code, 
@@ -27,7 +27,7 @@
         )
     </insert>
 
-    <!-- 保存备忘录（save方法） -->
+    <!-- Save memo (save method) -->
     <insert id="save" parameterType="com.example.demo.pojo.Memo" useGeneratedKeys="true" keyProperty="id">
         INSERT OR REPLACE INTO memos (
             id, user_id, title, content, type, is_important, pin_code, 
@@ -38,7 +38,7 @@
         )
     </insert>
 
-    <!-- 更新备忘录 -->
+    <!-- Update memo -->
     <update id="update" parameterType="com.example.demo.pojo.Memo">
         UPDATE memos 
         SET title = #{title},
@@ -50,46 +50,46 @@
         WHERE id = #{id} AND user_id = #{userId} AND is_deleted = 0
     </update>
 
-    <!-- 根据ID查找备忘录 -->
+    <!-- Find memo by ID -->
     <select id="findById" parameterType="long" resultMap="MemoResultMap">
         SELECT * FROM memos WHERE id = #{id} AND is_deleted = 0
     </select>
 
-    <!-- 根据用户ID和备忘录ID查找未删除的备忘录 -->
+    <!-- Find undeleted memo by user ID and memo ID -->
     <select id="findByUserIdAndId" resultMap="MemoResultMap">
         SELECT * FROM memos 
         WHERE user_id = #{userId} AND id = #{memoId} AND is_deleted = 0
     </select>
 
-    <!-- 根据用户ID查找所有未删除的备忘录 -->
+    <!-- Find all undeleted memos by user ID -->
     <select id="findByUserId" parameterType="long" resultMap="MemoResultMap">
         SELECT * FROM memos 
         WHERE user_id = #{userId} AND is_deleted = 0
         ORDER BY update_time DESC
     </select>
 
-    <!-- 根据用户ID和类型查找未删除的备忘录 -->
+    <!-- Find undeleted memos by user ID and type -->
     <select id="findByUserIdAndType" resultMap="MemoResultMap">
         SELECT * FROM memos 
         WHERE user_id = #{userId} AND type = #{type} AND is_deleted = 0
         ORDER BY update_time DESC
     </select>
 
-    <!-- 根据用户ID查找重要备忘录 -->
+    <!-- Find important memos by user ID -->
     <select id="findImportantByUserId" parameterType="long" resultMap="MemoResultMap">
         SELECT * FROM memos 
         WHERE user_id = #{userId} AND is_important = 1 AND is_deleted = 0
         ORDER BY update_time DESC
     </select>
 
-    <!-- 根据用户ID和PIN码查找备忘录 -->
+    <!-- Find memos by user ID and PIN code -->
     <select id="findByUserIdAndPinCode" resultMap="MemoResultMap">
         SELECT * FROM memos 
         WHERE user_id = #{userId} AND pin_code = #{pinCode} AND is_deleted = 0
         ORDER BY update_time DESC
     </select>
 
-    <!-- 搜索备忘录（标题或内容包含关键词） -->
+    <!-- Search memos (title or content contains keyword) -->
     <select id="searchByKeyword" resultMap="MemoResultMap">
         SELECT * FROM memos 
         WHERE user_id = #{userId} AND is_deleted = 0
@@ -98,43 +98,43 @@
         ORDER BY update_time DESC
     </select>
 
-    <!-- 软删除备忘录 -->
+    <!-- Soft delete memo -->
     <update id="softDelete">
         UPDATE memos 
         SET is_deleted = 1, update_time = CURRENT_TIMESTAMP
         WHERE user_id = #{userId} AND id = #{memoId} AND is_deleted = 0
     </update>
 
-    <!-- 统计用户备忘录数量 -->
+    <!-- Count memos by user ID -->
     <select id="countByUserId" parameterType="long" resultType="long">
         SELECT COUNT(*) FROM memos 
         WHERE user_id = #{userId} AND is_deleted = 0
     </select>
 
-    <!-- 统计用户重要备忘录数量 -->
+    <!-- Count important memos by user ID -->
     <select id="countImportantByUserId" parameterType="long" resultType="long">
         SELECT COUNT(*) FROM memos 
         WHERE user_id = #{userId} AND is_important = 1 AND is_deleted = 0
     </select>
 
-    <!-- 统计用户各类型备忘录数量 -->
+    <!-- Count memos by user ID and type -->
     <select id="countByUserIdAndType" resultType="long">
         SELECT COUNT(*) FROM memos 
         WHERE user_id = #{userId} AND type = #{type} AND is_deleted = 0
     </select>
 
-    <!-- 检查用户是否有指定PIN码的备忘录 -->
+    <!-- Check if user has memos with the specified PIN code -->
     <select id="existsByUserIdAndPinCode" resultType="boolean">
         SELECT COUNT(*) > 0 FROM memos 
         WHERE user_id = #{userId} AND pin_code = #{pinCode} AND is_deleted = 0
     </select>
     
-    <!-- 获取所有备忘录（用于数据迁移） -->
+    <!-- Get all memos (for data migration) -->
     <select id="findAll" resultMap="MemoResultMap">
         SELECT * FROM memos ORDER BY update_time DESC
     </select>
     
-    <!-- 统计所有备忘录数量 -->
+    <!-- Count total memos (for data migration) -->
     <select id="count" resultType="long">
         SELECT COUNT(*) FROM memos
     </select>

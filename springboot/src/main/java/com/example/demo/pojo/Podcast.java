@@ -5,58 +5,58 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 播客数据模型类
- * 用于存储从Listen Notes API获取的播客信息
+ * Podcast data model class
+ * Used to store podcast information retrieved from Listen Notes API
  */
 public class Podcast {
-    // 播客唯一标识符
+    // Podcast unique identifier
     private String id;
-    // 播客标题
+    // Podcast title
     private String title;
-    // 播客描述
+    // Podcast description
     private String description;
-    // 播客发布者
+    // Podcast publisher
     private String publisher;
-    // 播客封面图片URL
+    // Podcast cover image URL
     private String image;
-    // 播客缩略图URL
+    // Podcast thumbnail URL
     private String thumbnail;
-    // Listen Notes网站链接
+    // Listen Notes website link
     private String listennotesUrl;
-    // RSS订阅链接
+    // RSS subscription link
     private String rss;
-    // 播客语言
+    // Podcast language
     private String language;
-    // 播客国家/地区
+    // Podcast country/region
     private String country;
-    // 播客官方网站
+    // Podcast official website
     private String website;
-    // 是否已被认领（播客所有者是否验证）
+    // Whether claimed (podcast owner verification)
     private boolean isClaimed;
-    // 播客类型
+    // Podcast type
     private String type;
-    // 总集数
+    // Total episodes
     private int totalEpisodes;
-    // 播客剧集列表
+    // Podcast episode list
     private List<Episode> episodes;
-    // 播客分类标签
+    // Podcast category tags
     private List<String> genres;
-    // 额外信息（API返回的其他字段）
+    // Additional information (other fields returned by API)
     private Map<String, Object> extra;
-    // 创建时间
+    // Creation time
     private LocalDateTime createdAt;
-    // 更新时间
+    // Update time
     private LocalDateTime updatedAt;
 
-    // 默认构造函数
+    // Default constructor
     public Podcast() {}
 
     /**
-     * 带参数的构造函数
-     * @param id 播客ID
-     * @param title 播客标题
-     * @param description 播客描述
-     * @param publisher 播客发布者
+     * Constructor with parameters
+     * @param id podcast ID
+     * @param title podcast title
+     * @param description podcast description
+     * @param publisher podcast publisher
      */
     public Podcast(String id, String title, String description, String publisher) {
         this.id = id;
@@ -65,7 +65,7 @@ public class Podcast {
         this.publisher = publisher;
     }
 
-    // ==================== Getter和Setter方法 ====================
+    // ==================== Getter and Setter methods ====================
     
     public String getId() {
         return id;
@@ -220,50 +220,50 @@ public class Podcast {
     }
 
     /**
-     * 播客剧集内部类
-     * 用于存储单个播客剧集的信息
+     * Podcast episode inner class
+     * Used to store information about a single podcast episode
      */
     public static class Episode {
-        // 剧集唯一标识符
+        // Episode unique identifier
         private String id;
-        // 剧集标题
+        // Episode title
         private String title;
-        // 剧集描述
+        // Episode description
         private String description;
-        // 音频文件URL
+        // Audio file URL
         private String audio;
-        // 剧集封面图片URL
+        // Episode cover image URL
         private String image;
-        // 剧集缩略图URL
+        // Episode thumbnail URL
         private String thumbnail;
-        // Listen Notes网站链接
+        // Listen Notes website link
         private String listennotesUrl;
-        // 音频时长（秒）
+        // Audio duration (seconds)
         private String audioLength;
-        // 发布时间
+        // Publication date
         private LocalDateTime publishedDate;
-        // 剧集语言
+        // Episode language
         private String language;
-        // 剧集国家/地区
+        // Episode country/region
         private String country;
-        // 剧集网站
+        // Episode website
         private String website;
-        // 是否已被认领
+        // Whether claimed
         private boolean isClaimed;
-        // 剧集类型
+        // Episode type
         private String type;
-        // 额外信息
+        // Additional information
         private Map<String, Object> extra;
 
-        // 默认构造函数
+        // Default constructor
         public Episode() {}
 
         /**
-         * 带参数的构造函数
-         * @param id 剧集ID
-         * @param title 剧集标题
-         * @param description 剧集描述
-         * @param audio 音频URL
+         * Constructor with parameters
+         * @param id episode ID
+         * @param title episode title
+         * @param description episode description
+         * @param audio audio URL
          */
         public Episode(String id, String title, String description, String audio) {
             this.id = id;
@@ -272,7 +272,7 @@ public class Podcast {
             this.audio = audio;
         }
 
-        // ==================== Episode的Getter和Setter方法 ====================
+        // ==================== Episode Getter and Setter methods ====================
         
         public String getId() {
             return id;

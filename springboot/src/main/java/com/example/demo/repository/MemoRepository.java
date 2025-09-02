@@ -10,134 +10,134 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.pojo.Memo;
 
 /**
- * 备忘录数据访问层 - MyBatis实现
- * 提供备忘录的数据库操作方法
+ * Memo data access layer - MyBatis implementation
+ * Provides database operations for memos
  */
 @Repository("sqliteMemoRepository")
 @Mapper
 public interface MemoRepository {
     
     /**
-     * 插入新备忘录
-     * @param memo 备忘录对象
-     * @return 影响的行数
+     * Insert new memo
+     * @param memo memo object
+     * @return number of affected rows
      */
     int insert(Memo memo);
     
     /**
-     * 保存备忘录（新增或更新）
-     * @param memo 备忘录对象
-     * @return 影响的行数
+     * Save memo (insert or update)
+     * @param memo memo object
+     * @return number of affected rows
      */
     int save(Memo memo);
     
     /**
-     * 更新备忘录
-     * @param memo 备忘录对象
-     * @return 影响的行数
+     * Update memo
+     * @param memo memo object
+     * @return number of affected rows
      */
     int update(Memo memo);
     
     /**
-     * 根据ID查找备忘录
-     * @param id 备忘录ID
-     * @return 备忘录对象，如果不存在返回Optional.empty()
+     * Find memo by ID
+     * @param id memo ID
+     * @return memo object, returns Optional.empty() if not found
      */
     Optional<Memo> findById(Long id);
     
     /**
-     * 根据用户ID和备忘录ID查找未删除的备忘录
-     * @param userId 用户ID
-     * @param memoId 备忘录ID
-     * @return 备忘录对象，如果不存在返回Optional.empty()
+     * Find undeleted memo by user ID and memo ID
+     * @param userId user ID
+     * @param memoId memo ID
+     * @return memo object, returns Optional.empty() if not found
      */
     Optional<Memo> findByUserIdAndId(@Param("userId") Long userId, @Param("memoId") Long memoId);
     
     /**
-     * 根据用户ID查找所有未删除的备忘录
-     * @param userId 用户ID
-     * @return 备忘录列表
+     * Find all undeleted memos by user ID
+     * @param userId user ID
+     * @return memo list
      */
     List<Memo> findByUserId(Long userId);
     
     /**
-     * 根据用户ID和类型查找未删除的备忘录
-     * @param userId 用户ID
-     * @param type 备忘录类型
-     * @return 备忘录列表
+     * Find undeleted memos by user ID and type
+     * @param userId user ID
+     * @param type memo type
+     * @return memo list
      */
     List<Memo> findByUserIdAndType(@Param("userId") Long userId, @Param("type") String type);
     
     /**
-     * 根据用户ID查找重要备忘录
-     * @param userId 用户ID
-     * @return 重要备忘录列表
+     * Find important memos by user ID
+     * @param userId user ID
+     * @return important memo list
      */
     List<Memo> findImportantByUserId(Long userId);
     
     /**
-     * 根据用户ID和PIN码查找备忘录
-     * @param userId 用户ID
-     * @param pinCode PIN码
-     * @return 备忘录列表
+     * Find memos by user ID and PIN code
+     * @param userId user ID
+     * @param pinCode PIN code
+     * @return memo list
      */
     List<Memo> findByUserIdAndPinCode(@Param("userId") Long userId, @Param("pinCode") String pinCode);
     
     /**
-     * 搜索备忘录（标题或内容包含关键词）
-     * @param userId 用户ID
-     * @param keyword 搜索关键词
-     * @return 搜索结果
+     * Search memos (title or content contains keyword)
+     * @param userId user ID
+     * @param keyword search keyword
+     * @return search results
      */
     List<Memo> searchByKeyword(@Param("userId") Long userId, @Param("keyword") String keyword);
     
     /**
-     * 软删除备忘录
-     * @param userId 用户ID
-     * @param memoId 备忘录ID
-     * @return 影响的行数
+     * Soft delete memo
+     * @param userId user ID
+     * @param memoId memo ID
+     * @return number of affected rows
      */
     int softDelete(@Param("userId") Long userId, @Param("memoId") Long memoId);
     
     /**
-     * 统计用户备忘录数量
-     * @param userId 用户ID
-     * @return 备忘录数量
+     * Count memos by user ID
+     * @param userId user ID
+     * @return number of memos
      */
     long countByUserId(Long userId);
     
     /**
-     * 统计用户重要备忘录数量
-     * @param userId 用户ID
-     * @return 重要备忘录数量
+     * Count important memos by user ID
+     * @param userId user ID
+     * @return number of important memos
      */
     long countImportantByUserId(Long userId);
     
     /**
-     * 统计用户各类型备忘录数量
-     * @param userId 用户ID
-     * @param type 备忘录类型
-     * @return 该类型备忘录数量
+     * Count memos by user ID and type
+     * @param userId user ID
+     * @param type memo type
+     * @return number of memos of this type
      */
     long countByUserIdAndType(@Param("userId") Long userId, @Param("type") String type);
     
     /**
-     * 检查用户是否有指定PIN码的备忘录
-     * @param userId 用户ID
-     * @param pinCode PIN码
-     * @return 是否存在
+     * Check if user has memos with the specified PIN code
+     * @param userId user ID
+     * @param pinCode PIN code
+     * @return true if exists, false otherwise
      */
     boolean existsByUserIdAndPinCode(@Param("userId") Long userId, @Param("pinCode") String pinCode);
     
     /**
-     * 获取所有备忘录（用于数据迁移）
-     * @return 所有备忘录列表
+     * Get all memos (for data migration)
+     * @return all memo list
      */
     List<Memo> findAll();
     
     /**
-     * 统计记录总数（用于数据迁移）
-     * @return 记录总数
+     * Count total records (for data migration)
+     * @return total records
      */
     long count();
 }

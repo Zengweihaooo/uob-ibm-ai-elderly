@@ -19,28 +19,28 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.service.PodcastService;
 
 /**
- * 播客控制器
- * 提供播客搜索、推荐、详情等API端点
+ * Podcast controller
+ * Provides podcast search, recommendation, details and other API endpoints
  */
 @RestController
 @RequestMapping("/api/podcast")
 @CrossOrigin(origins = "*")
 public class PodcastController {
 
-    // 注入播客服务
+    // Inject podcast service
     @Autowired
     private PodcastService podcastService;
 
     /**
-     * 根据关键词搜索播客
-     * 支持多种过滤条件：语言、地区、排序方式、类型等
+     * Search podcasts by keyword
+     * Supports multiple filter conditions: language, region, sort method, type, etc.
      * 
-     * @param query 搜索关键词（必填）
-     * @param language 语言过滤器（可选）
-     * @param region 地区过滤器（可选）
-     * @param sortBy 排序方式（可选）：relevance（相关性）、rating（评分）、latest（最新）
-     * @param type 播客类型过滤器（可选）
-     * @return 匹配搜索条件的播客列表
+     * @param query search keyword (required)
+     * @param language language filter (optional)
+     * @param region region filter (optional)
+     * @param sortBy sort method (optional): relevance, rating, latest
+     * @param type podcast type filter (optional)
+     * @return podcast list matching search criteria
      */
     @GetMapping("/search")
     public ResponseEntity<Map<String, Object>> searchPodcasts(
@@ -53,12 +53,12 @@ public class PodcastController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 调用播客服务进行搜索
+            // Call podcast service for search
             Map<String, Object> searchResult = podcastService.searchPodcasts(query, language, region, sortBy, type);
             
             // 检查搜索是否成功
             if ((Boolean) searchResult.get("success")) {
-                // 构建成功响应
+                // Build success response
                 response.put("success", true);
                 response.put("podcasts", searchResult.get("podcasts"));
                 response.put("totalCount", searchResult.get("totalCount"));
@@ -80,11 +80,11 @@ public class PodcastController {
     }
 
     /**
-     * 根据用户兴趣获取播客推荐
-     * 接收用户兴趣列表，返回相关的播客推荐
+     * Get podcast recommendations based on user interests
+     * Receive user interest list and return related podcast recommendations
      * 
-     * @param interestsData 包含用户兴趣列表的请求体
-     * @return 推荐的播客列表
+     * @param interestsData request body containing user interest list
+     * @return recommended podcast list
      */
     @PostMapping("/recommendations")
     public ResponseEntity<Map<String, Object>> getPodcastRecommendations(
@@ -97,19 +97,19 @@ public class PodcastController {
             @SuppressWarnings("unchecked")
             List<String> interests = (List<String>) interestsData.get("interests");
             
-            // 验证兴趣列表是否为空
+            // Validate if interest list is empty
             if (interests == null || interests.isEmpty()) {
                 response.put("success", false);
                 response.put("message", "Interests list is required");
                 return ResponseEntity.badRequest().body(response);
             }
             
-            // 调用播客服务获取推荐
+            // Call podcast service to get recommendations
             Map<String, Object> recommendationsResult = podcastService.getPodcastRecommendations(interests);
             
-            // 检查推荐是否成功
+            // Check if recommendations were successful
             if ((Boolean) recommendationsResult.get("success")) {
-                // 构建成功响应
+                // Build success response
                 response.put("success", true);
                 response.put("recommendations", recommendationsResult.get("recommendations"));
                 response.put("totalRecommendations", recommendationsResult.get("totalRecommendations"));
@@ -131,22 +131,22 @@ public class PodcastController {
     }
 
     /**
-     * 根据播客ID获取播客详细信息
+     * Get podcast details by podcast ID
      * 
-     * @param podcastId 播客ID（路径参数）
-     * @return 播客详细信息
+     * @param podcastId podcast ID (path parameter)
+     * @return podcast details
      */
     @GetMapping("/{podcastId}")
     public ResponseEntity<Map<String, Object>> getPodcastDetails(@PathVariable String podcastId) {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 调用播客服务获取详情
+            // Call podcast service to get details
             Map<String, Object> detailsResult = podcastService.getPodcastDetails(podcastId);
             
-            // 检查获取详情是否成功
+            // Check if getting details was successful
             if ((Boolean) detailsResult.get("success")) {
-                // 构建成功响应
+                // Build success response
                 response.put("success", true);
                 response.put("podcast", detailsResult.get("podcast"));
                 return ResponseEntity.ok(response);
@@ -166,12 +166,12 @@ public class PodcastController {
     }
 
     /**
-     * 获取指定播客的剧集列表
-     * 支持分页功能
+     * Get episode list for a specific podcast
+     * Supports pagination
      * 
-     * @param podcastId 播客ID（路径参数）
-     * @param nextEpisodePubDate 下一页剧集的发布日期（用于分页，可选）
-     * @return 剧集列表
+     * @param podcastId podcast ID (path parameter)
+     * @param nextEpisodePubDate Next episode publication date (for pagination, optional)
+     * @return episode list
      */
     @GetMapping("/{podcastId}/episodes")
     public ResponseEntity<Map<String, Object>> getPodcastEpisodes(
@@ -181,23 +181,23 @@ public class PodcastController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 调用播客服务获取剧集列表
+            // Call podcast service to get episode list
             Map<String, Object> episodesResult = podcastService.getPodcastEpisodes(podcastId, nextEpisodePubDate);
             
-            // 检查获取剧集是否成功
+            // Check if getting episodes was successful
             if ((Boolean) episodesResult.get("success")) {
-                // 构建成功响应
+                // Build success response
                 response.put("success", true);
                 response.put("episodes", episodesResult.get("episodes"));
                 response.put("totalEpisodes", episodesResult.get("totalEpisodes"));
                 
-                // 如果存在下一页日期，添加到响应中
+                // If next page date exists, add to response
                 if (episodesResult.containsKey("nextEpisodePubDate")) {
                     response.put("nextEpisodePubDate", episodesResult.get("nextEpisodePubDate"));
                 }
                 return ResponseEntity.ok(response);
             } else {
-                // 获取剧集失败，返回错误信息
+                // Failed to get episodes, return error message
                 response.put("success", false);
                 response.put("message", episodesResult.get("message"));
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -212,10 +212,10 @@ public class PodcastController {
     }
 
     /**
-     * 获取热门播客列表
+     * Get trending podcast list
      * 
-     * @param region 地区（可选），用于获取特定地区的热门播客
-     * @return 热门播客列表
+     * @param region Region (optional), for getting trending podcasts in specific region
+     * @return trending podcast list
      */
     @GetMapping("/trending")
     public ResponseEntity<Map<String, Object>> getTrendingPodcasts(
@@ -224,18 +224,18 @@ public class PodcastController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 调用播客服务获取热门播客
+            // Call podcast service to get trending podcasts
             Map<String, Object> trendingResult = podcastService.getTrendingPodcasts(region);
             
-            // 检查获取热门播客是否成功
+            // Check if getting trending podcasts was successful
             if ((Boolean) trendingResult.get("success")) {
-                // 构建成功响应
+                // Build success response
                 response.put("success", true);
                 response.put("trendingPodcasts", trendingResult.get("trendingPodcasts"));
                 response.put("totalTrending", trendingResult.get("totalTrending"));
                 return ResponseEntity.ok(response);
             } else {
-                // 获取热门播客失败，返回错误信息
+                // Failed to get trending podcasts, return error message
                 response.put("success", false);
                 response.put("message", trendingResult.get("message"));
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -250,10 +250,10 @@ public class PodcastController {
     }
 
     /**
-     * 获取专为老年用户设计的播客推荐
+     * Get podcast recommendations designed for elderly users
      * 使用预定义的老年用户兴趣列表
      * 
-     * @return 适合老年用户的播客推荐
+     * @return podcast recommendations suitable for elderly users
      */
     @GetMapping("/elderly-recommendations")
     public ResponseEntity<Map<String, Object>> getElderlyPodcastRecommendations() {
@@ -274,12 +274,12 @@ public class PodcastController {
                 "relaxation"               // 放松
             );
             
-            // 调用播客服务获取推荐
+            // Call podcast service to get recommendations
             Map<String, Object> recommendationsResult = podcastService.getPodcastRecommendations(elderlyInterests);
             
             // 检查推荐是否成功
             if ((Boolean) recommendationsResult.get("success")) {
-                // 构建成功响应
+                // Build success response
                 response.put("success", true);
                 response.put("recommendations", recommendationsResult.get("recommendations"));
                 response.put("totalRecommendations", recommendationsResult.get("totalRecommendations"));

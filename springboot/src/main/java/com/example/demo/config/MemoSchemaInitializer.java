@@ -9,8 +9,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * 备忘录数据库初始化器
- * 确保memos表在应用启动时被创建
+ * Memo database initializer
+ * Ensures memos table is created when application starts
  */
 @Component
 public class MemoSchemaInitializer implements CommandLineRunner {
@@ -23,7 +23,7 @@ public class MemoSchemaInitializer implements CommandLineRunner {
         try {
             System.out.println("Initializing memo schema...");
             
-            // 创建表
+            // Create table
             jdbcTemplate.execute("""
                 CREATE TABLE IF NOT EXISTS memos (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,19 +39,19 @@ public class MemoSchemaInitializer implements CommandLineRunner {
                 )
             """);
             
-            // 创建索引
+            // Create indexes
             jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_user_id ON memos (user_id)");
             jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_user_deleted ON memos (user_id, is_deleted)");
             jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_update_time ON memos (update_time)");
             jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_type ON memos (type)");
             jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_important ON memos (is_important)");
             
-            // 插入测试数据
+            // Insert test data
             List<String> insertStatements = Arrays.asList(
-                "INSERT OR IGNORE INTO memos (user_id, title, content, type, is_important, pin_code, create_time, update_time) VALUES (1, '重要提醒', '明天要去医院做体检，记得带身份证和医保卡', 'important', 1, '1234', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-                "INSERT OR IGNORE INTO memos (user_id, title, content, type, is_important, pin_code, create_time, update_time) VALUES (1, '购物清单', '牛奶、面包、鸡蛋、蔬菜', 'todo', 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-                "INSERT OR IGNORE INTO memos (user_id, title, content, type, is_important, pin_code, create_time, update_time) VALUES (1, '日常记录', '今天天气很好，适合出去散步', 'general', 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-                "INSERT OR IGNORE INTO memos (user_id, title, content, type, is_important, pin_code, create_time, update_time) VALUES (1, '重要事项', '银行密码：123456，请妥善保管', 'important', 1, '5678', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+                "INSERT OR IGNORE INTO memos (user_id, title, content, type, is_important, pin_code, create_time, update_time) VALUES (1, 'Important Reminder', 'Tomorrow go to hospital for physical examination, remember to bring ID card and medical insurance card', 'important', 1, '1234', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+                "INSERT OR IGNORE INTO memos (user_id, title, content, type, is_important, pin_code, create_time, update_time) VALUES (1, 'Shopping List', 'Milk, bread, eggs, vegetables', 'todo', 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+                "INSERT OR IGNORE INTO memos (user_id, title, content, type, is_important, pin_code, create_time, update_time) VALUES (1, 'Daily Record', 'Today weather is good, suitable for walking', 'general', 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+                "INSERT OR IGNORE INTO memos (user_id, title, content, type, is_important, pin_code, create_time, update_time) VALUES (1, 'Important Matter', 'Bank password: 123456, please keep safe', 'important', 1, '5678', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
             );
             
             for (String insertSql : insertStatements) {

@@ -52,9 +52,9 @@ public interface MemoRepositoryInterface {
     List<Memo> findByUserIdAndType(Long userId, String type);
     
     /**
-     * 根据用户ID查找重要备忘录
-     * @param userId 用户ID
-     * @return 重要备忘录列表
+     * Find important memos by user ID
+     * @param userId user ID
+     * @return important memo list
      */
     List<Memo> findImportantByUserId(Long userId);
     
@@ -90,9 +90,9 @@ public interface MemoRepositoryInterface {
     long countByUserId(Long userId);
     
     /**
-     * 统计用户重要备忘录数量
-     * @param userId 用户ID
-     * @return 重要备忘录数量
+     * Count important memos by user ID
+     * @param userId user ID
+     * @return number of important memos
      */
     long countImportantByUserId(Long userId);
     

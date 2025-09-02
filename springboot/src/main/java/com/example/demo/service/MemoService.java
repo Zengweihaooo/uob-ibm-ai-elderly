@@ -14,8 +14,8 @@ import com.example.demo.pojo.Memo;
 import com.example.demo.repository.MemoRepository;
 
 /**
- * 备忘录服务类
- * 提供备忘录的增删改查功能，以及PIN码验证和加密功能
+ * Memo service class
+ * Provides memo CRUD functionality, PIN code verification and encryption features
  */
 @Service
 public class MemoService {
@@ -25,18 +25,18 @@ public class MemoService {
     private MemoRepository memoRepository;
     
     /**
-     * 创建新备忘录
-     * @param userId 用户ID
-     * @param title 备忘录标题
-     * @param content 备忘录内容
-     * @param type 备忘录类型
-     * @return 创建结果
+     * Create new memo
+     * @param userId user ID
+     * @param title memo title
+     * @param content memo content
+     * @param type memo type
+     * @return creation result
      */
     public Map<String, Object> createMemo(Long userId, String title, String content, String type) {
         Map<String, Object> result = new HashMap<>();
         
         try {
-            // 验证输入参数
+            // Validate input parameters
             if (title == null || title.trim().isEmpty()) {
                 result.put("success", false);
                 result.put("message", "Memo title cannot be empty");
@@ -49,23 +49,23 @@ public class MemoService {
                 return result;
             }
             
-            // 智能分类：如果标题或内容包含密码相关关键词，自动归类为重要类型
+            // Smart classification: if title or content contains password-related keywords, automatically classify as important type
             String finalType = type;
             if (isPasswordRelated(title.trim(), content.trim())) {
                 finalType = "important";
             }
             
-            // 创建备忘录对象
+            // Create memo object
             Memo memo = new Memo(userId, title.trim(), content.trim(), finalType);
             memo.setUpdateTime(LocalDateTime.now());
             
-            // 如果是重要类型，设置默认PIN码
+            // If it's important type, set default PIN code
             if ("important".equals(finalType)) {
-                memo.setPinCode("1234"); // 默认PIN码，用户可以修改
+                memo.setPinCode("1234"); // Default PIN code, user can modify
                 memo.setImportant(true);
             }
             
-            // 保存到数据库
+            // Save to database
             int insertResult = memoRepository.insert(memo);
             
             if (insertResult > 0) {
@@ -86,9 +86,9 @@ public class MemoService {
     }
     
     /**
-     * 获取用户的所有备忘录
-     * @param userId 用户ID
-     * @return 备忘录列表
+     * Get all memos for a user
+     * @param userId user ID
+     * @return memo list
      */
     public Map<String, Object> getUserMemos(Long userId) {
         Map<String, Object> result = new HashMap<>();
@@ -109,10 +109,10 @@ public class MemoService {
     }
     
     /**
-     * 根据ID获取备忘录
-     * @param userId 用户ID
-     * @param memoId 备忘录ID
-     * @return 备忘录信息
+     * Get memo by ID
+     * @param userId user ID
+     * @param memoId memo ID
+     * @return memo information
      */
     public Map<String, Object> getMemoById(Long userId, Long memoId) {
         Map<String, Object> result = new HashMap<>();
@@ -138,24 +138,24 @@ public class MemoService {
     }
     
     /**
-     * 更新备忘录
-     * @param userId 用户ID
-     * @param memoId 备忘录ID
-     * @param title 新标题
-     * @param content 新内容
-     * @param type 新类型
-     * @return 更新结果
+     * Update memo
+     * @param userId user ID
+     * @param memoId memo ID
+     * @param title new title
+     * @param content new content
+     * @param type new type
+     * @return update result
      */
     public Map<String, Object> updateMemo(Long userId, Long memoId, String title, String content, String type) {
         Map<String, Object> result = new HashMap<>();
         
         try {
-            // 先查找备忘录
+            // First, find the memo
             Optional<Memo> memoOpt = memoRepository.findByUserIdAndId(userId, memoId);
             
             if (memoOpt.isPresent()) {
                 Memo memo = memoOpt.get();
-                // 更新备忘录信息
+                // Update memo information
                 if (title != null && !title.trim().isEmpty()) {
                     memo.setTitle(title.trim());
                 }
@@ -164,7 +164,7 @@ public class MemoService {
                 }
                 if (type != null) {
                     memo.setType(type);
-                    // 如果是重要类型，自动设置为加密
+                    // If it's important type, automatically set to encrypted
                     if ("important".equals(type)) {
                         memo.setImportant(true);
                         if (memo.getPinCode() == null) {
@@ -175,7 +175,7 @@ public class MemoService {
                 
                 memo.setUpdateTime(LocalDateTime.now());
                 
-                // 更新到数据库
+                // Update to database
                 int updateResult = memoRepository.save(memo);
                 
                 if (updateResult > 0) {
@@ -201,10 +201,10 @@ public class MemoService {
     }
     
     /**
-     * 删除备忘录（软删除）
-     * @param userId 用户ID
-     * @param memoId 备忘录ID
-     * @return 删除结果
+     * Delete memo (soft delete)
+     * @param userId user ID
+     * @param memoId memo ID
+     * @return delete result
      */
     public Map<String, Object> deleteMemo(Long userId, Long memoId) {
         Map<String, Object> result = new HashMap<>();
@@ -229,10 +229,10 @@ public class MemoService {
     }
     
     /**
-     * 验证PIN码
-     * @param userId 用户ID
-     * @param pinCode 输入的PIN码
-     * @return 验证结果
+     * Verify PIN code
+     * @param userId user ID
+     * @param pinCode input PIN code
+     * @return verification result
      */
     public Map<String, Object> verifyPinCode(Long userId, String pinCode) {
         Map<String, Object> result = new HashMap<>();
@@ -240,35 +240,35 @@ public class MemoService {
         try {
             if (pinCode == null || pinCode.trim().isEmpty()) {
                 result.put("success", false);
-                result.put("message", "PIN码不能为空");
+                result.put("message", "PIN code cannot be empty");
                 return result;
             }
             
-            // 检查用户是否有使用该PIN码的备忘录
+            // Check if user has memos using this PIN code
             boolean isValid = memoRepository.existsByUserIdAndPinCode(userId, pinCode.trim());
             
             if (isValid) {
                 result.put("success", true);
-                result.put("message", "PIN码验证成功");
+                result.put("message", "PIN code verified successfully");
             } else {
                 result.put("success", false);
-                result.put("message", "PIN码验证失败");
+                result.put("message", "PIN code verification failed");
             }
             
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "PIN码验证失败: " + e.getMessage());
+            result.put("message", "PIN code verification failed: " + e.getMessage());
         }
         
         return result;
     }
     
     /**
-     * 验证特定备忘录的PIN码
-     * @param userId 用户ID
-     * @param memoId 备忘录ID
-     * @param pinCode 输入的PIN码
-     * @return 验证结果
+     * Verify PIN code for a specific memo
+     * @param userId user ID
+     * @param memoId memo ID
+     * @param pinCode input PIN code
+     * @return verification result
      */
     public Map<String, Object> verifyMemoPinCode(Long userId, Long memoId, String pinCode) {
         Map<String, Object> result = new HashMap<>();
@@ -276,111 +276,111 @@ public class MemoService {
         try {
             if (pinCode == null || pinCode.trim().isEmpty()) {
                 result.put("success", false);
-                result.put("message", "PIN码不能为空");
+                result.put("message", "PIN code cannot be empty");
                 return result;
             }
             
-            // 获取备忘录
+            // Get memo
             Optional<Memo> memoOpt = memoRepository.findByUserIdAndId(userId, memoId);
             if (!memoOpt.isPresent()) {
                 result.put("success", false);
-                result.put("message", "备忘录不存在");
+                result.put("message", "Memo not found");
                 return result;
             }
             
             Memo memo = memoOpt.get();
             
-            // 检查备忘录是否属于当前用户
+            // Check if memo belongs to current user
             if (!memo.getUserId().equals(userId)) {
                 result.put("success", false);
-                result.put("message", "无权访问此备忘录");
+                result.put("message", "Unauthorized access to this memo");
                 return result;
             }
             
-            // 验证PIN码
+            // Verify PIN code
             if (pinCode.trim().equals(memo.getPinCode())) {
                 result.put("success", true);
-                result.put("message", "PIN码验证成功");
+                result.put("message", "PIN code verified successfully");
             } else {
                 result.put("success", false);
-                result.put("message", "PIN码验证失败");
+                result.put("message", "PIN code verification failed");
             }
             
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "PIN码验证失败: " + e.getMessage());
+            result.put("message", "PIN code verification failed: " + e.getMessage());
         }
         
         return result;
     }
     
     /**
-     * 设置新PIN码（已验证当前PIN，直接设置）
-     * @param userId 用户ID
-     * @param newPinCode 新的PIN码
-     * @return 设置结果
+     * Set new PIN code (already verified current PIN, directly set)
+     * @param userId user ID
+     * @param newPinCode new PIN code
+     * @return set result
      */
     public Map<String, Object> setNewPin(Long userId, String newPinCode) {
         Map<String, Object> result = new HashMap<>();
         
         try {
-            // 验证输入参数
+            // Validate input parameters
             if (newPinCode == null || newPinCode.trim().isEmpty()) {
                 result.put("success", false);
-                result.put("message", "新PIN码不能为空");
+                result.put("message", "New PIN code cannot be empty");
                 return result;
             }
             
-            // 验证新PIN码格式（4位数字）
+            // Validate new PIN code format (4 digits)
             if (!newPinCode.matches("\\d{4}")) {
                 result.put("success", false);
-                result.put("message", "新PIN码必须是4位数字");
+                result.put("message", "New PIN code must be 4 digits");
                 return result;
             }
             
-            System.out.println("DEBUG: 设置新PIN码 - 用户ID: " + userId + ", 新PIN: " + newPinCode.trim());
+            System.out.println("DEBUG: Setting new PIN code - User ID: " + userId + ", New PIN: " + newPinCode.trim());
             
-            // 检查用户是否有Important类型的备忘录
+            // Check if user has Important type memos
             List<Memo> importantMemos = memoRepository.findImportantByUserId(userId);
             
-            System.out.println("DEBUG: 找到 " + importantMemos.size() + " 个重要memo需要更新");
+            System.out.println("DEBUG: Found " + importantMemos.size() + " important memos to update");
             
             if (importantMemos.isEmpty()) {
                 result.put("success", false);
-                result.put("message", "您还没有重要类型的备忘录，无法设置PIN码");
+                result.put("message", "You do not have important type memos, cannot set PIN code");
                 return result;
             }
             
-            // 直接更新用户所有Important备忘录的PIN码（因为已经验证了当前PIN）
+            // Directly update PIN code for all Important memos of the user (since current PIN is already verified)
             int updatedCount = 0;
             
             for (Memo memo : importantMemos) {
-                System.out.println("DEBUG: 更新memo ID: " + memo.getId() + " 的PIN码从 " + memo.getPinCode() + " 到 " + newPinCode.trim());
+                System.out.println("DEBUG: Updating memo ID: " + memo.getId() + " PIN from " + memo.getPinCode() + " to " + newPinCode.trim());
                 memo.setPinCode(newPinCode.trim());
                 memo.setUpdateTime(LocalDateTime.now());
                 int updateResult = memoRepository.update(memo);
                 if (updateResult > 0) {
                     updatedCount++;
-                    System.out.println("DEBUG: memo ID: " + memo.getId() + " 更新成功");
+                    System.out.println("DEBUG: memo ID: " + memo.getId() + " updated successfully");
                 } else {
-                    System.out.println("DEBUG: memo ID: " + memo.getId() + " 更新失败");
+                    System.out.println("DEBUG: memo ID: " + memo.getId() + " update failed");
                 }
             }
             
             if (updatedCount > 0) {
                 result.put("success", true);
-                result.put("message", "PIN码更新成功，已更新 " + updatedCount + " 个重要备忘录");
-                System.out.println("DEBUG: PIN码更新成功，共更新 " + updatedCount + " 个memo");
+                result.put("message", "PIN code updated successfully, " + updatedCount + " important memos updated");
+                System.out.println("DEBUG: PIN code updated successfully, total " + updatedCount + " memos updated");
             } else {
                 result.put("success", false);
-                result.put("message", "PIN码更新失败");
-                System.out.println("DEBUG: PIN码更新失败，没有memo被更新");
+                result.put("message", "PIN code update failed");
+                System.out.println("DEBUG: PIN code update failed, no memos were updated");
             }
             
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "PIN码设置失败: " + e.getMessage());
-            System.err.println("DEBUG: PIN码设置异常: " + e.getMessage());
+            result.put("message", "PIN code setting failed: " + e.getMessage());
+            System.err.println("DEBUG: PIN code setting exception: " + e.getMessage());
             e.printStackTrace();
         }
         
@@ -388,60 +388,60 @@ public class MemoService {
     }
     
     /**
-     * 验证当前PIN码
-     * @param userId 用户ID
-     * @param currentPin 当前PIN码
-     * @return 验证结果
+     * Verify current PIN code
+     * @param userId user ID
+     * @param currentPin current PIN code
+     * @return verification result
      */
     public Map<String, Object> verifyCurrentPin(Long userId, String currentPin) {
         Map<String, Object> result = new HashMap<>();
         
         try {
-            // 验证输入参数
+            // Validate input parameters
             if (currentPin == null || currentPin.trim().isEmpty()) {
                 result.put("success", false);
-                result.put("message", "当前PIN码不能为空");
+                result.put("message", "Current PIN code cannot be empty");
                 return result;
             }
             
-            System.out.println("DEBUG: 验证PIN码 - 用户ID: " + userId + ", 输入PIN: " + currentPin.trim());
+            System.out.println("DEBUG: Verifying PIN code - User ID: " + userId + ", Input PIN: " + currentPin.trim());
             
-            // 检查用户是否有Important类型的备忘录
+            // Check if user has Important type memos
             List<Memo> importantMemos = memoRepository.findImportantByUserId(userId);
             
-            System.out.println("DEBUG: 找到 " + importantMemos.size() + " 个重要memo");
+            System.out.println("DEBUG: Found " + importantMemos.size() + " important memos");
             
             if (importantMemos.isEmpty()) {
                 result.put("success", false);
-                result.put("message", "您还没有重要类型的备忘录，无法验证PIN码");
+                result.put("message", "You do not have important type memos, cannot verify PIN code");
                 return result;
             }
             
-            // 验证当前PIN码是否正确
+            // Verify current PIN code
             boolean currentPinValid = false;
             for (Memo memo : importantMemos) {
-                System.out.println("DEBUG: 检查memo ID: " + memo.getId() + ", 存储的PIN: " + memo.getPinCode());
+                System.out.println("DEBUG: Checking memo ID: " + memo.getId() + ", Stored PIN: " + memo.getPinCode());
                 if (currentPin.trim().equals(memo.getPinCode())) {
                     currentPinValid = true;
-                    System.out.println("DEBUG: PIN码匹配成功!");
+                    System.out.println("DEBUG: PIN code matched successfully!");
                     break;
                 }
             }
             
             if (currentPinValid) {
                 result.put("success", true);
-                result.put("message", "当前PIN码验证成功");
-                System.out.println("DEBUG: PIN码验证成功");
+                result.put("message", "Current PIN code verified successfully");
+                System.out.println("DEBUG: PIN code verified successfully");
             } else {
                 result.put("success", false);
-                result.put("message", "当前PIN码验证失败");
-                System.out.println("DEBUG: PIN码验证失败");
+                result.put("message", "Current PIN code verification failed");
+                System.out.println("DEBUG: PIN code verification failed");
             }
             
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "PIN码验证失败: " + e.getMessage());
-            System.err.println("DEBUG: PIN码验证异常: " + e.getMessage());
+            result.put("message", "PIN code verification failed: " + e.getMessage());
+            System.err.println("DEBUG: PIN code verification exception: " + e.getMessage());
             e.printStackTrace();
         }
         
@@ -449,43 +449,43 @@ public class MemoService {
     }
     
     /**
-     * 设置用户PIN码（需要验证旧PIN码）
-     * @param userId 用户ID
-     * @param oldPinCode 旧PIN码
-     * @param newPinCode 新的PIN码
-     * @return 设置结果
+     * Set user PIN code (requires old PIN verification)
+     * @param userId user ID
+     * @param oldPinCode old PIN code
+     * @param newPinCode new PIN code
+     * @return set result
      */
     public Map<String, Object> setPinCode(Long userId, String oldPinCode, String newPinCode) {
         Map<String, Object> result = new HashMap<>();
         
         try {
-            // 验证输入参数
+            // Validate input parameters
             if (oldPinCode == null || oldPinCode.trim().isEmpty()) {
                 result.put("success", false);
-                result.put("message", "旧PIN码不能为空");
+                result.put("message", "Old PIN code cannot be empty");
                 return result;
             }
             
             if (newPinCode == null || newPinCode.trim().isEmpty()) {
                 result.put("success", false);
-                result.put("message", "新PIN码不能为空");
+                result.put("message", "New PIN code cannot be empty");
                 return result;
             }
             
-            // 验证新PIN码格式（4位数字）
+            // Validate new PIN code format (4 digits)
             if (!newPinCode.matches("\\d{4}")) {
                 result.put("success", false);
-                result.put("message", "新PIN码必须是4位数字");
+                result.put("message", "New PIN code must be 4 digits");
                 return result;
             }
             
-            // 检查用户是否有Important类型的备忘录
+            // Check if user has Important type memos
             List<Memo> importantMemos = memoRepository.findImportantByUserId(userId);
             boolean hasImportantMemos = !importantMemos.isEmpty();
             
-            // 如果没有Important备忘录，创建一个默认的Important备忘录来存储PIN码
+            // If no Important memos, create a default Important memo to store PIN code
             if (!hasImportantMemos) {
-                Memo defaultMemo = new Memo(userId, "PIN码设置", "这是用于存储PIN码的默认备忘录", "important");
+                Memo defaultMemo = new Memo(userId, "PIN Code Setting", "This is a default memo for storing PIN code", "important");
                 defaultMemo.setPinCode(newPinCode.trim());
                 defaultMemo.setImportant(true);
                 defaultMemo.setUpdateTime(LocalDateTime.now());
@@ -493,16 +493,16 @@ public class MemoService {
                 int insertResult = memoRepository.insert(defaultMemo);
                 if (insertResult > 0) {
                     result.put("success", true);
-                    result.put("message", "PIN码设置成功，已创建默认重要备忘录");
+                    result.put("message", "PIN code set successfully, default important memo created");
                     return result;
                 } else {
                     result.put("success", false);
-                    result.put("message", "PIN码设置失败");
+                    result.put("message", "PIN code setting failed");
                     return result;
                 }
             }
             
-            // 验证旧PIN码是否正确
+            // Verify old PIN code
             boolean oldPinValid = false;
             for (Memo memo : importantMemos) {
                 if (oldPinCode.trim().equals(memo.getPinCode())) {
@@ -513,11 +513,11 @@ public class MemoService {
             
             if (!oldPinValid) {
                 result.put("success", false);
-                result.put("message", "旧PIN码验证失败");
+                result.put("message", "Old PIN code verification failed");
                 return result;
             }
             
-            // 更新用户所有Important备忘录的PIN码
+            // Update PIN code for all Important memos of the user
             int updatedCount = 0;
             
             for (Memo memo : importantMemos) {
@@ -531,24 +531,24 @@ public class MemoService {
             
             if (updatedCount > 0) {
                 result.put("success", true);
-                result.put("message", "PIN码设置成功，已更新 " + updatedCount + " 个重要备忘录");
+                result.put("message", "PIN code set successfully, " + updatedCount + " important memos updated");
             } else {
                 result.put("success", false);
-                result.put("message", "PIN码更新失败");
+                result.put("message", "PIN code update failed");
             }
             
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "PIN码设置失败: " + e.getMessage());
+            result.put("message", "PIN code setting failed: " + e.getMessage());
         }
         
         return result;
     }
     
     /**
-     * 检查用户是否已经设置了PIN码
-     * @param userId 用户ID
-     * @return 检查结果
+     * Check if user has already set PIN code
+     * @param userId user ID
+     * @return check result
      */
     public Map<String, Object> checkPinCodeStatus(Long userId) {
         Map<String, Object> result = new HashMap<>();
@@ -561,11 +561,11 @@ public class MemoService {
                 result.put("success", true);
                 result.put("hasPin", false);
                 result.put("hasImportantMemos", false);
-                result.put("message", "您还没有创建重要类型的备忘录");
+                result.put("message", "You have not created important type memos yet");
                 return result;
             }
             
-            // 检查是否已经有备忘录设置了PIN码（不是默认的1234）
+            // Check if there is already a memo set with a PIN code (not the default 1234)
             boolean hasExistingPin = false;
             for (Memo memo : importantMemos) {
                 if (memo.getPinCode() != null && !memo.getPinCode().equals("1234")) {
@@ -577,21 +577,21 @@ public class MemoService {
             result.put("success", true);
             result.put("hasPin", hasExistingPin);
             result.put("hasImportantMemos", true);
-            result.put("message", hasExistingPin ? "用户已设置PIN码" : "用户未设置PIN码");
+            result.put("message", hasExistingPin ? "User has set PIN code" : "User has not set PIN code");
             
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "检查PIN码状态失败: " + e.getMessage());
+            result.put("message", "Failed to check PIN code status: " + e.getMessage());
         }
         
         return result;
     }
     
     /**
-     * 设置用户PIN码（首次设置，不需要验证旧PIN码）
-     * @param userId 用户ID
-     * @param pinCode 新的PIN码
-     * @return 设置结果
+     * Set user PIN code (first time setting, no old PIN verification required)
+     * @param userId user ID
+     * @param pinCode new PIN code
+     * @return set result
      */
     public Map<String, Object> setPinCode(Long userId, String pinCode) {
         Map<String, Object> result = new HashMap<>();
@@ -599,24 +599,24 @@ public class MemoService {
         try {
             if (pinCode == null || pinCode.trim().isEmpty()) {
                 result.put("success", false);
-                result.put("message", "PIN码不能为空");
+                result.put("message", "PIN code cannot be empty");
                 return result;
             }
             
-            // 验证PIN码格式（4位数字）
+            // Validate PIN code format (4 digits)
             if (!pinCode.matches("\\d{4}")) {
                 result.put("success", false);
-                result.put("message", "PIN码必须是4位数字");
+                result.put("message", "PIN code must be 4 digits");
                 return result;
             }
             
-            // 检查用户是否有Important类型的备忘录
+            // Check if user has Important type memos
             List<Memo> importantMemos = memoRepository.findImportantByUserId(userId);
             boolean hasImportantMemos = !importantMemos.isEmpty();
             
-            // 如果没有Important备忘录，创建一个默认的Important备忘录来存储PIN码
+            // If no Important memos, create a default Important memo to store PIN code
             if (!hasImportantMemos) {
-                Memo defaultMemo = new Memo(userId, "PIN码设置", "这是用于存储PIN码的默认备忘录", "important");
+                Memo defaultMemo = new Memo(userId, "PIN Code Setting", "This is a default memo for storing PIN code", "important");
                 defaultMemo.setPinCode(pinCode.trim());
                 defaultMemo.setImportant(true);
                 defaultMemo.setUpdateTime(LocalDateTime.now());
@@ -624,16 +624,16 @@ public class MemoService {
                 int insertResult = memoRepository.insert(defaultMemo);
                 if (insertResult > 0) {
                     result.put("success", true);
-                    result.put("message", "PIN码设置成功，已创建默认重要备忘录");
+                    result.put("message", "PIN code set successfully, default important memo created");
                     return result;
                 } else {
                     result.put("success", false);
-                    result.put("message", "PIN码设置失败");
+                    result.put("message", "PIN code setting failed");
                     return result;
                 }
             }
             
-            // 检查是否已经有备忘录设置了PIN码（不是默认的1234）
+            // Check if there is already a memo set with a PIN code (not the default 1234)
             boolean hasExistingPin = false;
             for (Memo memo : importantMemos) {
                 if (memo.getPinCode() != null && !memo.getPinCode().equals("1234")) {
@@ -644,12 +644,12 @@ public class MemoService {
             
             if (hasExistingPin) {
                 result.put("success", false);
-                result.put("message", "PIN码已设置，请使用验证旧PIN码的方式重新设置");
+                result.put("message", "PIN code already set, please use the old PIN verification method to re-set");
                 result.put("needOldPin", true);
                 return result;
             }
             
-            // 更新用户所有Important备忘录的PIN码
+            // Update PIN code for all Important memos of the user
             int updatedCount = 0;
             
             for (Memo memo : importantMemos) {
@@ -663,25 +663,25 @@ public class MemoService {
             
             if (updatedCount > 0) {
                 result.put("success", true);
-                result.put("message", "PIN码设置成功，已更新 " + updatedCount + " 个重要备忘录");
+                result.put("message", "PIN code set successfully, " + updatedCount + " important memos updated");
             } else {
                 result.put("success", false);
-                result.put("message", "PIN码更新失败");
+                result.put("message", "PIN code update failed");
             }
             
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "PIN码设置失败: " + e.getMessage());
+            result.put("message", "PIN code setting failed: " + e.getMessage());
         }
         
         return result;
     }
     
     /**
-     * 搜索备忘录
-     * @param userId 用户ID
-     * @param keyword 搜索关键词
-     * @return 搜索结果
+     * Search memos
+     * @param userId user ID
+     * @param keyword search keyword
+     * @return search result
      */
     public Map<String, Object> searchMemos(Long userId, String keyword) {
         Map<String, Object> result = new HashMap<>();
@@ -689,7 +689,7 @@ public class MemoService {
         try {
             if (keyword == null || keyword.trim().isEmpty()) {
                 result.put("success", false);
-                result.put("message", "搜索关键词不能为空");
+                result.put("message", "Search keyword cannot be empty");
                 return result;
             }
             
@@ -702,16 +702,16 @@ public class MemoService {
             
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "搜索备忘录失败: " + e.getMessage());
+            result.put("message", "Failed to search memos: " + e.getMessage());
         }
         
         return result;
     }
     
     /**
-     * 获取备忘录统计信息
-     * @param userId 用户ID
-     * @return 统计信息
+     * Get memo statistics
+     * @param userId user ID
+     * @return statistics
      */
     public Map<String, Object> getMemoStatistics(Long userId) {
         Map<String, Object> result = new HashMap<>();
@@ -733,24 +733,24 @@ public class MemoService {
             
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "获取统计信息失败: " + e.getMessage());
+            result.put("message", "Failed to get statistics: " + e.getMessage());
         }
         
         return result;
     }
     
     /**
-     * 获取加密备忘录内容（需要PIN码验证）
-     * @param userId 用户ID
-     * @param memoId 备忘录ID
-     * @param pinCode PIN码
-     * @return 备忘录内容
+     * Get encrypted memo content (requires PIN code verification)
+     * @param userId user ID
+     * @param memoId memo ID
+     * @param pinCode PIN code
+     * @return memo content
      */
     public Map<String, Object> getEncryptedMemoContent(Long userId, Long memoId, String pinCode) {
         Map<String, Object> result = new HashMap<>();
         
         try {
-            // 获取备忘录
+            // Get memo
             Map<String, Object> memoResult = getMemoById(userId, memoId);
             if (!(Boolean) memoResult.get("success")) {
                 return memoResult;
@@ -758,20 +758,20 @@ public class MemoService {
             
             Memo memo = (Memo) memoResult.get("memo");
             
-            // 检查是否是重要备忘录
+            // Check if it's an important memo
             if (!memo.isImportant()) {
                 result.put("success", true);
                 result.put("content", memo.getContent());
                 result.put("message", "Memo content retrieved successfully");
             } else {
-                // 验证备忘录的PIN码
+                // Verify PIN code of the memo
                 if (pinCode.equals(memo.getPinCode())) {
                     result.put("success", true);
                     result.put("content", memo.getContent());
                     result.put("message", "Important memo content retrieved successfully");
                 } else {
                     result.put("success", false);
-                    result.put("message", "PIN码验证失败");
+                    result.put("message", "PIN code verification failed");
                 }
             }
             
@@ -784,10 +784,10 @@ public class MemoService {
     }
     
     /**
-     * 判断备忘录是否包含密码相关内容
-     * @param title 备忘录标题
-     * @param content 备忘录内容
-     * @return 是否包含密码相关内容
+     * Check if memo contains password-related content
+     * @param title memo title
+     * @param content memo content
+     * @return true if password-related content is found, false otherwise
      */
     private boolean isPasswordRelated(String title, String content) {
         if (title == null) title = "";
@@ -795,18 +795,18 @@ public class MemoService {
         
         String combinedText = (title + " " + content).toLowerCase();
         
-        // 密码相关关键词
+        // Password-related keywords
         String[] passwordKeywords = {
-            "密码", "password", "pwd", "pass", "mima", "密碼",
-            "账号", "account", "用户名", "username", "user",
-            "登录", "login", "signin", "sign in",
-            "银行卡", "bank card", "信用卡", "credit card",
-            "身份证", "id card", "身份证号", "id number",
-            "手机号", "phone", "电话号码", "phone number",
-            "邮箱", "email", "邮箱地址", "email address",
-            "密钥", "key", "私钥", "private key", "公钥", "public key",
-            "token", "令牌", "验证码", "verification code",
-            "pin", "pin码", "pin code"
+            "password", "pwd", "pass", "mima", "密碼",
+            "account", "username", "user",
+            "login", "signin", "sign in",
+            "bank card", "credit card",
+            "id card", "id number",
+            "phone", "phone number",
+            "email", "email address",
+            "key", "private key", "public key",
+            "token", "token", "verification code",
+            "pin", "pin code"
         };
         
         for (String keyword : passwordKeywords) {
