@@ -613,33 +613,33 @@
     </div>
 
     <script>
-        // 全局变量
+        // Global variables
         let currentMemos = [];
         let currentMemoId = null;
         let currentPinCode = '';
         let isFirstLogin = true;
         let userPinCode = localStorage.getItem('userPinCode');
 
-        // 获取JWT token
+        // Get JWT token
         function getAuthToken() {
             return localStorage.getItem('authToken');
         }
 
-        // 检查用户是否已登录
+        // Check if user is logged in
         function isUserLoggedIn() {
             const token = getAuthToken();
             return token && token !== 'null' && token !== '';
         }
 
-        // 获取Authorization header
+        // Get Authorization header
         function getAuthHeader() {
             const token = getAuthToken();
             return token ? { 'Authorization': `Bearer ${token}` } : {};
         }
 
-        // 页面加载完成后初始化
+        // Initialize after page load
         document.addEventListener('DOMContentLoaded', function() {
-            // 检查用户登录状态
+            // Check login status
             if (!isUserLoggedIn()) {
                 showLoginPrompt();
                 return;
@@ -649,7 +649,7 @@
             setupEventListeners();
         });
 
-        // 显示登录提示
+        // Show login prompt
         function showLoginPrompt() {
             const memoList = document.getElementById('memoList');
             memoList.innerHTML = `
@@ -661,25 +661,25 @@
             `;
         }
 
-        // 重定向到登录页面
+        // Redirect to login page
         function redirectToLogin() {
             window.location.href = 'register.html';
         }
 
-        // 检查首次登录
+        // Check first login
         function checkFirstLogin() {
             if (!userPinCode) {
-                // 首次登录，显示PIN码设置
+                // First login: show PIN setup
                 showFirstLoginOverlay();
             } else {
-                // 已设置PIN码，加载备忘录
+                // PIN already set: load memos
                 loadMemos();
             }
         }
 
-        // 显示首次登录覆盖层
+        // Show first login overlay
         function showFirstLoginOverlay() {
-            // 清空所有PIN码输入框
+            // Clear all PIN inputs
             const pinInputs = document.querySelectorAll('#firstLoginOverlay .pin-digit');
             pinInputs.forEach(input => {
                 input.value = '';
@@ -688,7 +688,7 @@
             setupPinInputs('#firstLoginOverlay .pin-digit');
         }
 
-        // 设置首次登录PIN码
+        // Set initial PIN code
         async function setInitialPinCode() {
             const pinInputs = document.querySelectorAll('#firstLoginOverlay .pin-digit');
             const pinCode = Array.from(pinInputs).map(input => input.value).join('');
@@ -698,7 +698,7 @@
                 return;
             }
 
-            // 检查用户登录状态
+            // Check login status
             if (!isUserLoggedIn()) {
                 showLoginPrompt();
                 return;
@@ -719,20 +719,20 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // 保存PIN码到本地存储
+                    // Save PIN to local storage
                     localStorage.setItem('userPinCode', pinCode);
                     userPinCode = pinCode;
                     
-                    // 隐藏首次登录覆盖层
+                    // Hide first login overlay
                     document.getElementById('firstLoginOverlay').style.display = 'none';
                     
-                    // 加载备忘录
+                    // Load memos
                     loadMemos();
                     
                     alert('PIN code was set successfully! Welcome to Memo App!');
                 } else {
                     if (response.status === 401) {
-                        // 认证失败，清除token并显示登录提示
+                        // Auth failed: clear token and show login prompt
                         localStorage.removeItem('authToken');
                         showLoginPrompt();
                     } else {
@@ -744,9 +744,9 @@
             }
         }
 
-        // 设置事件监听器
+        // Set up event listeners
         function setupEventListeners() {
-            // 搜索功能
+            // Search feature
             document.getElementById('searchInput').addEventListener('input', function() {
                 const keyword = this.value.trim();
                 if (keyword) {
@@ -756,34 +756,34 @@
                 }
             });
 
-            // 备忘录表单提交
+            // Memo form submit
             document.getElementById('memoForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 saveMemo();
             });
 
-            // PIN码表单提交
+            // PIN form submit
             document.getElementById('pinForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 setPinCode();
             });
 
-            // PIN码验证表单提交
+            // PIN verify form submit
             document.getElementById('verifyPinForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 verifyPinCode();
             });
 
-            // PIN码输入框自动跳转
+            // Auto-advance PIN inputs
             setupPinInputs();
         }
 
-        // 设置PIN码输入框
+        // Set up PIN inputs
         function setupPinInputs(selector = '.pin-digit') {
             const pinInputs = document.querySelectorAll(selector);
             pinInputs.forEach((input, index) => {
                 input.addEventListener('input', function() {
-                    // 只允许输入数字
+                    // Allow digits only
                     this.value = this.value.replace(/[^0-9]/g, '');
                     
                     if (this.value && index < pinInputs.length - 1) {
@@ -797,7 +797,7 @@
                     }
                 });
 
-                // 防止粘贴非数字字符
+                // Prevent pasting non-digit characters
                 input.addEventListener('paste', function(e) {
                     e.preventDefault();
                     const pastedText = (e.clipboardData || window.clipboardData).getData('text');
@@ -809,12 +809,12 @@
             });
         }
 
-        // 加载备忘录列表
+        // Load memo list
         async function loadMemos() {
             try {
                 showLoading();
                 
-                // 检查用户登录状态
+                // Check login status
                 if (!isUserLoggedIn()) {
                     showLoginPrompt();
                     return;
@@ -836,7 +836,7 @@
                     loadStatistics();
                 } else {
                     if (response.status === 401) {
-                        // 认证失败，清除token并显示登录提示
+                        // Auth failed: clear token and show login prompt
                         localStorage.removeItem('authToken');
                         showLoginPrompt();
                     } else {
@@ -848,7 +848,7 @@
             }
         }
 
-        // 显示备忘录列表
+        // Render memo list
         function displayMemos(memos) {
             const memoList = document.getElementById('memoList');
             
@@ -875,7 +875,7 @@
             memoList.appendChild(memoGrid);
         }
 
-        // 创建备忘录卡片
+        // Create memo card
         function createMemoCard(memo) {
             const card = document.createElement('div');
             card.className = `memo-card ${memo.important ? 'important' : ''}`;
@@ -906,10 +906,10 @@
             return card;
         }
 
-        // 加载统计信息
+        // Load statistics
         async function loadStatistics() {
             try {
-                // 检查用户登录状态
+                // Check login status
                 if (!isUserLoggedIn()) {
                     return;
                 }
@@ -927,7 +927,7 @@
                 if (data.success) {
                     displayStatistics(data.statistics);
                 } else if (response.status === 401) {
-                    // 认证失败，清除token并显示登录提示
+                    // Auth failed: clear token and show login prompt
                     localStorage.removeItem('authToken');
                     showLoginPrompt();
                 }
@@ -936,7 +936,7 @@
             }
         }
 
-        // 显示统计信息
+        // Display statistics
         function displayStatistics(stats) {
             const statsContainer = document.getElementById('statsContainer');
             const statsGrid = document.getElementById('statsGrid');
@@ -963,7 +963,7 @@
             statsContainer.style.display = 'block';
         }
 
-        // 搜索备忘录
+        // Search memos
         async function searchMemos(keyword) {
             try {
                 showLoading();
@@ -987,7 +987,7 @@
             }
         }
 
-        // 显示创建备忘录模态框
+        // Show create memo modal
         function showCreateModal() {
             document.getElementById('modalTitle').textContent = 'New Memo';
             document.getElementById('memoForm').reset();
@@ -995,7 +995,7 @@
             showModal('memoModal');
         }
 
-        // 显示编辑备忘录模态框
+        // Show edit memo modal
         function editMemo(memoId) {
             const memo = currentMemos.find(m => m.id === memoId);
             if (!memo) return;
@@ -1008,11 +1008,11 @@
             showModal('memoModal');
         }
 
-        // 查看重要备忘录
+        // View important memo
         function viewImportantMemo(memoId) {
             currentMemoId = memoId;
             currentAction = 'view';
-            // 清空所有PIN码输入框
+            // Clear all PIN inputs
             const pinInputs = document.querySelectorAll('#verifyPinModal .pin-digit');
             pinInputs.forEach(input => {
                 input.value = '';
@@ -1020,11 +1020,11 @@
             showModal('verifyPinModal');
         }
 
-        // 编辑重要备忘录
+        // Edit important memo
         function editImportantMemo(memoId) {
             currentMemoId = memoId;
             currentAction = 'edit';
-            // 清空所有PIN码输入框
+            // Clear all PIN inputs
             const pinInputs = document.querySelectorAll('#verifyPinModal .pin-digit');
             pinInputs.forEach(input => {
                 input.value = '';
@@ -1032,7 +1032,7 @@
             showModal('verifyPinModal');
         }
 
-        // 保存备忘录
+        // Save memo
         async function saveMemo() {
             const title = document.getElementById('memoTitle').value.trim();
             const content = document.getElementById('memoContent').value.trim();
@@ -1074,7 +1074,7 @@
             }
         }
 
-        // 删除备忘录
+        // Delete memo
         async function deleteMemo(memoId) {
             if (!confirm('Are you sure you want to delete this memo?')) {
                 return;
@@ -1102,7 +1102,7 @@
             }
         }
 
-        // 验证PIN码
+        // Verify PIN
         async function verifyPinCode() {
             const pinInputs = document.querySelectorAll('#verifyPinModal .pin-digit');
             const pinCode = Array.from(pinInputs).map(input => input.value).join('');
@@ -1112,24 +1112,24 @@
                 return;
             }
 
-            // 验证PIN码
+            // Verify PIN
             if (pinCode !== userPinCode) {
                 alert('Incorrect PIN code');
-                // 清空PIN码输入框
+                // Clear PIN inputs
                 pinInputs.forEach(input => input.value = '');
                 return;
             }
 
-            // PIN码正确，执行相应操作
+            // PIN correct: perform operation
             if (currentAction === 'view') {
-                // 查看重要备忘录内容
+                // View important memo content
                 const memo = currentMemos.find(m => m.id === currentMemoId);
                 if (memo) {
                     closeModal('verifyPinModal');
                     alert('Memo Content:\n\n' + memo.content);
                 }
             } else if (currentAction === 'edit') {
-                // 编辑重要备忘录
+                // Edit important memo
                 const memo = currentMemos.find(m => m.id === currentMemoId);
                 if (memo) {
                     closeModal('verifyPinModal');
@@ -1137,11 +1137,11 @@
                 }
             }
 
-            // 清空PIN码输入框
+            // Clear PIN inputs
             pinInputs.forEach(input => input.value = '');
         }
 
-        // 设置PIN码
+        // Set PIN
         async function setPinCode() {
             const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
             const pinCode = Array.from(pinInputs).map(input => input.value).join('');
@@ -1151,29 +1151,29 @@
                 return;
             }
 
-            // 检查用户登录状态
+            // Check login status
             if (!isUserLoggedIn()) {
                 showLoginPrompt();
                 return;
             }
 
-            // 检查当前状态：是验证当前PIN还是设置新PIN
+            // Check current state: verify current PIN or set new PIN
             const modalTitle = document.querySelector('#pinModal .modal-title');
             const isVerifyingCurrentPin = modalTitle.textContent.includes('Verify Current PIN');
 
             if (isVerifyingCurrentPin) {
-                // 验证当前PIN
+                // Verify current PIN
                 await verifyCurrentPin(pinCode);
             } else {
-                // 设置新PIN
+                // Set new PIN
                 await setNewPin(pinCode);
             }
         }
 
-        // 验证当前PIN
+        // Verify current PIN
         async function verifyCurrentPin(currentPin) {
             try {
-                // 使用一个Important备忘录来验证当前PIN
+                // Use an important memo to verify current PIN
                 const response = await fetch('/api/memo/verify-current-pin', {
                     method: 'POST',
                     headers: {
@@ -1188,12 +1188,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // 当前PIN验证成功，切换到设置新PIN模式
+                    // Current PIN verified: switch to set new PIN mode
                     switchToSetNewPinMode();
                 } else {
-                    // 当前PIN验证失败
+                    // Current PIN verification failed
                     alert('Current PIN verification failed. Please try again.');
-                    // 清空PIN码输入框，让用户重新输入
+                    // Clear PIN inputs and let user re-enter
                     const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
                     pinInputs.forEach(input => input.value = '');
                 }
@@ -1202,7 +1202,7 @@
             }
         }
 
-        // 设置新PIN
+        // Set new PIN
         async function setNewPin(newPin) {
             try {
                 const response = await fetch('/api/memo/set-new-pin', {
@@ -1219,20 +1219,20 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // 更新本地存储的PIN码
+                    // Update PIN in local storage
                     localStorage.setItem('userPinCode', newPin);
                     userPinCode = newPin;
                     
                     closeModal('pinModal');
                     alert('PIN code updated successfully');
-                    // 清空PIN码输入框
+                    // Clear PIN inputs
                     const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
                     pinInputs.forEach(input => input.value = '');
-                    // 重置为验证模式
+                    // Reset to verify mode
                     resetPinModalToVerifyMode();
                 } else {
                     if (response.status === 401) {
-                        // 认证失败，清除token并显示登录提示
+                        // Auth failed: clear token and show login prompt
                         localStorage.removeItem('authToken');
                         showLoginPrompt();
                     } else {
@@ -1244,7 +1244,7 @@
             }
         }
 
-        // 切换到设置新PIN模式
+        // Switch to set new PIN mode
         function switchToSetNewPinMode() {
             const modalTitle = document.querySelector('#pinModal .modal-title');
             const formLabel = document.querySelector('#pinModal .form-label');
@@ -1252,12 +1252,12 @@
             modalTitle.textContent = '🔐 Set New PIN Code';
             formLabel.textContent = 'Please enter new PIN code (4 digits)';
             
-            // 清空PIN码输入框
+            // Clear PIN inputs
             const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
             pinInputs.forEach(input => input.value = '');
         }
 
-        // 重置PIN模态框为验证模式
+        // Reset PIN modal to verify mode
         function resetPinModalToVerifyMode() {
             const modalTitle = document.querySelector('#pinModal .modal-title');
             const formLabel = document.querySelector('#pinModal .form-label');
@@ -1266,44 +1266,44 @@
             formLabel.textContent = 'Please enter your current PIN code';
         }
 
-        // 修改PIN码（兼容旧版本）
+        // Change PIN (backward compatible)
         async function changePinCode() {
             await setPinCode();
         }
 
-        // 显示PIN码设置模态框
+        // Show PIN setup modal
         function showPinModal() {
-            // 重置为验证当前PIN模式
+            // Reset to verify current PIN mode
             resetPinModalToVerifyMode();
             
-            // 清空PIN码输入框
+            // Clear PIN inputs
             const pinInputs = document.querySelectorAll('#pinModal .pin-digit');
             pinInputs.forEach(input => input.value = '');
             
             showModal('pinModal');
         }
 
-        // 显示模态框
+        // Show modal
         function showModal(modalId) {
             document.getElementById(modalId).style.display = 'block';
         }
 
-        // 关闭模态框
+        // Close modal
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
-            // 如果是PIN码相关模态框，清空输入框
+            // If it's a PIN modal, clear inputs
             if (modalId === 'pinModal' || modalId === 'verifyPinModal') {
                 const pinInputs = document.querySelectorAll(`#${modalId} .pin-digit`);
                 pinInputs.forEach(input => input.value = '');
             }
             
-            // 如果关闭PIN模态框，重置为验证模式
+            // If closing PIN modal, reset to verify mode
             if (modalId === 'pinModal') {
                 resetPinModalToVerifyMode();
             }
         }
 
-        // 显示加载状态
+        // Show loading state
         function showLoading() {
             document.getElementById('memoList').innerHTML = `
                 <div class="loading">
@@ -1313,36 +1313,36 @@
             `;
         }
 
-        // 显示成功消息
+        // Show success message
         function showSuccess(message) {
-            alert(message); // 简单实现，可以改为更美观的提示
+            alert(message); // Simple implementation; can replace with nicer UI
         }
 
-        // 显示错误消息
+        // Show error message
         function showError(message) {
-            alert('Error: ' + message); // 简单实现，可以改为更美观的提示
+            alert('Error: ' + message); // Simple implementation; can replace with nicer UI
         }
 
-        // HTML转义
+        // HTML escape
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // 点击模态框外部关闭
+        // Click outside modal to close
         window.onclick = function(event) {
             const modals = document.querySelectorAll('.modal');
             modals.forEach(modal => {
                 if (event.target === modal) {
                     modal.style.display = 'none';
-                    // 如果是PIN码相关模态框，清空输入框
+                    // If it's a PIN modal, clear inputs
                     if (modal.id === 'pinModal' || modal.id === 'verifyPinModal') {
                         const pinInputs = modal.querySelectorAll('.pin-digit');
                         pinInputs.forEach(input => input.value = '');
                     }
                     
-                    // 如果关闭PIN模态框，重置为验证模式
+                    // If closing PIN modal, reset to verify mode
                     if (modal.id === 'pinModal') {
                         resetPinModalToVerifyMode();
                     }
