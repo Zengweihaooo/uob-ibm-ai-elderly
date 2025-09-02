@@ -1,4 +1,4 @@
--- 备忘录表
+-- Memo table
 CREATE TABLE IF NOT EXISTS memos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS memos (
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_deleted BOOLEAN NOT NULL DEFAULT 0,
     
-    -- 索引
+    -- Indexes
     INDEX idx_user_id (user_id),
     INDEX idx_user_deleted (user_id, is_deleted),
     INDEX idx_update_time (update_time),
@@ -19,11 +19,11 @@ CREATE TABLE IF NOT EXISTS memos (
     INDEX idx_important (is_important)
 );
 
--- 插入一些测试数据
+-- Insert some test data
 INSERT OR IGNORE INTO memos (user_id, title, content, type, is_important, pin_code, create_time, update_time) VALUES
-(1, '重要提醒', '明天要去医院做体检，记得带身份证和医保卡', 'important', 1, '1234', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, '购物清单', '牛奶、面包、鸡蛋、蔬菜', 'todo', 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, '日常记录', '今天天气很好，适合出去散步', 'general', 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, '重要事项', '银行密码：123456，请妥善保管', 'important', 1, '5678', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP); 
+(1, 'Important Reminder', 'Tomorrow go to hospital for physical examination, remember to bring ID card and medical insurance card', 'important', 1, '1234', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 'Shopping List', 'Milk, bread, eggs, vegetables', 'todo', 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 'Daily Record', 'Today weather is good, suitable for walking', 'general', 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 'Important Matter', 'Bank password: 123456, please keep safe', 'important', 1, '5678', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP); 
  
  
