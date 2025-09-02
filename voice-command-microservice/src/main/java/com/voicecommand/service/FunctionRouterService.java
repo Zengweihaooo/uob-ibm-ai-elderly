@@ -194,9 +194,14 @@ public class FunctionRouterService {
         switch (paramName) {
             case "toEmail":
                 // Extract recipient (simplified)
-                if (text.contains("给") && text.contains("发邮件")) {
-                    int start = text.indexOf("给") + 1;
-                    int end = text.indexOf("发邮件");
+                if (text.contains("to") && (text.contains("send") || text.contains("email"))) {
+                    int start = text.indexOf("to") + 2;
+                    int end = text.length();
+                    if (text.contains("send")) {
+                        end = text.indexOf("send");
+                    } else if (text.contains("email")) {
+                        end = text.indexOf("email");
+                    }
                     if (start < end) {
                         return text.substring(start, end).trim();
                     }
@@ -205,13 +210,13 @@ public class FunctionRouterService {
                 
             case "subject":
                 // Extract subject
-                if (text.contains("主题是") || text.contains("主题：")) {
-                    int start = text.indexOf("主题是");
-                    if (start == -1) start = text.indexOf("主题：");
+                if (text.contains("subject is") || text.contains("subject:")) {
+                    int start = text.indexOf("subject is");
+                    if (start == -1) start = text.indexOf("subject:");
                     if (start != -1) {
-                        start += 3;
-                        int end = text.indexOf("，", start);
-                        if (end == -1) end = text.indexOf("，内容", start);
+                        start += (text.contains("subject is") ? 10 : 8);
+                        int end = text.indexOf(",", start);
+                        if (end == -1) end = text.indexOf(", content", start);
                         if (end == -1) end = text.length();
                         return text.substring(start, end).trim();
                     }
@@ -220,11 +225,11 @@ public class FunctionRouterService {
                 
             case "content":
                 // Extract content
-                if (text.contains("内容是") || text.contains("内容：")) {
-                    int start = text.indexOf("内容是");
-                    if (start == -1) start = text.indexOf("内容：");
+                if (text.contains("content is") || text.contains("content:")) {
+                    int start = text.indexOf("content is");
+                    if (start == -1) start = text.indexOf("content:");
                     if (start != -1) {
-                        start += 3;
+                        start += (text.contains("content is") ? 10 : 8);
                         return text.substring(start).trim();
                     }
                 }
@@ -254,15 +259,13 @@ public class FunctionRouterService {
         switch (paramName) {
             case "title":
                 // Extract title (simplified)
-                if (text.contains("添加") || text.contains("add")) {
-                    int start = text.indexOf("添加");
-                    if (start == -1) start = text.indexOf("add");
-                    start += (text.contains("添加") ? 2 : 3);
+                if (text.contains("add")) {
+                    int start = text.indexOf("add");
+                    start += 3;
                     
                     int end = text.length();
-                    if (text.contains("日程") || text.contains("schedule")) {
-                        end = text.indexOf("日程");
-                        if (end == -1) end = text.indexOf("schedule");
+                    if (text.contains("schedule")) {
+                        end = text.indexOf("schedule");
                     }
                     
                     if (start < end) {
@@ -273,55 +276,43 @@ public class FunctionRouterService {
                 
             case "date":
                 // Extract date (simplified)
-                if (text.contains("明天")) {
+                if (text.contains("tomorrow")) {
                     return java.time.LocalDate.now().plusDays(1).toString();
-                } else if (text.contains("后天")) {
+                } else if (text.contains("day after tomorrow")) {
                     return java.time.LocalDate.now().plusDays(2).toString();
-                } else if (text.contains("下周")) {
+                } else if (text.contains("next week")) {
                     return java.time.LocalDate.now().plusDays(7).toString();
                 }
                 break;
                 
             case "time":
                 // Extract time (simplified)
-                if (text.contains("下午") || text.contains("pm")) {
-                    if (text.contains("下午")) {
-                        int start = text.indexOf("下午") + 2;
-                        if (start < text.length()) {
-                            String afterAfternoon = text.substring(start);
-                            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)");
-                            java.util.regex.Matcher matcher = pattern.matcher(afterAfternoon);
-                            if (matcher.find()) {
-                                int hour = Integer.parseInt(matcher.group(1));
-                                return String.format("%02d:00", hour + 12);
-                            }
-                        }
+                if (text.contains("pm")) {
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)\\s*pm");
+                    java.util.regex.Matcher matcher = pattern.matcher(text);
+                    if (matcher.find()) {
+                        int hour = Integer.parseInt(matcher.group(1));
+                        return String.format("%02d:00", hour + 12);
                     }
-                } else if (text.contains("早上") || text.contains("am")) {
-                    if (text.contains("早上")) {
-                        int start = text.indexOf("早上") + 2;
-                        if (start < text.length()) {
-                            String afterMorning = text.substring(start);
-                            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)");
-                            java.util.regex.Matcher matcher = pattern.matcher(afterMorning);
-                            if (matcher.find()) {
-                                int hour = Integer.parseInt(matcher.group(1));
-                                return String.format("%02d:00", hour);
-                            }
-                        }
+                } else if (text.contains("am")) {
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)\\s*am");
+                    java.util.regex.Matcher matcher = pattern.matcher(text);
+                    if (matcher.find()) {
+                        int hour = Integer.parseInt(matcher.group(1));
+                        return String.format("%02d:00", hour);
                     }
                 }
                 break;
                 
             case "category":
                 // Extract category
-                if (text.contains("早上") || text.contains("morning")) {
+                if (text.contains("morning")) {
                     return "morning";
-                } else if (text.contains("下午") || text.contains("afternoon")) {
+                } else if (text.contains("afternoon")) {
                     return "afternoon";
-                } else if (text.contains("晚上") || text.contains("evening")) {
+                } else if (text.contains("evening")) {
                     return "evening";
-                } else if (text.contains("吃药") || text.contains("medication")) {
+                } else if (text.contains("medication")) {
                     return "medication";
                 }
                 break;

@@ -42,7 +42,7 @@ public class EmailComposeService {
             emailMapper.insert(email);
             
             // Send the email with personalized sender name
-            String senderName = "AI智能助手";
+            String senderName = "AI Smart Assistant";
             emailService.sendCustomEmail(toEmail, subject, content, senderName);
             
             // Update email status to SENT

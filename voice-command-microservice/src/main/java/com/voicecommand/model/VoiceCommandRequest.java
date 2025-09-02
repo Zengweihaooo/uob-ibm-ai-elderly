@@ -8,9 +8,9 @@ import lombok.Builder;
 import java.util.Map;
 
 /**
- * 语音命令请求模型
+ * Voice Command Request Model
  * 
- * 用于接收前端发送的语音命令请求
+ * Used to receive voice command requests sent from frontend
  * 
  * @author AI Assistant
  * @version 1.0.0
@@ -22,42 +22,42 @@ import java.util.Map;
 public class VoiceCommandRequest {
     
     /**
-     * 音频数据（Base64编码）
+     * Audio data (Base64 encoded)
      */
     private String audioData;
     
     /**
-     * 语言代码 (zh-CN, en-US)
+     * Language code (en-US, zh-CN)
      */
     private String languageCode;
     
     /**
-     * 用户ID
+     * User ID
      */
     private String userId;
     
     /**
-     * 会话ID
+     * Session ID
      */
     private String sessionId;
     
     /**
-     * 上下文信息
+     * Context information
      */
     private Map<String, Object> context;
     
     /**
-     * 文本命令（如果直接发送文本而不是语音）
+     * Text command (if sending text directly instead of voice)
      */
     private String textCommand;
     
     /**
-     * 请求时间戳
+     * Request timestamp
      */
     private long timestamp;
     
     /**
-     * 请求来源（web, mobile, etc.）
+     * Request source (web, mobile, etc.)
      */
     private String source;
 }

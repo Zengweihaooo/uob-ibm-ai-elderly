@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 语音命令控制器
+ * Voice Command Controller
  * 
- * 提供语音命令处理的REST API接口
- * 支持语音输入和文本输入两种方式
+ * Provides REST API interfaces for voice command processing
+ * Supports both voice input and text input methods
  * 
  * @author AI Assistant
  * @version 1.0.0
@@ -39,26 +39,26 @@ public class VoiceCommandController {
     private FunctionKnowledgeService functionKnowledgeService;
     
     /**
-     * 处理语音命令
+     * Process voice command
      * 
-     * @param audioFile 音频文件
-     * @param languageCode 语言代码
-     * @param userId 用户ID
-     * @param sessionId 会话ID
-     * @return 处理结果
+     * @param audioFile Audio file
+     * @param languageCode Language code
+     * @param userId User ID
+     * @param sessionId Session ID
+     * @return Processing result
      */
     @PostMapping("/process")
     public ResponseEntity<VoiceCommandResponse> processVoiceCommand(
             @RequestParam("audio") MultipartFile audioFile,
-            @RequestParam(value = "languageCode", defaultValue = "zh-CN") String languageCode,
+            @RequestParam(value = "languageCode", defaultValue = "en-US") String languageCode,
             @RequestParam(value = "userId", required = false) String userId,
             @RequestParam(value = "sessionId", required = false) String sessionId) {
         
-        log.info("收到语音命令请求: languageCode={}, userId={}, sessionId={}", 
+        log.info("Received voice command request: languageCode={}, userId={}, sessionId={}", 
                 languageCode, userId, sessionId);
         
         try {
-            // 设置默认值
+            // Set default values
             if (userId == null) userId = "guest";
             if (sessionId == null) sessionId = "session_" + System.currentTimeMillis();
             
@@ -68,11 +68,11 @@ public class VoiceCommandController {
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            log.error("处理语音命令失败", e);
+            log.error("Failed to process voice command", e);
             
             VoiceCommandResponse errorResponse = VoiceCommandResponse.builder()
                 .success(false)
-                .errorMessage("处理语音命令失败：" + e.getMessage())
+                .errorMessage("Failed to process voice command: " + e.getMessage())
                 .timestamp(System.currentTimeMillis())
                 .statusCode(500)
                 .build();
@@ -82,33 +82,33 @@ public class VoiceCommandController {
     }
     
     /**
-     * 处理文本命令
+     * Process text command
      * 
-     * @param request 请求体
-     * @return 处理结果
+     * @param request Request body
+     * @return Processing result
      */
     @PostMapping("/text")
     public ResponseEntity<VoiceCommandResponse> processTextCommand(
             @RequestBody VoiceCommandRequest request) {
         
-        log.info("收到文本命令请求: text={}, userId={}, sessionId={}", 
+        log.info("Received text command request: text={}, userId={}, sessionId={}", 
                 request.getTextCommand(), request.getUserId(), request.getSessionId());
         
-        // 检查textCommand是否为空，如果为空则尝试从text字段获取
+        // Check if textCommand is empty, if empty try to get from text field
         String textCommand = request.getTextCommand();
         if (textCommand == null || textCommand.trim().isEmpty()) {
-            // 尝试从context中获取text字段
+            // Try to get text field from context
             if (request.getContext() != null && request.getContext().containsKey("text")) {
                 textCommand = (String) request.getContext().get("text");
-                log.info("从context中获取到text字段: {}", textCommand);
+                log.info("Got text field from context: {}", textCommand);
             }
         }
         
         if (textCommand == null || textCommand.trim().isEmpty()) {
-            log.error("文本命令为空，无法处理");
+            log.error("Text command is empty, cannot process");
             VoiceCommandResponse errorResponse = VoiceCommandResponse.builder()
                 .success(false)
-                .errorMessage("文本命令不能为空")
+                .errorMessage("Text command cannot be empty")
                 .timestamp(System.currentTimeMillis())
                 .statusCode(400)
                 .build();
@@ -116,8 +116,8 @@ public class VoiceCommandController {
         }
         
         try {
-            // 设置默认值
-            if (request.getLanguageCode() == null) request.setLanguageCode("zh-CN");
+            // Set default values
+            if (request.getLanguageCode() == null) request.setLanguageCode("en-US");
             if (request.getUserId() == null) request.setUserId("guest");
             if (request.getSessionId() == null) request.setSessionId("session_" + System.currentTimeMillis());
             
@@ -128,11 +128,11 @@ public class VoiceCommandController {
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            log.error("处理文本命令失败", e);
+            log.error("Failed to process text command", e);
             
             VoiceCommandResponse errorResponse = VoiceCommandResponse.builder()
                 .success(false)
-                .errorMessage("处理文本命令失败：" + e.getMessage())
+                .errorMessage("Failed to process text command: " + e.getMessage())
                 .timestamp(System.currentTimeMillis())
                 .statusCode(500)
                 .build();
@@ -142,28 +142,28 @@ public class VoiceCommandController {
     }
     
     /**
-     * 获取命令执行状态
+     * Get command execution status
      * 
-     * @param executionId 执行ID
-     * @return 执行状态
+     * @param executionId Execution ID
+     * @return Execution status
      */
     @GetMapping("/status/{executionId}")
     public ResponseEntity<CommandExecutionStatus> getExecutionStatus(
             @PathVariable String executionId) {
         
-        log.info("查询执行状态: executionId={}", executionId);
+        log.info("Query execution status: executionId={}", executionId);
         
         try {
             CommandExecutionStatus status = voiceCommandService.getExecutionStatus(executionId);
             return ResponseEntity.ok(status);
             
         } catch (Exception e) {
-            log.error("查询执行状态失败: executionId={}", executionId, e);
+            log.error("Failed to query execution status: executionId={}", executionId, e);
             
             CommandExecutionStatus errorStatus = CommandExecutionStatus.builder()
                 .executionId(executionId)
                 .status(CommandExecutionStatus.ExecutionStatus.FAILED)
-                .errorMessage("查询执行状态失败：" + e.getMessage())
+                .errorMessage("Failed to query execution status: " + e.getMessage())
                 .build();
             
             return ResponseEntity.status(500).body(errorStatus);
@@ -171,33 +171,33 @@ public class VoiceCommandController {
     }
     
     /**
-     * 取消命令执行
+     * Cancel command execution
      * 
-     * @param executionId 执行ID
-     * @return 取消结果
+     * @param executionId Execution ID
+     * @return Cancel result
      */
     @PostMapping("/cancel/{executionId}")
     public ResponseEntity<Map<String, Object>> cancelExecution(
             @PathVariable String executionId) {
         
-        log.info("取消执行: executionId={}", executionId);
+        log.info("Cancel execution: executionId={}", executionId);
         
         try {
             boolean cancelled = voiceCommandService.cancelExecution(executionId);
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", cancelled);
-            response.put("message", cancelled ? "执行已取消" : "无法取消执行");
+            response.put("message", cancelled ? "Execution cancelled" : "Cannot cancel execution");
             response.put("executionId", executionId);
             
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            log.error("取消执行失败: executionId={}", executionId, e);
+            log.error("Failed to cancel execution: executionId={}", executionId, e);
             
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", "取消执行失败：" + e.getMessage());
+            errorResponse.put("message", "Failed to cancel execution: " + e.getMessage());
             errorResponse.put("executionId", executionId);
             
             return ResponseEntity.status(500).body(errorResponse);
@@ -205,13 +205,13 @@ public class VoiceCommandController {
     }
     
     /**
-     * 获取功能知识库
+     * Get function knowledge base
      * 
-     * @return 功能知识库信息
+     * @return Function knowledge base information
      */
     @GetMapping("/knowledge-base")
     public ResponseEntity<Map<String, Object>> getKnowledgeBase() {
-        log.info("获取功能知识库");
+        log.info("Get function knowledge base");
         
         try {
             if (functionKnowledgeService.isKnowledgeBaseLoaded()) {
@@ -227,18 +227,18 @@ public class VoiceCommandController {
             } else {
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
-                errorResponse.put("errorMessage", "功能知识库未加载");
+                errorResponse.put("errorMessage", "Function knowledge base not loaded");
                 errorResponse.put("timestamp", System.currentTimeMillis());
                 
                 return ResponseEntity.status(500).body(errorResponse);
             }
             
         } catch (Exception e) {
-            log.error("获取功能知识库失败", e);
+            log.error("Failed to get function knowledge base", e);
             
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("errorMessage", "获取功能知识库失败：" + e.getMessage());
+            errorResponse.put("errorMessage", "Failed to get function knowledge base: " + e.getMessage());
             errorResponse.put("timestamp", System.currentTimeMillis());
             
             return ResponseEntity.status(500).body(errorResponse);
@@ -246,9 +246,9 @@ public class VoiceCommandController {
     }
     
     /**
-     * 健康检查
+     * Health check
      * 
-     * @return 服务状态
+     * @return Service status
      */
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> healthCheck() {
@@ -262,24 +262,24 @@ public class VoiceCommandController {
     }
     
     /**
-     * 获取服务信息
+     * Get service information
      * 
-     * @return 服务信息
+     * @return Service information
      */
     @GetMapping("/info")
     public ResponseEntity<Map<String, Object>> getServiceInfo() {
         Map<String, Object> info = new HashMap<>();
         info.put("serviceName", "Voice Command Microservice");
-        info.put("description", "AI语音命令处理微服务");
+        info.put("description", "AI voice command processing microservice");
         info.put("version", "1.0.0");
         info.put("features", Arrays.asList(
-            "语音转文字",
-            "AI意图分析", 
-            "功能自动执行",
-            "邮件发送",
-            "状态跟踪"
+            "Speech to text",
+            "AI intent analysis", 
+            "Automatic function execution",
+            "Email sending",
+            "Status tracking"
         ));
-        info.put("supportedLanguages", Arrays.asList("zh-CN", "en-US"));
+        info.put("supportedLanguages", Arrays.asList("en-US", "zh-CN"));
         info.put("timestamp", System.currentTimeMillis());
         
         return ResponseEntity.ok(info);
