@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
 public class Contact {
     
     private Long id;
-    private Long userId; // 归属用户ID
+    private Long userId; // Owning user ID
     private String name;
     private String email;
     private String phone;
-    private String relationship; // 关系：family, friend, doctor, etc.
+    private String relationship; // Relationship: family, friend, doctor, etc.
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     

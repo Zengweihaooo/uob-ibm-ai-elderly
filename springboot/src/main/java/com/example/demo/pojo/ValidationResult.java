@@ -3,7 +3,7 @@ package com.example.demo.pojo;
 import java.time.LocalDateTime;
 
 /**
- * 验证结果类
+ * Validation result class
  * 
  * @author AI Assistant
  * @version 1.0

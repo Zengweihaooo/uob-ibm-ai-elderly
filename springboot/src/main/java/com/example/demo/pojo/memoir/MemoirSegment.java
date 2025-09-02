@@ -1,8 +1,8 @@
 package com.example.demo.pojo.memoir;
 
 /**
- * 回忆录分段实体
- * 中文注释：每段对应某章节-主题下的一次口述/整理文本
+ * Memoir segment entity
+ * Each segment corresponds to an oral/transcribed text under a chapter-theme
  */
 public class MemoirSegment {
     private Integer id;

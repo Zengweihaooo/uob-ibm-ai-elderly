@@ -1,15 +1,15 @@
 package com.example.demo.pojo.memoir;
 
 /**
- * 回忆录项目实体
- * 中文注释：用于存储回忆录项目的基础信息
+ * Memoir project entity
+ * Used to store basic information of memoir projects
  */
 public class MemoirProject {
     private Integer id;
     private String title;
-    private String owner;      // 拥有者（可选：用户名/用户ID）
-    private String locale;     // 语言，如 en-US
-    private String pinHash;    // PIN 哈希（可选）
+    private String owner;      // Owner (optional: username/userId)
+    private String locale;     // Language, e.g. en-US
+    private String pinHash;    // PIN hash (optional)
     private String createdAt;
     private String updatedAt;
 

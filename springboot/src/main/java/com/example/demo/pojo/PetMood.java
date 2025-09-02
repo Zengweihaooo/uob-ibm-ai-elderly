@@ -3,25 +3,25 @@ package com.example.demo.pojo;
 import java.time.LocalDateTime;
 
 /**
- * 宠物情绪实体类
- * 用于存储和管理宠物的情绪状态、属性等信息
+ * Pet mood entity
+ * Used to store and manage pet mood state and related attributes
  */
 public class PetMood {
     private Long id;
     private Long userId;
-    private Integer moodScore;      // 情绪分数 (-100 到 100)
-    private Integer happiness;      // 快乐度 (0-100)
-    private Integer health;         // 健康度 (0-100)
-    private Integer energy;         // 精力值 (0-100)
-    private String moodEmoji;       // 情绪表情
-    private String status;          // 状态描述
-    private Integer level;          // 宠物等级
-    private Integer experience;     // 经验值
-    private LocalDateTime lastInteraction; // 最后交互时间
+    private Integer moodScore;      // Mood score (-100 to 100)
+    private Integer happiness;      // Happiness (0-100)
+    private Integer health;         // Health (0-100)
+    private Integer energy;         // Energy (0-100)
+    private String moodEmoji;       // Mood emoji
+    private String status;          // Status description
+    private Integer level;          // Pet level
+    private Integer experience;     // Experience points
+    private LocalDateTime lastInteraction; // Last interaction time
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // 构造函数
+    // Constructors
     public PetMood() {}
 
     public PetMood(Long userId) {

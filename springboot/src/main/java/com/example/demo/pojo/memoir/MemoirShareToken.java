@@ -3,7 +3,7 @@ package com.example.demo.pojo.memoir;
 import java.time.LocalDateTime;
 
 /**
- * 回忆录分享令牌
+ * Memoir sharing token
  */
 public class MemoirShareToken {
     private Integer id;

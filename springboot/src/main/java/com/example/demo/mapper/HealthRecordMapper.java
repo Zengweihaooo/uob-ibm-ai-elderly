@@ -12,20 +12,20 @@ import java.util.List;
 public interface HealthRecordMapper {
     
     /**
-     * 插入健康记录
-     * @param r 健康记录对象
-     * @return 影响的行数
+     * Insert a health record
+     * @param r Health record object
+     * @return Number of affected rows
      */
     int insert(HealthRecord r);
     
     /**
-     * 更新分享信息
-     * @param id 记录ID
-     * @param shared 是否分享
-     * @param sharedWithUserId 分享给的用户ID
-     * @param sharedWithRole 分享给的角色
-     * @param sharedAt 分享时间
-     * @return 影响的行数
+     * Update sharing information
+     * @param id Record ID
+     * @param shared Whether shared
+     * @param sharedWithUserId Shared-to user ID
+     * @param sharedWithRole Shared-to role
+     * @param sharedAt Shared timestamp
+     * @return Number of affected rows
      */
     int updateShareInfo(@Param("id") Long id, 
                        @Param("shared") Boolean shared, 
@@ -34,23 +34,23 @@ public interface HealthRecordMapper {
                        @Param("sharedAt") LocalDateTime sharedAt);
     
     /**
-     * 根据用户ID和时间范围查询健康记录
-     * @param userId 用户ID
-     * @param startIso 开始时间（ISO格式）
-     * @param endIso 结束时间（ISO格式）
-     * @return 健康记录列表
+     * Query health records by user ID and time range
+     * @param userId User ID
+     * @param startIso Start time (ISO format)
+     * @param endIso End time (ISO format)
+     * @return List of health records
      */
     List<HealthRecord> listByUserAndRange(@Param("userId") Long userId, 
                                          @Param("startIso") String startIso, 
                                          @Param("endIso") String endIso);
     
     /**
-     * 根据用户ID、类型和时间范围查询健康记录
-     * @param userId 用户ID
-     * @param type 记录类型
-     * @param startIso 开始时间（ISO格式）
-     * @param endIso 结束时间（ISO格式）
-     * @return 健康记录列表
+     * Query health records by user ID, type and time range
+     * @param userId User ID
+     * @param type Record type
+     * @param startIso Start time (ISO format)
+     * @param endIso End time (ISO format)
+     * @return List of health records
      */
     List<HealthRecord> listByUserAndType(@Param("userId") Long userId, 
                                         @Param("type") String type, 
@@ -58,35 +58,35 @@ public interface HealthRecordMapper {
                                         @Param("endIso") String endIso);
     
     /**
-     * 获取用户最新的健康记录
-     * @param userId 用户ID
-     * @return 最新的健康记录
+     * Get the user's latest health record
+     * @param userId User ID
+     * @return Latest health record
      */
     HealthRecord latestByUser(@Param("userId") Long userId);
     
     /**
-     * 根据ID删除健康记录
-     * @param id 记录ID
-     * @return 影响的行数
+     * Delete a health record by ID
+     * @param id Record ID
+     * @return Number of affected rows
      */
     int deleteById(@Param("id") Long id);
     
     /**
-     * 获取所有健康记录
-     * @return 所有健康记录列表
+     * Get all health records
+     * @return List of all health records
      */
     @Select("SELECT * FROM health_records")
     List<HealthRecord> findAll();
     
     /**
-     * 获取所有健康记录（使用XML映射）
-     * @return 所有健康记录列表
+     * Get all health records (XML mapping)
+     * @return List of all health records
      */
     List<HealthRecord> listAll();
     
     /**
-     * 获取总记录数
-     * @return 总记录数
+     * Get total record count
+     * @return Total count
      */
     @Select("SELECT COUNT(*) FROM health_records")
     long count();

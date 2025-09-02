@@ -14,18 +14,18 @@ import java.time.LocalDateTime;
 public class FamilyContact {
     
     private Long id;
-    private Long userId;  // 关联的用户ID
-    private String name;  // 联系人姓名
-    private String relationship;  // 关系（儿子、女儿、配偶等）
-    private String phone;  // 电话号码
-    private String email;  // 邮箱地址
-    private String address;  // 地址
-    private Boolean isEmergencyContact;  // 是否为紧急联系人
-    private Boolean isActive;  // 是否激活
-    private LocalDateTime createdAt;  // 创建时间
-    private LocalDateTime updatedAt;  // 更新时间
+    private Long userId;  // Associated user ID
+    private String name;  // Contact name
+    private String relationship;  // Relationship (son, daughter, spouse, etc.)
+    private String phone;  // Phone number
+    private String email;  // Email address
+    private String address;  // Address
+    private Boolean isEmergencyContact;  // Whether emergency contact
+    private Boolean isActive;  // Whether active
+    private LocalDateTime createdAt;  // Created time
+    private LocalDateTime updatedAt;  // Updated time
     
-    // 默认构造函数
+    // Default constructor
     public FamilyContact() {
         this.isActive = true;
         this.isEmergencyContact = false;
@@ -33,7 +33,7 @@ public class FamilyContact {
         this.updatedAt = LocalDateTime.now();
     }
     
-    // 带参数的构造函数
+    // Constructor with parameters
     public FamilyContact(Long userId, String name, String relationship, String phone, String email) {
         this();
         this.userId = userId;

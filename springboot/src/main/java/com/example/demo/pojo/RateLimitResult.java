@@ -1,7 +1,7 @@
 package com.example.demo.pojo;
 
 /**
- * 频率限制结果类
+ * Rate limit result class
  * 
  * @author AI Assistant
  * @version 1.0
