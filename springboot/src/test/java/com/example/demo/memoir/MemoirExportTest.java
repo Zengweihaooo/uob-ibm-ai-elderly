@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * 导出功能集成测试（Markdown 和 PDF）
+ * Export feature integration tests (Markdown and PDF)
  */
 @SpringBootTest(classes = DemoApplication.class)
 @AutoConfigureMockMvc
@@ -22,7 +22,7 @@ public class MemoirExportTest {
 
     @Test
     void exportMarkdownAndPdf() throws Exception {
-        // 创建项目
+        // Create project
         String createPayload = "{\"title\":\"Export Memoir\",\"owner\":\"elderly1\"}";
         String resp = mockMvc.perform(post("/api/memoir/projects")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -31,18 +31,18 @@ public class MemoirExportTest {
             .andReturn().getResponse().getContentAsString();
         String pid = resp.replaceAll(".*\\\"projectId\\\":(\\d+).*", "$1");
 
-        // 添加分段
+        // Add segment
         mockMvc.perform(post("/api/memoir/projects/" + pid + "/segments")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"chapter\":\"Childhood\",\"theme\":\"Family\",\"text\":\"We lived...\"}"))
             .andExpect(status().isOk());
 
-        // 导出 MD
+        // Export MD
         mockMvc.perform(get("/api/memoir/projects/" + pid + "/export").param("format", "markdown"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Type", org.hamcrest.Matchers.containsString("text/markdown")));
 
-        // 导出 PDF
+        // Export PDF
         mockMvc.perform(get("/api/memoir/projects/" + pid + "/export").param("format", "pdf"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Type", org.hamcrest.Matchers.containsString("application/pdf")));

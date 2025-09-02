@@ -19,9 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * SQLite Database Integration Tests (Type Safe Version)
- * SQLite数据库集成测试（类型安全版本）
  * 
- * 测试数据库初始化、连接、基本操作和API功能
  * Tests database initialization, connection, basic operations and API functionality
  * 
  * @author Weihao Zeng
@@ -51,14 +49,14 @@ public class DatabaseIntegrationTestTypeSafe {
     void setUp() {
         baseUrl = "http://localhost:" + port;
         
-        // 确保测试目录存在 / Ensure test directories exist
+        // Ensure test directories exist
         new File("test_data").mkdirs();
         new File("test_data/test_backups").mkdirs();
     }
 
     @AfterAll
     static void cleanup() {
-        // 清理测试文件 / Cleanup test files
+        // Cleanup test files
         try {
             Files.deleteIfExists(Paths.get("test_data/test_elderly_companion.db"));
             Files.deleteIfExists(Paths.get("test_data"));
@@ -68,33 +66,31 @@ public class DatabaseIntegrationTestTypeSafe {
     }
 
     /**
-     * 测试1: 数据库文件创建
      * Test 1: Database file creation
      */
     @Test
     @Order(1)
     @DisplayName("Database File Should Be Created")
     void testDatabaseFileCreation() {
-        // 验证数据库文件是否存在
+        // Verify database file exists
         File dbFile = new File("test_data/test_elderly_companion.db");
         
-        // 如果不存在，触发一个数据库操作来创建它
+        // If not exists, trigger an operation to create it
         if (!dbFile.exists()) {
             ResponseEntity<Map<String, Object>> response = restTemplate.getForEntity(
                 baseUrl + "/api/database/status", 
                 getMapClass()
             );
-            // 数据库应该在第一次访问时创建
+            // Database should be created on first access
             assertNotNull(response, "Response should not be null");
         }
         
-        // 现在应该存在
+        // Should exist now
         assertTrue(dbFile.exists(), "Database file should be created");
         assertTrue(dbFile.length() > 0, "Database file should not be empty");
     }
 
     /**
-     * 测试2: 数据库状态API
      * Test 2: Database status API
      */
     @Test
@@ -129,7 +125,6 @@ public class DatabaseIntegrationTestTypeSafe {
     }
 
     /**
-     * 测试3: 数据库信息API
      * Test 3: Database info API
      */
     @Test
@@ -162,7 +157,6 @@ public class DatabaseIntegrationTestTypeSafe {
     }
 
     /**
-     * 测试4: 数据库验证API
      * Test 4: Database validation API
      */
     @Test
@@ -194,7 +188,6 @@ public class DatabaseIntegrationTestTypeSafe {
     }
 
     /**
-     * 测试5: 备份创建功能
      * Test 5: Backup creation functionality
      */
     @Test
@@ -222,14 +215,13 @@ public class DatabaseIntegrationTestTypeSafe {
     }
 
     /**
-     * 测试6: 数据库管理服务
      * Test 6: Database management service
      */
     @Test
     @Order(6)
     @DisplayName("Database Management Service Should Work")
     void testDatabaseManagementService() {
-        // 测试服务层方法
+        // Test service layer methods
         Map<String, Object> status = databaseManagementService.getDatabaseStatus();
         assertNotNull(status);
         Object dbExistsObj = status.get("database_exists");
@@ -243,7 +235,7 @@ public class DatabaseIntegrationTestTypeSafe {
         assertNotNull(backupPath);
         assertTrue(backupPath.contains("test_backups"));
         
-        // 测试验证功能
+        // Test validation function
         Map<String, Object> validation = databaseManagementService.validateDatabaseIntegrity();
         assertNotNull(validation);
         Object validObj = validation.get("valid");
@@ -251,14 +243,13 @@ public class DatabaseIntegrationTestTypeSafe {
     }
 
     /**
-     * 测试7: 错误处理
      * Test 7: Error handling
      */
     @Test
     @Order(7)
     @DisplayName("API Should Handle Errors Gracefully")
     void testErrorHandling() {
-        // 测试恢复不存在的备份文件
+        // Test restoring a non-existent backup file
         Map<String, Object> restoreRequest = Map.of("backup_filename", "nonexistent_backup.db");
         ResponseEntity<Map<String, Object>> response = restTemplate.postForEntity(
             baseUrl + "/api/database/restore", 
@@ -266,7 +257,7 @@ public class DatabaseIntegrationTestTypeSafe {
             getMapClass()
         );
         
-        // 应该返回错误但不崩溃
+        // Should return error but not crash
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         Map<String, Object> body = response.getBody();
         assertNotNull(body, "Error response body should not be null");
@@ -278,7 +269,6 @@ public class DatabaseIntegrationTestTypeSafe {
 
     /**
      * Helper method to avoid raw type warnings
-     * 帮助方法以避免原始类型警告
      */
     @SuppressWarnings("unchecked")
     private Class<Map<String, Object>> getMapClass() {

@@ -9,13 +9,13 @@ import java.lang.reflect.Method;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * 回忆录导出 HTML 高级功能测试（不依赖数据库）：
- * - 目录样式包含页码（target-counter）
- * - H2 分页开关生效
- * - H3 纳入目录与书签（toc.level=3）
- * - 封面图样式
- * - Markdown 图片/链接转换
- * - 水印（内联 SVG 背景）
+ * Memoir export HTML advanced features tests (no DB dependency):
+ * - TOC style contains page numbers (target-counter)
+ * - H2 page break switch works
+ * - H3 included in TOC and bookmarks (toc.level=3)
+ * - Cover image style
+ * - Markdown image/link conversion
+ * - Watermark (inline SVG background)
  */
 public class MemoirExportHtmlAdvancedTest {
 
@@ -33,7 +33,7 @@ public class MemoirExportHtmlAdvancedTest {
                 "Some [link](https://example.com \"Ex\") and an image ![alt](assets/images/web/pic.png \"An Image\").\n";
 
         MemoirExportService svc = new MemoirExportService(null);
-        // 反射注入配置：H2 分页、H3 入目录、封面图、水印
+        // Inject configuration via reflection: H2 page break, H3 in TOC, cover image, watermark
         setPrivate(svc, "pageBreakH2", true);
         setPrivate(svc, "tocLevel", 3);
         setPrivate(svc, "coverImage", "assets/images/web/cover.jpg");
@@ -43,25 +43,25 @@ public class MemoirExportHtmlAdvancedTest {
         meth.setAccessible(true);
         String html = (String) meth.invoke(svc, md);
 
-        // 目录项页码（样式包含 target-counter）
+        // TOC item page numbers (style contains target-counter)
         assertThat(html).contains("target-counter(attr(href), page)");
 
-        // H2 强制分页样式
+        // H2 forced page break style
         assertThat(html).contains("page-break-before: always");
 
-        // H3 作为目录与书签
+        // H3 as TOC and bookmarks
         assertThat(html).contains("-fs-pdf-outline-level: 3");
         assertThat(html).contains("href=\"#subtopic\"");
         assertThat(html).contains("<h3 id=\"subtopic\">Subtopic</h3>");
 
-        // 封面背景图样式
+        // Cover background image style
         assertThat(html).contains("<div class=\"cover\" style=\"background:url('assets/images/web/cover.jpg')");
 
-        // 图片与链接转换
+        // Image and link conversion
         assertThat(html).contains("<img src=\"assets/images/web/pic.png\" alt=\"alt\" title=\"An Image\" />");
         assertThat(html).contains("<a href=\"https://example.com\" title=\"Ex\">link</a>");
 
-        // 水印（内联 SVG 背景）
+        // Watermark (inline SVG background)
         assertThat(html).contains("data:image/svg+xml;base64,");
     }
 

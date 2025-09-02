@@ -33,14 +33,14 @@ public class MemoirControllerTest {
             .andExpect(jsonPath("$.projectId").exists())
             .andReturn().getResponse().getContentAsString();
 
-        // 简单提取 projectId（不引入JSON库，做个粗略提取）
-    String pid = createResp.replaceAll(".*\\\"projectId\\\":(\\d+).*", "$1");
+        // Simple extraction of projectId (without introducing a JSON library)
+        String pid = createResp.replaceAll(".*\\\"projectId\\\":(\\d+).*", "$1");
 
-        // 2) 列出项目
+        // 2) List projects
         mockMvc.perform(get("/api/memoir/projects").param("owner", "elderly1"))
             .andExpect(status().isOk());
 
-        // 3) 添加分段
+        // 3) Add segment
         String segJson = "{\"chapter\":\"Childhood\",\"theme\":\"Hometown\",\"text\":\"I grew up...\",\"orderIndex\":0}";
         mockMvc.perform(post("/api/memoir/projects/" + pid + "/segments")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -48,7 +48,7 @@ public class MemoirControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.projectId").value(Integer.parseInt(pid)));
 
-        // 4) 列出分段
+        // 4) List segments
         mockMvc.perform(get("/api/memoir/projects/" + pid + "/segments"))
             .andExpect(status().isOk());
     }

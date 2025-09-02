@@ -13,8 +13,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * AI 端点集成测试（默认 mock=true）
- * 覆盖：/api/memoir/ai/outline 与 /api/memoir/ai/draft
+ * AI endpoints integration tests (default mock=true)
+ * Covers: /api/memoir/ai/outline and /api/memoir/ai/draft
  */
 @SpringBootTest(classes = DemoApplication.class)
 @AutoConfigureMockMvc
@@ -25,7 +25,7 @@ public class AiMemoirEndpointsTest {
 
     @Test
     void outline_shouldReturnChaptersInMockMode() throws Exception {
-        String body = "{\"locale\":\"zh-CN\",\"hint\":\"童年与故乡\"}";
+        String body = "{\"locale\":\"zh-CN\",\"hint\":\"Childhood and hometown\"}";
         mockMvc.perform(post("/api/memoir/ai/outline")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
@@ -39,7 +39,7 @@ public class AiMemoirEndpointsTest {
 
     @Test
     void draft_shouldReturnTextInMockMode() throws Exception {
-        String body = "{\"chapter\":\"童年\",\"theme\":\"家庭\",\"notes\":\"与祖母在老屋\",\"locale\":\"zh-CN\"}";
+        String body = "{\"chapter\":\"Childhood\",\"theme\":\"Family\",\"notes\":\"With grandmother in the old house\",\"locale\":\"zh-CN\"}";
         mockMvc.perform(post("/api/memoir/ai/draft")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))

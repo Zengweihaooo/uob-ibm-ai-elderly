@@ -8,11 +8,11 @@ import java.lang.reflect.Method;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * 回忆录导出 HTML 构建测试（不依赖数据库）：
- * - 目录（TOC）包含可点击锚点
- * - H1/H2 注入 id
- * - 样式包含 PDF 书签（outline）CSS
- * - 页眉前缀包含“AI Memoir — 标题 · ”
+ * Memoir export HTML build tests (no DB dependency):
+ * - TOC contains clickable anchors
+ * - H1/H2 inject id attributes
+ * - Styles include PDF outline CSS
+ * - Header prefix contains "AI Memoir — Title · "
  */
 public class MemoirExportHtmlTest {
 
@@ -28,24 +28,24 @@ public class MemoirExportHtmlTest {
                 "## Chapter One\n\n" +
                 "Some text here.\n";
 
-        // 不访问数据库：仅用反射调用 toSimpleHtml
+        // Do not access DB: call toSimpleHtml via reflection
         MemoirExportService svc = new MemoirExportService(null);
         Method meth = MemoirExportService.class.getDeclaredMethod("toSimpleHtml", String.class);
         meth.setAccessible(true);
         String html = (String) meth.invoke(svc, md);
 
-        // 目录存在
+        // TOC exists
         assertThat(html).contains("<div class=\"toc\">");
-        // 目录项链接到标题锚点
+        // TOC items link to title anchors
         assertThat(html).contains("href=\"#title\"");
         assertThat(html).contains("href=\"#chapter-one\"");
-        // H1/H2 注入 id
+        // H1/H2 inject id attributes
         assertThat(html).contains("<h1 id=\"title\">Title</h1>");
         assertThat(html).contains("<h2 id=\"chapter-one\">Chapter One</h2>");
-        // 样式包含 PDF 书签（outline）CSS
+        // Styles include PDF outline CSS
         assertThat(html).contains("-fs-pdf-outline-level: 1");
         assertThat(html).contains("-fs-pdf-outline-level: 2");
-        // 页眉包含前缀（日期不做精确断言）
+        // Header contains prefix (date not asserted precisely)
         assertThat(html).contains("<div class=\"header\">AI Memoir — Title · ");
     }
 }

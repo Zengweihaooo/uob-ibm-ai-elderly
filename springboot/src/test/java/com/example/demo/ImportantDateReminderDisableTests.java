@@ -37,11 +37,11 @@ public class ImportantDateReminderDisableTests {
 
     private Long testUserId;
     private Long testDateId;
-    private final String testEmail = "1534435440@qq.com"; // 目标用户邮箱（仅用于数据准备）
+    private final String testEmail = "1534435440@qq.com"; // Target user email (for data preparation only)
 
     @BeforeEach
     void setupMailMock() {
-        // 让模板发送链路可执行：提供一个可用的 MimeMessage 实例
+        // Provide a usable MimeMessage instance to allow template send pipeline
         Mockito.when(mailSender.createMimeMessage())
                 .thenReturn(new MimeMessage((Session) null));
     }
@@ -63,14 +63,14 @@ public class ImportantDateReminderDisableTests {
     }
 
     private void prepareTestUser() {
-        // 如已存在相同邮箱用户，先删除以避免 UNIQUE(email) 冲突
+        // If a user with the same email exists, delete first to avoid UNIQUE(email) conflict
         User existing = userMapper.findByEmail(testEmail);
         if (existing != null) {
             userMapper.deleteById(existing.getId());
         }
 
         User u = new User(testEmail);
-        // 避免 users.password_hash NOT NULL 约束失败
+        // Avoid users.password_hash NOT NULL constraint failure
         u.setPasswordHash("test_password");
         userMapper.insert(u);
         User loaded = userMapper.findByEmail(testEmail);
@@ -91,7 +91,7 @@ public class ImportantDateReminderDisableTests {
                 "disabled record"
         );
         created.setEnabled(false);
-        // 按照当前服务设计，updateImportantDate 负责持久化 enabled 变更
+        // According to current service design, updateImportantDate persists enabled changes
         ImportantDate toUpdate = new ImportantDate();
         toUpdate.setId(created.getId());
         toUpdate.setTitle(created.getTitle());
@@ -103,10 +103,10 @@ public class ImportantDateReminderDisableTests {
         ImportantDate updated = importantDateService.updateImportantDate(created.getId(), toUpdate);
         testDateId = updated.getId();
 
-        // 触发提醒扫描
+        // Trigger reminder scan
         importantDateService.sendAllPendingReminders();
 
-        // 验证：未发送邮件
+        // Verify: no email sent
         verify(mailSender, never()).send(any(MimeMessage.class));
     }
 
@@ -134,10 +134,10 @@ public class ImportantDateReminderDisableTests {
         ImportantDate updated = importantDateService.updateImportantDate(created.getId(), toUpdate);
         testDateId = updated.getId();
 
-        // 触发提醒扫描
+        // Trigger reminder scan
         importantDateService.sendAllPendingReminders();
 
-        // 验证：至少发送一次邮件
+        // Verify: at least one email sent
         verify(mailSender, atLeastOnce()).send(any(MimeMessage.class));
     }
 }
