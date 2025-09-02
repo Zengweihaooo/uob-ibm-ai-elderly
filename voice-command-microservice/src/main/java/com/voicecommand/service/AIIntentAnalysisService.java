@@ -1162,40 +1162,38 @@ public class AIIntentAnalysisService {
         
         // Pattern 1: "3pm"
         if (lowerText.contains("pm")) {
-                // Enhanced PM pattern matching for "3pm", "3:30pm", etc.
-                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{1,2}):?(\\d{0,2})\\s*pm");
-                java.util.regex.Matcher matcher = pattern.matcher(lowerText);
-                if (matcher.find()) {
-                    int hour = Integer.parseInt(matcher.group(1));
-                    int minute = 0;
-                    if (matcher.group(2) != null && !matcher.group(2).isEmpty()) {
-                        minute = Integer.parseInt(matcher.group(2));
-                    }
-                    if (hour >= 1 && hour <= 12) {
-                        time = String.format("%02d:%02d", hour + 12, minute);
-                        log.info("Pattern1 extracted time: {}:{}pm -> {}", hour, minute, time);
-                        return time;
-                    }
+            // Enhanced PM pattern matching for "3pm", "3:30pm", etc.
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{1,2}):?(\\d{0,2})\\s*pm");
+            java.util.regex.Matcher matcher = pattern.matcher(lowerText);
+            if (matcher.find()) {
+                int hour = Integer.parseInt(matcher.group(1));
+                int minute = 0;
+                if (matcher.group(2) != null && !matcher.group(2).isEmpty()) {
+                    minute = Integer.parseInt(matcher.group(2));
+                }
+                if (hour >= 1 && hour <= 12) {
+                    time = String.format("%02d:%02d", hour + 12, minute);
+                    log.info("Pattern1 extracted time: {}:{}pm -> {}", hour, minute, time);
+                    return time;
                 }
             }
         }
         
         // Pattern 2: "8am"
         if (lowerText.contains("am")) {
-                // Enhanced AM pattern matching for "8am", "8:30am", etc.
-                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{1,2}):?(\\d{0,2})\\s*am");
-                java.util.regex.Matcher matcher = pattern.matcher(lowerText);
-                if (matcher.find()) {
-                    int hour = Integer.parseInt(matcher.group(1));
-                    int minute = 0;
-                    if (matcher.group(2) != null && !matcher.group(2).isEmpty()) {
-                        minute = Integer.parseInt(matcher.group(2));
-                    }
-                    if (hour >= 1 && hour <= 12) {
-                        time = String.format("%02d:%02d", hour, minute);
-                        log.info("Pattern2 extracted time: {}:{}am -> {}", hour, minute, time);
-                        return time;
-                    }
+            // Enhanced AM pattern matching for "8am", "8:30am", etc.
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{1,2}):?(\\d{0,2})\\s*am");
+            java.util.regex.Matcher matcher = pattern.matcher(lowerText);
+            if (matcher.find()) {
+                int hour = Integer.parseInt(matcher.group(1));
+                int minute = 0;
+                if (matcher.group(2) != null && !matcher.group(2).isEmpty()) {
+                    minute = Integer.parseInt(matcher.group(2));
+                }
+                if (hour >= 1 && hour <= 12) {
+                    time = String.format("%02d:%02d", hour, minute);
+                    log.info("Pattern2 extracted time: {}:{}am -> {}", hour, minute, time);
+                    return time;
                 }
             }
         }
