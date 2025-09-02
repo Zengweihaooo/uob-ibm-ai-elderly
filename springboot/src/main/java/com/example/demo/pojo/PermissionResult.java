@@ -1,7 +1,7 @@
 package com.example.demo.pojo;
 
 /**
- * 权限验证结果类
+ * Permission check result class
  * 
  * @author AI Assistant
  * @version 1.0

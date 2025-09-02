@@ -26,10 +26,10 @@ public class User {
      * User role enumeration
      */
     public enum UserRole {
-        ELDERLY,         // 老年人用户
-        FAMILY,          // 家庭成员
-        DOCTOR,          // 医生
-        ADMIN            // 管理员
+        ELDERLY,         // Elderly user
+        FAMILY,          // Family member
+        DOCTOR,          // Doctor
+        ADMIN            // Administrator
     }
     
     private Long id;
@@ -52,7 +52,7 @@ public class User {
      */
     public User() {
         this.status = UserStatus.UNREGISTERED;
-        this.role = UserRole.ELDERLY; // 默认为老年人用户
+        this.role = UserRole.ELDERLY; // Default to elderly user
         this.isVerified = false;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
