@@ -893,7 +893,7 @@
             showTypingIndicator();
             
             try {
-                // 调用我们的微服务进行文本命令处理
+                // Invoke our microservice for text command processing.
                 const response = await fetch('http://localhost:8090/api/voice-command/text', {
                     method: 'POST',
                     headers: {

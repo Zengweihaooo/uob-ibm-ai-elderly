@@ -821,7 +821,7 @@
       shareData.scope = 'view';
       
       try {
-        // 直接使用 fetch 以便在非 2xx 时读取错误 body
+        // Use fetch directly to read the error body when the response is not 2xx
         const url = `${API_BASE.replace(/\/$/, '')}/api/memoir/projects/${currentProject.id}/share`;
         const resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(shareData) });
         let data = null;

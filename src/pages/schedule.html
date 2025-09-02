@@ -2224,7 +2224,7 @@
             // Handle URL hash navigation (e.g., #pet)
             handleUrlHash();
             
-            // 设置页面间通信监听器
+            // Set up an inter-page communication listener
             setupPageCommunication();
         });
 
@@ -3933,43 +3933,43 @@
             });
         }
 
-        // 页面间通信：监听AI助手的消息
+        // Inter-page communication: Listen for messages from the AI assistant
         function setupPageCommunication() {
             window.addEventListener('message', function(event) {
-                console.log('收到页面间消息:', event.data);
+                console.log('Received inter-page message:', event.data);
                 
-                // 验证消息来源（可选）
+                // Verify message source (optional)
                 if (event.origin !== window.location.origin && event.origin !== 'null') {
-                    console.log('消息来源验证失败:', event.origin);
+                    console.log('Message source verification failed:', event.origin);
                     return;
                 }
                 
-                // 处理日程添加成功消息
+                // Handle schedule addition success message
                 if (event.data.type === 'scheduleAdded') {
-                    console.log('收到AI助手日程添加成功消息:', event.data);
+                    console.log('Received AI assistant schedule addition success message:', event.data);
                     
                     if (event.data.data && event.data.data.success) {
-                        // 显示成功提示
-                        showMessage('🎉 AI助手已成功添加新日程！正在刷新页面数据...', 'success');
+                        // Show success message
+                        showMessage('🎉 AI assistant has successfully added new schedule! Refreshing page data...', 'success');
                         
-                        // 延迟一下再刷新，确保后端数据已保存
+                        // Delay refresh to ensure backend data is saved
                         setTimeout(() => {
-                            console.log('开始刷新日程数据...');
-                            // 刷新日程数据
+                            console.log('Starting to refresh schedule data...');
+                            // Refresh schedule data
                             loadSchedule();
                             
-                            // 如果当前在日历视图，也刷新日历数据
+                            // If currently in calendar view, also refresh calendar data
                             if (currentView === 'week' || currentView === 'month') {
                                 loadAllActivities();
                             }
                             
-                            showMessage('✅ 页面数据已刷新，新日程已显示！', 'success');
+                            showMessage('✅ Page data has been refreshed, new schedule is now displayed!', 'success');
                         }, 1000);
                     }
                 }
             });
             
-            console.log('页面间通信监听器已设置');
+            console.log('Inter-page communication listener has been set up');
         }
 
     </script>

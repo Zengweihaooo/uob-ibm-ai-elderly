@@ -1095,7 +1095,7 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', async function() {
-            // 首先尝试获取有效的JWT token
+            // First, attempt to obtain a valid JWT token
             await initializeAuth();
             
             if (authToken) {
@@ -1161,7 +1161,7 @@
                     }
                 });
             } else {
-                showMessage('请先登录以访问家庭联系人功能', 'warning');
+                showMessage('Please login first to access family contacts functionality', 'warning');
                 displayEmptyState();
             }
         });
@@ -1169,7 +1169,7 @@
         // JWT Token Management Functions
         async function initializeAuth() {
             try {
-                // 尝试从localStorage获取token
+                // Attempt to retrieve the token from localStorage
                 const storedToken = localStorage.getItem('authToken');
                 const storedExpiry = localStorage.getItem('tokenExpiry');
                 
@@ -1178,83 +1178,83 @@
                     const expiryTime = parseInt(storedExpiry);
                     
                     if (now < expiryTime) {
-                        // Token仍然有效
+                        // The token is still valid
                         authToken = storedToken;
                         tokenExpiry = expiryTime;
-                        console.log('使用存储的有效JWT token');
+                        console.log('Using stored valid JWT token');
                         
-                        // 验证token格式
+                        // Validate token format
                         if (isValidJWTFormat(storedToken)) {
-                            console.log('JWT token格式验证通过');
+                            console.log('JWT token format validation passed');
                             return;
                         } else {
-                            console.error('存储的token格式无效，清除并提示重新登录');
+                            console.error('Stored token format is invalid, clearing and prompting for re-login');
                             localStorage.removeItem('authToken');
                             localStorage.removeItem('tokenExpiry');
                         }
                     } else {
-                        console.log('存储的token已过期');
+                        console.log('Stored token has expired');
                         localStorage.removeItem('authToken');
                         localStorage.removeItem('tokenExpiry');
                     }
                 }
                 
-                // 如果没有有效token，检查是否有其他认证信息
+                // If no valid token, check for other authentication information
                 const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
                 const userEmail = localStorage.getItem('userEmail');
                 
                 if (isLoggedIn && userEmail) {
-                    console.log('检测到登录状态，但token无效，提示重新登录');
-                    showMessage('您的登录已过期，请重新登录', 'warning');
+                    console.log('Login status detected but token is invalid, prompting for re-login');
+                    showMessage('Your login has expired, please login again', 'warning');
                 } else {
-                    console.log('未检测到登录状态');
+                    console.log('No login status detected');
                 }
                 
-                // 显示登录提示
+                // Show login prompt
                 showLoginPrompt();
                 
             } catch (error) {
-                console.error('初始化认证失败:', error);
-                showMessage('认证初始化失败，请手动登录', 'error');
+                console.error('Authentication initialization failed:', error);
+                showMessage('Authentication initialization failed, please login manually', 'error');
             }
         }
 
-        // 验证JWT token格式
+        // Validate JWT token format
         function isValidJWTFormat(token) {
             if (!token || typeof token !== 'string') {
-                console.error('Token不是有效字符串:', token, typeof token);
+                console.error('Token is not a valid string:', token, typeof token);
                 return false;
             }
             
-            // JWT token应该包含两个点号，格式为: header.payload.signature
+            // JWT token should contain two dots, format: header.payload.signature
             const parts = token.split('.');
-            console.log('Token分割结果:', parts, '长度:', parts.length);
+            console.log('Token split result:', parts, 'length:', parts.length);
             
             if (parts.length !== 3) {
-                console.error('Token格式错误: 应该有3个部分，实际有', parts.length, '个部分');
+                console.error('Token format error: should have 3 parts, actually has', parts.length, 'parts');
                 return false;
             }
             
-            // 每个部分都不应该为空
+            // Each part should not be empty
             if (parts[0] === '' || parts[1] === '' || parts[2] === '') {
-                console.error('Token包含空部分:', parts);
+                console.error('Token contains empty parts:', parts);
                 return false;
             }
             
-            // 检查每个部分的长度（JWT的每个部分都应该有合理长度）
+            // Check the length of each part (each part of JWT should have reasonable length)
             if (parts[0].length < 10 || parts[1].length < 10 || parts[2].length < 10) {
-                console.error('Token部分长度异常:', parts.map(p => p.length));
+                console.error('Token part length abnormal:', parts.map(p => p.length));
                 return false;
             }
             
-            console.log('Token格式验证通过');
+            console.log('Token format validation passed');
             return true;
         }
 
-        // 简化的登录函数，用于模态框登录
+        // Simplified login function for modal login
         async function loginUser(email, password) {
             try {
-                console.log('尝试登录用户:', email);
+                console.log('Attempting to login user:', email);
                 
                 const response = await fetch(`${AUTH_API_BASE}/login`, {
                     method: 'POST',
@@ -1265,16 +1265,16 @@
                 });
 
                 const data = await response.json();
-                console.log('登录响应:', data);
+                console.log('Login response:', data);
                 
                 if (data.success && data.token) {
-                    // 验证返回的token格式
+                    // Validate returned token format
                     if (!isValidJWTFormat(data.token)) {
-                        console.error('服务器返回的token格式无效');
-                        return { success: false, message: '服务器返回的token格式无效' };
+                        console.error('Server returned invalid token format');
+                        return { success: false, message: 'Server returned invalid token format' };
                     }
                     
-                    // 保存token和过期时间
+                    // Save token and expiry time
                     authToken = data.token;
                     tokenExpiry = Date.now() + (23 * 60 * 60 * 1000);
                     
@@ -1283,18 +1283,18 @@
                     localStorage.setItem('userEmail', email);
                     localStorage.setItem('isLoggedIn', 'true');
                     
-                    console.log('登录成功，JWT token已保存');
+                    console.log('Login successful, JWT token saved');
                     
-                    // 刷新页面以加载功能
+                    // Refresh page to load functionality
                     window.location.reload();
                     
                     return { success: true };
                 } else {
-                    return { success: false, message: data.message || '登录失败' };
+                    return { success: false, message: data.message || 'Login failed' };
                 }
             } catch (error) {
-                console.error('登录请求失败:', error);
-                return { success: false, message: '网络错误' };
+                console.error('Login request failed:', error);
+                return { success: false, message: 'Network error' };
             }
         }
 
@@ -1302,36 +1302,36 @@
             const container = document.getElementById('contactsContainer');
             container.innerHTML = `
                 <div style="text-align: center; padding: 50px;">
-                    <h3>需要登录</h3>
-                    <p>请先登录以访问家庭联系人功能</p>
-                    <button onclick="openLoginModal()" class="btn btn-primary">登录</button>
-                    <button onclick="openRegisterModal()" class="btn btn-primary" style="margin-left: 15px;">注册</button>
+                    <h3>Login Required</h3>
+                    <p>Please login first to access family contacts functionality</p>
+                    <button onclick="openLoginModal()" class="btn btn-primary">Login</button>
+                    <button onclick="openRegisterModal()" class="btn btn-primary" style="margin-left: 15px;">Register</button>
                 </div>
             `;
         }
 
         function openLoginModal() {
-            // 创建登录模态框
+            // Create login modal
             const modal = document.createElement('div');
             modal.className = 'modal';
             modal.style.display = 'block';
             modal.innerHTML = `
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3>用户登录</h3>
+                        <h3>User Login</h3>
                         <span class="close-btn" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
                     </div>
                     <div class="modal-body">
                         <form id="loginForm">
                             <div class="form-group">
-                                <label for="loginEmail">邮箱:</label>
+                                <label for="loginEmail">Email:</label>
                                 <input type="email" id="loginEmail" class="form-input" required>
                             </div>
                             <div class="form-group">
-                                <label for="loginPassword">密码:</label>
+                                <label for="loginPassword">Password:</label>
                                 <input type="password" id="loginPassword" class="form-input" required>
                             </div>
-                            <button type="submit" class="btn btn-primary">登录</button>
+                            <button type="submit" class="btn btn-primary">Login</button>
                         </form>
                     </div>
                 </div>
@@ -1339,7 +1339,7 @@
             
             document.body.appendChild(modal);
             
-            // 处理登录表单提交
+            // Handle login form submission
             document.getElementById('loginForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const email = document.getElementById('loginEmail').value;
@@ -1348,39 +1348,39 @@
                 const result = await loginUser(email, password);
                 if (result.success) {
                     modal.remove();
-                    location.reload(); // 重新加载页面
+                    location.reload(); // Reload page
                 } else {
-                    alert('登录失败: ' + result.message);
+                    alert('Login failed: ' + result.message);
                 }
             });
         }
 
         function openRegisterModal() {
-            // 创建注册模态框
+            // Create registration modal
             const modal = document.createElement('div');
             modal.className = 'modal';
             modal.style.display = 'block';
             modal.innerHTML = `
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3>用户注册</h3>
+                        <h3>User Registration</h3>
                         <span class="close-btn" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
                     </div>
                     <div class="modal-body">
                         <form id="registerForm">
                             <div class="form-group">
-                                <label for="registerEmail">邮箱:</label>
+                                <label for="registerEmail">Email:</label>
                                 <input type="email" id="registerEmail" class="form-input" required>
                             </div>
                             <div class="form-group">
-                                <label for="registerName">姓名:</label>
+                                <label for="registerName">Name:</label>
                                 <input type="text" id="registerName" class="form-input" required>
                             </div>
                             <div class="form-group">
-                                <label for="registerPassword">密码:</label>
+                                <label for="registerPassword">Password:</label>
                                 <input type="password" id="registerPassword" class="form-input" required>
                             </div>
-                            <button type="submit" class="btn btn-primary">注册</button>
+                            <button type="submit" class="btn btn-primary">Register</button>
                         </form>
                     </div>
                 </div>
@@ -1388,7 +1388,7 @@
             
             document.body.appendChild(modal);
             
-            // 处理注册表单提交
+            // Handle registration form submission
             document.getElementById('registerForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const email = document.getElementById('registerEmail').value;
@@ -1410,28 +1410,28 @@
                     
                     const data = await response.json();
                     if (data.success) {
-                        alert('注册成功！请登录');
+                        alert('Registration successful! Please login');
                         modal.remove();
                         openLoginModal();
                     } else {
-                        alert('注册失败: ' + data.message);
+                        alert('Registration failed: ' + data.message);
                     }
                 } catch (error) {
-                    alert('注册请求失败: ' + error.message);
+                    alert('Registration request failed: ' + error.message);
                 }
             });
         }
 
-        // 获取认证token的通用方法
+        // General method to get authentication token
         function getAuthToken() {
             if (!authToken) {
-                console.warn('没有可用的认证token');
+                console.warn('No authentication token available');
                 return null;
             }
             
-            // 验证token格式
+            // Validate token format
             if (!isValidJWTFormat(authToken)) {
-                console.error('当前token格式无效，清除token');
+                console.error('Current token format is invalid, clearing token');
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('tokenExpiry');
                 authToken = null;
@@ -1439,16 +1439,16 @@
                 return null;
             }
             
-            // 检查token是否即将过期（提前5分钟刷新）
+            // Check if token is about to expire (refresh 5 minutes early)
             const now = Date.now();
             if (tokenExpiry && (now + 5 * 60 * 1000) > tokenExpiry) {
-                console.log('Token即将过期，建议刷新');
+                console.log('Token is about to expire, recommend refresh');
             }
             
             return authToken;
         }
 
-        // 验证token有效性
+        // Validate token validity
         async function validateToken() {
             if (!authToken) return false;
             
@@ -1462,12 +1462,12 @@
                 const data = await response.json();
                 return data.success;
             } catch (error) {
-                console.error('Token验证失败:', error);
+                console.error('Token validation failed:', error);
                 return false;
             }
         }
 
-        // 刷新token
+        // Refresh token
         async function refreshToken() {
             try {
                 const response = await fetch(`${AUTH_API_BASE}/api/refresh-token`, {
@@ -1485,11 +1485,11 @@
                     localStorage.setItem('authToken', authToken);
                     localStorage.setItem('tokenExpiry', tokenExpiry.toString());
                     
-                    console.log('Token刷新成功');
+                    console.log('Token refresh successful');
                     return true;
                 }
             } catch (error) {
-                console.error('Token刷新失败:', error);
+                console.error('Token refresh failed:', error);
             }
             return false;
         }

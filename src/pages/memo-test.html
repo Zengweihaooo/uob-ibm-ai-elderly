@@ -230,7 +230,7 @@
             <p>Test various memo API functions</p>
         </div>
 
-        <!-- 创建备忘录测试 -->
+        <!-- Create memo test -->
         <div class="test-section">
             <div class="test-title">1. Create Memo</div>
             <form class="test-form" id="createForm">
@@ -255,7 +255,7 @@
             <div id="createResult" class="result" style="display: none;"></div>
         </div>
 
-        <!-- 获取备忘录列表测试 -->
+        <!-- Get memo list test -->
         <div class="test-section">
             <div class="test-title">2. Get Memo List</div>
             <button class="btn btn-success" onclick="getMemos()">Get Memo List</button>
@@ -263,7 +263,7 @@
             <div id="memoList" class="memo-list"></div>
         </div>
 
-        <!-- 搜索备忘录测试 -->
+        <!-- Search memos test -->
         <div class="test-section">
             <div class="test-title">3. Search Memos</div>
             <div class="test-form">
@@ -276,7 +276,7 @@
             <div id="searchResult" class="result" style="display: none;"></div>
         </div>
 
-        <!-- PIN码测试 -->
+        <!-- PIN code test -->
         <div class="test-section">
             <div class="test-title">4. PIN Code Function Test</div>
             <div class="test-form">
@@ -296,7 +296,7 @@
             <div id="pinResult" class="result" style="display: none;"></div>
         </div>
 
-        <!-- 统计信息测试 -->
+        <!-- Statistics test -->
         <div class="test-section">
             <div class="test-title">5. Get Statistics</div>
             <button class="btn btn-success" onclick="getStatistics()">Get Statistics</button>
@@ -329,7 +329,7 @@
     </div>
 
     <script>
-        // 显示结果
+        // display
         function showResult(elementId, data, isSuccess = true) {
             const element = document.getElementById(elementId);
             element.textContent = JSON.stringify(data, null, 2);
@@ -337,7 +337,7 @@
             element.style.display = 'block';
         }
 
-        // 创建备忘录
+        // create
         document.getElementById('createForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -370,7 +370,7 @@
             }
         });
 
-        // 获取备忘录列表
+        // get list
         async function getMemos() {
             try {
                 const response = await fetch('/api/memo/list');
@@ -386,7 +386,7 @@
             }
         }
 
-        // 显示备忘录列表
+        // display list
         function displayMemos(memos) {
             const memoList = document.getElementById('memoList');
             memoList.innerHTML = '';
@@ -407,7 +407,7 @@
             });
         }
 
-        // 搜索备忘录
+        // search memo
         async function searchMemos() {
             const keyword = document.getElementById('searchKeyword').value.trim();
             
@@ -430,7 +430,7 @@
             }
         }
 
-        // 设置PIN码
+        // set PIN
         async function setPinCode() {
             const pinCode = document.getElementById('setPinCode').value.trim();
             
@@ -461,7 +461,7 @@
             }
         }
 
-        // 验证PIN码
+        // verify PIN
         async function verifyPinCode() {
             const pinCode = document.getElementById('verifyPinCode').value.trim();
             
@@ -492,7 +492,7 @@
             }
         }
 
-        // 获取统计信息
+        // Fetch statistics
         async function getStatistics() {
             try {
                 const response = await fetch('/api/memo/statistics');
@@ -504,7 +504,7 @@
             }
         }
 
-        // 页面加载时自动获取备忘录列表
+        // Automatically fetch the memo list on page load
         document.addEventListener('DOMContentLoaded', function() {
             getMemos();
         });
