@@ -68,24 +68,24 @@ public class ScheduleController {
                 response.put("schedule", userSchedule);
                 response.put("isGuest", false);
             } else {
-                // 即使没有认证，也尝试返回数据库中的真实数据
+                // Even without authentication, try to return real data from the database
                 try {
-                    // 使用默认用户ID (1) 来获取数据
+                    // Use default user ID (1) to fetch data
                     Long defaultUserId = 1L;
                     Map<String, List<Schedule>> realSchedule = scheduleService.getSchedulesByUserAndDate(defaultUserId, targetDate);
                     
-                    // 检查是否有真实数据
+                    // Check if real data exists
                     boolean hasRealData = realSchedule.values().stream()
                             .anyMatch(list -> list != null && !list.isEmpty());
                     
                     if (hasRealData) {
-                        // 有真实数据，返回真实数据
+                        // Real data exists; return real data
                         response.put("success", true);
                         response.put("schedule", realSchedule);
                         response.put("isGuest", false);
                         response.put("message", "Real schedule data loaded");
                     } else {
-                        // 没有真实数据，返回访客模式数据
+                        // No real data; return guest mode data
                         Map<String, List<Map<String, Object>>> guestSchedule = scheduleService.getGuestSchedule(targetDate);
                         response.put("success", true);
                         response.put("schedule", guestSchedule);
@@ -93,7 +93,7 @@ public class ScheduleController {
                         response.put("message", "Guest mode - no real data available");
                     }
                 } catch (Exception e) {
-                    // 如果获取真实数据失败，回退到访客模式
+                    // If loading real data fails, fall back to guest mode
                     Map<String, List<Map<String, Object>>> guestSchedule = scheduleService.getGuestSchedule(targetDate);
                     response.put("success", true);
                     response.put("schedule", guestSchedule);
