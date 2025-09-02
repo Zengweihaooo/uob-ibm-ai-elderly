@@ -1,20 +1,21 @@
 package com.example.demo.service.memoir;
 
-import com.example.demo.mapper.MemoirMapper;
-import com.example.demo.pojo.memoir.MemoirProject;
-import com.example.demo.pojo.memoir.MemoirSegment;
-import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.mapper.MemoirMapper;
+import com.example.demo.pojo.memoir.MemoirProject;
+import com.example.demo.pojo.memoir.MemoirSegment;
 
 /**
  * Memoir export service
@@ -250,7 +251,7 @@ public class MemoirExportService {
                 .replace("'", "&#39;");
     }
 
-     // 根据标题生成唯一 slug（小写、去空格与非字母数字、处理重复）
+     // Generate a unique slug from the title
      private String makeSlug(String title, java.util.Set<String> used) {
          String base = title == null ? "" : title.toLowerCase()
                  .replaceAll("[^a-z0-9]+", "-")

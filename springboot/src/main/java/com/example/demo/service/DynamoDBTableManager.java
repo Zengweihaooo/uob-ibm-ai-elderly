@@ -1,25 +1,38 @@
 package com.example.demo.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.context.annotation.Profile;
-
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
-
 import java.util.logging.Logger;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
+import software.amazon.awssdk.services.dynamodb.model.BillingMode;
+import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.DescribeTableResponse;
+import software.amazon.awssdk.services.dynamodb.model.GlobalSecondaryIndex;
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
+import software.amazon.awssdk.services.dynamodb.model.KeyType;
+import software.amazon.awssdk.services.dynamodb.model.Projection;
+import software.amazon.awssdk.services.dynamodb.model.ProjectionType;
+import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException;
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
+import software.amazon.awssdk.services.dynamodb.model.TableDescription;
+
 /**
- * DynamoDB表管理服务
- * 负责创建、管理和维护所有DynamoDB表
- * 实现完整的云端数据存储方案
+ * DynamoDB Table Management Service
+ * Responsible for creating, managing, and maintaining all DynamoDB tables
+ * Implements a complete cloud data storage solution
  * 
  * @author Lepeng Zhou
  * @version 2.0
  */
 @Service
-@Profile("aws") // 只在AWS环境下使用
+@Profile("aws") // Only used in AWS environment
 public class DynamoDBTableManager {
     
     private static final Logger logger = Logger.getLogger(DynamoDBTableManager.class.getName());
@@ -27,7 +40,7 @@ public class DynamoDBTableManager {
     @Autowired
     private DynamoDbClient dynamoDbClient;
     
-    // 表名配置
+    // Table name configuration
     @Value("${aws.dynamodb.table.pet-mood:pet_mood}")
     private String petMoodTableName;
     
@@ -59,13 +72,13 @@ public class DynamoDBTableManager {
     private String chatMessagesTableName;
     
     /**
-     * 初始化所有必需的DynamoDB表
+     * Initialize all required DynamoDB tables
      */
     public void initializeTables() {
         logger.info("Starting complete DynamoDB table initialization...");
         
         try {
-            // 核心业务表
+            // Core business tables
             createUsersTable();
             createPetMoodTable();
             createSchedulesTable();
@@ -86,7 +99,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 创建用户表
+     * Create Users table
      */
     private void createUsersTable() {
         try {
@@ -141,7 +154,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 创建宠物情绪表
+     * Create PetMood table
      */
     private void createPetMoodTable() {
         try {
@@ -180,7 +193,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 创建日程表
+     * Create Schedules table
      */
     private void createSchedulesTable() {
         try {
@@ -243,7 +256,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 创建健康记录表
+     * Create HealthRecords table
      */
     private void createHealthRecordsTable() {
         try {
@@ -324,7 +337,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 创建家庭联系人表
+     * Create FamilyContacts table
      */
     private void createFamilyContactsTable() {
         try {
@@ -393,7 +406,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 创建重要日期表
+     * Create ImportantDates table
      */
     private void createImportantDatesTable() {
         try {
@@ -456,7 +469,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 创建备忘录表
+     * Create Memos table
      */
     private void createMemosTable() {
         try {
@@ -519,7 +532,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 创建播客表
+     * Create Podcasts table
      */
     private void createPodcastsTable() {
         try {
@@ -574,7 +587,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 创建情感陪伴表
+     * Create EmotionCompanions table
      */
     private void createEmotionCompanionsTable() {
         try {
@@ -629,7 +642,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 创建聊天消息表
+     * Create ChatMessages table
      */
     private void createChatMessagesTable() {
         try {
@@ -692,7 +705,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 检查表是否存在
+     * Check whether a table exists
      */
     private boolean tableExists(String tableName) {
         try {
@@ -712,13 +725,13 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 等待表变为活跃状态
+     * Wait for table to become active
      */
     private void waitForTableToBecomeActive(String tableName) {
         try {
             logger.info("Waiting for table " + tableName + " to become active...");
             
-            // 简单等待，生产环境建议使用waiter
+            // Simple wait; in production consider using waiter
             Thread.sleep(5000);
             logger.info("Table " + tableName + " creation initiated");
             
@@ -728,7 +741,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 删除表（谨慎使用）
+     * Delete table (use with caution)
      */
     public void deleteTable(String tableName) {
         try {
@@ -749,7 +762,7 @@ public class DynamoDBTableManager {
     }
     
     /**
-     * 获取表信息
+     * Describe table information
      */
     public void describeTable(String tableName) {
         try {

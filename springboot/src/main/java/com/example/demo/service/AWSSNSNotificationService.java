@@ -1,27 +1,34 @@
 package com.example.demo.service;
 
-import com.example.demo.pojo.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.context.annotation.Profile;
-
-import software.amazon.awssdk.services.sns.SnsClient;
-import software.amazon.awssdk.services.sns.model.*;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.pojo.User;
+
+import software.amazon.awssdk.services.sns.SnsClient;
+import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
+import software.amazon.awssdk.services.sns.model.CreateTopicResponse;
+import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
+import software.amazon.awssdk.services.sns.model.PublishRequest;
+import software.amazon.awssdk.services.sns.model.PublishResponse;
+import software.amazon.awssdk.services.sns.model.SubscribeRequest;
+import software.amazon.awssdk.services.sns.model.SubscribeResponse;
+
 /**
- * AWS SNS通知服务
- * 支持短信、推送通知等多种通知方式
+ * AWS SNS Notification Service
+ * Supports multiple notification channels such as SMS and push notifications
  * 
  * @author Lepeng Zhou
  * @version 1.0
  */
 @Service
-@Profile("aws") // 只在AWS环境下使用
+@Profile("aws") // Only used in AWS environment
 public class AWSSNSNotificationService {
     
     private static final Logger logger = Logger.getLogger(AWSSNSNotificationService.class.getName());
@@ -39,7 +46,7 @@ public class AWSSNSNotificationService {
     private String pushTopicArn;
     
     /**
-     * 发送短信通知
+     * Send SMS notification
      */
     public void sendSMS(String phoneNumber, String message) {
         try {
@@ -58,7 +65,7 @@ public class AWSSNSNotificationService {
     }
     
     /**
-     * 发送短信通知（带主题）
+     * Send SMS notification (with subject)
      */
     public void sendSMS(String phoneNumber, String message, String subject) {
         try {
@@ -83,7 +90,7 @@ public class AWSSNSNotificationService {
     }
     
     /**
-     * 发布到SNS主题
+     * Publish message to SNS topic
      */
     public void publishToTopic(String topicArn, String message, String subject) {
         try {
@@ -103,7 +110,7 @@ public class AWSSNSNotificationService {
     }
     
     /**
-     * 发送提醒通知
+     * Send reminder notification
      */
     public void sendReminderNotification(User user, String reminderType, String message) {
         if (remindersTopicArn == null || remindersTopicArn.isEmpty()) {
@@ -112,7 +119,7 @@ public class AWSSNSNotificationService {
         }
         
         try {
-            // 构建通知消息
+            // Build notification payload
             Map<String, Object> notificationData = new HashMap<>();
             notificationData.put("userId", user.getId());
             notificationData.put("userName", user.getName());
@@ -133,7 +140,7 @@ public class AWSSNSNotificationService {
     }
     
     /**
-     * 发送紧急通知
+     * Send emergency notification
      */
     public void sendEmergencyNotification(User user, String emergencyType, String message) {
         if (emergencyTopicArn == null || emergencyTopicArn.isEmpty()) {
@@ -142,7 +149,7 @@ public class AWSSNSNotificationService {
         }
         
         try {
-            // 构建紧急通知消息
+            // Build emergency notification payload
             Map<String, Object> emergencyData = new HashMap<>();
             emergencyData.put("userId", user.getId());
             emergencyData.put("userName", user.getName());
@@ -158,7 +165,7 @@ public class AWSSNSNotificationService {
             
             publishToTopic(emergencyTopicArn, jsonMessage, subject);
             
-            // 如果用户有手机号，立即发送短信
+            // If the user has a phone number, send SMS immediately
             if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
                 sendSMS(user.getPhoneNumber(), "🚨 EMERGENCY: " + message, "EMERGENCY");
             }
@@ -169,7 +176,7 @@ public class AWSSNSNotificationService {
     }
     
     /**
-     * 发送推送通知
+     * Send push notification
      */
     public void sendPushNotification(String deviceToken, String message, String title) {
         if (pushTopicArn == null || pushTopicArn.isEmpty()) {
@@ -178,7 +185,7 @@ public class AWSSNSNotificationService {
         }
         
         try {
-            // 构建推送通知消息
+            // Build push notification payload
             Map<String, Object> pushData = new HashMap<>();
             pushData.put("deviceToken", deviceToken);
             pushData.put("title", title);
@@ -196,7 +203,7 @@ public class AWSSNSNotificationService {
     }
     
     /**
-     * 创建SNS主题
+     * Create SNS topic
      */
     public String createTopic(String topicName) {
         try {
@@ -217,7 +224,7 @@ public class AWSSNSNotificationService {
     }
     
     /**
-     * 订阅SNS主题
+     * Subscribe to SNS topic
      */
     public void subscribeToTopic(String topicArn, String protocol, String endpoint) {
         try {
@@ -237,7 +244,7 @@ public class AWSSNSNotificationService {
     }
     
     /**
-     * 将Map转换为SNS消息属性
+     * Convert Map to SNS message attributes
      */
     private Map<String, MessageAttributeValue> convertToSNSAttributes(Map<String, Object> attributes) {
         Map<String, MessageAttributeValue> snsAttributes = new HashMap<>();
@@ -255,11 +262,11 @@ public class AWSSNSNotificationService {
     }
     
     /**
-     * 将Map转换为JSON字符串
+     * Convert Map to JSON string
      */
     private String convertToJson(Map<String, Object> data) {
         try {
-            // 简单的JSON转换，生产环境建议使用Jackson或Gson
+            // Simple JSON conversion; for production use Jackson or Gson
             StringBuilder json = new StringBuilder("{");
             boolean first = true;
             

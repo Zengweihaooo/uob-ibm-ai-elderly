@@ -1,58 +1,57 @@
 package com.example.demo.service;
 
-import com.example.demo.pojo.PetMood;
-import com.example.demo.pojo.User;
-import com.example.demo.pojo.HealthRecord;
-import com.example.demo.pojo.Schedule;
-import com.example.demo.pojo.FamilyContact;
-import com.example.demo.pojo.ImportantDate;
-import com.example.demo.pojo.Memo;
-import com.example.demo.pojo.Podcast;
-import com.example.demo.pojo.EmotionCompanion;
-import com.example.demo.repository.PetMoodRepository;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.repository.HealthRecordRepository;
-import com.example.demo.repository.ScheduleRepository;
-import com.example.demo.repository.FamilyContactRepository;
-import com.example.demo.repository.ImportantDateRepository;
-import com.example.demo.repository.MemoRepository;
-import com.example.demo.repository.MemoRepositoryInterface;
-import com.example.demo.repository.PodcastRepository;
-import com.example.demo.repository.EmotionCompanionRepository;
-import com.example.demo.mapper.UserMapper;
-import com.example.demo.mapper.HealthRecordMapper;
-import com.example.demo.mapper.ScheduleMapper;
-import com.example.demo.mapper.FamilyContactMapper;
-import com.example.demo.mapper.ImportantDateMapper;
-import com.example.demo.mapper.MemoMapper;
-import com.example.demo.mapper.PodcastMapper;
-import com.example.demo.mapper.EmotionCompanionMapper;
-import com.example.demo.mapper.PetMoodMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.context.annotation.Profile;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
-import java.util.ArrayList;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.mapper.EmotionCompanionMapper;
+import com.example.demo.mapper.FamilyContactMapper;
+import com.example.demo.mapper.HealthRecordMapper;
+import com.example.demo.mapper.ImportantDateMapper;
+import com.example.demo.mapper.MemoMapper;
+import com.example.demo.mapper.PetMoodMapper;
+import com.example.demo.mapper.PodcastMapper;
+import com.example.demo.mapper.ScheduleMapper;
+import com.example.demo.mapper.UserMapper;
+import com.example.demo.pojo.EmotionCompanion;
+import com.example.demo.pojo.FamilyContact;
+import com.example.demo.pojo.HealthRecord;
+import com.example.demo.pojo.ImportantDate;
+import com.example.demo.pojo.Memo;
+import com.example.demo.pojo.PetMood;
+import com.example.demo.pojo.Podcast;
+import com.example.demo.pojo.Schedule;
+import com.example.demo.pojo.User;
+import com.example.demo.repository.EmotionCompanionRepository;
+import com.example.demo.repository.FamilyContactRepository;
+import com.example.demo.repository.HealthRecordRepository;
+import com.example.demo.repository.ImportantDateRepository;
+import com.example.demo.repository.MemoRepositoryInterface;
+import com.example.demo.repository.PetMoodRepository;
+import com.example.demo.repository.PodcastRepository;
+import com.example.demo.repository.ScheduleRepository;
+import com.example.demo.repository.UserRepository;
 
 /**
- * 完整数据迁移服务
- * 负责从本地SQLite迁移所有数据到云端DynamoDB
- * 实现真正的云端平台数据存储
+ * Full Data Migration Service
+ * Responsible for migrating all data from local SQLite to cloud DynamoDB
+ * Implements true cloud platform data storage
  * 
  * @author Lepeng Zhou
  * @version 2.0
  */
 @Service
-@Profile("aws") // 只在AWS环境下使用
+@Profile("aws") // Only used in AWS environment
 public class DataMigrationService {
     
     private static final Logger logger = Logger.getLogger(DataMigrationService.class.getName());
     
-    // 本地数据源 (SQLite)
+    // Local data source (SQLite)
     @Autowired
     private UserMapper userMapper;
     
@@ -80,7 +79,7 @@ public class DataMigrationService {
     @Autowired
     private PetMoodMapper petMoodMapper;
     
-    // 云端数据源 (DynamoDB)
+    // Cloud data source (DynamoDB)
     @Autowired
     @Qualifier("dynamoDBPetMoodRepository")
     private PetMoodRepository cloudPetMoodRepository;
@@ -118,7 +117,7 @@ public class DataMigrationService {
     private EmotionCompanionRepository cloudEmotionCompanionRepository;
     
     /**
-     * 执行完整的数据迁移
+     * Perform full data migration
      */
     public MigrationResult migrateAllData() {
         logger.info("Starting complete data migration from SQLite to DynamoDB...");
@@ -126,7 +125,7 @@ public class DataMigrationService {
         MigrationResult result = new MigrationResult();
         
         try {
-            // 迁移所有核心业务数据
+            // Migrate all core business data
             result.userResult = migrateUserData();
             result.petMoodResult = migratePetMoodData();
             result.scheduleResult = migrateScheduleData();
@@ -150,7 +149,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 迁移用户数据
+     * Migrate user data
      */
     private MigrationItemResult migrateUserData() {
         MigrationItemResult result = new MigrationItemResult("Users");
@@ -204,7 +203,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 迁移宠物情绪数据
+     * Migrate pet mood data
      */
     private MigrationItemResult migratePetMoodData() {
         MigrationItemResult result = new MigrationItemResult("PetMood");
@@ -212,7 +211,7 @@ public class DataMigrationService {
         try {
             logger.info("Migrating PetMood data...");
             
-            // 从SQLite获取宠物情绪数据
+            // Get pet mood data from SQLite
             List<PetMood> sourceData = petMoodMapper.findAll();
             result.totalItems = sourceData.size();
             
@@ -259,7 +258,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 迁移日程数据
+     * Migrate schedule data
      */
     private MigrationItemResult migrateScheduleData() {
         MigrationItemResult result = new MigrationItemResult("Schedules");
@@ -313,7 +312,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 迁移健康记录数据
+     * Migrate health record data
      */
     private MigrationItemResult migrateHealthRecordData() {
         MigrationItemResult result = new MigrationItemResult("HealthRecords");
@@ -321,7 +320,7 @@ public class DataMigrationService {
         try {
             logger.info("Migrating HealthRecords data...");
             
-            // 获取所有健康记录
+            // Get all health records
             List<HealthRecord> sourceData = healthRecordMapper.findAll();
             result.totalItems = sourceData.size();
             
@@ -368,7 +367,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 迁移家庭联系人数据
+     * Migrate family contact data
      */
     private MigrationItemResult migrateFamilyContactData() {
         MigrationItemResult result = new MigrationItemResult("FamilyContacts");
@@ -422,7 +421,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 迁移重要日期数据
+     * Migrate important date data
      */
     private MigrationItemResult migrateImportantDateData() {
         MigrationItemResult result = new MigrationItemResult("ImportantDates");
@@ -476,7 +475,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 迁移备忘录数据
+     * Migrate memo data
      */
     private MigrationItemResult migrateMemoData() {
         MigrationItemResult result = new MigrationItemResult("Memos");
@@ -530,7 +529,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 迁移播客数据
+     * Migrate podcast data
      */
     private MigrationItemResult migratePodcastData() {
         MigrationItemResult result = new MigrationItemResult("Podcasts");
@@ -584,7 +583,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 迁移情感陪伴数据
+     * Migrate emotion companion data
      */
     private MigrationItemResult migrateEmotionCompanionData() {
         MigrationItemResult result = new MigrationItemResult("EmotionCompanions");
@@ -638,7 +637,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 异步迁移数据（不阻塞主线程）
+     * Migrate data asynchronously (non-blocking main thread)
      */
     public CompletableFuture<MigrationResult> migrateAllDataAsync() {
         return CompletableFuture.supplyAsync(() -> {
@@ -648,7 +647,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 验证迁移结果
+     * Validate migration results
      */
     public ValidationResult validateMigration() {
         logger.info("Validating migration results...");
@@ -656,7 +655,7 @@ public class DataMigrationService {
         ValidationResult result = new ValidationResult();
         
         try {
-            // 验证宠物情绪数据
+            // Validate PetMood data
             long sourceCount = cloudPetMoodRepository.count();
             long targetCount = cloudPetMoodRepository.count(); // Assuming DynamoDB is the target
             
@@ -667,7 +666,7 @@ public class DataMigrationService {
             logger.info("PetMood validation: Source=" + sourceCount + ", Target=" + targetCount + 
                        ", Valid=" + result.petMoodValid);
             
-            // 验证用户数据
+            // Validate User data
             sourceCount = cloudUserRepository.count();
             targetCount = userMapper.count(); // Assuming SQLite is the source
             result.userSourceCount = sourceCount;
@@ -676,7 +675,7 @@ public class DataMigrationService {
             logger.info("User validation: Source=" + sourceCount + ", Target=" + targetCount + 
                        ", Valid=" + result.userValid);
 
-            // 验证日程数据
+            // Validate Schedule data
             sourceCount = cloudScheduleRepository.count();
             targetCount = scheduleMapper.count();
             result.scheduleSourceCount = sourceCount;
@@ -685,7 +684,7 @@ public class DataMigrationService {
             logger.info("Schedule validation: Source=" + sourceCount + ", Target=" + targetCount + 
                        ", Valid=" + result.scheduleValid);
 
-            // 验证健康记录数据
+            // Validate HealthRecord data
             sourceCount = cloudHealthRecordRepository.count();
             targetCount = healthRecordMapper.count();
             result.healthRecordSourceCount = sourceCount;
@@ -694,7 +693,7 @@ public class DataMigrationService {
             logger.info("HealthRecord validation: Source=" + sourceCount + ", Target=" + targetCount + 
                        ", Valid=" + result.healthRecordValid);
 
-            // 验证家庭联系人数据
+            // Validate FamilyContact data
             sourceCount = cloudFamilyContactRepository.count();
             targetCount = familyContactMapper.count();
             result.familyContactSourceCount = sourceCount;
@@ -703,7 +702,7 @@ public class DataMigrationService {
             logger.info("FamilyContact validation: Source=" + sourceCount + ", Target=" + targetCount + 
                        ", Valid=" + result.familyContactValid);
 
-            // 验证重要日期数据
+            // Validate ImportantDate data
             sourceCount = cloudImportantDateRepository.count();
             targetCount = importantDateMapper.count();
             result.importantDateSourceCount = sourceCount;
@@ -712,7 +711,7 @@ public class DataMigrationService {
             logger.info("ImportantDate validation: Source=" + sourceCount + ", Target=" + targetCount + 
                        ", Valid=" + result.importantDateValid);
 
-            // 验证备忘录数据
+            // Validate Memo data
             sourceCount = cloudMemoRepository.count();
             targetCount = memoMapper.count();
             result.memoSourceCount = sourceCount;
@@ -721,7 +720,7 @@ public class DataMigrationService {
             logger.info("Memo validation: Source=" + sourceCount + ", Target=" + targetCount + 
                        ", Valid=" + result.memoValid);
 
-            // 验证播客数据
+            // Validate Podcast data
             sourceCount = cloudPodcastRepository.count();
             targetCount = podcastMapper.count();
             result.podcastSourceCount = sourceCount;
@@ -730,7 +729,7 @@ public class DataMigrationService {
             logger.info("Podcast validation: Source=" + sourceCount + ", Target=" + targetCount + 
                        ", Valid=" + result.podcastValid);
 
-            // 验证情感陪伴数据
+            // Validate EmotionCompanion data
             sourceCount = cloudEmotionCompanionRepository.count();
             targetCount = emotionCompanionMapper.count();
             result.emotionCompanionSourceCount = sourceCount;
@@ -739,7 +738,7 @@ public class DataMigrationService {
             logger.info("EmotionCompanion validation: Source=" + sourceCount + ", Target=" + targetCount + 
                        ", Valid=" + result.emotionCompanionValid);
 
-            // 综合验证
+            // Overall validation
             result.overallValid = result.petMoodValid && result.userValid && result.scheduleValid && 
                                   result.healthRecordValid && result.familyContactValid && 
                                   result.importantDateValid && result.memoValid && 
@@ -761,7 +760,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 迁移结果类
+     * Migration result class
      */
     public static class MigrationResult {
         public boolean success = true;
@@ -795,7 +794,7 @@ public class DataMigrationService {
     }
     
     /**
-     * 单项迁移结果类
+     * Single migration item result class
      */
     public static class MigrationItemResult {
         public String dataType;
@@ -823,54 +822,54 @@ public class DataMigrationService {
     }
     
     /**
-     * 验证结果类
+     * Validation result class
      */
     public static class ValidationResult {
         public boolean overallValid;
         public String message;
         public String errorMessage;
         
-        // PetMood验证结果
+        // PetMood validation result
         public long petMoodSourceCount;
         public long petMoodTargetCount;
         public boolean petMoodValid;
         
-        // User验证结果
+        // User validation result
         public long userSourceCount;
         public long userTargetCount;
         public boolean userValid;
 
-        // Schedule验证结果
+        // Schedule validation result
         public long scheduleSourceCount;
         public long scheduleTargetCount;
         public boolean scheduleValid;
 
-        // HealthRecord验证结果
+        // HealthRecord validation result
         public long healthRecordSourceCount;
         public long healthRecordTargetCount;
         public boolean healthRecordValid;
 
-        // FamilyContact验证结果
+        // FamilyContact validation result
         public long familyContactSourceCount;
         public long familyContactTargetCount;
         public boolean familyContactValid;
 
-        // ImportantDate验证结果
+        // ImportantDate validation result
         public long importantDateSourceCount;
         public long importantDateTargetCount;
         public boolean importantDateValid;
 
-        // Memo验证结果
+        // Memo validation result
         public long memoSourceCount;
         public long memoTargetCount;
         public boolean memoValid;
 
-        // Podcast验证结果
+        // Podcast validation result
         public long podcastSourceCount;
         public long podcastTargetCount;
         public boolean podcastValid;
 
-        // EmotionCompanion验证结果
+        // EmotionCompanion validation result
         public long emotionCompanionSourceCount;
         public long emotionCompanionTargetCount;
         public boolean emotionCompanionValid;

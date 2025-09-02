@@ -1,16 +1,16 @@
 package com.example.demo.service;
 
-import com.example.demo.mapper.UserMapper;
-import com.example.demo.pojo.User;
-import com.example.demo.pojo.EmailVerificationResult;
-import com.example.demo.pojo.ValidationResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.mapper.UserMapper;
+import com.example.demo.pojo.EmailVerificationResult;
+import com.example.demo.pojo.User;
+import com.example.demo.pojo.ValidationResult;
 
 /**
  * Email verification service - specifically handles email verification during user registration
@@ -92,7 +92,7 @@ public class EmailVerificationService {
     }
     
     /**
-     * 发送验证邮件
+     * Send verification email
      */
     public EmailVerificationResult sendVerificationEmail(String email) {
         EmailVerificationResult result = new EmailVerificationResult();
@@ -126,7 +126,7 @@ public class EmailVerificationService {
     }
     
     /**
-     * 只验证邮箱格式（不检查数据库重复）
+     * Validate only email format (do not check database duplicates)
      */
     public EmailVerificationResult validateEmailFormatOnly(String email) {
         EmailVerificationResult result = new EmailVerificationResult();
@@ -157,7 +157,7 @@ public class EmailVerificationService {
     }
     
     /**
-     * 验证邮箱格式
+     * Validate email format
      */
     private ValidationResult validateEmailFormat(String email) {
         if (email == null || email.trim().isEmpty()) {
@@ -184,7 +184,7 @@ public class EmailVerificationService {
     }
     
     /**
-     * 验证邮箱域名
+     * Validate email domain
      */
     private ValidationResult validateEmailDomain(String email) {
         String domain = email.substring(email.indexOf("@") + 1);
@@ -213,7 +213,7 @@ public class EmailVerificationService {
     }
     
     /**
-     * 检查邮箱重复
+     * Check for duplicate email
      */
     private ValidationResult checkEmailDuplicate(String email) {
         try {
@@ -236,7 +236,7 @@ public class EmailVerificationService {
     }
     
     /**
-     * 安全检查
+     * Security checks
      */
     private ValidationResult performSecurityChecks(String email) {
         // Minimal security checks - basic format validation is already done
@@ -249,21 +249,21 @@ public class EmailVerificationService {
     }
     
     /**
-     * 生成验证码
+     * Generate verification code
      */
     private String generateVerificationCode() {
         return String.format("%06d", new Random().nextInt(1000000));
     }
     
     /**
-     * 记录验证成功
+     * Log validation success
      */
     private void logValidationSuccess(String email) {
         System.out.println("Email validation successful for: " + email);
     }
     
     /**
-     * 记录验证失败
+     * Log validation failure
      */
     private void logValidationFailure(String email, String errorCode, String message) {
         System.err.println("Email validation failed for: " + email + " - " + errorCode + ": " + message);

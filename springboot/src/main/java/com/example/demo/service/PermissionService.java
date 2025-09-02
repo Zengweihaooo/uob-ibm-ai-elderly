@@ -1,11 +1,14 @@
 package com.example.demo.service;
 
-import com.example.demo.pojo.PermissionResult;
-import com.example.demo.pojo.RateLimitResult;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.pojo.PermissionResult;
+import com.example.demo.pojo.RateLimitResult;
+
 /**
- * 权限验证服务
+ * Permission Validation Service
+ * 
+ * Provides permission checks for registration and simple rate limiting stubs
  * 
  * @author AI Assistant
  * @version 1.0
@@ -14,42 +17,42 @@ import org.springframework.stereotype.Service;
 public class PermissionService {
     
     /**
-     * 验证注册权限
+     * Validate registration permission
      */
     public PermissionResult validateRegistrationPermission(String authHeader) {
         PermissionResult result = new PermissionResult();
         
         try {
-            // 1. 检查是否已登录
+            // 1. Check if user is logged in
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                // 允许未登录用户注册
+                // Allow registration for unauthenticated users
                 result.setAllowed(true);
-                result.setMessage("允许注册");
+                result.setMessage("Registration allowed");
                 return result;
             }
             
-            // 2. 检查用户角色权限
+            // 2. Check user role permissions
             String token = authHeader.substring(7);
-            // TODO: 实现JWT token验证
-            // 这里应该解析token并检查用户权限
+            // TODO: Implement JWT token validation
+            // Parse the token and check user permissions here
             
             result.setAllowed(true);
-            result.setMessage("权限验证通过");
+            result.setMessage("Permission validation passed");
             return result;
             
         } catch (Exception e) {
             result.setAllowed(false);
-            result.setMessage("权限验证失败: " + e.getMessage());
+            result.setMessage("Permission validation failed: " + e.getMessage());
             return result;
         }
     }
     
     /**
-     * 验证频率限制
+     * Validate rate limiting
      */
     public RateLimitResult checkRateLimit(String authHeader, String action) {
-        // 这里应该实现真正的频率限制逻辑
-        // 暂时返回允许
-        return new RateLimitResult(true, "允许");
+        // Real rate limiting logic should be implemented here
+        // Temporarily allow
+        return new RateLimitResult(true, "Allowed");
     }
 }

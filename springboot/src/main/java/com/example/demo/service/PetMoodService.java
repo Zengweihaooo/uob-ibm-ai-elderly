@@ -1,8 +1,8 @@
 package com.example.demo.service;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,39 +28,39 @@ public class PetMoodService {
     @Autowired
     private PetMoodMapper petMoodMapper;
     
-    // 保留内存缓存作为性能优化
+    // Keep in-memory cache as a performance optimization
     private final Map<Long, PetMood> moodCache = new ConcurrentHashMap<>();
 
     /**
-     * 获取或初始化用户的宠物情绪
-     * @param userId 用户ID
-     * @return PetMood 实例
+     * Get or initialize the user's pet mood
+     * @param userId user ID
+     * @return PetMood instance
      */
     public PetMood getOrInitPetMood(Long userId) {
-        // 先从缓存获取
+        // Try cache first
         PetMood cached = moodCache.get(userId);
         if (cached != null) {
             return cached;
         }
         
-        // 从数据库获取
+        // Fetch from database
         PetMood petMood = petMoodMapper.findByUserId(userId);
         if (petMood == null) {
-            // 创建默认实例
+            // Create default instance
             petMood = new PetMood(userId);
             petMoodMapper.insert(petMood);
         }
         
-        // 放入缓存
+        // Put into cache
         moodCache.put(userId, petMood);
         return petMood;
     }
 
     /**
-     * 调整情绪分数
-     * @param userId 用户ID
-     * @param delta 调整值
-     * @return 调整后的分数
+     * Adjust mood score
+     * @param userId user ID
+     * @param delta adjustment value
+     * @return adjusted score
      */
     public int adjustMood(Long userId, int delta) {
         PetMood petMood = getOrInitPetMood(userId);
@@ -70,19 +70,19 @@ public class PetMoodService {
         petMood.setMoodScore(newScore);
         petMood.setUpdatedAt(LocalDateTime.now());
         
-        // 更新数据库
+        // Update database
         petMoodMapper.update(petMood);
         
-        // 更新缓存
+        // Update cache
         moodCache.put(userId, petMood);
         
         return newScore;
     }
 
     /**
-     * 获取情绪分数
-     * @param userId 用户ID
-     * @return 情绪分数
+     * Get mood score
+     * @param userId user ID
+     * @return mood score
      */
     public int getMood(Long userId) {
         PetMood petMood = getOrInitPetMood(userId);
@@ -90,9 +90,9 @@ public class PetMoodService {
     }
 
     /**
-     * 根据分数获取情绪状态
-     * @param score 情绪分数
-     * @return 情绪状态描述
+     * Get mood state by score
+     * @param score mood score
+     * @return mood state description
      */
     public String moodState(int score) {
         if (score <= -20) return "sad";
@@ -101,34 +101,34 @@ public class PetMoodService {
     }
 
     /**
-     * 更新宠物属性并重新计算情绪
-     * @param userId 用户ID
-     * @param happiness 快乐度
-     * @param health 健康度
-     * @param energy 精力值
-     * @return 更新后的PetMood对象
+     * Update pet attributes and recalculate mood
+     * @param userId user ID
+     * @param happiness happiness level
+     * @param health health level
+     * @param energy energy value
+     * @return updated PetMood object
      */
     public PetMood updatePetAttributes(Long userId, int happiness, int health, int energy) {
         PetMood petMood = getOrInitPetMood(userId);
         
-        // 更新属性
+        // Update attributes
         petMood.setHappiness(Math.max(0, Math.min(100, happiness)));
         petMood.setHealth(Math.max(0, Math.min(100, health)));
         petMood.setEnergy(Math.max(0, Math.min(100, energy)));
         
-        // 重新计算情绪分数
+        // Recalculate mood score
         int avgStats = (petMood.getHappiness() + petMood.getHealth() + petMood.getEnergy()) / 3;
-        int moodScore = (avgStats - 50) * 2; // 将0-100转换为-100到100
+        int moodScore = (avgStats - 50) * 2; // Convert 0-100 to -100 to 100
         petMood.setMoodScore(Math.max(-100, Math.min(100, moodScore)));
         
-        // 更新情绪表情和状态
+        // Update mood emoji and status
         updateMoodDisplay(petMood);
         
-        // 更新时间
+        // Update timestamps
         petMood.setLastInteraction(LocalDateTime.now());
         petMood.setUpdatedAt(LocalDateTime.now());
         
-        // 更新数据库和缓存
+        // Update database and cache
         petMoodMapper.update(petMood);
         moodCache.put(userId, petMood);
         
@@ -136,8 +136,8 @@ public class PetMoodService {
     }
 
     /**
-     * 更新情绪显示（表情和状态描述）
-     * @param petMood 宠物情绪对象
+     * Update mood display (emoji and status description)
+     * @param petMood PetMood object
      */
     private void updateMoodDisplay(PetMood petMood) {
         int score = petMood.getMoodScore();
@@ -165,10 +165,10 @@ public class PetMoodService {
     }
 
     /**
-     * 增加经验值
-     * @param userId 用户ID
-     * @param exp 经验值增量
-     * @return 更新后的经验值
+     * Add experience points
+     * @param userId user ID
+     * @param exp experience increment
+     * @return updated experience value
      */
     public int addExperience(Long userId, int exp) {
         PetMood petMood = getOrInitPetMood(userId);
@@ -178,10 +178,10 @@ public class PetMoodService {
         petMood.setExperience(newExp);
         petMood.setUpdatedAt(LocalDateTime.now());
         
-        // 检查是否升级
+        // Check whether to level up
         checkLevelUp(petMood);
         
-        // 更新数据库和缓存
+        // Update database and cache
         petMoodMapper.update(petMood);
         moodCache.put(userId, petMood);
         
@@ -189,13 +189,13 @@ public class PetMoodService {
     }
 
     /**
-     * 检查是否升级
-     * @param petMood 宠物情绪对象
+     * Check whether to level up
+     * @param petMood PetMood object
      */
     private void checkLevelUp(PetMood petMood) {
         int currentLevel = petMood.getLevel();
         int currentExp = petMood.getExperience();
-        int requiredExp = currentLevel * 100; // 每级需要100经验值
+        int requiredExp = currentLevel * 100; // 100 experience points per level
         
         if (currentExp >= requiredExp) {
             petMood.setLevel(currentLevel + 1);
@@ -204,9 +204,9 @@ public class PetMoodService {
     }
 
     /**
-     * 获取完整的宠物状态
-     * @param userId 用户ID
-     * @return 包含所有宠物信息的Map
+     * Get complete pet status
+     * @param userId user ID
+     * @return Map containing all pet information
      */
     public Map<String, Object> getFullPetStatus(Long userId) {
         PetMood petMood = getOrInitPetMood(userId);
@@ -227,15 +227,15 @@ public class PetMoodService {
     }
 
     /**
-     * 清除缓存（用于测试或维护）
-     * @param userId 用户ID
+     * Clear cache (for testing or maintenance)
+     * @param userId user ID
      */
     public void clearCache(Long userId) {
         moodCache.remove(userId);
     }
 
     /**
-     * 清除所有缓存
+     * Clear all cache
      */
     public void clearAllCache() {
         moodCache.clear();

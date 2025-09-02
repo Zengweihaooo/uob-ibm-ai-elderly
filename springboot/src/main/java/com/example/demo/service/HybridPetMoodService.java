@@ -1,21 +1,22 @@
 package com.example.demo.service;
 
-import com.example.demo.pojo.PetMood;
-import com.example.demo.repository.PetMoodRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.pojo.PetMood;
+import com.example.demo.repository.PetMoodRepository;
+
 /**
- * 混合宠物情绪服务
- * 支持本地SQLite和云端DynamoDB双重存储
- * 实现渐进式数据迁移和同步
+ * Hybrid Pet Mood Service
+ * Supports dual storage with local SQLite and cloud DynamoDB
+ * Enables progressive data migration and synchronization
  * 
  * @author Lepeng Zhou
  * @version 1.0
@@ -38,18 +39,18 @@ public class HybridPetMoodService {
     private PetMoodRepository localRepository;
     
     /**
-     * 获取或初始化用户的宠物情绪
-     * 优先从主数据源获取，支持后台同步
+     * Get or initialize user's pet mood
+     * Prefer fetching from the primary data source, supports background sync
      */
     public PetMood getOrInitPetMood(Long userId) {
         try {
-            // 1. 从主数据源获取
+            // 1. Fetch from the primary data source
             Optional<PetMood> petMoodOpt = primaryRepository.findByUserId(userId);
             
             if (petMoodOpt.isPresent()) {
                 PetMood petMood = petMoodOpt.get();
                 
-                // 2. 后台同步到云端（如果启用）
+                // 2. Background sync to cloud (if enabled)
                 if (cloudRepository != null && cloudRepository != primaryRepository) {
                     CompletableFuture.runAsync(() -> {
                         syncToCloud(userId, petMood);
@@ -59,11 +60,11 @@ public class HybridPetMoodService {
                 return petMood;
             }
             
-            // 3. 创建新的宠物情绪记录
+            // 3. Create a new pet mood record
             PetMood newPetMood = new PetMood(userId);
             PetMood savedPetMood = primaryRepository.save(newPetMood);
             
-            // 4. 同步到云端
+            // 4. Sync to cloud
             if (cloudRepository != null && cloudRepository != primaryRepository) {
                 CompletableFuture.runAsync(() -> {
                     syncToCloud(userId, savedPetMood);
@@ -79,8 +80,8 @@ public class HybridPetMoodService {
     }
     
     /**
-     * 调整情绪分数
-     * 同时更新本地和云端数据
+     * Adjust mood score
+     * Update both local and cloud data
      */
     public int adjustMood(Long userId, int delta) {
         try {
@@ -91,10 +92,10 @@ public class HybridPetMoodService {
             petMood.setMoodScore(newScore);
             petMood.setUpdatedAt(LocalDateTime.now());
             
-            // 更新主数据源
+            // Update primary data source
             PetMood updatedPetMood = primaryRepository.update(petMood);
             
-            // 后台同步到云端
+            // Background sync to cloud
             if (cloudRepository != null && cloudRepository != primaryRepository) {
                 CompletableFuture.runAsync(() -> {
                     syncToCloud(userId, updatedPetMood);
@@ -110,7 +111,7 @@ public class HybridPetMoodService {
     }
     
     /**
-     * 获取情绪分数
+     * Get mood score
      */
     public int getMood(Long userId) {
         PetMood petMood = getOrInitPetMood(userId);
@@ -118,7 +119,7 @@ public class HybridPetMoodService {
     }
     
     /**
-     * 根据分数获取情绪状态
+     * Get mood state by score
      */
     public String moodState(int score) {
         if (score <= -20) return "sad";
@@ -127,33 +128,33 @@ public class HybridPetMoodService {
     }
     
     /**
-     * 更新宠物属性并重新计算情绪
+     * Update pet attributes and recalculate mood
      */
     public PetMood updatePetAttributes(Long userId, int happiness, int health, int energy) {
         try {
             PetMood petMood = getOrInitPetMood(userId);
             
-            // 更新属性
+            // Update attributes
             petMood.setHappiness(Math.max(0, Math.min(100, happiness)));
             petMood.setHealth(Math.max(0, Math.min(100, health)));
             petMood.setEnergy(Math.max(0, Math.min(100, energy)));
             
-            // 重新计算情绪分数
+            // Recalculate mood score
             int avgStats = (petMood.getHappiness() + petMood.getHealth() + petMood.getEnergy()) / 3;
             int moodScore = (avgStats - 50) * 2;
             petMood.setMoodScore(Math.max(-100, Math.min(100, moodScore)));
             
-            // 更新情绪表情和状态
+            // Update mood emoji and status
             updateMoodDisplay(petMood);
             
-            // 更新时间
+            // Update time
             petMood.setLastInteraction(LocalDateTime.now());
             petMood.setUpdatedAt(LocalDateTime.now());
             
-            // 更新主数据源
+            // Update primary data source
             PetMood updatedPetMood = primaryRepository.update(petMood);
             
-            // 后台同步到云端
+            // Background sync to cloud
             if (cloudRepository != null && cloudRepository != primaryRepository) {
                 CompletableFuture.runAsync(() -> {
                     syncToCloud(userId, updatedPetMood);
@@ -169,7 +170,7 @@ public class HybridPetMoodService {
     }
     
     /**
-     * 增加经验值
+     * Add experience points
      */
     public int addExperience(Long userId, int exp) {
         try {
@@ -180,13 +181,13 @@ public class HybridPetMoodService {
             petMood.setExperience(newExp);
             petMood.setUpdatedAt(LocalDateTime.now());
             
-            // 检查是否升级
+            // Check whether level up
             checkLevelUp(petMood);
             
-            // 更新主数据源
+            // Update primary data source
             PetMood updatedPetMood = primaryRepository.update(petMood);
             
-            // 后台同步到云端
+            // Background sync to cloud
             if (cloudRepository != null && cloudRepository != primaryRepository) {
                 CompletableFuture.runAsync(() -> {
                     syncToCloud(userId, updatedPetMood);
@@ -202,7 +203,7 @@ public class HybridPetMoodService {
     }
     
     /**
-     * 数据迁移：从本地迁移到云端
+     * Data migration: migrate from local to cloud
      */
     public void migrateToCloud() {
         if (cloudRepository == null || localRepository == null) {
@@ -238,7 +239,7 @@ public class HybridPetMoodService {
     }
     
     /**
-     * 数据同步：将本地数据同步到云端
+     * Data synchronization: sync local data to cloud
      */
     private void syncToCloud(Long userId, PetMood petMood) {
         if (cloudRepository == null || cloudRepository == primaryRepository) {
@@ -254,7 +255,7 @@ public class HybridPetMoodService {
     }
     
     /**
-     * 更新情绪显示（表情和状态描述）
+     * Update mood display (emoji and status description)
      */
     private void updateMoodDisplay(PetMood petMood) {
         int avgStats = (petMood.getHappiness() + petMood.getHealth() + petMood.getEnergy()) / 3;
@@ -281,7 +282,7 @@ public class HybridPetMoodService {
     }
     
     /**
-     * 检查是否升级
+     * Check whether to level up
      */
     private void checkLevelUp(PetMood petMood) {
         int currentLevel = petMood.getLevel();

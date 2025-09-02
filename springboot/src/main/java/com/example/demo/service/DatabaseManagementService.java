@@ -16,9 +16,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * Database Management Service
- * 数据库管理服务
- * 
- * 提供数据库备份、恢复、状态检查等功能
  * Provides database backup, restore, status check and other functions
  * 
  * @author Weihao Zeng
@@ -34,7 +31,6 @@ public class DatabaseManagementService {
     private String backupPath;
 
     /**
-     * 获取数据库状态信息
      * Get database status information
      */
     public Map<String, Object> getDatabaseStatus() {
@@ -68,7 +64,6 @@ public class DatabaseManagementService {
     }
 
     /**
-     * 创建数据库备份
      * Create database backup
      */
     public String createBackup() throws IOException {
@@ -77,7 +72,7 @@ public class DatabaseManagementService {
             throw new IOException("Database file does not exist: " + databasePath);
         }
 
-        // 确保备份目录存在
+        // Ensure the backup directory exists
         File backupDir = new File(backupPath);
         if (!backupDir.exists()) {
             boolean created = backupDir.mkdirs();
@@ -86,19 +81,18 @@ public class DatabaseManagementService {
             }
         }
 
-        // 生成备份文件名
+        // Generate backup file name
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String backupFileName = "elderly_companion_backup_" + timestamp + ".db";
         Path backupFilePath = Paths.get(backupPath, backupFileName);
 
-        // 复制数据库文件
+        // Copy database file to backup location
         Files.copy(dbFile.toPath(), backupFilePath, StandardCopyOption.REPLACE_EXISTING);
 
         return backupFilePath.toString();
     }
 
     /**
-     * 从备份恢复数据库
      * Restore database from backup
      */
     public boolean restoreFromBackup(String backupFileName) throws IOException {
@@ -110,7 +104,7 @@ public class DatabaseManagementService {
 
         Path dbFilePath = Paths.get(databasePath);
         
-        // 创建当前数据库的备份(如果存在)
+        // Create a backup of the current database (if it exists)
         if (Files.exists(dbFilePath)) {
             String currentBackupName = "before_restore_" + 
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".db";
@@ -118,14 +112,13 @@ public class DatabaseManagementService {
             Files.copy(dbFilePath, currentBackupPath, StandardCopyOption.REPLACE_EXISTING);
         }
 
-        // 从备份恢复
+        // Restore from the specified backup
         Files.copy(backupFilePath, dbFilePath, StandardCopyOption.REPLACE_EXISTING);
         
         return true;
     }
 
     /**
-     * 验证数据库完整性
      * Validate database integrity
      */
     public Map<String, Object> validateDatabaseIntegrity() {
@@ -146,13 +139,13 @@ public class DatabaseManagementService {
                 return result;
             }
 
-            // 基本文件检查通过
+            // Basic file checks passed
             result.put("valid", true);
             result.put("file_size", dbFile.length());
             result.put("last_modified", dbFile.lastModified());
             
-            // TODO: 可以添加更多的数据库内容验证
-            // 例如：检查关键表是否存在，数据是否一致等
+            // TODO: Add more database content validations if needed
+            // For example: check whether key tables exist and data consistency
             
         } catch (Exception e) {
             result.put("valid", false);
@@ -163,7 +156,6 @@ public class DatabaseManagementService {
     }
 
     /**
-     * 清理旧的备份文件
      * Clean up old backup files
      */
     public int cleanupOldBackups(int keepCount) {
@@ -177,7 +169,7 @@ public class DatabaseManagementService {
             return 0;
         }
 
-        // 按修改时间排序，保留最新的文件
+        // Sort by modification time and keep the newest files
         java.util.Arrays.sort(backupFiles, (a, b) -> 
             Long.compare(b.lastModified(), a.lastModified()));
 
@@ -192,7 +184,6 @@ public class DatabaseManagementService {
     }
 
     /**
-     * 获取数据库文件路径
      * Get database file path
      */
     public String getDatabasePath() {
@@ -200,7 +191,6 @@ public class DatabaseManagementService {
     }
 
     /**
-     * 获取备份目录路径
      * Get backup directory path
      */
     public String getBackupPath() {
