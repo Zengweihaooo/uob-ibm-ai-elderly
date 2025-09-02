@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ResourceLoader;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,11 +27,9 @@ public class TwilioConfig {
     @Value("${app.twilio.credentials-file:docs/keys/twilio-config.json}")
     private String twilioCredentialsFile;
     
-    private final ResourceLoader resourceLoader;
     private final ObjectMapper objectMapper;
     
-    public TwilioConfig(ResourceLoader resourceLoader) {
-        this.resourceLoader = resourceLoader;
+    public TwilioConfig() {
         this.objectMapper = new ObjectMapper();
     }
 
@@ -47,10 +44,10 @@ public class TwilioConfig {
         Map<String, String> credentials = new HashMap<>();
         
         try {
-            // Try to load the local credentials file
-            File configFile = new File(twilioCredentialsFile);
+            // 尝试多个可能的路径
+            File configFile = findConfigFile();
             
-            if (configFile.exists()) {
+            if (configFile != null && configFile.exists()) {
                 System.out.println("📱 Loading Twilio credentials from: " + configFile.getAbsolutePath());
                 
                 JsonNode config = objectMapper.readTree(configFile);
@@ -60,30 +57,78 @@ public class TwilioConfig {
                 credentials.put("from_number", config.get("from_number").asText());
                 
                 System.out.println("✅ Twilio credentials loaded successfully");
-                System.out.println("   Account SID: " + config.get("account_sid").asText().substring(0, 10) + "...");
-                System.out.println("   From Number: " + config.get("from_number").asText());
                 
             } else {
-                System.out.println("⚠️  Twilio config file not found: " + configFile.getAbsolutePath());
-                System.out.println("   Using environment variables or default values");
-                
-                // Fallback: use environment variables
-                credentials.put("account_sid", System.getenv("TWILIO_ACCOUNT_SID"));
-                credentials.put("auth_token", System.getenv("TWILIO_AUTH_TOKEN"));
-                credentials.put("from_number", System.getenv("TWILIO_FROM_NUMBER"));
+                System.out.println("⚠️  Twilio config file not found");
+                useEnvironmentVariables(credentials);
             }
             
         } catch (IOException e) {
             System.err.println("❌ Failed to load Twilio credentials: " + e.getMessage());
-            System.out.println("   Falling back to environment variables...");
-            
-            // On error: fallback to environment variables
-            credentials.put("account_sid", System.getenv("TWILIO_ACCOUNT_SID"));
-            credentials.put("auth_token", System.getenv("TWILIO_AUTH_TOKEN"));
-            credentials.put("from_number", System.getenv("TWILIO_FROM_NUMBER"));
+            useEnvironmentVariables(credentials);
         }
         
         return credentials;
+    }
+
+    private File findConfigFile() {
+        System.out.println("🔍 Starting Twilio config file search...");
+        System.out.println("   Current working directory: " + System.getProperty("user.dir"));
+        System.out.println("   Original config path: " + twilioCredentialsFile);
+        
+        // 可能的配置文件路径 - 基于实际项目结构
+        String[] possiblePaths = {
+            twilioCredentialsFile,  // 原始路径
+            "docs/keys/twilio-config.json",
+            "uob-ibm-ai-elderly/docs/keys/twilio-config.json",  // 从当前目录到项目子目录
+            "../uob-ibm-ai-elderly/docs/keys/twilio-config.json",  // 从springboot目录到项目根目录
+            "../../uob-ibm-ai-elderly/docs/keys/twilio-config.json",  // 从springboot子目录到项目根目录
+            "springboot/docs/keys/twilio-config.json",
+            "../springboot/docs/keys/twilio-config.json",
+            System.getProperty("user.dir") + "/docs/keys/twilio-config.json",
+            System.getProperty("user.dir") + "/uob-ibm-ai-elderly/docs/keys/twilio-config.json",
+            System.getProperty("user.dir") + "/springboot/docs/keys/twilio-config.json",
+            System.getProperty("user.dir") + "/../uob-ibm-ai-elderly/docs/keys/twilio-config.json",
+            System.getProperty("user.dir") + "/../../uob-ibm-ai-elderly/docs/keys/twilio-config.json"
+        };
+        
+        for (String path : possiblePaths) {
+            File file = new File(path);
+            System.out.println("   Checking: " + file.getAbsolutePath());
+            
+            if (file.exists()) {
+                System.out.println("   ✅ FOUND! File exists and is readable");
+                System.out.println("   File size: " + file.length() + " bytes");
+                System.out.println("   File last modified: " + new java.util.Date(file.lastModified()));
+                return file;
+            } else {
+                System.out.println("   ❌ Not found");
+            }
+        }
+        
+        System.out.println("🔍 All paths checked - no config file found");
+        return null;
+    }
+
+    private void useEnvironmentVariables(Map<String, String> credentials) {
+        System.out.println("   🔄 Falling back to environment variables...");
+        
+        String accountSid = System.getenv("TWILIO_ACCOUNT_SID");
+        String authToken = System.getenv("TWILIO_AUTH_TOKEN");
+        String fromNumber = System.getenv("TWILIO_FROM_NUMBER");
+        
+        System.out.println("   Environment TWILIO_ACCOUNT_SID: " + (accountSid != null ? accountSid.substring(0, Math.min(10, accountSid.length())) + "..." : "NOT SET"));
+        System.out.println("   Environment TWILIO_AUTH_TOKEN: " + (authToken != null ? authToken.substring(0, Math.min(10, authToken.length())) + "..." : "NOT SET"));
+        System.out.println("   Environment TWILIO_FROM_NUMBER: " + (fromNumber != null ? fromNumber : "NOT SET"));
+        
+        credentials.put("account_sid", accountSid);
+        credentials.put("auth_token", authToken);
+        credentials.put("from_number", fromNumber);
+        
+        if (accountSid == null || authToken == null || fromNumber == null) {
+            System.err.println("   ⚠️  WARNING: Some environment variables are missing!");
+            System.err.println("   ⚠️  SMS functionality may not work properly");
+        }
     }
     
     /**
