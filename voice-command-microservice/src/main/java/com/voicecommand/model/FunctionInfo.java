@@ -11,7 +11,7 @@ public class FunctionInfo {
     private List<String> keywords;
     private String endpoint;
 
-    // 构造函数
+    // Constructor
     public FunctionInfo() {}
 
     public FunctionInfo(String name, String description, Map<String, ParameterInfo> parameters, 
@@ -24,7 +24,7 @@ public class FunctionInfo {
         this.endpoint = endpoint;
     }
 
-    // Getter和Setter方法
+    // Getter and Setter methods
     public String getName() {
         return name;
     }
@@ -73,7 +73,7 @@ public class FunctionInfo {
         this.endpoint = endpoint;
     }
 
-    // 内部类：参数信息
+    // Inner class: Parameter information
     public static class ParameterInfo {
         private String type;
         private boolean required;

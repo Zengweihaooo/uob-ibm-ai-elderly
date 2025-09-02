@@ -30,7 +30,7 @@ public class GoogleCloudConfig {
     private String backupCredentialsFile;
 
     /**
-     * 主AI服务凭证 - 用于Gemini、TTS、STT
+     * Main AI service credentials - for Gemini, TTS, STT
      */
     @Bean
     @Primary
@@ -39,7 +39,7 @@ public class GoogleCloudConfig {
     }
 
     /**
-     * 语音服务凭证
+     * Speech service credentials
      */
     @Bean
     public GoogleCredentials speechCredentials() throws IOException {
@@ -47,7 +47,7 @@ public class GoogleCloudConfig {
     }
 
     /**
-     * TTS服务凭证
+     * TTS service credentials
      */
     @Bean
     public GoogleCredentials ttsCredentials() throws IOException {
@@ -55,7 +55,7 @@ public class GoogleCloudConfig {
     }
 
     /**
-     * 计算引擎凭证 - 用于其他Google Cloud服务
+     * Compute engine credentials - for other Google Cloud services
      */
     @Bean
     public GoogleCredentials computeCredentials() throws IOException {
@@ -63,7 +63,7 @@ public class GoogleCloudConfig {
     }
 
     /**
-     * 备用凭证 - 故障转移使用
+     * Backup credentials - for failover use
      */
     @Bean
     public GoogleCredentials backupCredentials() throws IOException {

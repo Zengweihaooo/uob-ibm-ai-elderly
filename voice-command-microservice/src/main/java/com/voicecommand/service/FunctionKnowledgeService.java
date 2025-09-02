@@ -40,23 +40,23 @@ public class FunctionKnowledgeService {
             this.functionKnowledgeBase = objectMapper.convertValue(functionsData, 
                 new TypeReference<List<FunctionInfo>>() {});
             
-            logger.info("功能知识库加载成功，共加载 {} 个功能", functionKnowledgeBase.size());
+            logger.info("Function knowledge base loaded successfully, loaded {} functions", functionKnowledgeBase.size());
             
         } catch (IOException e) {
-            logger.error("加载功能知识库失败: {}", e.getMessage(), e);
-            this.functionKnowledgeBase = List.of(); // 空列表作为fallback
+            logger.error("Failed to load function knowledge base: {}", e.getMessage(), e);
+            this.functionKnowledgeBase = List.of(); // Empty list as fallback
         }
     }
     
     /**
-     * 获取所有功能信息
+     * Get all function information
      */
     public List<FunctionInfo> getAllFunctions() {
         return functionKnowledgeBase;
     }
     
     /**
-     * 根据功能名称获取功能信息
+     * Get function information by function name
      */
     public Optional<FunctionInfo> getFunctionByName(String functionName) {
         return functionKnowledgeBase.stream()
@@ -65,7 +65,7 @@ public class FunctionKnowledgeService {
     }
     
     /**
-     * 根据关键词搜索功能
+     * Search functions by keywords
      */
     public List<FunctionInfo> searchFunctionsByKeyword(String keyword) {
         return functionKnowledgeBase.stream()
@@ -75,19 +75,19 @@ public class FunctionKnowledgeService {
     }
     
     /**
-     * 获取功能知识库的JSON字符串表示
+     * Get JSON string representation of function knowledge base
      */
     public String getKnowledgeBaseAsJson() {
         try {
             return objectMapper.writeValueAsString(functionKnowledgeBase);
         } catch (Exception e) {
-            logger.error("序列化功能知识库失败: {}", e.getMessage(), e);
+            logger.error("Failed to serialize function knowledge base: {}", e.getMessage(), e);
             return "[]";
         }
     }
     
     /**
-     * 检查知识库是否已加载
+     * Check if knowledge base is loaded
      */
     public boolean isKnowledgeBaseLoaded() {
         return functionKnowledgeBase != null && !functionKnowledgeBase.isEmpty();

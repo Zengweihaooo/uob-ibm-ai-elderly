@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- * 日程管理服务
- * 用于调用主后端的日程管理API
+ * Schedule Management Service
+ * Used to call the main backend's schedule management API
  */
 @Service
 @Slf4j
@@ -20,41 +20,41 @@ public class ScheduleManagementService {
     @Autowired
     private RestTemplate restTemplate;
     
-    // 主后端服务的日程管理端点
+    // Main backend service's schedule management endpoint
     private static final String SCHEDULE_ADD_URL = "http://localhost:8080/api/schedule/activity";
     
     /**
-     * 添加日程安排
+     * Add schedule arrangement
      * 
-     * @param scheduleData 日程数据
-     * @param userId 用户ID
-     * @return 添加结果
+     * @param scheduleData Schedule data
+     * @param userId User ID
+     * @return Add result
      */
     public ScheduleResponse addSchedule(Map<String, Object> scheduleData, String userId) {
         if (scheduleData == null || scheduleData.isEmpty()) {
-            log.warn("日程数据为空，无法添加");
+            log.warn("Schedule data is empty, cannot add");
             return ScheduleResponse.builder()
                 .success(false)
-                .errorMessage("日程数据为空")
+                .errorMessage("Schedule data is empty")
                 .build();
         }
         
-        log.info("开始添加日程: scheduleData={}, userId={}", scheduleData, userId);
+        log.info("Starting to add schedule: scheduleData={}, userId={}", scheduleData, userId);
         
         try {
-            // 构建请求头（模拟认证）
+            // Build request headers (simulate authentication)
             String authToken = "user-token-" + userId + "-" + System.currentTimeMillis();
             
-            // 创建请求头
+            // Create request headers
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
             headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + authToken);
             
-            // 创建请求实体
+            // Create request entity
             org.springframework.http.HttpEntity<Map<String, Object>> requestEntity = 
                 new org.springframework.http.HttpEntity<>(scheduleData, headers);
             
-            // 调用主后端服务添加日程
+            // Call main backend service to add schedule
             ResponseEntity<Map> response = restTemplate.postForEntity(
                 SCHEDULE_ADD_URL, 
                 requestEntity, 
@@ -65,7 +65,7 @@ public class ScheduleManagementService {
                 Map<String, Object> responseBody = response.getBody();
                 
                 if (Boolean.TRUE.equals(responseBody.get("success"))) {
-                    log.info("日程添加成功: {}", responseBody.get("message"));
+                    log.info("Schedule added successfully: {}", responseBody.get("message"));
                     
                     return ScheduleResponse.builder()
                         .success(true)
@@ -74,7 +74,7 @@ public class ScheduleManagementService {
                             String.valueOf(((Map) responseBody.get("activity")).get("id")) : null)
                         .build();
                 } else {
-                    log.warn("日程添加失败: {}", responseBody.get("message"));
+                    log.warn("Schedule addition failed: {}", responseBody.get("message"));
                     
                     return ScheduleResponse.builder()
                         .success(false)
@@ -84,18 +84,18 @@ public class ScheduleManagementService {
             }
             
         } catch (Exception e) {
-            log.error("添加日程时发生错误", e);
+            log.error("Error occurred while adding schedule", e);
         }
         
-        log.info("日程添加失败");
+        log.info("Schedule addition failed");
         return ScheduleResponse.builder()
             .success(false)
-            .errorMessage("添加日程失败")
+            .errorMessage("Failed to add schedule")
             .build();
     }
     
     /**
-     * 日程响应类
+     * Schedule response class
      */
     public static class ScheduleResponse {
         private boolean success;

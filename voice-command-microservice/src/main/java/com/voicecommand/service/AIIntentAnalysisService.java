@@ -476,7 +476,7 @@ public class AIIntentAnalysisService {
         
         // If not found, return default subject
         log.info("No explicit subject found, using default subject");
-        return "Message from AI Assistant";
+        return "Message from Pet Companion AI";
     }
     
     // Remove email and irrelevant keywords from content

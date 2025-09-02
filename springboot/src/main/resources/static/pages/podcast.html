@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -467,11 +467,11 @@
     </div>
 
     <script>
-        // Listen Notes API 配置
+        // Listen Notes API configuration
         const LISTEN_NOTES_API_KEY = 'a3432f0d55d940e3bbe3d18f7acdeea6';
         const LISTEN_NOTES_BASE_URL = 'https://listen-api.listennotes.com/api/v2';
         
-        // 播客数据存储
+        // Podcast data storage
         let podcasts = [];
         let currentPodcast = null;
         let currentEpisode = null;
@@ -482,14 +482,14 @@
         let isLoading = false;
         let audioPlayer = null;
 
-        // 初始化页面
+        // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             initializeAudioPlayer();
-            loadPodcasts(); // 从API加载播客数据
+            loadPodcasts(); // Load podcasts from API
         });
 
-        // 从Listen Notes API加载播客数据
+        // Load podcasts from Listen Notes API
         async function loadPodcasts() {
             if (isLoading) return;
             
@@ -505,7 +505,7 @@
                     'technology': 'technology'
                 };
                 
-                // 备用搜索词，如果主要搜索词返回结果不足
+                // Backup search terms if primary returns too few results
                 const backupSearchTerms = {
                     'health': 'medical',
                     'exercise': 'exercise',
@@ -527,7 +527,7 @@
                 
                 let data = await response.json();
                 
-                // 如果结果不足9个，尝试备用搜索词
+                // If fewer than 9 results, try backup search terms
                 if (data.results.length < 9) {
                     console.log(`Primary search returned ${data.results.length} results, trying backup search`);
                     const backupSearchTerm = backupSearchTerms[currentCategory] || backupSearchTerms['health'];
@@ -543,7 +543,7 @@
                     }
                 }
                 
-                // 转换API数据为应用格式
+                // Convert API data to app format
                 podcasts = data.results.map(podcast => ({
                     id: podcast.id,
                     title: podcast.title_original,
@@ -563,7 +563,7 @@
                     currentPodcast = podcasts[0];
                     console.log('Setting initial podcast:', currentPodcast.title);
                     await loadPodcastEpisodes(currentPodcast.id);
-                    // 确保界面更新
+                    // Ensure UI updates
                     updateCurrentEpisode();
                 }
                 
@@ -578,7 +578,7 @@
             }
         }
         
-        // 渲染播客列表
+        // Render podcast list
         function renderPodcasts() {
             const grid = document.getElementById('podcastGrid');
             const filteredPodcasts = podcasts.filter(podcast => podcast.category === currentCategory);
@@ -607,17 +607,17 @@
         }
 
         function setupEventListeners() {
-            // 分类筛选
+            // Category filter
             document.querySelectorAll('.category-tag').forEach(tag => {
                 tag.addEventListener('click', function() {
                     document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
                     currentCategory = this.dataset.category;
-                    loadPodcasts(); // 重新加载对应分类的播客
+                    loadPodcasts(); // Reload podcasts for selected category
                 });
             });
 
-            // 搜索功能
+            // Search feature
             document.getElementById('searchInput').addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase();
                 const cards = document.querySelectorAll('.podcast-card');
@@ -634,10 +634,10 @@
                 });
             });
 
-            // 播放按钮
+            // Play button
             document.getElementById('playBtn').addEventListener('click', togglePlay);
 
-            // 进度条
+            // Progress bar
             document.getElementById('progressBar').addEventListener('click', function(e) {
                 const rect = this.getBoundingClientRect();
                 const clickX = e.clientX - rect.left;
@@ -652,7 +652,7 @@
                 updateProgress();
             });
 
-            // 音量控制
+            // Volume control
             document.getElementById('volumeSlider').addEventListener('click', function(e) {
                 const rect = this.getBoundingClientRect();
                 const clickX = e.clientX - rect.left;
@@ -667,11 +667,11 @@
             });
         }
 
-        // 初始化音频播放器
+        // Initialize audio player
         function initializeAudioPlayer() {
             audioPlayer = new Audio();
             
-            // 音频播放器事件监听
+            // Audio player event listeners
             audioPlayer.addEventListener('loadedmetadata', function() {
                 totalTime = audioPlayer.duration;
                 updateProgress();
@@ -697,7 +697,7 @@
             });
         }
         
-        // 加载播客剧集
+        // Load podcast episodes
         async function loadPodcastEpisodes(podcastId) {
             try {
                 const response = await fetch(`${LISTEN_NOTES_BASE_URL}/podcasts/${podcastId}`, {
@@ -713,7 +713,7 @@
                 const data = await response.json();
                 
                 if (data.episodes && data.episodes.length > 0) {
-                    // 选择最新的一集
+                    // Select the latest episode
                     currentEpisode = data.episodes[0];
                     console.log('Loaded episode:', currentEpisode.title);
                     updateCurrentEpisode();
@@ -725,7 +725,7 @@
             } catch (error) {
                 console.error('Error loading episodes:', error);
                 currentEpisode = null;
-                // 如果无法加载剧集，使用默认信息
+                // If episodes fail to load, use default info
                 updateCurrentEpisode();
             }
         }
@@ -736,24 +736,24 @@
                 console.log('Playing podcast:', podcast.title);
                 currentPodcast = podcast;
                 
-                // 立即更新界面显示选中的播客
+                // Immediately update UI with selected podcast
                 updateCurrentEpisode();
                 
                 loadPodcastEpisodes(podcast.id).then(() => {
-                    // 剧集加载完成后再次更新界面
+                    // Update UI again after episodes load
                     updateCurrentEpisode();
-                    // 如果有剧集，尝试播放
+                    // If there is an episode, attempt playback
                     if (currentEpisode) {
                         console.log('Episode loaded, attempting to play:', currentEpisode.title);
                         togglePlay();
                     } else {
-                        // 如果没有剧集，显示提示信息
+                        // If no episode, show message
                         console.log('No episodes available for this podcast');
                         alert('No episodes available for this podcast. Please try another podcast.');
                     }
                 }).catch(error => {
                     console.error('Error loading podcast episodes:', error);
-                    // 即使加载剧集失败，也更新界面显示播客信息
+                    // Update UI even if episode load fails
                     updateCurrentEpisode();
                     alert('Failed to load podcast episodes. Please try again.');
                 });
@@ -763,14 +763,14 @@
             }
         }
         
-        // 工具函数：去除HTML标签
+        // Utility: strip HTML tags
         function stripHtmlTags(html) {
             const tmp = document.createElement('div');
             tmp.innerHTML = html;
             return tmp.textContent || tmp.innerText || '';
         }
         
-        // 工具函数：格式化时长
+        // Utility: format duration
         function formatDuration(seconds) {
             if (!seconds) return 'Unknown';
             const minutes = Math.floor(seconds / 60);
@@ -778,7 +778,7 @@
             return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
         
-        // 工具函数：格式化日期
+        // Utility: format date
         function formatDate(timestamp) {
             if (!timestamp) return 'Unknown';
             const date = new Date(timestamp);
@@ -789,7 +789,7 @@
             });
         }
         
-        // 工具函数：确定播客分类
+        // Utility: determine podcast category
         function determineCategory(title, description) {
             const text = (title + ' ' + description).toLowerCase();
             
@@ -806,7 +806,7 @@
             }
         }
         
-        // 显示加载状态
+        // Show loading state
         function showLoadingState() {
             const grid = document.getElementById('podcastGrid');
             grid.innerHTML = `
@@ -817,12 +817,12 @@
             `;
         }
         
-        // 隐藏加载状态
+        // Hide loading state
         function hideLoadingState() {
-            // 加载状态会在renderPodcasts中自动清除
+            // Loading state will be cleared in renderPodcasts
         }
         
-        // 显示错误状态
+        // Show error state
         function showErrorState(message) {
             const grid = document.getElementById('podcastGrid');
             grid.innerHTML = `
@@ -839,17 +839,17 @@
             
             console.log('updateCurrentEpisode - currentPodcast:', currentPodcast.title, 'currentEpisode:', currentEpisode?.title);
             
-            // 更新播客信息
+            // Update podcast info
             document.getElementById('currentTitle').textContent = currentPodcast.title;
             document.getElementById('currentDescription').textContent = currentPodcast.description;
             document.getElementById('currentCover').src = currentPodcast.image;
             
-            // 如果有剧集信息，更新剧集详情
+            // If episode exists, update episode details
             if (currentEpisode) {
                 document.getElementById('currentTitle').textContent = currentEpisode.title;
                 document.getElementById('currentDescription').textContent = stripHtmlTags(currentEpisode.description);
                 
-                // 设置音频源
+                // Set audio source
                 if (audioPlayer && currentEpisode.audio) {
                     console.log('Setting audio source:', currentEpisode.audio);
                     audioPlayer.src = currentEpisode.audio;
@@ -861,14 +861,14 @@
                 }
             } else {
                 console.log('No episode data, using podcast default info');
-                // 使用播客默认信息
+                // Use podcast default info
                 const durationParts = currentPodcast.duration.split(':');
                 if (durationParts.length === 2) {
                     const minutes = parseInt(durationParts[0]);
                     const seconds = parseInt(durationParts[1]);
                     totalTime = minutes * 60 + seconds;
                 } else {
-                    totalTime = 1800; // 默认30分钟
+                    totalTime = 1800; // Default 30 minutes
                 }
             }
             
@@ -892,21 +892,21 @@
             const playBtn = document.getElementById('playBtn');
             
             if (isPlaying) {
-                // 暂停播放
+                // Pause playback
                 console.log('Pausing audio');
                 audioPlayer.pause();
                 isPlaying = false;
                 playBtn.innerHTML = '▶️';
                 playBtn.classList.remove('playing');
             } else {
-                // 如果没有剧集但有播客，尝试播放
+                // If no episode but podcast exists, attempt playback
                 if (!currentEpisode) {
                     console.log('No episode available for playback');
                     alert('This podcast episode is not available for playback. Please try another podcast.');
                     return;
                 }
                 
-                // 开始播放
+                // Start playback
                 console.log('Starting playback of episode:', currentEpisode.title);
                 audioPlayer.play().then(() => {
                     console.log('Audio playback started successfully');
