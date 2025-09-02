@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * 用户上下文工具类
- * 用于从Authorization header中提取用户ID
+ * User Context Utility Class
+ * Used to extract user ID from Authorization header
  * 
  * @author Weihao Zeng
  * @version 1.0
@@ -17,47 +17,47 @@ public class UserContextUtil {
     private JwtUtil jwtUtil;
     
     /**
-     * 从Authorization header中提取用户ID
+     * Extract user ID from Authorization header
      * 
      * @param authHeader Authorization header
-     * @return 用户ID，如果无效则返回null
+     * @return User ID, returns null if invalid
      */
     public Long getUserIdFromAuthHeader(String authHeader) {
-        // 检查header是否为空
+        // Check if header is null or empty
         if (authHeader == null || authHeader.trim().isEmpty()) {
             System.err.println("DEBUG: Authorization header is null or empty");
             return null;
         }
         
-        // 检查header格式
+        // Check header format
         if (!authHeader.startsWith("Bearer ")) {
             System.err.println("DEBUG: Authorization header doesn't start with 'Bearer '");
             return null;
         }
         
         try {
-            String token = authHeader.substring(7).trim(); // 移除"Bearer "前缀并去除空格
+            String token = authHeader.substring(7).trim(); // Remove "Bearer " prefix and trim spaces
             
-            // 检查token是否为空
+            // Check if token is null or empty
             if (token == null || token.trim().isEmpty() || "null".equalsIgnoreCase(token)) {
                 System.err.println("DEBUG: JWT token is null, empty, or 'null' string");
                 return null;
             }
             
-            // 验证token格式（JWT应该包含两个点）
+            // Validate token format (JWT should contain two dots)
             if (!isValidJwtFormat(token)) {
                 System.err.println("DEBUG: JWT token format is invalid: " + token);
                 return null;
             }
             
-            // 只处理JWT token
+            // Only process JWT tokens
             if (jwtUtil.isValidToken(token)) {
                 return jwtUtil.getUserIdFromToken(token);
             } else {
                 System.err.println("DEBUG: JWT token validation failed");
             }
         } catch (Exception e) {
-            // 记录日志但不抛出异常
+            // Log error but don't throw exception
             System.err.println("DEBUG: Error extracting user ID from token: " + e.getMessage());
             e.printStackTrace();
         }
@@ -66,31 +66,31 @@ public class UserContextUtil {
     }
     
     /**
-     * 从Authorization header中提取用户邮箱
+     * Extract user email from Authorization header
      * 
      * @param authHeader Authorization header
-     * @return 用户邮箱，如果无效则返回null
+     * @return User email, returns null if invalid
      */
     public String getEmailFromAuthHeader(String authHeader) {
-        // 检查header是否为空
+        // Check if header is null or empty
         if (authHeader == null || authHeader.trim().isEmpty()) {
             return null;
         }
         
-        // 检查header格式
+        // Check header format
         if (!authHeader.startsWith("Bearer ")) {
             return null;
         }
         
         try {
-            String token = authHeader.substring(7).trim(); // 移除"Bearer "前缀并去除空格
+            String token = authHeader.substring(7).trim(); // Remove "Bearer " prefix and trim spaces
             
-            // 检查token是否为空
+            // Check if token is null or empty
             if (token == null || token.trim().isEmpty() || "null".equalsIgnoreCase(token)) {
                 return null;
             }
             
-            // 验证token格式
+            // Validate token format
             if (!isValidJwtFormat(token)) {
                 return null;
             }
@@ -99,7 +99,7 @@ public class UserContextUtil {
                 return jwtUtil.getEmailFromToken(token);
             }
         } catch (Exception e) {
-            // 记录日志但不抛出异常
+            // Log error but don't throw exception
             System.err.println("DEBUG: Error extracting email from token: " + e.getMessage());
         }
         
@@ -107,18 +107,18 @@ public class UserContextUtil {
     }
     
     /**
-     * 验证Authorization header是否有效
+     * Validate if Authorization header is valid
      * 
      * @param authHeader Authorization header
-     * @return 是否有效
+     * @return Whether valid
      */
     public boolean isValidAuthHeader(String authHeader) {
-        // 检查header是否为空
+        // Check if header is null or empty
         if (authHeader == null || authHeader.trim().isEmpty()) {
             return false;
         }
         
-        // 检查header格式
+        // Check header format
         if (!authHeader.startsWith("Bearer ")) {
             return false;
         }
@@ -126,17 +126,17 @@ public class UserContextUtil {
         try {
             String token = authHeader.substring(7).trim();
             
-            // 检查token是否为空
+            // Check if token is null or empty
             if (token == null || token.trim().isEmpty() || "null".equalsIgnoreCase(token)) {
                 return false;
             }
             
-            // 验证token格式
+            // Validate token format
             if (!isValidJwtFormat(token)) {
                 return false;
             }
             
-            // 只验证JWT token
+            // Only validate JWT token
             return jwtUtil.isValidToken(token);
         } catch (Exception e) {
             return false;
@@ -144,29 +144,29 @@ public class UserContextUtil {
     }
     
     /**
-     * 验证JWT token格式是否有效
-     * JWT token应该包含两个点分隔符
+     * Validate if JWT token format is valid
+     * JWT token should contain two dot separators
      * 
-     * @param token JWT token字符串
-     * @return 格式是否有效
+     * @param token JWT token string
+     * @return Whether format is valid
      */
     private boolean isValidJwtFormat(String token) {
         if (token == null || token.trim().isEmpty()) {
             return false;
         }
         
-        // 计算点的数量
+        // Count the number of dots
         long dotCount = token.chars().filter(ch -> ch == '.').count();
         
-        // JWS (JWT Signature) 应该包含2个点
-        // JWE (JWT Encryption) 应该包含4个点
-        // 我们主要处理JWS，所以检查2个点
+        // JWS (JWT Signature) should contain 2 dots
+        // JWE (JWT Encryption) should contain 4 dots
+        // We mainly handle JWS, so check for 2 dots
         if (dotCount != 2) {
             System.err.println("DEBUG: JWT format invalid - expected 2 dots, found " + dotCount);
             return false;
         }
         
-        // 检查token长度（JWT通常至少50个字符）
+        // Check token length (JWT typically at least 50 characters)
         if (token.length() < 50) {
             System.err.println("DEBUG: JWT token too short: " + token.length() + " characters");
             return false;

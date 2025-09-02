@@ -15,8 +15,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
 /**
- * JWT工具类
- * 用于生成和解析JWT token，实现用户身份验证
+ * JWT Utility Class
+ * Used for generating and parsing JWT tokens, implementing user authentication
  * 
  * @author Weihao Zeng
  * @version 1.0
@@ -27,7 +27,7 @@ public class JwtUtil {
     @Value("${jwt.secret:defaultSecretKeyForDevelopmentOnly}")
     private String secret;
 
-    @Value("${jwt.expiration:86400000}") // 默认24小时
+    @Value("${jwt.expiration:86400000}") // Default 24 hours
     private long expiration;
 
     private SecretKey getSigningKey() {
@@ -35,11 +35,11 @@ public class JwtUtil {
     }
 
     /**
-     * 生成JWT token
+     * Generate JWT token
      * 
-     * @param userId 用户ID
-     * @param email 用户邮箱
-     * @return JWT token字符串
+     * @param userId User ID
+     * @param email User email
+     * @return JWT token string
      */
     public String generateToken(Long userId, String email) {
         Map<String, Object> claims = new HashMap<>();
@@ -49,7 +49,7 @@ public class JwtUtil {
     }
 
     /**
-     * 创建JWT token
+     * Create JWT token
      */
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
@@ -62,10 +62,10 @@ public class JwtUtil {
     }
 
     /**
-     * 从token中提取用户ID
+     * Extract user ID from token
      * 
      * @param token JWT token
-     * @return 用户ID
+     * @return User ID
      */
     public Long getUserIdFromToken(String token) {
         Claims claims = getAllClaimsFromToken(token);
@@ -76,27 +76,27 @@ public class JwtUtil {
     }
 
     /**
-     * 从token中提取邮箱
+     * Extract email from token
      * 
      * @param token JWT token
-     * @return 用户邮箱
+     * @return User email
      */
     public String getEmailFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
     /**
-     * 从token中提取过期时间
+     * Extract expiration date from token
      * 
      * @param token JWT token
-     * @return 过期时间
+     * @return Expiration date
      */
     public Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
     }
 
     /**
-     * 从token中提取指定claim
+     * Extract specified claim from token
      */
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = getAllClaimsFromToken(token);
@@ -107,21 +107,21 @@ public class JwtUtil {
     }
 
     /**
-     * 从token中提取所有claims
+     * Extract all claims from token
      */
     private Claims getAllClaimsFromToken(String token) {
         try {
-            // 使用JJWT 0.12.x的正确API
+            // Use correct API for JJWT 0.12.x
             return Jwts.parser()
                     .verifyWith(getSigningKey())
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (Exception e) {
-            // 如果JWT解析失败，返回null
+            // If JWT parsing fails, return null
             System.err.println("JWT parsing error: " + e.getMessage());
             
-            // 添加更详细的错误信息
+            // Add more detailed error information
             if (e.getMessage().contains("Invalid compact JWT string")) {
                 System.err.println("DEBUG: JWT format is invalid - token structure is malformed");
             } else if (e.getMessage().contains("JWT signature does not match")) {
@@ -139,25 +139,25 @@ public class JwtUtil {
     }
 
     /**
-     * 检查token是否过期
+     * Check if token is expired
      * 
      * @param token JWT token
-     * @return 是否过期
+     * @return Whether expired
      */
     public Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
         if (expiration == null) {
-            return true; // 如果无法获取过期时间，认为已过期
+            return true; // If unable to get expiration time, consider it expired
         }
         return expiration.before(new Date());
     }
 
     /**
-     * 验证token是否有效
+     * Validate if token is valid
      * 
      * @param token JWT token
-     * @param email 用户邮箱
-     * @return 是否有效
+     * @param email User email
+     * @return Whether valid
      */
     public Boolean validateToken(String token, String email) {
         final String tokenEmail = getEmailFromToken(token);
@@ -165,52 +165,52 @@ public class JwtUtil {
     }
 
     /**
-     * 验证token格式和有效性
+     * Validate token format and validity
      * 
      * @param token JWT token
-     * @return 是否有效
+     * @return Whether valid
      */
     public Boolean isValidToken(String token) {
         try {
-            // 检查token是否为空
+            // Check if token is null or empty
             if (token == null || token.trim().isEmpty()) {
                 System.err.println("DEBUG: JWT token is null or empty");
                 return false;
             }
             
-            // 检查token是否为"null"字符串
+            // Check if token is "null" string
             if ("null".equalsIgnoreCase(token.trim())) {
                 System.err.println("DEBUG: JWT token is 'null' string");
                 return false;
             }
             
-            // 检查token长度（JWT通常至少50个字符）
+            // Check token length (JWT typically at least 50 characters)
             if (token.length() < 50) {
                 System.err.println("DEBUG: JWT token too short: " + token.length() + " characters");
                 return false;
             }
             
-            // 检查token格式（应该包含两个点）
+            // Check token format (should contain two dots)
             long dotCount = token.chars().filter(ch -> ch == '.').count();
             if (dotCount != 2) {
                 System.err.println("DEBUG: JWT format invalid - expected 2 dots, found " + dotCount);
                 return false;
             }
             
-            // 尝试解析token
+            // Try to parse token
             Claims claims = getAllClaimsFromToken(token);
             if (claims == null) {
                 System.err.println("DEBUG: Failed to parse JWT claims");
                 return false;
             }
             
-            // 检查是否包含必要的claims
+            // Check if necessary claims are included
             if (claims.get("userId") == null) {
                 System.err.println("DEBUG: JWT token missing userId claim");
                 return false;
             }
             
-            // 检查token是否过期
+            // Check if token is expired
             if (isTokenExpired(token)) {
                 System.err.println("DEBUG: JWT token is expired");
                 return false;
