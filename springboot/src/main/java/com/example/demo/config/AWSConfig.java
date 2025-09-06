@@ -15,6 +15,13 @@ import software.amazon.awssdk.services.ses.SesClient;
 import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 
+// AWS SDK v1 imports for backward compatibility
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+
 /**
  * AWS services configuration class.
  * Configures clients for various AWS services.
@@ -141,6 +148,20 @@ public class AWSConfig {
         }
 
         return builder.build();
+    }
+
+    /**
+     * AWS SDK v1 SNS client configuration for backward compatibility.
+     * This is needed for SNSService which uses AWS SDK v1.
+     */
+    @Bean
+    public AmazonSNS amazonSNS() {
+        BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+        
+        return AmazonSNSClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+                .withRegion(Regions.fromName(region))
+                .build();
     }
 }
 

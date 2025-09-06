@@ -1,0 +1,25 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ses:GetAccountSendingEnabled",
+                "ses:GetSendQuota",
+                "ses:GetSendRate",
+                "ses:SendEmail",
+                "ses:SendRawEmail",
+                "ses:GetIdentityVerificationAttributes",
+                "ses:GetIdentityDkimAttributes",
+                "ses:GetIdentityMailFromDomainAttributes",
+                "ses:GetIdentityNotificationAttributes",
+                "ses:GetIdentityPolicies",
+                "ses:GetIdentityPolicy",
+                "ses:ListIdentities",
+                "ses:ListIdentityPolicies",
+                "ses:ListVerifiedEmailAddresses"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
