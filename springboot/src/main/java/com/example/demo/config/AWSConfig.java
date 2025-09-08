@@ -1,12 +1,15 @@
 package com.example.demo.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -14,6 +17,14 @@ import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.ses.SesClient;
 import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
+
+// AWS SDK v1 imports for backward compatibility
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 
 /**
  * AWS services configuration class.
@@ -23,14 +34,14 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
  * Version: 1.0
  */
 @Configuration
-@Profile("aws") // Only loaded when the 'aws' profile is active
+@ConditionalOnProperty(name = "app.cloud.enabled", havingValue = "true", matchIfMissing = false)
 public class AWSConfig {
 
-    @Value("${aws.access-key-id}")
-    private String accessKeyId;
+    // @Value("${aws.access-key-id}")
+    // private String accessKeyId;
 
-    @Value("${aws.secret-access-key}")
-    private String secretAccessKey;
+    // @Value("${aws.secret-access-key}")
+    // private String secretAccessKey;
 
     @Value("${aws.region:us-east-1}")
     private String region;
@@ -41,10 +52,14 @@ public class AWSConfig {
     /**
      * Create AWS credentials provider.
      */
+    // @Bean
+    // public StaticCredentialsProvider awsCredentialsProvider() {
+    //     AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
+    //     return StaticCredentialsProvider.create(awsCredentials);
+    // }
     @Bean
-    public StaticCredentialsProvider awsCredentialsProvider() {
-        AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
-        return StaticCredentialsProvider.create(awsCredentials);
+    public AwsCredentialsProvider awsCredentialsProvider() {
+        return DefaultCredentialsProvider.create();
     }
 
     /**
@@ -141,6 +156,18 @@ public class AWSConfig {
         }
 
         return builder.build();
+    }
+
+    /**
+     * AWS SDK v1 SNS client configuration for backward compatibility.
+     * This is needed for SNSService which uses AWS SDK v1.
+     */
+    @Bean
+    public AmazonSNS amazonSNS() {
+        return AmazonSNSClientBuilder.standard()
+                .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
+                .withRegion(Regions.fromName(region))
+                .build();
     }
 }
 
