@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.service.CloudWatchService;
+import com.example.demo.service.DynamoDBHealthRecordService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +23,9 @@ public class CloudWatchController {
     
     @Autowired
     private CloudWatchService cloudWatchService;
+    
+    @Autowired
+    private DynamoDBHealthRecordService healthRecordService;
     
     /**
      * Send custom metric
@@ -60,9 +64,16 @@ public class CloudWatchController {
         Map<String, Object> response = new HashMap<>();
         
         try {
+            // Send to CloudWatch
             cloudWatchService.recordHealthMetric(type, isAbnormal);
+            
+            // Save to DynamoDB
+            String value = isAbnormal ? "Abnormal" : "Normal";
+            String notes = "Health metric recorded via CloudWatch API";
+            healthRecordService.saveHealthRecord(type, value, notes, isAbnormal);
+            
             response.put("success", true);
-            response.put("message", "Health metric recorded");
+            response.put("message", "Health metric recorded to CloudWatch and DynamoDB");
             response.put("type", type);
             response.put("abnormal", isAbnormal);
             

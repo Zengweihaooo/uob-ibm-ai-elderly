@@ -5,6 +5,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
+import software.amazon.awssdk.services.cloudwatch.model.Dimension;
+import software.amazon.awssdk.services.cloudwatch.model.MetricDatum;
+import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
+import software.amazon.awssdk.services.cloudwatch.model.StandardUnit;
+
 import java.time.Instant;
 import java.util.logging.Logger;
 
@@ -13,13 +19,16 @@ import java.util.logging.Logger;
  * Handles metrics collection and monitoring for the elderly companion application
  * 
  * @author Lepeng Zhou
- * @version 1.0
+ * @version 2.0
  */
 @Service
 @Profile("aws")
 public class CloudWatchService {
     
     private static final Logger logger = Logger.getLogger(CloudWatchService.class.getName());
+    
+    @Autowired
+    private CloudWatchClient cloudWatchClient;
     
     @Value("${aws.region:us-east-1}")
     private String region;
@@ -31,13 +40,27 @@ public class CloudWatchService {
      */
     public void putMetric(String metricName, double value, String unit) {
         try {
-            // Simplified implementation for demo purposes
-            logger.info("CloudWatch Metric: " + metricName + " = " + value + " " + unit);
-            logger.info("Namespace: " + NAMESPACE);
-            logger.info("Region: " + region);
+            logger.info("Sending CloudWatch Metric: " + metricName + " = " + value + " " + unit);
+            
+            MetricDatum datum = MetricDatum.builder()
+                .metricName(metricName)
+                .value(value)
+                .unit(StandardUnit.fromValue(unit))
+                .timestamp(Instant.now())
+                .build();
+            
+            PutMetricDataRequest request = PutMetricDataRequest.builder()
+                .namespace(NAMESPACE)
+                .metricData(datum)
+                .build();
+            
+            cloudWatchClient.putMetricData(request);
+            logger.info("Successfully sent metric to CloudWatch: " + metricName);
             
         } catch (Exception e) {
             logger.severe("Failed to send metric to CloudWatch: " + e.getMessage());
+            // Fallback to logging for demo purposes
+            logger.info("CloudWatch Metric (fallback): " + metricName + " = " + value + " " + unit);
         }
     }
     
