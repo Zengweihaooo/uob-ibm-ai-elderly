@@ -427,6 +427,15 @@
         .step.completed::after {
             background: var(--success-green);
         }
+
+        /* Registration step styles */
+        .register-step {
+            display: none !important;
+        }
+
+        .register-step.active {
+            display: block !important;
+        }
     </style>
 </head>
 <body>
@@ -542,7 +551,7 @@
                 </div>
 
                 <!-- Step 2: Verification Code -->
-                <div id="register-step-2" class="register-step" style="display: none;">
+                <div id="register-step-2" class="register-step">
                     <div class="verification-section">
                         <h3 style="text-align: center; margin-bottom: 1rem;">Verify Your Email</h3>
                         <p style="text-align: center; margin-bottom: 1rem; color: var(--text-secondary);">
@@ -568,7 +577,7 @@
                 </div>
 
                 <!-- Step 3: Complete Registration -->
-                <div id="register-step-3" class="register-step" style="display: none;">
+                <div id="register-step-3" class="register-step">
                     <form id="completeForm">
                         <div class="form-group">
                             <label for="userName">Full Name</label>
@@ -617,6 +626,8 @@
         });
 
         function switchTab(tabName) {
+            console.log(`Switching to tab: ${tabName}, current step: ${currentStep}`);
+            
             // Update tab states
             authTabs.forEach(tab => {
                 tab.classList.toggle('active', tab.dataset.tab === tabName);
@@ -630,9 +641,12 @@
             // Clear messages
             clearMessage();
 
-            // Reset registration steps
-            if (tabName === 'register') {
+            // Reset registration steps only if not already in progress
+            if (tabName === 'register' && currentStep === 1) {
+                console.log('Resetting registration steps');
                 resetRegistrationSteps();
+            } else if (tabName === 'register') {
+                console.log(`Not resetting registration steps - already at step ${currentStep}`);
             }
         }
 
@@ -708,17 +722,43 @@
 
         // Show registration step
         function showRegistrationStep(step) {
-            // Hide all steps
+            console.log(`Switching to registration step ${step} (current: ${currentStep})`);
+            
+            // 防止意外的步骤重置
+            if (step < currentStep && step === 1) {
+                console.warn(`Preventing backwards step reset from ${currentStep} to ${step}`);
+                return;
+            }
+            
+            // Hide all steps by removing active class
             document.querySelectorAll('.register-step').forEach(stepEl => {
-                stepEl.style.display = 'none';
+                stepEl.classList.remove('active');
+                console.log(`Removed active class from ${stepEl.id}`);
             });
 
-            // Show current step
-            document.getElementById(`register-step-${step}`).style.display = 'block';
-            
-            // Update step indicator
-            updateStepIndicator(step);
-            currentStep = step;
+            // Show current step by adding active class
+            const targetStep = document.getElementById(`register-step-${step}`);
+            if (targetStep) {
+                targetStep.classList.add('active');
+                console.log(`Added active class to register-step-${step}`);
+                
+                // Update step indicator
+                updateStepIndicator(step);
+                currentStep = step;
+                console.log(`Successfully switched to step ${step}`);
+                
+                // 添加延迟验证步骤是否真的切换了
+                setTimeout(() => {
+                    const isStillActive = targetStep.classList.contains('active');
+                    console.log(`Step ${step} still active after 500ms: ${isStillActive}`);
+                    if (!isStillActive) {
+                        console.error(`Step ${step} was reset! Attempting to restore...`);
+                        targetStep.classList.add('active');
+                    }
+                }, 500);
+            } else {
+                console.error(`Could not find element register-step-${step}`);
+            }
         }
 
         // Reset registration steps
@@ -791,12 +831,16 @@
 
         // Email registration handler
         document.getElementById('emailForm').addEventListener('submit', async (e) => {
+            console.log('Email form submitted');
             e.preventDefault();
-            e.stopPropagation(); // Prevent event bubbling
+            e.stopPropagation();
+            
             const emailBtn = document.getElementById('emailBtn');
             
             const formData = new FormData(e.target);
             const email = formData.get('email');
+            
+            console.log(`Submitting email registration for: ${email}`);
             
             // Validate email format
             if (!email || !email.includes('@')) {
@@ -805,11 +849,13 @@
             }
             
             currentEmail = email;
+            console.log(`Current step before API call: ${currentStep}`);
 
             setButtonLoading(emailBtn, true);
             clearMessage();
 
             try {
+                console.log('Making API request to register user');
                 const response = await fetch('http://localhost:8080/user/api/register', {
                     method: 'POST',
                     headers: {
@@ -818,18 +864,33 @@
                     body: `email=${encodeURIComponent(email)}`
                 });
 
-                const result = await response.json();
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
 
-                if (result.success) {
+                let result;
+                try {
+                    result = await response.json();
+                    console.log('API response:', result);
+                } catch (jsonError) {
+                    console.error('JSON parsing error:', jsonError);
+                    const responseText = await response.text();
+                    console.log('Raw response:', responseText);
+                    throw new Error('Invalid JSON response from server');
+                }
+
+                if (result && result.success) {
+                    console.log('Registration successful, switching to step 2');
                     showMessage('Verification code sent to your email!', 'success');
                     document.getElementById('verification-email').textContent = email;
                     showRegistrationStep(2);
                 } else {
-                    showMessage(result.message || 'Registration failed. Please try again.', 'error');
+                    showMessage((result && result.message) || 'Registration failed. Please try again.', 'error');
                 }
             } catch (error) {
                 console.error('Registration error:', error);
-                showMessage('Network error. Please try again later.', 'error');
+                showMessage(`Network error: ${error.message}. Please try again later.`, 'error');
             } finally {
                 setButtonLoading(emailBtn, false);
             }
@@ -1168,9 +1229,24 @@
         // Add debug info
         console.log('Register page loaded successfully');
         
+        // 全局错误处理器
+        window.addEventListener('error', (e) => {
+            console.error('Global error caught:', e.error);
+            console.error('Error message:', e.message);
+            console.error('Error filename:', e.filename);
+            console.error('Error line:', e.lineno);
+            console.error('Error column:', e.colno);
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Unhandled promise rejection:', e.reason);
+            console.error('Promise:', e.promise);
+        });
+        
         // Listen beforeunload for debug
         window.addEventListener('beforeunload', (e) => {
             console.log('Page is about to unload');
+            console.log('Current step when unloading:', currentStep);
         });
         
         // Listen visibility change
