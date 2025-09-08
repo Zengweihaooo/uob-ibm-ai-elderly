@@ -38,13 +38,11 @@ public class FamilyService {
     // Debug flag
     private static final boolean DEBUG_ENABLED = true;
     
-    // 手机号验证正则表达式
-    private static final String PHONE_VALIDATION_PATTERN = "^\\+?[1-9]\\d{1,14}$";
-    private static final String CHINA_MOBILE_REGEX = "^(\\+86)?1[3-9]\\d{9}$";
+    // 手机号验证正则表达式 - 统一使用国际标准
+    private static final String INTERNATIONAL_PHONE_PATTERN = "^\\+[1-9]\\d{1,14}$";
     private static final String EMAIL_VALIDATION_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
     
-    private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_VALIDATION_PATTERN);
-    private static final Pattern CHINA_MOBILE_PATTERN = Pattern.compile(CHINA_MOBILE_REGEX);
+    private static final Pattern PHONE_PATTERN = Pattern.compile(INTERNATIONAL_PHONE_PATTERN);
     private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_VALIDATION_REGEX);
 
     /**
@@ -688,25 +686,17 @@ public class FamilyService {
             return phoneNumber;
         }
         
-        // Remove non-digit characters
-        String digits = phoneNumber.replaceAll("[^0-9+]", "");
+        // Remove spaces, dashes and keep only digits and +
+        String cleaned = phoneNumber.trim().replaceAll("[\\s-]", "");
         
-        // If Mainland China mobile without country code, add +86
-        if (digits.matches("^1[3-9]\\d{9}$")) {
-            return "+86" + digits;
+        // If already in international format with +, return as is
+        if (cleaned.startsWith("+")) {
+            return cleaned;
         }
         
-        // If US number without country code, add +1
-        if (digits.matches("^[2-9]\\d{9}$")) {
-            return "+1" + digits;
-        }
-        
-        // If missing +, add +1 as default (US)
-        if (!digits.startsWith("+")) {
-            return "+1" + digits;
-        }
-        
-        return digits;
+        // If no country code, require user to provide it in international format
+        // This ensures we don't make assumptions about country codes
+        return "+" + cleaned;
     }
 
     /** Build message content */
@@ -852,83 +842,20 @@ public class FamilyService {
             return "手机号只能包含数字、空格、连字符和加号";
         }
         
-        // 检查是否是中国手机号
-        if (CHINA_MOBILE_PATTERN.matcher(cleanPhone).matches()) {
-            return getChinaMobileValidationError(cleanPhone);
+        // 必须以+开头的国际格式
+        if (!cleanPhone.startsWith("+")) {
+            return "手机号必须使用国际格式，以+开头（如：+8613800138000、+1234567890）";
         }
         
-        // 检查是否是国际格式手机号
+        // 检查是否符合国际格式
         if (PHONE_PATTERN.matcher(cleanPhone).matches()) {
             return getInternationalPhoneValidationError(cleanPhone);
         }
         
-        return "手机号格式不正确，请使用有效的手机号码（如：13800138000 或 +8613800138000）";
+        return "手机号格式不正确，请使用国际格式（如：+8613800138000、+1234567890）";
     }
     
-    /**
-     * 验证手机号格式
-     * 
-     * @param phone 手机号
-     * @return 是否有效
-     */
-    private boolean isValidPhoneNumber(String phone) {
-        return getPhoneValidationError(phone) == null;
-    }
     
-    /**
-     * 获取中国手机号验证错误信息
-     * 
-     * @param phone 已清理的手机号
-     * @return 错误信息，如果有效则返回null
-     */
-    private String getChinaMobileValidationError(String phone) {
-        // 移除国家代码进行检查
-        String mobileNumber = phone.startsWith("+86") ? phone.substring(3) : phone;
-        
-        // 检查是否为简单重复数字（如：11111111111）
-        if (isRepeatingDigits(mobileNumber)) {
-            return "手机号不能是重复的相同数字（如：11111111111）";
-        }
-        
-        // 检查是否为连续数字（如：12345678901）
-        if (isConsecutiveDigits(mobileNumber)) {
-            return "手机号不能是连续数字（如：12345678901）";
-        }
-        
-        // 检查中国手机号段的合理性
-        if (mobileNumber.length() == 11) {
-            String prefix = mobileNumber.substring(0, 3);
-            // 常见的中国手机号段
-            String[] validPrefixes = {
-                "130", "131", "132", "133", "134", "135", "136", "137", "138", "139", // 中国联通/移动
-                "145", "147", "148", "149", // 中国移动
-                "150", "151", "152", "153", "155", "156", "157", "158", "159", // 中国移动/联通
-                "162", "165", "166", "167", // 中国联通
-                "170", "171", "172", "173", "174", "175", "176", "177", "178", "179", // 虚拟运营商/电信
-                "180", "181", "182", "183", "184", "185", "186", "187", "188", "189", // 中国电信/移动/联通
-                "190", "191", "192", "193", "195", "196", "197", "198", "199" // 新号段
-            };
-            
-            for (String validPrefix : validPrefixes) {
-                if (prefix.equals(validPrefix)) {
-                    return null; // 有效
-                }
-            }
-            return "手机号段 " + prefix + " 不是有效的中国手机号段";
-        }
-        
-        return null; // 其他长度的中国号码暂时通过
-    }
-    
-    /**
-     * 验证中国手机号的合理性
-     * 
-     * @param phone 已清理的手机号
-     * @return 是否有效
-     */
-    private boolean isValidChinaMobile(String phone) {
-        return getChinaMobileValidationError(phone) == null;
-    }
     
     /**
      * 获取国际手机号验证错误信息
@@ -940,36 +867,31 @@ public class FamilyService {
         // 移除+号进行检查
         String number = phone.startsWith("+") ? phone.substring(1) : phone;
         
-        // 检查是否为简单重复数字
-        if (isRepeatingDigits(number)) {
-            return "国际手机号不能是重复的相同数字";
-        }
-        
-        // 检查是否为连续数字
-        if (isConsecutiveDigits(number)) {
-            return "国际手机号不能是连续数字";
-        }
-        
-        // 长度检查：国际手机号通常在7-15位之间
+        // 长度检查：国际手机号通常在7-15位之间（根据ITU-T E.164标准）
         if (number.length() < 7) {
-            return "国际手机号长度不能少于7位";
+            return "手机号长度不能少于7位数字";
         }
         
         if (number.length() > 15) {
-            return "国际手机号长度不能超过15位";
+            return "手机号长度不能超过15位数字";
+        }
+        
+        // 检查是否全为数字
+        if (!number.matches("^\\d+$")) {
+            return "手机号只能包含数字";
+        }
+        
+        // 检查是否为简单重复数字（如：+86111111111111）
+        if (isRepeatingDigits(number)) {
+            return "手机号不能是重复的相同数字";
+        }
+        
+        // 检查是否为连续数字（如：+8612345678901）
+        if (isConsecutiveDigits(number)) {
+            return "手机号不能是连续数字";
         }
         
         return null; // 有效
-    }
-    
-    /**
-     * 验证国际手机号的合理性
-     * 
-     * @param phone 已清理的手机号
-     * @return 是否有效
-     */
-    private boolean isValidInternationalPhone(String phone) {
-        return getInternationalPhoneValidationError(phone) == null;
     }
     
     /**
