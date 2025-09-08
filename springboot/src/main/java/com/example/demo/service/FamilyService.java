@@ -90,11 +90,12 @@ public class FamilyService {
         
         // 验证手机号格式（如果提供了手机号）
         if (phone != null && !phone.trim().isEmpty()) {
-            if (!isValidPhoneNumber(phone)) {
+            String validationError = getPhoneValidationError(phone);
+            if (validationError != null) {
                 if (DEBUG_ENABLED) {
-                    System.err.println("DEBUG: Validation failed - invalid phone number format: " + phone);
+                    System.err.println("DEBUG: Validation failed - " + validationError + ": " + phone);
                 }
-                throw new IllegalArgumentException("Invalid phone number format. Please use a valid phone number (e.g., +8613800138000 or 13800138000)");
+                throw new IllegalArgumentException(validationError);
             }
         }
         
@@ -286,11 +287,12 @@ public class FamilyService {
         if (contactData.containsKey("phone")) {
             String newPhone = (String) contactData.get("phone");
             if (newPhone != null && !newPhone.trim().isEmpty()) {
-                if (!isValidPhoneNumber(newPhone)) {
+                String validationError = getPhoneValidationError(newPhone);
+                if (validationError != null) {
                     if (DEBUG_ENABLED) {
-                        System.err.println("DEBUG: Phone validation failed - invalid format: " + newPhone);
+                        System.err.println("DEBUG: Phone validation failed - " + validationError + ": " + newPhone);
                     }
-                    throw new IllegalArgumentException("Invalid phone number format. Please use a valid phone number (e.g., +8613800138000 or 13800138000)");
+                    throw new IllegalArgumentException(validationError);
                 }
                 contact.setPhone(formatPhoneNumber(newPhone.trim()));
             } else {
@@ -833,29 +835,196 @@ public class FamilyService {
     }
     
     /**
+     * 获取手机号验证错误信息
+     * 
+     * @param phone 手机号
+     * @return 错误信息，如果有效则返回null
+     */
+    private String getPhoneValidationError(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return "手机号不能为空";
+        }
+        
+        String cleanPhone = phone.trim().replaceAll("\\s+|-", "");
+        
+        // 基本格式检查
+        if (!cleanPhone.matches("^\\+?[0-9]+$")) {
+            return "手机号只能包含数字、空格、连字符和加号";
+        }
+        
+        // 检查是否是中国手机号
+        if (CHINA_MOBILE_PATTERN.matcher(cleanPhone).matches()) {
+            return getChinaMobileValidationError(cleanPhone);
+        }
+        
+        // 检查是否是国际格式手机号
+        if (PHONE_PATTERN.matcher(cleanPhone).matches()) {
+            return getInternationalPhoneValidationError(cleanPhone);
+        }
+        
+        return "手机号格式不正确，请使用有效的手机号码（如：13800138000 或 +8613800138000）";
+    }
+    
+    /**
      * 验证手机号格式
      * 
      * @param phone 手机号
      * @return 是否有效
      */
     private boolean isValidPhoneNumber(String phone) {
-        if (phone == null || phone.trim().isEmpty()) {
+        return getPhoneValidationError(phone) == null;
+    }
+    
+    /**
+     * 获取中国手机号验证错误信息
+     * 
+     * @param phone 已清理的手机号
+     * @return 错误信息，如果有效则返回null
+     */
+    private String getChinaMobileValidationError(String phone) {
+        // 移除国家代码进行检查
+        String mobileNumber = phone.startsWith("+86") ? phone.substring(3) : phone;
+        
+        // 检查是否为简单重复数字（如：11111111111）
+        if (isRepeatingDigits(mobileNumber)) {
+            return "手机号不能是重复的相同数字（如：11111111111）";
+        }
+        
+        // 检查是否为连续数字（如：12345678901）
+        if (isConsecutiveDigits(mobileNumber)) {
+            return "手机号不能是连续数字（如：12345678901）";
+        }
+        
+        // 检查中国手机号段的合理性
+        if (mobileNumber.length() == 11) {
+            String prefix = mobileNumber.substring(0, 3);
+            // 常见的中国手机号段
+            String[] validPrefixes = {
+                "130", "131", "132", "133", "134", "135", "136", "137", "138", "139", // 中国联通/移动
+                "145", "147", "148", "149", // 中国移动
+                "150", "151", "152", "153", "155", "156", "157", "158", "159", // 中国移动/联通
+                "162", "165", "166", "167", // 中国联通
+                "170", "171", "172", "173", "174", "175", "176", "177", "178", "179", // 虚拟运营商/电信
+                "180", "181", "182", "183", "184", "185", "186", "187", "188", "189", // 中国电信/移动/联通
+                "190", "191", "192", "193", "195", "196", "197", "198", "199" // 新号段
+            };
+            
+            for (String validPrefix : validPrefixes) {
+                if (prefix.equals(validPrefix)) {
+                    return null; // 有效
+                }
+            }
+            return "手机号段 " + prefix + " 不是有效的中国手机号段";
+        }
+        
+        return null; // 其他长度的中国号码暂时通过
+    }
+    
+    /**
+     * 验证中国手机号的合理性
+     * 
+     * @param phone 已清理的手机号
+     * @return 是否有效
+     */
+    private boolean isValidChinaMobile(String phone) {
+        return getChinaMobileValidationError(phone) == null;
+    }
+    
+    /**
+     * 获取国际手机号验证错误信息
+     * 
+     * @param phone 已清理的手机号
+     * @return 错误信息，如果有效则返回null
+     */
+    private String getInternationalPhoneValidationError(String phone) {
+        // 移除+号进行检查
+        String number = phone.startsWith("+") ? phone.substring(1) : phone;
+        
+        // 检查是否为简单重复数字
+        if (isRepeatingDigits(number)) {
+            return "国际手机号不能是重复的相同数字";
+        }
+        
+        // 检查是否为连续数字
+        if (isConsecutiveDigits(number)) {
+            return "国际手机号不能是连续数字";
+        }
+        
+        // 长度检查：国际手机号通常在7-15位之间
+        if (number.length() < 7) {
+            return "国际手机号长度不能少于7位";
+        }
+        
+        if (number.length() > 15) {
+            return "国际手机号长度不能超过15位";
+        }
+        
+        return null; // 有效
+    }
+    
+    /**
+     * 验证国际手机号的合理性
+     * 
+     * @param phone 已清理的手机号
+     * @return 是否有效
+     */
+    private boolean isValidInternationalPhone(String phone) {
+        return getInternationalPhoneValidationError(phone) == null;
+    }
+    
+    /**
+     * 检查是否为重复数字（如：111111, 888888）
+     * 
+     * @param number 数字字符串
+     * @return 是否为重复数字
+     */
+    private boolean isRepeatingDigits(String number) {
+        if (number == null || number.length() < 6) {
             return false;
         }
         
-        String cleanPhone = phone.trim().replaceAll("\\s+", "");
-        
-        // 检查是否是中国手机号
-        if (CHINA_MOBILE_PATTERN.matcher(cleanPhone).matches()) {
-            return true;
+        // 检查是否所有数字都相同
+        char firstDigit = number.charAt(0);
+        for (int i = 1; i < number.length(); i++) {
+            if (number.charAt(i) != firstDigit) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * 检查是否为连续数字（如：123456789, 987654321）
+     * 
+     * @param number 数字字符串
+     * @return 是否为连续数字
+     */
+    private boolean isConsecutiveDigits(String number) {
+        if (number == null || number.length() < 6) {
+            return false;
         }
         
-        // 检查是否是国际格式手机号
-        if (PHONE_PATTERN.matcher(cleanPhone).matches()) {
-            return true;
+        // 检查是否为连续递增数字
+        boolean isIncreasing = true;
+        boolean isDecreasing = true;
+        
+        for (int i = 1; i < number.length(); i++) {
+            int current = Character.getNumericValue(number.charAt(i));
+            int previous = Character.getNumericValue(number.charAt(i - 1));
+            
+            if (current != previous + 1) {
+                isIncreasing = false;
+            }
+            if (current != previous - 1) {
+                isDecreasing = false;
+            }
+            
+            if (!isIncreasing && !isDecreasing) {
+                break;
+            }
         }
         
-        return false;
+        return isIncreasing || isDecreasing;
     }
     
     /**
