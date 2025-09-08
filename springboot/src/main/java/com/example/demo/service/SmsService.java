@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,9 +54,6 @@ public class SmsService {
     private String twilioFromNumber;
     
     // Validation and rate/length limits
-    @Value("${app.sms.phone.validation.pattern:^\\+[1-9]\\d{1,14}$}")
-    private String phoneValidationPattern;
-    
     @Value("${app.sms.max.message.length:160}")
     private int maxMessageLength;
     
@@ -70,9 +66,6 @@ public class SmsService {
     // In-memory SMS logs (demo purpose; DB recommended in production)
     private final List<Map<String, Object>> smsLogs = new ArrayList<>();
     private long smsIdCounter = 1;
-    
-    // Phone number validation pattern
-    private Pattern phonePattern;
     
     /**
      * Send SMS
@@ -187,9 +180,9 @@ public class SmsService {
             return createErrorResponse(errorMsg);
         }
         
-        // Validate phone number format
-        if (!isValidPhoneNumber(phoneNumber)) {
-            String errorMsg = "Invalid phone number format: " + phoneNumber + ", use E.164 format (e.g., +1234567890)";
+        // Basic phone number format check for Twilio (E.164 format required)
+        if (!phoneNumber.startsWith("+") || phoneNumber.length() < 10 || phoneNumber.length() > 16) {
+            String errorMsg = "Invalid phone number format for SMS: " + phoneNumber + ", must be E.164 format (e.g., +1234567890)";
             System.err.println("❌ " + errorMsg);
             return createErrorResponse(errorMsg);
         }
@@ -256,22 +249,6 @@ public class SmsService {
     
 
     
-    /** Initialize phone number pattern */
-    private void initPhonePattern() {
-        if (phonePattern == null) {
-            phonePattern = Pattern.compile(phoneValidationPattern);
-        }
-    }
-    
-    /** Validate phone number format */
-    private boolean isValidPhoneNumber(String phoneNumber) {
-        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
-            return false;
-        }
-        
-        initPhonePattern();
-        return phonePattern.matcher(phoneNumber.trim()).matches();
-    }
     
     /** Check if phone number is a test number */
     private boolean isTestPhoneNumber(String phoneNumber) {

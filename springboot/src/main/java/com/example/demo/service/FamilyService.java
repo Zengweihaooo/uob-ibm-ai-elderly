@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,15 @@ public class FamilyService {
 
     // Debug flag
     private static final boolean DEBUG_ENABLED = true;
+    
+    // 手机号验证正则表达式
+    private static final String PHONE_VALIDATION_PATTERN = "^\\+?[1-9]\\d{1,14}$";
+    private static final String CHINA_MOBILE_REGEX = "^(\\+86)?1[3-9]\\d{9}$";
+    private static final String EMAIL_VALIDATION_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+    
+    private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_VALIDATION_PATTERN);
+    private static final Pattern CHINA_MOBILE_PATTERN = Pattern.compile(CHINA_MOBILE_REGEX);
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_VALIDATION_REGEX);
 
     /**
      * Add a new family contact
@@ -77,12 +87,32 @@ public class FamilyService {
             }
             throw new IllegalArgumentException("Either phone number or email is required");
         }
+        
+        // 验证手机号格式（如果提供了手机号）
+        if (phone != null && !phone.trim().isEmpty()) {
+            if (!isValidPhoneNumber(phone)) {
+                if (DEBUG_ENABLED) {
+                    System.err.println("DEBUG: Validation failed - invalid phone number format: " + phone);
+                }
+                throw new IllegalArgumentException("Invalid phone number format. Please use a valid phone number (e.g., +8613800138000 or 13800138000)");
+            }
+        }
+        
+        // 验证邮箱格式（如果提供了邮箱）
+        if (email != null && !email.trim().isEmpty()) {
+            if (!isValidEmail(email)) {
+                if (DEBUG_ENABLED) {
+                    System.err.println("DEBUG: Validation failed - invalid email format: " + email);
+                }
+                throw new IllegalArgumentException("Invalid email format. Please provide a valid email address");
+            }
+        }
 
         // Create new contact
         FamilyContact contact = new FamilyContact();
         contact.setUserId(userId);
         contact.setName(name.trim());
-        contact.setPhone(phone != null ? phone.trim() : null);
+        contact.setPhone(phone != null ? formatPhoneNumber(phone.trim()) : null);
         contact.setEmail(email != null ? email.trim() : null);
         contact.setRelationship(relationship != null ? relationship.trim() : "other");
         contact.setIsEmergencyContact(isEmergencyContact != null ? isEmergencyContact : false);
@@ -255,17 +285,37 @@ public class FamilyService {
 
         if (contactData.containsKey("phone")) {
             String newPhone = (String) contactData.get("phone");
-            contact.setPhone(newPhone);
+            if (newPhone != null && !newPhone.trim().isEmpty()) {
+                if (!isValidPhoneNumber(newPhone)) {
+                    if (DEBUG_ENABLED) {
+                        System.err.println("DEBUG: Phone validation failed - invalid format: " + newPhone);
+                    }
+                    throw new IllegalArgumentException("Invalid phone number format. Please use a valid phone number (e.g., +8613800138000 or 13800138000)");
+                }
+                contact.setPhone(formatPhoneNumber(newPhone.trim()));
+            } else {
+                contact.setPhone(null);
+            }
             if (DEBUG_ENABLED) {
-                System.out.println("DEBUG: Update phone to: " + newPhone);
+                System.out.println("DEBUG: Update phone to: " + contact.getPhone());
             }
         }
 
         if (contactData.containsKey("email")) {
             String newEmail = (String) contactData.get("email");
-            contact.setEmail(newEmail);
+            if (newEmail != null && !newEmail.trim().isEmpty()) {
+                if (!isValidEmail(newEmail)) {
+                    if (DEBUG_ENABLED) {
+                        System.err.println("DEBUG: Email validation failed - invalid format: " + newEmail);
+                    }
+                    throw new IllegalArgumentException("Invalid email format. Please provide a valid email address");
+                }
+                contact.setEmail(newEmail.trim());
+            } else {
+                contact.setEmail(null);
+            }
             if (DEBUG_ENABLED) {
-                System.out.println("DEBUG: Update email to: " + newEmail);
+                System.out.println("DEBUG: Update email to: " + contact.getEmail());
             }
         }
 
@@ -781,4 +831,45 @@ public class FamilyService {
             return testResult;
         }
     }
+    
+    /**
+     * 验证手机号格式
+     * 
+     * @param phone 手机号
+     * @return 是否有效
+     */
+    private boolean isValidPhoneNumber(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return false;
+        }
+        
+        String cleanPhone = phone.trim().replaceAll("\\s+", "");
+        
+        // 检查是否是中国手机号
+        if (CHINA_MOBILE_PATTERN.matcher(cleanPhone).matches()) {
+            return true;
+        }
+        
+        // 检查是否是国际格式手机号
+        if (PHONE_PATTERN.matcher(cleanPhone).matches()) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * 验证邮箱格式
+     * 
+     * @param email 邮箱地址
+     * @return 是否有效
+     */
+    private boolean isValidEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        
+        return EMAIL_PATTERN.matcher(email.trim()).matches();
+    }
+    
 }
