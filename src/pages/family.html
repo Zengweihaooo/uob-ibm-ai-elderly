@@ -932,8 +932,33 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="contactPhone">Phone Number <span style="color: #dc3545;">*</span></label>
-                    <input type="tel" id="contactPhone" class="form-input" placeholder="Enter phone number">
+                    <label class="form-label">Phone Number <span style="color: #dc3545;">*</span></label>
+                    <div class="phone-input-container" style="display: flex; gap: 8px; align-items: center;">
+                        <select id="countryCode" class="form-select" style="flex: 0 0 120px;">
+                            <option value="+86">🇨🇳 +86</option>
+                            <option value="+1">🇺🇸 +1</option>
+                            <option value="+44">🇬🇧 +44</option>
+                            <option value="+81">🇯🇵 +81</option>
+                            <option value="+82">🇰🇷 +82</option>
+                            <option value="+65">🇸🇬 +65</option>
+                            <option value="+852">🇭🇰 +852</option>
+                            <option value="+886">🇹🇼 +886</option>
+                            <option value="+33">🇫🇷 +33</option>
+                            <option value="+49">🇩🇪 +49</option>
+                            <option value="+39">🇮🇹 +39</option>
+                            <option value="+34">🇪🇸 +34</option>
+                            <option value="+7">🇷🇺 +7</option>
+                            <option value="+91">🇮🇳 +91</option>
+                            <option value="+61">🇦🇺 +61</option>
+                            <option value="+64">🇳🇿 +64</option>
+                            <option value="+55">🇧🇷 +55</option>
+                        </select>
+                        <input type="tel" id="contactPhone" class="form-input" 
+                               style="flex: 1;" 
+                               placeholder="Enter phone number (without country code)" 
+                               oninput="validatePhoneInput()">
+                    </div>
+                    <div id="phoneError" class="error-message" style="display: none; color: #dc3545; font-size: 0.875rem; margin-top: 4px;"></div>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="contactEmail">Email Address <span style="color: #dc3545;">*</span></label>
@@ -1802,6 +1827,14 @@
             currentEditingContactId = null;
             document.getElementById('modalTitle').textContent = 'Add New Contact';
             document.getElementById('contactForm').reset();
+            
+            // Reset phone fields to default
+            document.getElementById('countryCode').value = '+86';
+            document.getElementById('contactPhone').value = '';
+            
+            // Clear phone error
+            hidePhoneError();
+            
             document.getElementById('modalMessageContainer').innerHTML = ''; // Clear previous messages
             resetModalPosition('contactModal');
             document.getElementById('contactModal').style.display = 'block';
@@ -1831,11 +1864,17 @@
                         // Fill form with contact data
                         document.getElementById('contactName').value = contact.name || '';
                         document.getElementById('contactRelationship').value = contact.relationship || '';
-                        document.getElementById('contactPhone').value = contact.phone || '';
+                        
+                        // Handle phone number separation
+                        displayPhoneForEdit(contact.phone);
+                        
                         document.getElementById('contactEmail').value = contact.email || '';
                         document.getElementById('notificationPreference').value = contact.notificationPreference || 'ALL';
                         document.getElementById('isEmergencyContact').checked = contact.isEmergencyContact || false;
                         document.getElementById('contactNotes').value = contact.address || '';
+                        
+                        // Clear any previous phone errors
+                        hidePhoneError();
                         
                         document.getElementById('modalTitle').textContent = 'Edit Contact';
                         document.getElementById('modalMessageContainer').innerHTML = ''; // Clear previous messages
@@ -1906,8 +1945,12 @@
             e.preventDefault();
 
             const name = document.getElementById('contactName').value.trim();
-            const phone = document.getElementById('contactPhone').value.trim();
+            const countryCode = document.getElementById('countryCode').value;
+            const phoneNumber = document.getElementById('contactPhone').value.trim();
             const email = document.getElementById('contactEmail').value.trim();
+            
+            // Combine country code and phone number
+            const fullPhone = phoneNumber ? (countryCode + phoneNumber) : '';
             
             // Name validation
             if (!name) {
@@ -1916,25 +1959,27 @@
             }
             
             // Phone or email required
-            if (!phone && !email) {
+            if (!fullPhone && !email) {
                 showModalMessage('Please provide at least a phone number or an email address.', 'error');
                 return;
             }
+            
             // Email format validation
             if (email && !/^\S+@\S+\.\S+$/.test(email)) {
                 showModalMessage('Please enter a valid email address.', 'error');
                 return;
             }
-            // Phone number format validation (simple, 6-20 digits, can include +, -, space)
-            if (phone && !/^([+]?\d[-\d\s]{5,19})$/.test(phone)) {
-                showModalMessage('Please enter a valid phone number.', 'error');
+            
+            // Basic phone number validation (if provided)
+            if (phoneNumber && (phoneNumber.length < 6 || phoneNumber.length > 15 || !/^\d+$/.test(phoneNumber))) {
+                showModalMessage('Please enter a valid phone number (6-15 digits).', 'error');
                 return;
             }
 
             const formData = {
-                name: document.getElementById('contactName').value,
+                name: name,
                 relationship: document.getElementById('contactRelationship').value,
-                phone: phone,
+                phone: fullPhone,
                 email: email,
                 notificationPreference: document.getElementById('notificationPreference').value,
                 isEmergencyContact: document.getElementById('isEmergencyContact').checked,
@@ -1957,32 +2002,38 @@
                     body: JSON.stringify(formData)
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        const action = currentEditingContactId ? 'updated' : 'added';
-                        const actionKey = currentEditingContactId ? 'contact_updated' : 'contact_added';
-                        const contactId = currentEditingContactId || data.contact?.id;
-                        
-                        showMessage(`Contact ${action} successfully.`, 'success');
-                        
-                        // Add to contact history
-                        if (contactId) {
-                            addContactHistory(contactId, actionKey, {
-                                type: actionKey,
-                                timestamp: new Date().toISOString(),
-                                details: `Contact ${action}: ${formData.name}`
-                            });
-                        }
-                        
-                        closeContactModal();
-                        loadFamilyContacts();
-                        loadStatistics();
-                    } else {
-                        showMessage('Failed to save contact: ' + data.message, 'error');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    const action = currentEditingContactId ? 'updated' : 'added';
+                    const actionKey = currentEditingContactId ? 'contact_updated' : 'contact_added';
+                    const contactId = currentEditingContactId || data.contact?.id;
+                    
+                    showMessage(`Contact ${action} successfully.`, 'success');
+                    
+                    // Add to contact history
+                    if (contactId) {
+                        addContactHistory(contactId, actionKey, {
+                            type: actionKey,
+                            timestamp: new Date().toISOString(),
+                            details: `Contact ${action}: ${formData.name}`
+                        });
                     }
+                    
+                    closeContactModal();
+                    loadFamilyContacts();
+                    loadStatistics();
                 } else {
-                    throw new Error('HTTP ' + response.status);
+                    // Handle validation errors
+                    const errorMessage = data.message || 'Failed to save contact';
+                    
+                    // Check if it's a phone validation error
+                    if (errorMessage.includes('手机号') || errorMessage.includes('phone')) {
+                        displayPhoneError(errorMessage);
+                        showModalMessage(errorMessage, 'error');
+                    } else {
+                        showModalMessage(errorMessage, 'error');
+                    }
                 }
             } catch (error) {
                 console.error('Error saving contact:', error);
@@ -2324,6 +2375,124 @@
             if (event.target === messageModal) {
                 closeMessageModal();
             }
+        }
+
+        // Phone validation and error display functions
+        function validatePhoneInput() {
+            const phoneNumber = document.getElementById('contactPhone').value.trim();
+            const phoneError = document.getElementById('phoneError');
+            
+            // Clear previous error
+            hidePhoneError();
+            
+            if (phoneNumber) {
+                // Basic validation
+                if (!/^\d+$/.test(phoneNumber)) {
+                    displayPhoneError('Phone number should contain only digits');
+                    return false;
+                }
+                
+                if (phoneNumber.length < 6) {
+                    displayPhoneError('Phone number should be at least 6 digits');
+                    return false;
+                }
+                
+                if (phoneNumber.length > 15) {
+                    displayPhoneError('Phone number should not exceed 15 digits');
+                    return false;
+                }
+                
+                // Check for repeating digits
+                if (isRepeatingDigits(phoneNumber)) {
+                    displayPhoneError('Phone number cannot be repeating digits (e.g., 111111)');
+                    return false;
+                }
+                
+                // Check for consecutive digits
+                if (isConsecutiveDigits(phoneNumber)) {
+                    displayPhoneError('Phone number cannot be consecutive digits (e.g., 123456)');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        function displayPhoneError(message) {
+            const phoneError = document.getElementById('phoneError');
+            const phoneInput = document.getElementById('contactPhone');
+            
+            phoneError.textContent = message;
+            phoneError.style.display = 'block';
+            phoneInput.style.borderColor = '#dc3545';
+            phoneInput.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
+        }
+        
+        function hidePhoneError() {
+            const phoneError = document.getElementById('phoneError');
+            const phoneInput = document.getElementById('contactPhone');
+            
+            phoneError.style.display = 'none';
+            phoneInput.style.borderColor = '';
+            phoneInput.style.boxShadow = '';
+        }
+        
+        function isRepeatingDigits(number) {
+            if (number.length < 6) return false;
+            const firstDigit = number.charAt(0);
+            for (let i = 1; i < number.length; i++) {
+                if (number.charAt(i) !== firstDigit) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        function isConsecutiveDigits(number) {
+            if (number.length < 6) return false;
+            
+            // Check for ascending consecutive digits
+            let isAscending = true;
+            let isDescending = true;
+            
+            for (let i = 1; i < number.length; i++) {
+                const current = parseInt(number.charAt(i));
+                const previous = parseInt(number.charAt(i - 1));
+                
+                if (current !== previous + 1) {
+                    isAscending = false;
+                }
+                if (current !== previous - 1) {
+                    isDescending = false;
+                }
+                
+                if (!isAscending && !isDescending) {
+                    break;
+                }
+            }
+            
+            return isAscending || isDescending;
+        }
+        
+        // Function to parse and display phone number in edit mode
+        function displayPhoneForEdit(fullPhone) {
+            if (!fullPhone) return;
+            
+            const countryCodeSelect = document.getElementById('countryCode');
+            const phoneInput = document.getElementById('contactPhone');
+            
+            // Find matching country code
+            for (let option of countryCodeSelect.options) {
+                if (fullPhone.startsWith(option.value)) {
+                    countryCodeSelect.value = option.value;
+                    phoneInput.value = fullPhone.substring(option.value.length);
+                    return;
+                }
+            }
+            
+            // If no country code matches, default to +86 and show full number
+            countryCodeSelect.value = '+86';
+            phoneInput.value = fullPhone.startsWith('+') ? fullPhone.substring(1) : fullPhone;
         }
     </script>
 </body>

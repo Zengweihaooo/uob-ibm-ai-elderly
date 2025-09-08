@@ -585,7 +585,16 @@
                             <h5>Add New Contact</h5>
                             <input type="text" id="newContactName" placeholder="Contact Name">
                             <input type="email" id="newContactEmail" placeholder="Contact Email">
-                            <input type="text" id="newContactPhone" placeholder="Phone (optional)">
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <select id="newContactCountryCode" style="flex: 0 0 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                    <option value="+86">🇨🇳 +86</option>
+                                    <option value="+1">🇺🇸 +1</option>
+                                    <option value="+44">🇬🇧 +44</option>
+                                    <option value="+81">🇯🇵 +81</option>
+                                    <option value="+82">🇰🇷 +82</option>
+                                </select>
+                                <input type="text" id="newContactPhone" placeholder="Phone (optional)" style="flex: 1;">
+                            </div>
                             <select id="newContactRelationship">
                                 <option value="">Select Relationship</option>
                                 <option value="family">Family</option>
@@ -852,7 +861,9 @@
         async function addContact() {
             const name = document.getElementById('newContactName').value;
             const email = document.getElementById('newContactEmail').value;
-            const phone = document.getElementById('newContactPhone').value;
+            const countryCode = document.getElementById('newContactCountryCode').value;
+            const phoneNumber = document.getElementById('newContactPhone').value;
+            const phone = phoneNumber ? (countryCode + phoneNumber) : '';
             const relationship = document.getElementById('newContactRelationship').value;
 
             if (!name || !email) {
