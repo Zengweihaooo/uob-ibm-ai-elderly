@@ -15,6 +15,7 @@ import com.example.demo.mapper.HealthRecordMapper;
 import com.example.demo.pojo.FamilyContact;
 import com.example.demo.pojo.HealthRecord;
 import com.example.demo.pojo.User;
+import com.example.demo.service.DynamoDBHealthRecordService;
 
 @Service
 public class HealthService {
@@ -30,6 +31,9 @@ public class HealthService {
     
     @Autowired
     private HealthRecordMapper healthRecordMapper;
+    
+    @Autowired(required = false)
+    private DynamoDBHealthRecordService dynamoDBHealthRecordService;
 
     // Database mapper is now being used instead of in-memory storage
     // private List<HealthRecord> healthRecords = new ArrayList<>();
@@ -57,7 +61,22 @@ public class HealthService {
         r.setSharedWithUserId(null);
         r.setSharedWithRole(null);
         r.setSharedAt(null);
+        
+        // Save to SQLite database
         healthRecordMapper.insert(r);
+        
+        // Also save to DynamoDB if available (AWS environment)
+        if (dynamoDBHealthRecordService != null) {
+            try {
+                boolean isAbnormal = checkAbnormalValue(type, value);
+                String notes = "Health record from normal user operation";
+                dynamoDBHealthRecordService.saveHealthRecord(type, value, notes, isAbnormal);
+            } catch (Exception e) {
+                // Log error but don't fail the operation
+                System.err.println("Failed to save to DynamoDB: " + e.getMessage());
+            }
+        }
+        
         return r;
     }
 
